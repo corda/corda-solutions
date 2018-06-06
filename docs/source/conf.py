@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# R3 prototyping documentation build configuration file, created by
+# R3 documentation build configuration file, created by
 # sphinx-quickstart on Mon Nov 23 21:19:35 2015.
 #
 # This file is execfile()d with the current directory set to its
@@ -232,8 +232,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  (master_doc, 'R3Prototyping.tex', u'R3 Prototyping Documentation',
-   u'R3 CEV', 'manual'),
+  (master_doc, 'corda-solutions.tex', u'Corda Solutions',
+   u'R3', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
