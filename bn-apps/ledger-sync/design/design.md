@@ -68,11 +68,11 @@ Non-goals:
 
 The proposed solution is - to implement the Ledger Synchronisation Service at the Corda application level, where participants communicate to each other via Corda Flows. This would allow a seamless integration with other BNO applications, such as [Business Network Membership Service](../../membership-service/design/design.md), and would also enable Business Networks to tweak the implementation to fulfil their particular requirements, which are envisaged to vary from a case to case. For example some BNs might require participants to obtain an explicit permission of the BNO *(signed ticket)* before they can start data recovery. Such logic can be easily implemented on top of the reference implementation.
 
-As Corda ledger is *subjective* from each peer's point of view, it'd be not feasible to recover the whole of the ledger from a single peer, unless this peer is aware of all of the transactions on the BN (which is possible but highly unlikely). The proposed solution is to perform data recovery on *p2p basis*, where one node - the *synchronisation initiator*, would be responsible for synchronising only a *common* part of the ledger (*states and transactions*) with each BN member separately. The *synchronisation initiator* will be requesting each peer to send him transactions where *both of them* have participated in.
+As Corda ledger is *subjective* from each peer's point of view, it'd be not feasible to recover the whole of the ledger from a single peer, unless this peer is aware of all of the transactions on the BN (which is possible but highly unlikely). The proposed solution is to perform data recovery on *p2p basis*, where one node - the *synchronisation initiator*, would be responsible for synchronising only a *common* part of his ledger (*states and transactions*) with each BN member separately. The *synchronisation initiator* will be requesting each peer to send him transactions where *both of them* have participated in.
 
 The Ledger Synchronisation Service is envisaged to be used:
-* By a BN member to recover his data from other members after a disaster.
-* By a BN member, as a diagnostics tool, to make sure that he is in consensus with other members about the transactions he has been *involved into*. This would be particularly useful when a member would want to verify that his local vault has not been tampered with.
+* By a BN member to recover transactions he has been involved into from other members after a disaster. This process is supposed to be triggered by the *affected node*, as a part of its disaster recovery process. 
+* By a BN member, as a diagnostics tool, to make sure that he is in consensus with the rest of the members about the transactions he has been *involved into*. This would be particularly useful when a member would want to verify that his local vault has not been tampered with, or that he has not missed any transactions. This diagnostics can be run by every BN Member on a scheduled basis, for example once per day. BN Members can use *API Extension Points* to specify their custom actions, such as raising an alert on the monitoring system, if they find some transaction being missing from their vaults.
 
 The following actors have been identified:
 
@@ -80,7 +80,7 @@ The following actors have been identified:
 * *Synchronisation Initiator*. A node, which wants to synchronise its data with other BN members.
 * *BN Members*. All other BN members.
 
-![Ledger sync](./resources/ledger_sync.png).
+![Ledger synchronisation](./resources/ledger_sync.png).
 
 Limitations by design:
 

@@ -19,11 +19,23 @@ loop For each BN Member
         BN Member->Sync Initiator: Requests the Sync Initiator to send missing transactions
         loop For each missing transaction
            Sync Initiator->BN Member: Sends a missing transaction
+           note right of BN Member
+           The BN Member applies his own logic here.
+           For example he might persist the transaction into his vault,
+           raise an alert to the monitoring system that the ledger was out of sync,
+           or perform any other custom action.
+           end note
         end
     end
     alt If the Sync Initiator is missing some transactions
         loop For each missing transaction
            BN Member->Sync Initiator: Sends a missing transaction
+           note left of Sync Initiator
+           The Sync Initiator applies his own logic here.
+           For example he might persist the transaction into his vault,
+           raise an alert to the monitoring system that the ledger was out of sync,
+           or perform any other custom action.
+           end note
         end
     end
 end
