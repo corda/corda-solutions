@@ -15,7 +15,7 @@ loop For each BN Member
     BN Member are participants.
     end note
     note right of BN Member: Calculates the delta between the 2 snapshots
-    alt If the BN Member is missing some transactions
+    alt [OPTIONALLY] If the BN Member is missing some transactions
         BN Member->Sync Initiator: Requests the Sync Initiator to send missing transactions
         loop For each missing transaction
            Sync Initiator->BN Member: Sends a missing transaction
