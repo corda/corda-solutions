@@ -96,4 +96,4 @@ Limitations by design:
 
 * Integration with monitoring systems to report about missing transactions
 * Mechanisms, preventing a node from transacting while the synchronisation is in progress
-* Signed tickets for data recovery
+* BNO's signed permissions (tickets) for data recovery
