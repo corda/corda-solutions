@@ -1,0 +1,29 @@
+title Ledger Synchronisation
+
+Sync Initiator->BNO: Requests membership snapshot
+BNO->Sync Initiator: Sends membership snapshot
+loop For each BN Member
+    note left of Sync Initiator
+    Builds a snapshot of transaction ids,
+    where both the Sync Initiator and the
+    BN Member are participants.
+    end note
+    Sync Initiator->BN Member: Sends the snapshot
+    note right of BN Member
+    Builds a snapshot of transaction ids,
+    where both the Sync Initiator and the
+    BN Member are participants.
+    end note
+    note right of BN Member: Calculates the delta between the 2 snapshots
+    alt If the BN Member is missing some transactions
+        BN Member->Sync Initiator: Requests the Sync Initiator to send missing transactions
+        loop For each missing transaction
+           Sync Initiator->BN Member: Sends a missing transaction
+        end
+    end
+    alt If the Sync Initiator is missing some transactions
+        loop For each missing transaction
+           BN Member->Sync Initiator: Sends a missing transaction
+        end
+    end
+end
