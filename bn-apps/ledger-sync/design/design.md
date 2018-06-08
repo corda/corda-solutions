@@ -89,3 +89,7 @@ Limitations by design:
 * In a highly unlikely event, if *all* transaction participants loose some transaction data from their vaults, this transaction would become unrecoverable.
 * Data recovery might potentially take a long time, in the case if the ledger is big or if some of the nodes are unreachable.
 * Flow checkpoints can't be recovered, as they are not shared with the counterparts. In the case of disaster all in-progress flows would be lost.
+
+### API extension points
+
+* Integration with monitoring systems to report about missing transactions
