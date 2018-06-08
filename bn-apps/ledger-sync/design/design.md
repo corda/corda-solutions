@@ -93,3 +93,4 @@ Limitations by design:
 ### API extension points
 
 * Integration with monitoring systems to report about missing transactions
+* Mechanisms, preventing a node from transacting while the synchronisation is in progress
