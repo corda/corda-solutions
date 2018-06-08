@@ -72,7 +72,7 @@ As Corda ledger is *subjective* from each peer's point of view, it'd be not feas
 
 The Ledger Synchronisation Service is envisaged to be used:
 * By a BN member to recover his data from other members after a disaster.
-* By a BN member to make sure that he is in consensus with other members about the transactions he has been *involved into*. This would be particularly useful when a member would want to verify that his local vault is consistent with the Business Network.
+* By a BN member, as a diagnostics tool, to make sure that he is in consensus with other members about the transactions he has been *involved into*. This would be particularly useful when a member would want to verify that his local vault has not been tampered with.
 
 The following actors have been identified:
 
