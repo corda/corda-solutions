@@ -30,7 +30,7 @@ This proposal describes the architecture of a reference implementation for the L
 
 ### Background
 
-Blockchain platforms allow users to recover their data from other peers in the case of a disaster. By design, Corda doesn't have a global ledger and hence doesn't provide a data recovery solution at the platform level. Including data recovery mechanism into Corda ecosystem, would allow BN members to benefit from blockchain-like data recovery in the conjunction with Corda privacy out-of-the-box.
+Blockchain platforms allow users to recover their data from other peers in the case of a disaster. By design, Corda doesn't have a global ledger and hence doesn't provide a data recovery solution at the platform level. Including data recovery mechanism into Corda ecosystem, would allow BN members to benefit from blockchain-like data recovery guarantees in the conjunction with Corda privacy out-of-the-box.
 
 ### Scope
 
@@ -71,7 +71,7 @@ The proposed solution is - to implement the Ledger Synchronisation Service at th
 As Corda ledger is *subjective* from each peer's point of view, it'd be not feasible to recover the whole of the ledger from a single peer, unless this peer is aware of all of the transactions on the BN (which is possible but highly unlikely). The proposed solution is to perform data recovery on *p2p basis*, where one node - the *synchronisation initiator*, would be responsible for synchronising only a *common* part of his ledger (*states and transactions*) with each BN member separately. The *synchronisation initiator* will be requesting each peer to send him transactions where *both of them* have participated in.
 
 The Ledger Synchronisation Service is envisaged to be used:
-* By a BN member to recover transactions he has been involved into from other members after a disaster. This process is supposed to be triggered by the *affected node*, as a part of its disaster recovery process. 
+* By a BN member to recover transactions he has been involved into from other members after a disaster. This process is supposed to be triggered by the *affected node*, as a part of its disaster recovery process.
 * By a BN member, as a diagnostics tool, to make sure that he is in consensus with the rest of the members about the transactions he has been *involved into*. This would be particularly useful when a member would want to verify that his local vault has not been tampered with, or that he has not missed any transactions. This diagnostics can be run by every BN Member on a scheduled basis, for example once per day. BN Members can use *API Extension Points* to specify their custom actions, such as raising an alert on the monitoring system, if they find some transaction being missing from their vaults.
 
 The following actors have been identified:
