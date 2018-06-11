@@ -37,10 +37,10 @@ Blockchain platforms allow users to recover their data from other peers in the c
 Design a reference implementation of CorDapp, which would allow BN members to recover their states and transactions from each other.
 
 In-scope:
-* Recovery of states and transactions by a BN member from other members.
+* Recovery of states and transactions by a BN member from other members. This would include states, belonging to the node's well-known identity as well its confidential identities, which other parties are aware of. 
 
 Non-goals:
-* Recovery of confidential identities.
+* Recovery of confidential keypairs.
 * Recovery of self-issued, not transacted or transacted only with yourself `OwnableStates`.
 * Recovery of flow checkpoints.
 * Recovery of the well-known keypair.
