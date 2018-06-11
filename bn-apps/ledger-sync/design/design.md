@@ -90,7 +90,7 @@ Limitations by design:
 * It's impossible to recover self-issued, not transacted `OwnableStates`, as they would exist in the vault of the owner only.
 * In a highly unlikely event, if *all* transaction participants loose some transaction data from their vaults, this transaction would become unrecoverable.
 * Data recovery might potentially take a long time, in the case if the ledger is big or if some of the nodes are unreachable.
-* Flow checkpoints can't be recovered, as they are not shared with the counterparts. In the case of disaster all in-progress flows would be lost.
+* Flow checkpoints can't be recovered, as they are not shared with the counterparts. In the case of disaster all in-progress flows would be lost. Note: this is not a consensus issue as flows are used to collaboratively create transactions ready for signing. So the loss of a flow can not lead to loss of ledger consensus between parties.
 
 ### API extension points
 
