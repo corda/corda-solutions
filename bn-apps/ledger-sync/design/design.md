@@ -37,13 +37,14 @@ Blockchain platforms allow users to recover their data from other peers in the c
 Design a reference implementation of CorDapp, which would allow BN members to recover their states and transactions from each other.
 
 In-scope:
-* Recovery of states and transactions by a BN member from other members. This would include states, belonging to the node's well-known identity as well its confidential identities, which other parties are aware of. 
+* Recovery of states and transactions by a BN member from other members. This would include states, belonging to the node's well-known identity as well its confidential identities, which other parties are aware of. Note: this doesn't include the states, where the party is an *observer* (not the *owner*).
 
 Non-goals:
 * Recovery of confidential keypairs.
 * Recovery of self-issued, not transacted or transacted only with yourself `OwnableStates`.
 * Recovery of flow checkpoints.
 * Recovery of the well-known keypair.
+* Recovery of *observed* states (see [Observer Nodes](https://docs.corda.net/tutorial-observer-nodes.html)). 
 
 ### Timeline
 
@@ -84,7 +85,7 @@ The following actors have been identified:
 
 ![Ledger synchronisation](./resources/ledger_sync.png).
 
-Limitations by design:
+Some considerations:
 
 * Confidential keypairs would require a separate recovery mechanism.
 * It's impossible to recover self-issued, not transacted or transacted only with yourself `OwnableStates`, as they would exist in the vault of the owner only.
@@ -92,6 +93,9 @@ Limitations by design:
 * Transaction will be unrecoverable if it has been performed with the parties which don't exist anymore.
 * Data recovery might potentially take a long time, in the case if the ledger is big or if some of the nodes are unreachable.
 * Flow checkpoints can't be recovered, as they are not shared with the counterparts. In the case of disaster all in-progress flows would be lost. Note: this is not a consensus issue as flows are used to collaboratively create transactions ready for signing. So the loss of a flow can not lead to loss of ledger consensus between parties.
+* In the case if the private key of the well-known key pair is stolen, an attacker would be able *recover* all of the transaction history from the BN members. This issue can be addressed with:
+  * Making the CZ operator and the BNO aware that the key has been compromised, so they can revoke the compromised identity from transacting on the Compatibility Zone and the Business Network respectively.
+  * BNO can be issuing *signed tickets* (API Extension Point), which would be mandatory on the Business Network to initiate a data recovery. BN's governance framework, might mandate that the affected party *must* contact the BNO off-line to get the *data recovery ticket* issued. The Ledger Synchronisation Service might work in 2 different modes. The *data recovery mode*, which would require a signed ticket from the BNO and the *diagnostics mode* which would just be used to verify the ledger integrity.
 
 ### API extension points
 
