@@ -41,7 +41,7 @@ In-scope:
 
 Non-goals:
 * Recovery of confidential identities.
-* Recovery of self-issued, not transacted `OwnableStates`.
+* Recovery of self-issued, not transacted or transacted only with yourself `OwnableStates`.
 * Recovery of flow checkpoints.
 * Recovery of the well-known keypair.
 
@@ -87,8 +87,9 @@ The following actors have been identified:
 Limitations by design:
 
 * Confidential keypairs would require a separate recovery mechanism.
-* It's impossible to recover self-issued, not transacted `OwnableStates`, as they would exist in the vault of the owner only.
+* It's impossible to recover self-issued, not transacted or transacted only with yourself `OwnableStates`, as they would exist in the vault of the owner only.
 * In a highly unlikely event, if *all* transaction participants loose some transaction data from their vaults, this transaction would become unrecoverable.
+* Transaction will be unrecoverable if it has been performed with the parties which don't exist anymore.
 * Data recovery might potentially take a long time, in the case if the ledger is big or if some of the nodes are unreachable.
 * Flow checkpoints can't be recovered, as they are not shared with the counterparts. In the case of disaster all in-progress flows would be lost. Note: this is not a consensus issue as flows are used to collaboratively create transactions ready for signing. So the loss of a flow can not lead to loss of ledger consensus between parties.
 
