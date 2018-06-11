@@ -11,8 +11,15 @@ approaches that we should use?
 
 This site aims to ask some of these questions and offer some solutions.
 
+
 .. toctree::
+   :caption: Business Networks
    :maxdepth: 1
 
    business-networks/intro.rst
+
+.. toctree::
+   :caption: FAQ
+   :maxdepth: 1
+
    faq.rst
