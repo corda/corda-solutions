@@ -1,0 +1,9 @@
+# General build files
+**/build/*
+
+# Mac metadata
+.DS_Store
+
+#Intellij related stuff
+**/.idea/*
+.iml
