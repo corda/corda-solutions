@@ -93,7 +93,7 @@ Requirements and use-cases have been gathered from various real-world projects, 
 
 As *Business Networks* is a fairly high-level concept, which might require some heavy customisations per business case, the proposed solution is to implement a BNMS at the Corda Application level, and to distribute it as CorDapp(s) to users. This approach would also ease an installation and integration of the BNO applications into the existing enterprise infrastructures, as it would require less integration points with not-flow based internal systems.
 
-In this design, *memberships* are issued onto the ledger. The main reasons behind that are:
+The design proposal is to issue *memberships* onto the ledger. The main reasons behind that are:
 * The future support of *reference states*, would allow BN participants to *contractually* prove validity of their membership at the point when a transaction is made, by including their *membership states* as *reference inputs* into the transaction. *Lateness* of the reference inputs would be checked by Notary, while Smart Contract can assert that the transaction contains a membership-state-per-participant as *reference inputs*.
 * BNO would have a way of immediately revoking a participant's membership, by unilaterally reissuing his *membership state* onto the ledger. Any subsequent attempt by the participant to use *not the latest* version of the membership state, would fail the *reference input* check. Revocations would have an immediate effect, comparing to other solutions, which would require some time for changes to get propagated.
 
@@ -103,7 +103,11 @@ The following *actors* have been identified:
 * *BN member*. This is a registered member of BN. Can be many.
 * *Non-member*. This is any *valid* participant of CZ, but not a member of the BN. Can be many.
 
-Each member is able to associate a custom metadata with his membership state. Metadata gets distributed along with the membership states as a part of general membership distribution mechanism (described in the further sections).
+*Membership state* virtually consist of 2 parts.
+
+![Membership state](./resources/membership_state.png)
+
+Each member is able to associate a custom *Metadata* with the *Membership State* he owns. Metadata gets distributed along with the *Membership States* as a part of general membership distribution mechanism (described in the further sections).
 
 Memberships can exist in 3 statuses: *pending, activated* and *revoked*. As memberships live on the ledger, all state transitions are performed via *Corda transactions*. Only *status* or *metadata* of a membership can be amended after the membership has been issued onto the ledger. Each Corda transaction can evolve only *one* membership at a time.
 
