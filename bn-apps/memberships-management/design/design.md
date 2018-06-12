@@ -103,11 +103,10 @@ The following *actors* have been identified:
 * *BN member*. This is a registered member of BN. Can be many.
 * *Non-member*. This is any *valid* participant of CZ, but not a member of the BN. Can be many.
 
-*Membership state* virtually consist of 2 parts.
+*Membership state* virtually consists of 2 parts:
 
-![Membership state](./resources/membership_state.png)
-
-Each member is able to associate a custom *Metadata* with the *Membership State* he owns. Metadata gets distributed along with the *Membership States* as a part of general membership distribution mechanism (described in the further sections).
+* _Membership Information_. Managed by the BNO. Contains such fields as *Issued Date*, *Modified Date*, *Status*, etc. Can be unilaterally changed by BNO.
+* _Membership Metadata_. Managed by the state owner and the BNO. Supposed to contain *business-related* fields, such as *Node Type*, *Address*, *Phone Number*, etc. Can be changed only on request from the owning member. Each member is able to associate a custom *Metadata* with the *Membership State* he owns. Metadata gets distributed along with the *Membership States* as a part of general membership distribution mechanism (described in the further sections).
 
 Memberships can exist in 3 statuses: *pending, activated* and *revoked*. As memberships live on the ledger, all state transitions are performed via *Corda transactions*. Only *status* or *metadata* of a membership can be amended after the membership has been issued onto the ledger. Each Corda transaction can evolve only *one* membership at a time.
 
