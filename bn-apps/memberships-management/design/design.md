@@ -94,7 +94,7 @@ Requirements and use-cases have been gathered from various real-world projects, 
 As *Business Networks* is a fairly high-level concept, which might require some heavy customisations per business case, the proposed solution is to implement a BNMS at the Corda Application level, and to distribute it as CorDapp(s) to users. This approach would also ease an installation and integration of the BNO applications into the existing enterprise infrastructures, as it would require less integration points with not-flow based internal systems.
 
 The design proposal is to issue *memberships* onto the ledger. The main reasons behind that are:
-* The future support of *reference states*, would allow BN participants to *contractually* prove validity of their membership at the point when a transaction is made, by including their *membership states* as *reference inputs* into the transaction. *Lateness* of the reference inputs would be checked by Notary, while Smart Contract can assert that the transaction contains a membership-state-per-participant as *reference inputs*.
+* The future support of *reference states*, would allow BN participants to *contractually* prove validity of their membership at the point when a transaction is committed, by including their *membership states* as *reference inputs* into the transaction. *Lateness* of the reference inputs would be checked by Notary, while Smart Contract can assert that the transaction contains a membership-state-per-participant as *reference inputs*.
 * BNO would have a way of immediately revoking a participant's membership, by unilaterally reissuing his *membership state* onto the ledger. Any subsequent attempt by the participant to use *not the latest* version of the membership state, would fail the *reference input* check. Revocations would have an immediate effect, comparing to other solutions, which would require some time for changes to get propagated.
 
 The following *actors* have been identified:
@@ -108,11 +108,11 @@ The following *actors* have been identified:
 * _Membership Information_. Managed by the BNO. Contains such fields as *Issued Date*, *Modified Date*, *Status*, etc. Can be unilaterally changed by BNO.
 * _Membership Metadata_. Managed by the state owner and the BNO. Supposed to contain *business-related* fields, such as *Node Type*, *Address*, *Phone Number*, etc. Can be changed only on request from the owning member. Each member is able to associate a custom *Metadata* with the *Membership State* he owns. Metadata gets distributed along with the *Membership States* as a part of general membership distribution mechanism (described in the further sections).
 
-Memberships can exist in 3 statuses: *pending, active* and *revoked* (more statuses can be added by the BN designer if needed). As memberships live on the ledger, all state transitions are performed via *Corda transactions*. Only *status* or *metadata* of a membership state can be amended after it has been issued onto the ledger. Each Corda transaction can evolve only *one* membership at a time.
+Memberships can exist in 3 statuses: *pending, active* and *revoked* (more statuses can be added by the a BN designer if needed). As memberships live on the ledger, all state transitions are performed via *Corda transactions*. Only *status* or *metadata* of a membership state can be amended after it has been issued onto the ledger. Each Corda transaction can evolve only *one* membership at a time.
 
 Membership state intentionally doesn't contain any information about node's physical location. Resolution of Corda identities to *host:port* should be done via *CZ Network Map*.
 
-Each membership has two participants to it - a member (the owner) and BNO. BNO is able to *unilaterally* amend *Membership Information* only. Updates to *Membership Metadata* should be initiated and signed by the *owning member*. The reason for that design choice - is to enable BNO to perform such activities as approval or revocation of a membership, while giving control over the *metadata* to its owner. When BNO unilaterally updates a membership state, the member would still see an update, but he wouldn't be a *signer*.
+Each membership has two participants to it - a member (the owner) and the BNO. The BNO is able to *unilaterally* amend *Membership Information* only. Updates to *Membership Metadata* should be initiated and signed by the *owning member*. The reason for that design choice - is to enable BNOs to unilaterally perform such activities as approval or revocation of a membership, while giving control over the *Membership Metadata* to its owner. When the BNO unilaterally updates a membership state, the member would still see an update, but he wouldn't be a *signer*.
 
 The design assumes that all participants have already been on-boarded onto CZ. To be able to contact the BNO, participants are required to have the membership service CorDapp installed on their nodes.
 
@@ -218,26 +218,32 @@ Outputs:
 
 #### Membership list snapshot
 
-Membership snapshot - is a list of all active BN memberships + metadata associated with them. BNs are not envisaged to get significantly large in the near to medium term, to make snapshot distribution a bottleneck. To optimise snapshot distribution, CorDapp developers can:
-
-* reduce amount of on-ledger metadata stored for each node
-* increase expiration time-window
-* cache snapshots in the BNO's CorDapp
-* throttle snapshot requests
-
-In the future *reference states* can be utilised for memberships distribution. Membership snapshot would effectively become a set of valid public keys and metadata distribution would be done on peer-2-peer basis. Valid metadata states would be added as reference inputs to transactions for contractual proof of membership. Exact design is out of scope for this document.
-
-The future support of *Data Distribution Groups*, would allow to distribute membership snapshots more efficiently.
+Membership snapshot - is a list of all active BN memberships + metadata associated with them. BNs are not envisaged to get significantly large in the near to medium term, to make snapshot distribution a bottleneck.
 
 #### Membership list distribution
 
-Depending on the specific BN's requirements, membership list can be distributed in the following ways:
+Depending on a particular BN's requirements, memberships list can be distributed in the following ways:
 
-* Snapshot-based approach. A snapshot consist of a list of active members + expiry time. Members should be caching the snapshot locally and re-request it upon expiration. A BN members will be pulling snapshots rather than the BNO pushing updates to them. As snapshot data is fairly static, it can be efficiently cached in the BNO's CorDapp. The BNO would be responsible for choosing right snapshot expiry time. For example, if expiry time is 24hrs, then for a *large Business Network*, the BNO would have to serve about 6 requests per minute only, given that the distribution is even.
-This approach would work better for large networks with high frequency of joins / updates, as the BNO wouldn't have to broadcast notifications to all members on each change.
-* In smaller BNs, members can be notified about each change. Instead of pulling snapshots periodically, the BN members would pull the snapshot just once upon start and then would start applying modifications to it in the real-time.
+* _Snapshot-based approach_. A snapshot consists of a list of all active memberships + snapshot expiry time. Each member should pull a snapshot from the BNO, when his node starts and then cache the snapshot locally, until it expires, after which - re-pull a new snapshot again. As snapshot data is fairly static, it can be efficiently cached in the BNO's CorDapp. The BNO would be responsible for choosing the right snapshot expiry time. For example, if the expiry time is 24hrs, then for a *Large Business Network*, the BNO would have to serve about 6 requests per minute only, given that the requests distribution is even. This approach would be recommended for larger networks with high frequency of joins / updates, as the BNO wouldn't have to broadcast notifications to all members on each change. Its worth to mention, that the snapshot based approach assumes some delay in membership changes propagation. With the future support of *reference states*, it would be impossible for someone to use *not the latest* version of membership state as it would fail the *reference input* checks. New-joiners might still encounter some delay before they get seen by other members on the network. The delay might vary from a node to node and will be equal to the *snapshot expiry time* in the worst case. The delay can be mitigated by enabling the BNO to notify other members about new-joiners, as described in the *Activation section*.
+* _Real-time notifications approach_. In smaller BNs, BNO might choose to notify members about every change to memberships. Instead of pulling snapshots periodically, the BN members would pull a snapshot just once, when their node starts and then would start applying modifications to the cached snapshot in the real-time.
 
-Each member is solely responsible for verifying his counterparts for eligibility to transact on the BN. Each flow would have to start with a statement, which asserts a validity of counterpart's membership by checking it against the cached snapshot. In the case, when a counterpart fails membership check, an explicit exception will be thrown. The how-to-do will be provided along with the reference implementation. The verification code could look like:
+To optimise snapshot distribution, CorDapp developers can:
+
+* reduce an amount of on-ledger metadata stored for each node
+* increase expiry time-window
+* cache snapshots in the BNO's CorDapp
+* throttle requests
+* approach similar to if-modified HTTP header. I.e. download a snapshot, only if there have been any changes to it.
+
+In the future *reference states* can be utilised for memberships distribution. Membership snapshot would effectively become a set of valid public keys and *Membership States* distribution would be performed on peer-2-peer basis. Valid *Membership States* states would be added as reference inputs to transactions for contractual proof of membership.
+
+The future support of *Data Distribution Groups*, would allow to distribute membership snapshots more efficiently.
+
+Even if the BNO's node is down for some time, the BN members would be able to continue using locally cached snapshots, until the BNO's node comes back up again.
+
+#### Membership verification
+
+Each member would be solely responsible for verifying his counterparts for eligibility to transact on the BN. Each flow should contain a statement, which asserts a validity of the counterpart's membership by checking it against locally cached snapshot. In the case, when the counterpart fails membership check, an explicit exception should be thrown. The how-to-do will be provided along with the reference implementation. The verification code might look like:
 
 ```
 if (membershipSnapshot[counterparty].metadata.role != "AGENT") {
@@ -245,9 +251,7 @@ if (membershipSnapshot[counterparty].metadata.role != "AGENT") {
 }
 ```
 
-Snapshot based approach assumes some delay in membership changes propagation. With the future support of *reference states*, using not latest membership would fail *reference input* checks. New-joiners might still encounter some delay before they get seen by other members on the network. The delay can be mitigated by enabling the BNO to notify other members about new-joiners, as described in the *Activation section*.
-
-Nodes can expose membership list snapshot via RPC. Next refresh time can be distributed along with the snapshot for more dynamic applications. The how-to-do will be provided along with the reference implementation.
+Nodes would be able to expose membership snapshots via RPC for use by external applications. The how-to-do will be provided along with the reference implementation.
 
 ![Membership snapshot distribution](./resources/Membership_snapshot_distribution.png)
 
