@@ -108,11 +108,11 @@ The following *actors* have been identified:
 * _Membership Information_. Managed by the BNO. Contains such fields as *Issued Date*, *Modified Date*, *Status*, etc. Can be unilaterally changed by BNO.
 * _Membership Metadata_. Managed by the state owner and the BNO. Supposed to contain *business-related* fields, such as *Node Type*, *Address*, *Phone Number*, etc. Can be changed only on request from the owning member. Each member is able to associate a custom *Metadata* with the *Membership State* he owns. Metadata gets distributed along with the *Membership States* as a part of general membership distribution mechanism (described in the further sections).
 
-Memberships can exist in 3 statuses: *pending, activated* and *revoked*. As memberships live on the ledger, all state transitions are performed via *Corda transactions*. Only *status* or *metadata* of a membership can be amended after the membership has been issued onto the ledger. Each Corda transaction can evolve only *one* membership at a time.
+Memberships can exist in 3 statuses: *pending, active* and *revoked* (more statuses can be added by the BN designer if needed). As memberships live on the ledger, all state transitions are performed via *Corda transactions*. Only *status* or *metadata* of a membership state can be amended after it has been issued onto the ledger. Each Corda transaction can evolve only *one* membership at a time.
 
-Membership state intentionally doesn't contain any information about node's physical location. Resolution of Corda identities to *host:port* is done via CZ Network Map.
+Membership state intentionally doesn't contain any information about node's physical location. Resolution of Corda identities to *host:port* should be done via *CZ Network Map*.
 
-Each membership has two participants - member + BNO. BNO is able to unilaterally *approve* and *revoke* existing memberships, however to request a *new* membership or to *change* it's metadata, the member's participation is required. When BNO unilaterally updates membership state, the member would still see an update, but he wouldn't be a *signer*.
+Each membership has two participants to it - a member (the owner) and BNO. BNO is able to *unilaterally* amend *Membership Information* only. Updates to *Membership Metadata* should be initiated and signed by the *owning member*. The reason for that design choice - is to enable BNO to perform such activities as approval or revocation of a membership, while giving control over the *metadata* to its owner. When BNO unilaterally updates a membership state, the member would still see an update, but he wouldn't be a *signer*.
 
 The design assumes that all participants have already been on-boarded onto CZ. To be able to contact the BNO, participants are required to have the membership service CorDapp installed on their nodes.
 
