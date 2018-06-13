@@ -59,37 +59,29 @@ Out-of-scope (not MVP):
 * Metric visualization
 
 
+## MVP deliverable
+
+MVP must give users the following metrics:
+* Active flow time, e.g. time to create, verify or sign tx on inititator and
+responder side
+* Time taken to checkpoint flow at each stage
+* Time taken to communicate each message to another node
+* Time taken to notarise (for MVP notaries must be treated as black boxes,
+including their network latencies)
+* Latency of each individual database query/transaction
+
+
 ## Current situation
 
 Current Corda nodes expose some metrics that might be used for applciation level
 analysis.
 
-### Flow durations
+#### Flow durations
 
 By providing custom log4j configuration to node it is possible to fetch flow
 durations from logging events.
 
-For example following configuration:
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="WARN" monitorInterval="10">
-    <Appenders>
-        <File name="file" fileName="logs/I-am-The-Log.log">
-            <PatternLayout pattern="%d{HH:mm:ss.SSS} - %msg%n"/>
-        </File>
-    </Appenders>
-    <Loggers>
-        <Logger name="net.corda.flow" level="debug" additivity="false">
-            <AppenderRef ref="file"/>
-        </Logger>
-        <Root level="error">
-            <AppenderRef ref="file"/>
-        </Root>
-    </Loggers>
-</Configuration>
-```
-
-will produce a log file with:
+Simple log4j configuration would produce a log file with:
 ```
 09:26:28.970 - Calling flow: ...
 09:26:28.998 - Calling subflow: net.corda.core.flows.FinalityFlow@4d80934
@@ -107,14 +99,11 @@ Whilst good to have these logs are not fit for application level metrics due to:
 * they require all parties to have correct node logging file and Appender
 implementation that would parse logging events and forward them through network
 
-### JDBC timings
+#### JDBC timings
 
 One can instrument current Corda JDBC driver with logger. That can be done with
 following steps:
-1. Check out to release branch of Corda
-1. Remove default DataSource class from `reference.conf`
-1. Add spy as dependency to node/build.gradle : compile 'p6spy:p6spy:3.7.0'
-1. Build Corda node with ./gradlew :node:capsule:install
+1. Build Corda node with spy dependecy, e.g. p6spy
 1. Change node.conf to have following lines:
 ```json
 "dataSourceProperties" : {
@@ -122,16 +111,16 @@ following steps:
     "jdbcUrl" : "jdbc:p6spy:h2:file:"${baseDirectory}"/persistence;..."
 }
  ```
-6. ...
-6. Profit in form of spy.log file:
+3. ...
+1. Profit in form of spy.log file:
 ```
-1528464750425|0|statement|connection 41|select legalident0_.node_info_id as node_inf1_8_0_, ...
+1528464750425|0|statement|connection 1|select legalident0_.node_info_id ...
 ```
 
 This also requires correct configuration from all nodes and on top of that does
 not tie JDBC statements to a particular flow/transaction.
 
-### Network connection information
+#### Network connection information
 
 Network latencies can be calculated from ActiveMQ advisory topics:
 ```
@@ -139,7 +128,88 @@ AdvisorySupport.getMessageDeliveredAdvisoryTopic()
 AdvisorySupport.getMessageConsumedAdvisoryTopic()
 ```
 
+
+## Existing solutions
+
+There are multiple open-source tools available that provide out-of-the box
+protocol instrumentation for metric transfers from one node to another. Here are
+two most notable ones (being popular and representatives of 2 different
+architectures):
+* Jaeger
+* Zipkin
+
+#### Jaeger
+
+Jaeger metric collection consists of 3 main blocks:
+1. Instrumented code in node application
+1. Jeager-agent - a side-car process that lives along application and serves
+as metric aggregation point before they are send asynchronously to centralised
+storage
+1. Centralised metrics storage
+
+Biggest advantage of such system is that metric collection overhead has less
+impact on application performance as it does not instrument protocols (does
+not transfer metrics as part of inter-node communication).
+
+Biggest drawback of this is that metric storage is centralized and in Corda
+context that would require one of the parties to be responsible of collecting
+and sharing metrics with *everyone* inside business network. Such architecture
+seems more suitable for discributed application that is a set of microservices
+inside one organisation.
+
+#### Zipkin
+
+Zipkin approach is slightly different as it allows sending metrics node-to-node
+which gives more flexibility as of where metrics can be stored. Zipkin metric
+colelction consists of:
+1. Instrumented code in node applciation
+1. Instrumented protocol (currently HTTP, Kafka and Scribe are supported out of
+the box) that allows sharing metrics in peer-to-peer fashion
+1. Zipkin-collector - a side-car process that lives along application that
+serves as metric forwarding point before they are stored (there is option to
+store metrics locally with the node)
+1. Metrics storage - local or centralized
+
+This approach eliminates need for centralised metric storage, but comes at
+cost of additional communication overhead. For example to exchange metrics
+via HTTP, Zipkin attaches headers with common request identifier and bundled
+metrics to HTTP packets send between nodes.
+
+The biggest advantage of Zipkin is out-of-the box support of most popular
+protocols, which unfortunately does not include AMQP.
+
+
 ## Target solution
+
+As Corda is distributed system hosted by multiple independent parties,
+Zipkin-style architecture is more preferable. However doing more close analysis
+it becomes apparent that facilities provided by tracing solutions are already
+inherent part of Corda TX, namely unique identifier and custom payload. Thus it
+is possible that monitoring information may travel together with messages in a
+peer-to-peer/propagate as needed fashion that Corda is famous of. This removes
+necessary side infrastructure and communication overhead that otherwise is
+incurred when using ready solutions available.
+
+The proposed solution tries to capitalize on existing implementation of Corda.
+
+The idea was taken of Corda Commands that are capable of holding arbitrary data
+inside. However Corda commands cannot be used as metric transport solution. This
+is due to a fact, that while transactions are frequently passed to receiving
+nodes they do not send whole transaction back (e.g. CollectSignaturesFlow
+receives only party signatures and assembles them with transaction locally).
+
+That said the proposed solution is to have instrumented versions of FlowLogic
+and FlowSession that would wrap inter-node messages into data structure that
+will contain unique TX identifier and metrics.
+
+Data flow diagram of envisioned solution:
+
+
+Metrics sampling strategy can be achieved by adding this data structure to
+subset of flow instances, which allows for complex sampling algorithms if
+necessary (e.g. meter only flow instances involving specific party).
+
+
 ## Timeline
 ## Requirements
 ## Assumptions
