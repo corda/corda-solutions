@@ -203,7 +203,7 @@ and FlowSession that would wrap inter-node messages into data structure that
 will contain unique TX identifier and metrics.
 
 Data flow diagram of envisioned solution:
-
+![Metrics collection design](./resources/metric-collection-design.svg)
 
 Metrics sampling strategy can be achieved by adding this data structure to
 subset of flow instances, which allows for complex sampling algorithms if
