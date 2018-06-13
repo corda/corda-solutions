@@ -65,7 +65,7 @@ Non-goals:
 ### Timeline
 
 * Projects, which go live on Corda in 2018 are asking to have a reference implementation available *asap*.
-* This will be an evolvable solution. We need to get more feedback about usage patterns which might result in future design changes.  
+* This solution will evolve over time. We need to get more feedback about usage patterns which might result in future design changes.  
 
 ### Requirements
 
@@ -95,7 +95,7 @@ As *Business Networks* is a fairly high-level concept, which might require some 
 
 The design proposal is to issue *memberships* onto the ledger. The main reasons behind that are:
 * The future support of *reference states*, would allow BN participants to *contractually* prove validity of their membership at the point when a transaction is committed, by including their *membership states* as *reference inputs* into the transaction. *Lateness* of the reference inputs would be checked by Notary, while Smart Contract can assert that the transaction contains a membership-state-per-participant as *reference inputs*.
-* BNO would have a way of immediately revoking a participant's membership, by unilaterally reissuing his *membership state* onto the ledger. Any subsequent attempt by the participant to use *not the latest* version of the membership state, would fail the *reference input* check. Revocations would have an immediate effect, comparing to other solutions, which would require some time for changes to get propagated.
+* BNO would have a way of immediately revoking a participant's membership, by unilaterally reissuing their *membership state* onto the ledger. Any subsequent attempt by the participant to use *not the latest* version of the membership state, would fail the *reference input* check. Revocations would have an immediate effect, comparing to other solutions, which would require some time for changes to get propagated.
 
 The following *actors* have been identified:
 
@@ -224,7 +224,7 @@ Membership snapshot - is a list of all active BN memberships + metadata associat
 
 Depending on a particular BN's requirements, memberships list can be distributed in the following ways:
 
-* _Snapshot-based approach_. A snapshot consists of a list of all active memberships + snapshot expiry time. Each member should pull a snapshot from the BNO, when his node starts and then cache the snapshot locally, until it expires, after which - re-pull a new snapshot again. As snapshot data is fairly static, it can be efficiently cached in the BNO's CorDapp. The BNO would be responsible for choosing the right snapshot expiry time. For example, if the expiry time is 24hrs, then for a *Large Business Network*, the BNO would have to serve about 6 requests per minute only, given that the requests distribution is even. This approach would be recommended for larger networks with high frequency of joins / updates, as the BNO wouldn't have to broadcast notifications to all members on each change. Its worth to mention, that the snapshot based approach assumes some delay in membership changes propagation. With the future support of *reference states*, it would be impossible for someone to use *not the latest* version of membership state as it would fail the *reference input* checks. New-joiners might still encounter some delay before they get seen by other members on the network. The delay might vary from a node to node and will be equal to the *snapshot expiry time* in the worst case. The delay can be mitigated by enabling the BNO to notify other members about new-joiners, as described in the *Activation section*.
+* _Snapshot-based approach_. A snapshot consists of a list of all active memberships + snapshot expiry time. Each member should pull a snapshot from the BNO, when their node starts and then cache the snapshot locally, until it expires, after which - re-pull a new snapshot again. As snapshot data is fairly static, it can be efficiently cached in the BNO's CorDapp. The BNO would be responsible for choosing the right snapshot expiry time. For example, if the expiry time is 24hrs, then for a *Large Business Network*, the BNO would have to serve about 6 requests per minute only, given that the requests distribution is even. This approach would be recommended for larger networks with high frequency of joins / updates, as the BNO wouldn't have to broadcast notifications to all members on each change. Its worth to mention, that the snapshot based approach assumes some delay in membership changes propagation. With the future support of *reference states*, it would be impossible for someone to use *not the latest* version of membership state as it would fail the *reference input* checks. New-joiners might still encounter some delay before they get seen by other members on the network. The delay might vary from a node to node and will be equal to the *snapshot expiry time* in the worst case. The delay can be mitigated by enabling the BNO to notify other members about new-joiners, as described in the *Activation section*.
 * _Real-time notifications approach_. In smaller BNs, BNO might choose to notify members about every change to memberships. Instead of pulling snapshots periodically, the BN members would pull a snapshot just once, when their node starts and then would start applying modifications to the cached snapshot in the real-time.
 
 To optimise snapshot distribution, CorDapp developers can:
@@ -243,7 +243,7 @@ Even if the BNO's node is down for some time, the BN members would be able to co
 
 #### Membership verification
 
-Each member would be solely responsible for verifying his counterparts for eligibility to transact on the BN. Each flow should contain a statement, which asserts a validity of the counterpart's membership by checking it against locally cached snapshot. In the case, when the counterpart fails membership check, an explicit exception should be thrown. The how-to-do will be provided along with the reference implementation. The verification code might look like:
+Each member would be solely responsible for verifying their counterparts for eligibility to transact on the BN. Each flow should contain a statement, which asserts a validity of the counterpart's membership by checking it against locally cached snapshot. In the case, when the counterpart fails membership check, an explicit exception should be thrown. The how-to-do will be provided along with the reference implementation. The verification code might look like:
 
 ```
 if (membershipSnapshot[counterparty].metadata.role != "AGENT") {
