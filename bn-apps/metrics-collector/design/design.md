@@ -71,6 +71,13 @@ including their network latencies)
 * Latency of each individual database query/transaction
 
 
+## Assumptions
+
+The following assumtions were made while writing this design:
+* All network parties are willing to colalborate and share metric data
+* Metric collection will be on in production environment
+
+
 ## Current situation
 
 Current Corda nodes expose some metrics that might be used for applciation level
@@ -205,12 +212,17 @@ will contain unique TX identifier and metrics.
 Data flow diagram of envisioned solution:
 ![Metrics collection design](./resources/metric-collection-design.svg)
 
+Current design does not impose particular implementation of metric storage.
+Ideally we would want to define interface for metric storage and allow to inject
+user implementation into instrumented FlowLogic/FlowSession. We must however
+provide at least basic in-memory metric storage and a pluggable Corda service
+to read collected metrics.
+
 Metrics sampling strategy can be achieved by adding this data structure to
 subset of flow instances, which allows for complex sampling algorithms if
 necessary (e.g. meter only flow instances involving specific party).
 
 
 ## Timeline
-## Requirements
-## Assumptions
-## API extension points
+
+Proposed solution is expected to cover all medium/long-term use cases.
