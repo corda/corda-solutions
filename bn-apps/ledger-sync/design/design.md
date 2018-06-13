@@ -30,11 +30,11 @@ This proposal describes the architecture of a reference implementation for the L
 
 ### Background
 
-Blockchain platforms allow users to recover their data from other peers in the case of a disaster. By design, Corda doesn't have a global ledger and hence doesn't provide a data recovery solution at the platform level. Including data recovery mechanism into Corda ecosystem, would allow BN members to benefit from blockchain-like data recovery guarantees in the conjunction with Corda privacy out-of-the-box.
+Blockchain platforms allow users to recover their data from other peers in the case of a disaster. By design, Corda doesn't have a global ledger and hence doesn't provide a data recovery solution at the platform level. Including data recovery mechanism into the Corda ecosystem, would allow BN members to benefit from blockchain-like data recovery guarantees in the conjunction with Corda privacy out-of-the-box.
 
 ### Scope
 
-Design a reference implementation of CorDapp, which would allow BN members to recover their states and transactions from each other.
+Design a reference implementation of CorDapp, that would allow BN members to recover their states and transactions from each other.
 
 In-scope:
 * Recovery of states and transactions by a BN member from other members. This would include states, belonging to the node's well-known identity as well its confidential identities, which other parties are aware of. Note: this doesn't include the states, where the party is an *observer* (not the *owner*).
@@ -49,11 +49,11 @@ Non-goals:
 ### Timeline
 
 * Projects, which go live on Corda in 2018 are asking to have a reference implementation available *asap*.
-* This will be an evolvable solution. We need to get more feedback about usage patterns which might result in future design changes.  
+* This solution will evolve over time. We need to get more feedback about usage patterns which might result in future design changes.  
 
 ### Requirements
 
-* A BN member should be able to recover his states and transactions from other peers after a disaster.
+* A BN member should be able to recover their states and transactions from other peers after a disaster.
 * A number of times customers flagged a question whether Corda allows to verify that the network is in sync. I.e. whether each BN member is in consensus with other members about the transactions he has been involved into.
 
 ### Assumptions
@@ -72,8 +72,8 @@ The proposed solution is - to implement the Ledger Synchronisation Service at th
 As Corda ledger is *subjective* from each peer's point of view, it'd be not feasible to recover the whole of the ledger from a single peer, unless this peer is aware of all of the transactions on the BN (which is possible but highly unlikely). The proposed solution is to perform data recovery on *p2p basis*, where one node - the *synchronisation initiator*, would be responsible for synchronising a *common* part of its ledger (*states and transactions*) with each BN member separately. The *synchronisation initiator* would be requesting each peer to send him transactions where *both of them* have participated in.
 
 The Ledger Synchronisation Service is envisaged to be used:
-* By a BN member to recover his transactions from other members after a disaster. Data recovery is supposed to be triggered by the *affected node*, as a part of its disaster recovery process. To prevent a node from transacting while the data recovery is in progress, the node can be started with only a Ledger Synchronisation CorDapp installed on it, and then restarted with all CorDapps when the data recovery is finished. Alternatively, database level locks or any other external distributed locking system can be used. The *data recovery* flow would acquire a lock when the ledger synchronisation is started and would release it when its finished. Other flows should refrain from starting while the lock is acquired. The synchronisation lock can be manually acquired by the system administrator even before the node is started. Such prevention mechanisms might be included into the reference implementation in the future if required.
-* By a BN member, as a diagnostics tool, to make sure that he is in consensus with the rest of the Business Network about the transactions he has been *involved into*. This would be particularly useful when a member would want to verify that his local vault has not been tampered with, or that he has not missed any transactions. This diagnostics can be run by every BN Member on a scheduled basis, for example once per day. BN Members can use *API Extension Points* to implement their custom actions, such as raising an alert to the monitoring system, if they find some transaction being missing from their vaults.
+* By a BN member to recover their transactions from other members after a disaster. Data recovery is supposed to be triggered by the *affected node*, as a part of its disaster recovery process. To prevent a node from transacting while the data recovery is in progress, the node can be started with only a Ledger Synchronisation CorDapp installed on it, and then restarted with all CorDapps when the data recovery is finished. Alternatively, database level locks or any other external distributed locking system can be used. The *data recovery* flow would acquire a lock when the ledger synchronisation is started and would release it when its finished. Other flows should refrain from starting while the lock is acquired. The synchronisation lock can be manually acquired by the system administrator even before the node is started. Such prevention mechanisms might be included into the reference implementation in the future if required.
+* By a BN member, as a diagnostics tool, to make sure that he is in consensus with the rest of the Business Network about the transactions he has been *involved into*. This would be particularly useful when a member would want to verify that their local vault has not been tampered with, or that he has not missed any transactions. This diagnostics can be run by every BN Member on a scheduled basis, for example once per day. BN Members can use *API Extension Points* to implement their custom actions, such as raising an alert to the monitoring system, if they find some transaction being missing from their vaults.
 
 Ledger synchronisation is supposed to be performed *per Business Network*, i.e. if a node participates in multiple Business Networks, then it would have to recover its data from each of the Business Networks separately. These rules can be enforced inside of the Ledger Synchronisation Service implementation. Different Business Network should be providing their own implementations of Ledger Synchronisation Service. A single node would have multiple implementations of the Ledger Synchronisation Service installed if it participates in multiple Business Networks.
 
