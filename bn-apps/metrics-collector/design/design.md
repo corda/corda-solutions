@@ -36,12 +36,12 @@ Depending on demand and provided solution, this design might be extended to
 provide a framework to exchange use-case specific metrics, which is currently
 out of scope.
 
-Before diving into design, it is worth to ephasise that application level
+Before diving into design, it is worth to emphasise that application level
 metrics are different from single node metrics in distributed application
 context. In distributed application program flow spans multiple machines over
 network, and it is possible to have poor application performance with nodes
-that perform outstandingly. That can be caused by unstable network, node chache
-invalidation, incorrect transaction batching, suboptimal flow sequience, etc.
+that perform outstandingly. That can be caused by unstable network, node cache
+invalidation, incorrect transaction batching, suboptimal flow sequence, etc.
 
 
 ## Scope
@@ -62,7 +62,7 @@ Out-of-scope (not MVP):
 ## MVP deliverable
 
 MVP must give users the following metrics:
-* Active flow time, e.g. time to create, verify or sign tx on inititator and
+* Active flow time, e.g. time to create, verify or sign tx on initiator and
 responder side
 * Time taken to checkpoint flow at each stage
 * Time taken to communicate each message to another node
@@ -73,14 +73,14 @@ including their network latencies)
 
 ## Assumptions
 
-The following assumtions were made while writing this design:
-* All network parties are willing to colalborate and share metric data
+The following assumptions were made while writing this design:
+* All network parties are willing to collaborate and share metric data
 * Metric collection will be on in production environment
 
 
 ## Current situation
 
-Current Corda nodes expose some metrics that might be used for applciation level
+Current Corda nodes expose some metrics that might be used for application level
 analysis.
 
 #### Flow durations
@@ -101,7 +101,7 @@ Simple log4j configuration would produce a log file with:
 09:26:29.377 - Flow finished with result OK
 ```
 
-Whilst good to have these logs are not fit for application level metrics due to:
+Whilst good to have, these logs are not fit for application level metrics due to:
 * they are too granular to understand network/database latencies
 * they require all parties to have correct node logging file and Appender
 implementation that would parse logging events and forward them through network
@@ -110,7 +110,7 @@ implementation that would parse logging events and forward them through network
 
 One can instrument current Corda JDBC driver with logger. That can be done with
 following steps:
-1. Build Corda node with spy dependecy, e.g. p6spy
+1. Build Corda node with spy dependency, e.g. p6spy
 1. Change node.conf to have following lines:
 ```json
 "dataSourceProperties" : {
@@ -161,15 +161,15 @@ not transfer metrics as part of inter-node communication).
 Biggest drawback of this is that metric storage is centralized and in Corda
 context that would require one of the parties to be responsible of collecting
 and sharing metrics with *everyone* inside business network. Such architecture
-seems more suitable for discributed application that is a set of microservices
+seems more suitable for distributed application that is a set of microservices
 inside one organisation.
 
 #### Zipkin
 
 Zipkin approach is slightly different as it allows sending metrics node-to-node
 which gives more flexibility as of where metrics can be stored. Zipkin metric
-colelction consists of:
-1. Instrumented code in node applciation
+collection consists of:
+1. Instrumented code in node application
 1. Instrumented protocol (currently HTTP, Kafka and Scribe are supported out of
 the box) that allows sharing metrics in peer-to-peer fashion
 1. Zipkin-collector - a side-car process that lives along application that
