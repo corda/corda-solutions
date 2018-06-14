@@ -26,6 +26,13 @@ Software Projects (1982)
 
 ## Overview
 
+Before diving into design, it is worth to emphasise that application level
+metrics are different from single node metrics in distributed application
+context. In distributed application program flow spans multiple machines over
+network, and it is possible to have poor application performance with nodes
+that perform outstandingly. That can be caused by unstable network, node cache
+invalidation, incorrect transaction batching, suboptimal flow sequence, etc.
+
 The goal of this project is to provide CorDapp developers with unified way to
 measure use-case agnostic parameters of their applications, e.g: performance
 statistics, transaction chain parameters, data consumption rates, etc.
@@ -35,13 +42,6 @@ statistics of CorDapp flow - network, database and computation latencies.
 Depending on demand and provided solution, this design might be extended to
 provide a framework to exchange use-case specific metrics, which is currently
 out of scope.
-
-Before diving into design, it is worth to emphasise that application level
-metrics are different from single node metrics in distributed application
-context. In distributed application program flow spans multiple machines over
-network, and it is possible to have poor application performance with nodes
-that perform outstandingly. That can be caused by unstable network, node cache
-invalidation, incorrect transaction batching, suboptimal flow sequence, etc.
 
 
 ## Scope
