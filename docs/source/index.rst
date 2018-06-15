@@ -23,6 +23,7 @@ This site aims to ask some of these questions and offer some solutions.
    :maxdepth: 1
 
    designs/business-networks-membership-service.rst
+   designs/ledger-synchronisation-service.rst
 
 .. toctree::
    :caption: FAQ
