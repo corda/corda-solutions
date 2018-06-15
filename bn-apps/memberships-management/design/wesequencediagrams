@@ -1,0 +1,43 @@
+title Membership request
+
+Non-member->BNO: Proposes a transaction which issues Membership in PENDING state onto the ledger
+note right of BNO: Verifies and signs the transaction
+BNO->Non-member: Sends the signature
+note left of Non-member: Notarises the transaction
+
+
+title Membership approval
+
+note left of BNO: Does KYC checks
+note left of BNO: Creates a transaction which updates Membership's status to ACTIVE
+note left of BNO: Notarises the transaction
+BNO->Pending member: Notifies that the membership has been activated
+BNO->All BN members: [OPTIONALLY] Notifies about a new joiner
+
+
+
+title Membership revocation
+
+note left of BNO: Creates a transaction which updates Membership's status to REVOKED
+note left of BNO: Notarises the transaction
+BNO->All BN members: Notifies about the membership revocation
+
+
+
+title Metadata amendment
+
+note left of BN member: Creates a transaction which updates metadata of an ACTIVE Membership
+BN member->BNO: Proposes the transaction to the BNO
+note right of BNO: Verifies and signs the transaction
+BNO->BN member: Sends the signature
+note left of BN member: Notarises the transaction
+BN member->Other BN members: [OPTIONALLY] notifies about changes to the metadata
+
+
+title Membership snapshot distribution
+
+loop
+    BN member->BNO: Requests snapshot from BNO
+    note right of BNO: Builds the snapshot from local cache
+    BNO->BN member: Sends the snapshot with the expiration time
+    note left of BN member: Caches the snapshot until it expires
