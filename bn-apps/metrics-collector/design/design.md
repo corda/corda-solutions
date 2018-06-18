@@ -218,6 +218,14 @@ user implementation into instrumented FlowLogic/FlowSession. We must however
 provide at least basic in-memory metric storage and a pluggable Corda service
 to read collected metrics.
 
+Target solution retains backwards compatibility with existing Corda nodes. Unique
+metric identifier is already present as part of inter-node communication in form 
+of session id. Session id is available in both nodes without explicit sending, 
+thus initiating node message remains unaltered. Metered responding flows can 
+detect, if they need to collect and send metrics based on initiating flow type. 
+Initiating flows can detect if responder sent back metrics by looking at returned
+message type (mered message wrapper or any other object).
+
 Metrics sampling strategy can be achieved by adding this data structure to
 subset of flow instances, which allows for complex sampling algorithms if
 necessary (e.g. meter only flow instances involving specific party).
