@@ -106,9 +106,9 @@ On start, each node should pull down a list of CorDapps which **must** be instal
 }
 ```
 
-Each CorDapp definition can be associated with a *distribution mechanism*. *Distribution mechanism* defines how a CorDapp **can** be *downloaded*, however it wouldn't enforce a node to perform any particular **action**. *Node administrators* will be able to specify what to do in a response to a new update or a minimum version bump. For example this could be such things as to send an email or to raise a warning on the monitoring system or to download a CorDapp into a local folder and etc. This configuration will be done on a *node level* (described in the further sections), as it might vary from a node to node even within a single BN. It will be up to *node administrators* to configure their CDS CorDapps to find the right balance between automation and their internal security policies. More about automation is described in the further sections.
+Each CorDapp definition can be associated with a *distribution mechanism*. *Distribution mechanism* defines how a CorDapp **can** be downloaded, however it wouldn't enforce a node to perform any particular **action**. *Node administrators* will be able to specify what to do in a response to a new update or a minimum version bump. For example this could be such things as to send an email or to raise a warning on the monitoring system or to download a CorDapp into a local folder and etc. This configuration will be done on a *node level* (described in the further sections), as it might vary from a node to node even within a single BN. It will be up to *node administrators* to configure their CDS CorDapps to find the right balance between automation and their internal security policies. More about automation is described in the further sections.
 
-Cordapp descriptor also contains some generic information about a CorDapp, such as *vendor*, *name*, *currentVersion*, *minimumVersion*, the *hash* of the jar file as well as the  *vendor's certificate*, which the CorDapp jar can be validated with. *Minimum version* defines the minimum supported version of the CorDapp on this Business Network. *Minimum version* can be bumped by the BNO if a critical vulnerability has been discovered or if a new version of the CorDapp is not backward compatible.
+Cordapp descriptor also contains some generic information about a CorDapp, such as `vendor`, `name`, `currentVersion`, `minimumVersion`, the `hash` of the jar file as well as the `vendorCertificate`, which the CorDapp jar can be validated with. `MinimumVersion` defines the minimum supported version of the CorDapp on this Business Network. `MinimumVersion` can be bumped by the BNO if a critical vulnerability has been discovered or if a new version of the CorDapp is not backward compatible.
 
 Given a nature of the DLT applications, deploying an update to the whole network in the same time might not be feasible, unless the whole of the network can be shut down to perform an update. Shutting the whole of the network down is possible, but highly unlikely, as a single node might be involved into multiple Business Networks, with unrelated governance structures. BNO will not able to enforce a node to install updates. Its a responsibility of the node owner to install updates promptly if their CorDapps are outdated and especially if a CorDapp's version is below the allowed minimum. More about automation is described in the further sections.
 
@@ -118,9 +118,9 @@ CorDapp descriptors will be persisted into the database and will shared between 
 
 #### Distribution mechanisms
 
-*Distribution mechanisms* will be pluggable and extensible. Each CorDapp can be associated with a separate *distribution mechanism*, such as *Corda Flows*, *HTTP* or *FTP* and etc. BNOs will be able to define own *distribution mechanisms* if they are missing from the standard implementation. *Distribution mechanism* must have a name and might also have other optional configuration parameters, such as download url and etc.
+*Distribution mechanisms* will be pluggable and extensible. Each CorDapp can be associated with a separate *distribution mechanism*, such as `CordaFlows`, `HTTP` or `FTP` and etc. BNOs will be able to define own *distribution mechanisms* if they are missing from the standard implementation. *Distribution mechanism* must have a name and might also have other optional configuration parameters, such as download url and etc.
 
-On a node's side, the *node administrator* will be able to associate each *distribution mechanism* with a *download adaptor*. All *download adaptors* will need to implement a standard interface (provided with the CDS). The *download adaptors* will be responsible for downloading a CorDapp based on the provided configuration. The configuration will consist of the CorDapp descriptor (from the previous section) and the local configuration, which will be provided by a *node administrator*. The proposed configuration structure:
+On a node's side, the *node administrator* will be able to associate each *distribution mechanism* with a *download adaptor*. All *download adaptors* will need to implement a standard interface (provided with the CDS). The *download adaptors* will be responsible for downloading a CorDapp based on the provided configuration. The configuration will consist of the CorDapp descriptor (described in the previous section) and the local configuration, which will have to be provided by a *node administrator*. The proposed configuration structure:
 ```
 {
   ...
@@ -139,23 +139,21 @@ On a node's side, the *node administrator* will be able to associate each *distr
   ...
 }
 ```
-If a CorDapp's *distribution mechanism* is not associated with any *download adaptor* - then no CorDapp updates will be downloaded. Node administrators might choose to not to configure any adaptors if they would like to perform download manually.
+If some *distribution mechanism* is not associated with any *download adaptor* - then no CorDapp updates with this *distribution mechanism* will be downloaded. Node administrators might choose to not to configure any *download adaptors* if they would like to perform download manually.
 
-Each new update's signature will be verified by a *download adaptor* by default.
+Each jar's signature will be verified by a *download adaptor* by default.
 
 #### Notifications
 
-Node administrators will be able to configure custom notification for the events of 2 types:
-* onUpdate. The notification will be triggered when a new update of a CorDapp is available.
-* onDeprecation. The notification will be triggered when an installed version of a CorDapp gets below the `minimumVersion` from the CorDapp descriptor.
+*Node administrators* will be able to configure custom notification for events of the following types:
+* `onUpdate`. The notification will be triggered when a new update of a CorDapp is available.
+* `onDeprecation`. The notification will be triggered when an installed version of a CorDapp is below the `minimumVersion` from the CorDapp descriptor.
 
 Notification will be send via *notification adaptors*. *Notification adaptors* will be defined by a standard interface and can be implemented by users. Some *notification adaptors* will be provided with a reference implementation.  
 
-*Notification adaptors* are responsible for sending a notification based on a descriptor of updated / deprecated CorDapp. *Notification adaptor* might be responsible for sending an email or dropping a message to MQ and etc. Developers will be able to integrate the Notification adaptors into their internal monitoring / alerting systems.
+*Notification adaptors* are responsible for sending a notification based on a descriptor of an updated / deprecated CorDapp and a local configuration, provided by the *node administrator*. *Notification adaptor* might be responsible for such things as sending an email or dropping a message to MQ and etc. Developers will be able to integrate the Notification adaptors with their internal monitoring / alerting systems.
 
 Proposed configuration:
-
-
 ```
 {
   ...
@@ -176,6 +174,16 @@ Proposed configuration:
   ...
 }
 ```
+
+#### CorDapp structure
+
+All CorDapps should contain a standard CorDapp descriptor inside their `META-INF` folder.
+
+CorDapps have to be signed via standard java signing mechanism if their signature needs to be verified.
+
+#### CorDapps list processing logic
+
+![CorDapps list processing logic](./resources/cordapps_list_processing.png).
 
 ### API extension points
 
