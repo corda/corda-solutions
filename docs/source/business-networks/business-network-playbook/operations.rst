@@ -9,7 +9,7 @@ O.1. Devise Node Configuration
 
 - Node role: participant, network map, permission, notary, oracle, observer
 - Node geographic location
-- Node deployment host, i.e., on-premises, cloud (provider?), Corda Connect?
+- Node deployment host, i.e., on-premises, cloud (provider?), Corda Network?
 - Corda version
 - Data store
 - Does the data store provide the HA/DR capabilities to meet the BN resiliency requirements?
