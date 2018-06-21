@@ -28,7 +28,7 @@ Building the docs
 -----------------
 
 ```
-cd solutions
+cd <repo directory>/docs
 make html
 ```
 
