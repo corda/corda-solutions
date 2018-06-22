@@ -189,7 +189,7 @@ Similarly to *download adaptors*, *notification callbacks* might define their cu
 
 #### CorDapp structure
 
-All CorDapps should contain a standard CorDapp descriptor inside their `META-INF` folder, with such information as *vendor*, *name* and *version*. This descriptors will be used by the CDS CorDapp to identify whether the CorDapp requires upgrading.
+All CorDapps should contain a standard CorDapp descriptor inside their `META-INF` folder, with such information as *vendor*, *name* and *version*. This information will be used by the CDS CorDapp to match the installed CorDapps version against the CorDapp descriptors from the BNO.
 
 CorDapps would have to be signed via standard java signing mechanism if their signature needs to be verified.
 
