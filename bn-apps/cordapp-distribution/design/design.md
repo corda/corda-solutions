@@ -121,7 +121,9 @@ To distribute a new CorDapp update, BNO will need to:
 * manually prepare and put the jar to the distribution location, i.e. copy to some folder on their filesystem, upload to a CDN and etc. The distribution location is defined by the *distribution mechanism*, which the BNO has associated with the CorDapp.  
 * update the CorDapp descriptors to point to the new CorDapp version. This will be done via Corda flow. The flow will update CorDapp descriptors as well as will send notifications about the update to the BN members.
 
-Increment of a CorDapp's minimum version will be done via Corda flows, which will also send notifications about the update to all BN members.
+Both of the steps can be triggered in an automated way from a BNO's build pipeline if required
+
+Increment of a CorDapp's minimum version will be done via Corda flows as well, which will also send notifications about the update to all BN members.
 
 #### Download adaptors
 
