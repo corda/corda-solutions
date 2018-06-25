@@ -42,7 +42,6 @@ In-scope:
 
 Out of scope:
 * CZ on-boarding. This design document assumes that a user already has a valid CZ certificate.
-* Initial node setup. CorDapps to on-board to a BN, such as [Business Network Membership Service](https://github.com/corda/corda-solutions/blob/master/bn-apps/memberships-management/design/design.md) and CorDapp Distribution Service, will have to be distributed in some other way.
 * Installation of updates. To install an update, a node needs to be switched into the *flows draining mode* and then restarted. Both of the operations would require a human intervention and can't be automated at the moment.
 * Distribution of the platform updates. It will be a responsibility of *node administrators* to make sure that their version of Corda is above the `minimumPlatformVersion` from the [Network Parameters](https://docs.corda.net/network-map.html#network-parameters).
 
@@ -71,9 +70,9 @@ The proposal is to implement CorDapp distribution service at the CorDapp level, 
 
 Why not to perform distribution on CZ level, via some centralised solution like Network Map or Doorman? Simply because some Business Networks might be uncomfortable with sharing their proprietary code with third party services.
 
-#### CorDapps list
+#### CorDapps descriptors
 
-On start, each node will be pulling down a list of CorDapps which it **must** have installed to be able to transact on the BN. This list will be distributed by BNO via Corda flows. BNO will be notifying each member about any update to it. The proposed data structure:
+Each CorDapp will be defined by a CorDapp descriptor. The list of CorDapps which a node **must** have installed to be able to transact on the BN, will be distributed by BNO via Corda flows included into CDS implementation.
 
 ```
 {
@@ -108,29 +107,13 @@ On start, each node will be pulling down a list of CorDapps which it **must** ha
 
 CorDapp descriptor contains some generic information about a CorDapp, such as its `vendor`, `name`, `currentVersion`, `minimumVersion`, the `hash` of the jar file as well as the `vendorCertificate`, which the CorDapp jar can be validated with. `MinimumVersion` defines the minimum supported version of the CorDapp on this Business Network. `MinimumVersion` can be bumped by the BNO if a critical vulnerability has been discovered or if a new version of the CorDapp is not backward compatible.
 
-Each CorDapp definition can be associated with a *distribution mechanism*. *Distribution mechanism* defines how a CorDapp **can** be downloaded, however it wouldn't enforce a node to perform any particular **action**. *Node administrators* will be able to specify what to do in a response to a new update availability or a minimum version bump. For example this could be such things as to send an email or to raise a warning on the monitoring system or to download a CorDapp into a local folder and etc. This configuration will be done on a *node level* (described in the further sections), as it might vary from a node to node even within a single BN. It will be up to *node administrators* to configure their CDS CorDapps and to find the right balance between automation and their internal security policies. More about automations is described in the further sections.
-
-BNO will not able to enforce a node to install updates. *Node administrators* should consider updating their CorDapps if a newer version is available and **must** update CorDapps if their version gets below the `minimumVersion`. Prompt installation can be achieved by utilising *download adaptors* and *update callbacks*, which are described in the further sections.
-
-CorDapps should be designed to be backward compatible. Corda provides mechanisms for [flow versioning](https://docs.corda.net/head/upgrading-cordapps.html#flow-versioning), [contract and state upgrades](https://docs.corda.net/head/upgrading-cordapps.html#contract-and-state-versioning), [states evolution](https://docs.corda.net/head/serialization-default-evolution.html) and [contract constraints](https://docs.corda.net/head/api-contract-constraints.html) at the platform level out-of-the-box.
-
 #### Distribution mechanisms
+
+Each CorDapp definition can be associated with a *distribution mechanism*. *Distribution mechanism* defines how a CorDapp **can** be downloaded, however it wouldn't enforce a node to perform any particular **action**. *Node administrators* will be able to specify what to do in a response to a new update availability or a minimum version bump. For example this could be such things as to send an email or to raise a warning on the monitoring system or to download a CorDapp into a local folder and etc. This configuration will be done on a *node level* (described in the further sections), as it might vary from a node to node even within a single BN. It will be a responsibility of *node administrators* to configure their CDS CorDapps and to find the right balance between automation and their internal security policies. More about automations is described in the further sections.
 
 *Distribution mechanisms* are defined by BNOs and should be matched 1-to-1 with the *download adaptors* on a node's side (described in the further sections) for automatic downloading of CorDapp updates. Implementations of *download adaptors* should be provided by the BNO with their CDS implementation. *Distribution mechanisms* will be pluggable and extensible. Each CorDapp can be associated with its own *distribution mechanism*, such as *Corda flows*, *http*, *ftp* and etc. BNOs will be able to define their own *distribution mechanisms* if they are missing from the standard implementation. *Distribution mechanisms* are uniquely defined by a *name* and might also have a custom configuration parameters, such as *download url*, *authentication parameters* and others.
 
-To distribute a new CorDapp update, BNO will need to:
-* manually prepare and put the jar to a *distribution location*, i.e. copy to some folder on their filesystem, upload to a CDN and etc. The distribution location is defined by the *distribution mechanism*, which the BNO has associated with the CorDapp.  
-* update the CorDapp's descriptor to point to the new *distribution location*. This will be done via Corda flow. The flow will update CorDapp descriptors as well as will send notifications about new update availability to the BN members.
-
-Both of the steps can be triggered in an automated way from BNO's build pipeline if required
-
-Increment of a CorDapp's minimum version will be done via Corda flows as well, which will also send notifications about new update availability to all BN members.
-
-Notifications will contain descriptors of all updated CorDapps. *Node administrators* will be able to set up their nodes to automatically download an update, to send en email to node admins and etc. in response to a new update availability, by utilising *download adaptors* and *update callbacks*, which are described in the further sections.
-
 BNO will be storing CorDapp descriptors in their database.
-
-The CDS implementation will *not* match CorDapp descriptors against the actual jar files in *distribution locations*. It will be a responsibility of a BNO's *node administrator* to keep those in sync.
 
 #### Download adaptors
 
@@ -204,11 +187,40 @@ All CorDapps should contain a standard CorDapp descriptor inside their `META-INF
 
 CorDapps would have to be signed via standard java signing mechanism if their signature needs to be verified.
 
-#### CorDapps descriptors processing logic
+#### Distribution of initial software
 
-Logic for processing CorDapps descriptors on a node side is the same, regardless of the source where the list came from, i.e. pulled from a BNO or received via a notification.
+To onboard a BN, a node will need to have such CorDapps as [Business Network Membership Service](https://github.com/corda/corda-solutions/blob/master/bn-apps/memberships-management/design/design.md) and CorDapp distribution service installed to it.
+
+At the point of on-boarding, a node will not have any BN-related CorDapps installed to it. This means, that an initial CorDapp distribution will have to be done either off-Corda, or via a standardised API which will have to be supported by all BNs. Defining a standardised API is out-of-scope of this design, as its hardly feasible if doable at all.
+
+The proposal of this design document - is to distribute initial CorDapps required for on-boarding off-Corda.
+
+#### First start
+
+On start, each BN member will be pull down a list of CorDapp descriptors from their BNO.
 
 ![CorDapps list processing logic](./resources/cordapps_list_processing.png).
+
+#### Notifying of new update availability
+
+BNO will notify BN members about availability of new updates. Notification will be distributed via Corda flows. Each notification will include a full list of updated CorDapps and their descriptors. Updates processing logic will be the same as described in the previous section.
+
+BNO will not able to enforce a node to install updates. *Node administrators* should consider updating their CorDapps if a newer version is available and **must** update CorDapps if their version gets below the `minimumVersion`. Prompt installation can be achieved by utilising *download adaptors* and *update callbacks*, which are described in the further sections.
+
+CorDapps should be designed to be backward compatible. Corda provides mechanisms for [flow versioning](https://docs.corda.net/head/upgrading-cordapps.html#flow-versioning), [contract and state upgrades](https://docs.corda.net/head/upgrading-cordapps.html#contract-and-state-versioning), [states evolution](https://docs.corda.net/head/serialization-default-evolution.html) and [contract constraints](https://docs.corda.net/head/api-contract-constraints.html) at the platform level out-of-the-box.
+
+#### Adding a new CorDapp update to the BNOs node
+
+To distribute a new CorDapp update, BNO will need to:
+
+* manually prepare and put the jar to a *distribution location*, i.e. copy to some folder on their filesystem, upload to a CDN and etc. The distribution location is defined by the *distribution mechanism*, which the BNO has associated with the CorDapp.  
+* update the CorDapp's descriptor to point to the new *distribution location*. This will be done via Corda flow. The flow will update CorDapp descriptors as well as will send notifications about new update availability to the BN members.
+
+Both of the steps can be triggered in an automated way from BNO's build pipeline if required
+
+Increment of a CorDapp's minimum version will be done via Corda flows as well, which will also send notifications about new update availability to all BN members.
+
+The CDS implementation will *not* match CorDapp descriptors against the actual jar files in *distribution locations*. It will be a responsibility of a BNO's *node administrator* to keep those in sync.
 
 ### API extension points
 
