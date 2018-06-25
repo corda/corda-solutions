@@ -81,8 +81,8 @@ Each CorDapp will be defined by a *CorDapp descriptor*. BNO will distribute a li
       "name" : "accenture-states",
       "currentVersion" : "1.2",
       "minimumVersion" : "0.9",
-      "hash" : "aldsdjfsjdfjksdf",
-      "vendorCertificate" : "blahblahblah",
+      "hash" : "de3ba996a0876fb289b30400a166ad307dce3032c8714acaee977ac5543f7d0e",
+      "vendorCertificate" : "vendor's certificate",
       "distribution" : { // specifies the way, how the CorDapp is distributed.
         "type" : "flows" // for example this application can be downloaded via Corda flows, which are provided with the CDS implementation
       }
@@ -92,8 +92,8 @@ Each CorDapp will be defined by a *CorDapp descriptor*. BNO will distribute a li
       "name" : "accenture-flows",
       "currentVersion" : "1.3",
       "minimumVersion" : "1.0",
-      "hash" : "jfbasvdbascdbvac",
-      "vendorCertificate" : "blahblahblah",
+      "hash" : "8261e230706962fe7a9a72bd73bb920ae263fce056bd400120602215357e62af",
+      "vendorCertificate" : "vendor's certificate",
       "distribution" : {
         "type" : "web", // this CorDapp can be downloaded via HTTP
         "url" : "http://my-super-cdn"
@@ -104,7 +104,7 @@ Each CorDapp will be defined by a *CorDapp descriptor*. BNO will distribute a li
 }
 ```
 
-CorDapp descriptor contains some generic information about a CorDapp, such as its `vendor`, `name`, `currentVersion`, `minimumVersion`, the `hash` of the jar file as well as the `vendorCertificate`, which the CorDapp jar can be validated with. `MinimumVersion` defines the minimum supported version of the CorDapp on this Business Network. `MinimumVersion` can be bumped by the BNO if a critical vulnerability has been discovered or if a new version of the CorDapp is not backward compatible.
+A *CorDapp descriptor* contains some generic information about a CorDapp, such as its `vendor`, `name`, `currentVersion`, `minimumVersion`, the `hash` of the jar file as well as the `vendorCertificate`, which the CorDapp jar can be validated with. `MinimumVersion` defines the minimum supported version of the CorDapp on this Business Network. `MinimumVersion` can be bumped by the BNO if a critical vulnerability has been discovered or if a new version of the CorDapp is not backward compatible.
 
 #### Distribution mechanisms
 
@@ -146,7 +146,7 @@ Jar signatures will be verified by default after a *download adaptor* finishes t
 
 *Node administrators* will be able to associate custom *update callbacks* with the events of the following types:
 * `onUpdate`. The *update callback* will be invoked when a new update of a CorDapp is available.
-* `onDeprecation`. The *update callback* will be invoked when an installed version of a CorDapp gets below the `minimumVersion` from the CorDapp descriptor for the first time.
+* `onDeprecation`. The *update callback* will be invoked when an installed version of a CorDapp gets below the `minimumVersion` from the *CorDapp descriptor* for the first time.
 
 *Update callbacks* will have to implement a standard interface, which will be provided with the CDS implementation.
 
@@ -178,7 +178,7 @@ Similarly to *download adaptors*, *notification callbacks* might define their cu
 
 #### CorDapp structure
 
-All CorDapps should contain a standard CorDapp descriptor inside their `META-INF` folder, with such information as *vendor*, *name* and *version*. This information will be used by the CDS CorDapp to match the installed CorDapps versions against the CorDapps descriptors received from the BNO.
+All CorDapps should contain a standard *CorDapp descriptor* inside their `META-INF` folder, with such information as *vendor*, *name* and *version*. This information will be used by the CDS CorDapp to match the installed CorDapps versions against the CorDapps descriptors received from the BNO.
 
 CorDapps will have to be signed via standard [Jar Signing](https://docs.oracle.com/javase/tutorial/deployment/jar/signing.html) mechanism if their signature needs to be verified.
 
@@ -190,7 +190,7 @@ The proposal of this design document - is to distribute initial CorDapps *off-Co
 
 #### First start
 
-On start, BN members will pull down a list of CorDapp descriptors from their BNO.
+On start, BN members will pull down a list of *CorDapp descriptors* from their BNO.
 
 ![CorDapps list processing logic](./resources/cordapps_list_processing.png).
 
@@ -210,14 +210,14 @@ CorDapps should be designed to be backward compatible. Corda provides mechanisms
 
 To distribute a new CorDapp update, BNO will need to:
 
-* manually prepare and put the jar to a *distribution location*, i.e. to copy to some folder on their filesystem, to upload to a CDN and etc. A *distribution location* is defined by the *distribution mechanism*, associated with the CorDapp.  
-* update the CorDapp's descriptor to point to the new *distribution location*. This will be done via Corda flow. The flow will update CorDapp descriptors as well as will send notifications about new update availability to the BN members.
+* manually prepare and put the jar to a *distribution location*, according to the *distribution mechanism*, associated with the CorDapp. I.e. to copy to some folder on their filesystem, to upload to a CDN and etc. 
+* update the CorDapp's descriptor to point to the new *distribution location*. This will be done via Corda flow. The flow will update *CorDapp descriptors* as well as will send notifications about new update availability to the BN members.
 
 Both of the steps can be triggered in an automated way from BNO's build pipeline if required.
 
 Increment of a CorDapp's minimum version will be done via Corda flows as well, which will also send notifications about new update availability to all BN members.
 
-The CDS implementation will **not** match CorDapp descriptors against the actual jar files in *distribution locations*. It will be a responsibility of a BNO's *node administrator* to keep those in sync.
+The CDS implementation will **not** match *CorDapp descriptors* against the actual jar files in *distribution locations*. It will be a responsibility of a BNO's *node administrator* to keep those in sync.
 
 ### API extension points
 
