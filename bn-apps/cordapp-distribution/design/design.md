@@ -30,7 +30,7 @@ This proposal describes the architecture of a reference implementation for the C
 
 ### Background
 
-Decentralised platforms have introduced some operational challenges, one of which is a coordinated distribution and installation of software updates. Deploying an update to the whole BN simultaneously might be not feasible, unless all nodes in this BN can be shut down in the same to perform an upgrade. Such *maintenance windows* would not work in the case when a single node is involved into multiple BNs, with unrelated governance structures. This design introduces a concept of CorDapp Distribution Service which aims to tackle these issues.
+Decentralised platforms have introduced some operational challenges, one of which is a coordinated distribution and installation of software updates. Deploying an update to the whole BN simultaneously might be not feasible, unless all the nodes in this BN can be shut down in the same to perform an upgrade. Such *maintenance windows* would not work in the case when a single node is involved into multiple BNs, with unrelated governance structures. This design introduces a concept of CorDapp Distribution Service which aims to tackle these issues.
 
 ### Scope
 
@@ -42,7 +42,7 @@ In-scope:
 
 Out of scope:
 * CZ on-boarding. This design document assumes that a user already has a valid CZ certificate.
-* Initial node setup. CorDapps, such as [Business Network Membership Service](https://github.com/corda/corda-solutions/blob/master/bn-apps/memberships-management/design/design.md) and CorDapp Distribution Service, which are required for BN on-boarding, will have to be distributed in other ways.
+* Initial node setup. CorDapps to on-board to a BN, such as [Business Network Membership Service](https://github.com/corda/corda-solutions/blob/master/bn-apps/memberships-management/design/design.md) and CorDapp Distribution Service, will have to be distributed in some other way.
 * Update installation. To install an update, a node needs to be switched into the *flows draining mode* and then restarted. Both of the operations would require a human intervention and can't be automated at the moment.
 
 ### Timeline
