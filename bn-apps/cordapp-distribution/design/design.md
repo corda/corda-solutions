@@ -44,6 +44,7 @@ Out of scope:
 * CZ on-boarding. This design document assumes that a user already has a valid CZ certificate.
 * Initial node setup. CorDapps to on-board to a BN, such as [Business Network Membership Service](https://github.com/corda/corda-solutions/blob/master/bn-apps/memberships-management/design/design.md) and CorDapp Distribution Service, will have to be distributed in some other way.
 * Installation of updates. To install an update, a node needs to be switched into the *flows draining mode* and then restarted. Both of the operations would require a human intervention and can't be automated at the moment.
+* Distribution of the platform updates. It will be a responsibility of *node administrators* to make sure that their version of Corda is above the `minimumPlatformVersion` from the [Network Parameters](https://docs.corda.net/network-map.html#network-parameters).
 
 ### Timeline
 
