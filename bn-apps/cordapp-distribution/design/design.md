@@ -43,7 +43,7 @@ In-scope:
 Out of scope:
 * CZ on-boarding. This design document assumes that a user already has a valid CZ certificate.
 * Installation of updates. To install an update, a node needs to be switched into the *flows draining mode* and then restarted. Both of the operations would require a human intervention and can't be automated at the moment.
-* Distribution of the platform updates. It will be a responsibility of *node administrators* to make sure that their version of Corda is above the `minimumPlatformVersion` from the [Network Parameters](https://docs.corda.net/network-map.html#network-parameters).
+* Distribution of the platform updates. It's a responsibility of *node administrators* to make sure that their version of Corda is above the `minimumPlatformVersion` defined in the [Network Parameters](https://docs.corda.net/network-map.html#network-parameters).
 
 ### Timeline
 
@@ -72,7 +72,7 @@ Why not to perform distribution on CZ level, via some centralised solution like 
 
 #### CorDapps descriptors
 
-Each CorDapp will be defined by a CorDapp descriptor. The list of CorDapps which a node **must** have installed to be able to transact on the BN, will be distributed by BNO via Corda flows (provided with the CDS implementation).
+Each CorDapp will be defined by a *CorDapp descriptor*. BNO will distribute a list of *CorDapp descriptors* which each BN member **must** have installed to be able to transact on this BN via Corda flows (provided with the CDS implementation).
 
 ```
 {
