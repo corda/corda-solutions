@@ -200,11 +200,13 @@ Similarly to *download adaptors*, *notification callbacks* might define their cu
 
 #### CorDapp structure
 
-All CorDapps should contain a standard CorDapp descriptor inside their `META-INF` folder, with such information as *vendor*, *name* and *version*. This information will be used by the CDS CorDapp to match the installed CorDapps version against the CorDapp descriptors from the BNO.
+All CorDapps should contain a standard CorDapp descriptor inside their `META-INF` folder, with such information as *vendor*, *name* and *version*. This information will be used by the CDS CorDapp to match the installed CorDapps versions against the CorDapps descriptors from the BNO.
 
 CorDapps would have to be signed via standard java signing mechanism if their signature needs to be verified.
 
 #### CorDapps descriptors processing logic
+
+Logic for processing CorDapps descriptors on a node side is the same, regardless of the source where the list came from, i.e. pulled from a BNO or received via a notification.
 
 ![CorDapps list processing logic](./resources/cordapps_list_processing.png).
 
