@@ -30,7 +30,7 @@ This proposal describes the architecture of a reference implementation for the C
 
 ### Background
 
-Decentralised platforms have introduced some operational challenges, one of which is coordinated distribution and installation of software updates. Deploying an update to the whole BN in the same time might be not feasible, unless all nodes in this BN can be collectively shut down to perform an upgrade. Such *maintenance windows* would not work in the case when a single node is involved into multiple BNs, with unrelated governance structures. This design introduces a concept of CorDapp Distribution Service which aims to tackle these issues.
+Decentralised platforms have introduced some operational challenges, one of which is a coordinated distribution and installation of software updates. Deploying an update to the whole BN simultaneously might be not feasible, unless all nodes in this BN can be shut down in the same to perform an upgrade. Such *maintenance windows* would not work in the case when a single node is involved into multiple BNs, with unrelated governance structures. This design introduces a concept of CorDapp Distribution Service which aims to tackle these issues.
 
 ### Scope
 
