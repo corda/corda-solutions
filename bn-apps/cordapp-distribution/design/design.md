@@ -166,7 +166,7 @@ Jar signatures will be verified by default after a *download adaptor* finishes t
 
 *Node administrators* will be able to associate custom *update callbacks* with the events of the following types:
 * `onUpdate`. The *update callback* will be invoked when a new update of a CorDapp is available.
-* `onDeprecation`. The *update callback* will be invoked when an installed version of a CorDapp is below the `minimumVersion` from the CorDapp descriptor.
+* `onDeprecation`. The *update callback* will be invoked when an installed version of a CorDapp gets below the `minimumVersion` from the CorDapp descriptor for the first time.
 
 *Update callbacks* will have to implement a standard interface, which will be provided with the CDS implementation.
 
