@@ -18,6 +18,9 @@ loop For each missing CorDapp
         Invokes the download adaptor with
         a respective configuration
         end note
+        note right of Corda Node:
+        Verifies JAR's hash and signature
+        end note
     end
 end
 note right of Corda Node:
@@ -42,6 +45,9 @@ loop For each updated CorDapp
         note right of Corda Node:
         Invokes the download adaptor with
         a respective configuration
+        end note
+        note right of Corda Node:
+        Verifies JAR's hash and signature
         end note
     end
     alt If onUpdate notification adaptor is defined
