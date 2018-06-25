@@ -69,7 +69,7 @@ The proposal is to implement CorDapp distribution service at the CorDapp level, 
 * Ability of BNs to tweak the implementation for their needs
 * This approach would also ease an installation and integration of the BNO applications into the existing enterprise infrastructures, as it would require less integration points with not-flow based internal systems.
 
-Why not to perform distribution on CZ level, via some centralised solution like Network Map or Doorman? Simply because some Business Networks might be uncomfortable with uploading their proprietary code into a third party service.
+Why not to perform distribution on CZ level, via some centralised solution like Network Map or Doorman? Simply because some Business Networks might be uncomfortable with sharing their proprietary code with third party services.
 
 #### CorDapps list
 
