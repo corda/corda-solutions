@@ -210,7 +210,7 @@ CorDapps should be designed to be backward compatible. Corda provides mechanisms
 
 To distribute a new CorDapp update, BNO will need to:
 
-* manually prepare and put the jar to a *distribution location*, according to the *distribution mechanism*, associated with the CorDapp. I.e. to copy to some folder on their filesystem, to upload to a CDN and etc. 
+* manually prepare and put the jar to a *distribution location*, according to the *distribution mechanism*, associated with the CorDapp. I.e. to copy to some folder on their filesystem, to upload to a CDN and etc.
 * update the CorDapp's descriptor to point to the new *distribution location*. This will be done via Corda flow. The flow will update *CorDapp descriptors* as well as will send notifications about new update availability to the BN members.
 
 Both of the steps can be triggered in an automated way from BNO's build pipeline if required.
