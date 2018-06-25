@@ -30,7 +30,7 @@ This proposal describes the architecture of a reference implementation for the C
 
 ### Background
 
-Decentralised platforms have introduced some operational challenges, one of which is a coordinated distribution and installation of software updates. Deploying an update to the whole BN simultaneously might be not feasible, unless all the nodes in this BN can be shut down in the same time to perform an upgrade. Such *maintenance windows* might not work in the case when a single node is involved into multiple BNs, with unrelated governance structures. This design introduces a concept of CorDapp Distribution Service which aims to tackle these issues.
+Decentralised platforms have introduced some operational challenges, one of which is a coordinated distribution and installation of software updates. Deploying an update to the whole BN simultaneously might be not feasible, unless all the nodes in this BN can be shut down in the same time to perform an upgrade. Such *maintenance windows* might not work in the cases when a single node is involved into multiple BNs, with unrelated governance structures. This design introduces a concept of CorDapp Distribution Service which aims to tackle these issues.
 
 ### Scope
 
@@ -71,7 +71,7 @@ Why not to perform distribution on CZ level, via some centralised solution like 
 
 #### CorDapps descriptors
 
-Each CorDapp will be defined by a *CorDapp descriptor*. BNO will distribute a list of *CorDapp descriptors* which BN members **must** have installed to be able to transact on this BN via Corda flows (provided with the CDS implementation).
+Each CorDapp will be defined by a *CorDapp descriptor*. BNO will distribute a list of *CorDapp descriptors* via Corda flows (provided with the CDS implementation), which BN members **must** have installed to be able to transact on this BN.
 
 ```
 {
@@ -184,13 +184,13 @@ CorDapps will have to be signed via standard [Jar Signing](https://docs.oracle.c
 
 #### Distribution of initial software
 
-To on-board to a BN, a node will have to have such CorDapps as [Business Network Membership Service](https://github.com/corda/corda-solutions/blob/master/bn-apps/memberships-management/design/design.md) and CorDapp Distribution Service installed to it. Distribution of these CorDapps will have to be done either off-Corda, or via a standardised API which will have to be implemented by all BNs. Defining a standardised API is out-of-scope of this design, as its hardly feasible if doable at all.
+To on-board onto a BN, a node will have to have such CorDapps as [Business Network Membership Service](https://github.com/corda/corda-solutions/blob/master/bn-apps/memberships-management/design/design.md) and CorDapp Distribution Service installed on it. Distribution of these CorDapps will have to be done either off-Corda, or via a standardised API which will have to be implemented by all BNs. Defining a standardised API is out-of-scope of this design, as its hardly feasible if doable at all.
 
-The proposal of this design document - is to distribute initial CorDapps *off-Corda*.
+The proposal of this design document - is to distribute the initial CorDapps *off-Corda*.
 
 #### First start
 
-On start, BN members will pull down a list of *CorDapp descriptors* from their BNO.
+On the first start, BN members will pull down a list of *CorDapp descriptors* from their BNO. 
 
 ![CorDapps list processing logic](./resources/cordapps_list_processing.png).
 
