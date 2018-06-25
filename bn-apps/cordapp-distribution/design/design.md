@@ -196,7 +196,7 @@ Proposed configuration for update callbacks:
 
 Similarly to *download adaptors*, *notification callbacks* might define their custom local configuration.
 
-*Node administrator* will be responsible for switching the node into *flows draining mode*, installing updates and restarting the node manually, in response to the notifications they receive from the CDS.
+*Node administrator* will be responsible for switching their node into *flows draining mode*, installing updates and restarting the node manually, in response to the notifications they receive from the CDS.
 
 #### CorDapp structure
 
