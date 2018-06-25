@@ -52,9 +52,8 @@ Out of scope:
 
 ### Requirements
 
-* BNO should be able to distribute CorDapp to the BN members
-* BNO should be able to deprecate CorDapp from the BN
-* BNO should be able to promptly notify BN members about a CorDapp deprecation  / update availability
+* Business Networks should have a mechanism to distribute a CorDapp and its updates to the BN members
+* Business Networks should have a mechanism to deprecate a CorDapp from the BN
 
 ### Assumptions
 
