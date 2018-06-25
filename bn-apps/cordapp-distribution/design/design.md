@@ -86,7 +86,7 @@ On start, each node will be pulling down a list of CorDapps which it **must** ha
       "hash" : "aldsdjfsjdfjksdf",
       "vendorCertificate" : "blahblahblah",
       "distribution" : { // specifies the way, how the CorDapp is distributed.
-        "type" : "flows" // for example this application can be downloaded via bundled Corda Flows
+        "type" : "flows" // for example this application can be downloaded via Corda flows, which are provided with the CDS implementation
       }
     },
     {
@@ -106,7 +106,7 @@ On start, each node will be pulling down a list of CorDapps which it **must** ha
 }
 ```
 
-CorDapp descriptor contains some generic information about a CorDapp, such as `vendor`, `name`, `currentVersion`, `minimumVersion`, the `hash` of the jar file as well as the `vendorCertificate`, which the CorDapp jar can be validated with. `MinimumVersion` defines the minimum supported version of the CorDapp on this Business Network. `MinimumVersion` can be bumped by the BNO if a critical vulnerability has been discovered or if a new version of the CorDapp is not backward compatible.
+CorDapp descriptor contains some generic information about a CorDapp, such as its `vendor`, `name`, `currentVersion`, `minimumVersion`, the `hash` of the jar file as well as the `vendorCertificate`, which the CorDapp jar can be validated with. `MinimumVersion` defines the minimum supported version of the CorDapp on this Business Network. `MinimumVersion` can be bumped by the BNO if a critical vulnerability has been discovered or if a new version of the CorDapp is not backward compatible.
 
 Each CorDapp definition can be associated with a *distribution mechanism*. *Distribution mechanism* defines how a CorDapp **can** be downloaded, however it wouldn't enforce a node to perform any particular **action**. *Node administrators* will be able to specify what to do in a response to a new update availability or a minimum version bump. For example this could be such things as to send an email or to raise a warning on the monitoring system or to download a CorDapp into a local folder and etc. This configuration will be done on a *node level* (described in the further sections), as it might vary from a node to node even within a single BN. It will be up to *node administrators* to configure their CDS CorDapps and to find the right balance between automation and their internal security policies. More about automations is described in the further sections.
 
@@ -116,11 +116,11 @@ CorDapps should be designed to be backward compatible. Corda provides mechanisms
 
 #### Distribution mechanisms
 
-*Distribution mechanisms* will be pluggable and extensible. Each CorDapp can be associated with its own *distribution mechanism*, such as *Corda flows*, *http*, *ftp* and etc. BNOs will be able to define their own *distribution mechanisms* if they are missing from the standard implementation. *Distribution mechanisms* are uniquely defined by a *name* and might also have a custom configuration parameters, such as *download url*, *authentication parameters* and others.
+*Distribution mechanisms* are defined by the BNO and should be matched 1-to-1 with the *download adaptors* on a node's side (described in the further sections) for automatic downloading of CorDapp updates. *Distribution mechanisms* will be pluggable and extensible. Each CorDapp can be associated with its own *distribution mechanism*, such as *Corda flows*, *http*, *ftp* and etc. BNOs will be able to define their own *distribution mechanisms* if they are missing from the standard implementation. *Distribution mechanisms* are uniquely defined by a *name* and might also have a custom configuration parameters, such as *download url*, *authentication parameters* and others.
 
 To distribute a new CorDapp update, BNO will need to:
-* manually prepare and put the jar to the distribution location, i.e. copy to some folder on their filesystem, upload to a CDN and etc. The distribution location is defined by the *distribution mechanism*, which the BNO has associated with the CorDapp.  
-* update the CorDapp descriptors to point to the new CorDapp version. This will be done via Corda flow. The flow will update CorDapp descriptors as well as will send notifications about the update to the BN members.
+* manually prepare and put the jar to a *distribution location*, i.e. copy to some folder on their filesystem, upload to a CDN and etc. The distribution location is defined by the *distribution mechanism*, which the BNO has associated with the CorDapp.  
+* update the CorDapp's descriptor to point to the new *distribution location*. This will be done via Corda flow. The flow will update CorDapp descriptors as well as will send notifications about new update availability to the BN members.
 
 Both of the steps can be triggered in an automated way from BNO's build pipeline if required
 
