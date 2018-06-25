@@ -124,11 +124,13 @@ To distribute a new CorDapp update, BNO will need to:
 
 Both of the steps can be triggered in an automated way from BNO's build pipeline if required
 
-Increment of a CorDapp's minimum version will be done via Corda flows as well, which will also send notifications about the update to all BN members.
+Increment of a CorDapp's minimum version will be done via Corda flows as well, which will also send notifications about new update availability to all BN members.
 
-CorDapp descriptors are fairly static. They can be persisted in the database and cached by BNO's node as a performance optimisation.
+Notifications will contain descriptors of all updated CorDapps. *Node administrators* will be able to set up their nodes to automatically download an update, to send en email to node admins and etc. in response to a new update availability, by utilising *download adaptors* and *update callbacks*, which are described in the further sections.
 
-The implementation will *not* match CorDapp descriptors against the actual jar files in the distribution locations. It will be up to the BNO's *node administrator* to keep those in sync.
+BNO will be storing CorDapp descriptors in their database.
+
+The CDS implementation will *not* match CorDapp descriptors against the actual jar files in *distribution locations*. It will be a responsibility of a BNO's *node administrator* to keep those in sync.
 
 #### Download adaptors
 
