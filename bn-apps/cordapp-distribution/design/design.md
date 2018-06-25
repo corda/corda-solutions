@@ -134,7 +134,7 @@ The CDS implementation will *not* match CorDapp descriptors against the actual j
 
 #### Download adaptors
 
-On a node's side, the *node administrator* will be able to associate a *distribution mechanism* (by its name) with a *download adaptor*. *Download adaptors* will have to implement a standard interface, which will be provided with the CDS. The *download adaptors* will be responsible for downloading a CorDapp based on the *distribution mechanism's* configuration and the *local CDS configuration*, specified by the *node administrator*. The proposed *CDS configuration* structure:
+On a node's side, the *node administrator* will be able to associate a *distribution mechanism* (by its name) with a *download adaptor*. *Download adaptors* will have to implement a standard interface, which will be provided with the CDS. The *download adaptors* will be responsible for downloading a CorDapp based on its *distribution mechanism's* configuration, provided by the BNO, and the *local CDS configuration*, specified by the *node administrator*. The proposed *CDS configuration* structure:
 ```
 {
   ...
