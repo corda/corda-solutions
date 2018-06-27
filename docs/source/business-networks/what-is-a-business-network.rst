@@ -8,14 +8,9 @@ facts to achieve agreement, or consensus, about operations involving them.
 This ability to enable both shared understanding of facts, and shared understanding about how they are to be used
 is something uniquely powerful within DLT/blockchain systems.  Earlier systems focused on the shared representations
 of information, but could neither consistently guarantee its correctness, nor ensure that all participants processed
-things in the same way.  The Corda promise is that "I know I see what you see" after each operation to which we are both
-a participant.
+things in the same way.  The Corda promise is that "I know I see what you see" after each operation between involved parties.
 
-The use of shared business logic is necessary to ensure correctness, but also offers a new opportunity.  Where
-our transacting parties are all required to perform similar business processes then this can be designed into the
-CorDapp(s) that are developed.  This means that when it comes to integrate Corda business networks into
-new, or existing, systems, that total integration effort is notably lowered, as each participant is not left
-duplicating the same basic functionality.
+Achieving the Corda promise requires shared business logic, which for Corda is reflected in the design and development of CorDapps (Corda Distributed Applications) that are shared among parties engaged in the same business processing. The paramount shift to developing shared business logic in CorDapps not only improves the correctness of the shared data, but also eliminates the expensive and error-prone approach of interacting parties implementing their own interpretation of required business logic. Ultimately, this shared business logic, the CorDapps, form the basis of a business network.
 
 The model of Corda business networks also enables something particularly powerful.  It allows for the possibility
 that one business network can build upon the work of another, and that others can then build on top of that.
