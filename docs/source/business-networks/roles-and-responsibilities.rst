@@ -1,10 +1,9 @@
 Roles and Responsibilities
 --------------------------
 
-We have considered how Corda business networks are started and have seen that the process leads to some sort of governing entity.  That governing entity addresses the strategic business and technical needs of the users of the business network's services, but does not address the tactical, operational needs.  Similarly, our users have not really been considered at this point, so it is worth exploring these key roles.
+Having observed the creation of Corda business networks, we acknowledge the importance of a governing entity.  That governing entity addresses the strategic business and technical needs of the users of the business network's services, but does not address the operational needs.  Similarly, the users of the Corda business network have not yet been considered. Lets start with exploring these key roles while recognizing that they may vary in size, and may also represent an individual, a company,
+or a consortium.
 
-It is worth noting that these roles do not come in one size and may, for example, represent an individual, a
-company, or a consortium.
 
 Business Network Governor (BNG)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
