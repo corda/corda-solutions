@@ -9,16 +9,18 @@ operate it.
 G.1. Describe Participants
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- What are the various types of network participant?
+- What are the various types of network participants?
 
    - Asset issuer
    - Network participant (signer)
    - Corda node administrator
    - Identity verifier
+   - Regulator
+   - Auditor
 
-- Service provider, e.g., oracle
+- Service provider, e.g., oracle that provides trusted external data such as stock prices, currency rates, weather conditions at specific time points.
 - Which participants require a node/identity?
-- How many participants of each type will the network support?
+- How many participants of each type will the network include?
 - Define all the stakeholder roles from each organization that will be required for each participant to deploy a
   node and join a network, e.g, Procurement, IT Security, IT network, IT change management, IT App Dev team
   supporting the app portfolio related to the business network.
@@ -26,18 +28,19 @@ G.1. Describe Participants
 G.2. Define the Asset Model
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- Provide the asset(s) definition and important elements.
-- Describe the asset(s) lifecycle.
+- Provide the asset(s) definition and important elements that comprise the asset.
+- Describe the asset(s) lifecycle from inception to end, and all the in-between possible lifecycle states.
 
 G.2. Define the Business Process
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - Articulate the business processes driving the asset(s) lifecycle among the participants in the target network.
+- Identify which participants have authority to change the state of the asset(s).
 
 G.4. Outline Legal and Regulatory Needs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- Identify legal and regulatory parties.
+- Identify legal and regulatory parties expected or required to be involved in the business network.
 - Capture legal and regulatory requirements/boundaries.
 - Assess and prepare for any intellectual property boundaries.
 
@@ -107,7 +110,7 @@ G.12. Establish On-boarding Policies
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - What processes are needed to add a new party?
-- Any regulatory requirements for adding a new party?
+- Any regulatory requirements for adding a new party, e.g., KYC, AML?
 - What is the timing, the SLA requirement for on-boarding?
 
 G.13. Establish Off-boarding Policies
