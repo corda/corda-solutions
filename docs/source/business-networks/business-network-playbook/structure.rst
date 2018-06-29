@@ -1,9 +1,8 @@
 S. Structure
 ------------
 
-Our business network requires some sort of operating structure.  This may mean we are reusing, extending, or
-repurposing, an existing organisation.  We may also be creating a new legal entity.  Activities in this section
-aim to help establish a strawman structure.  More detailed needs are addressed in following sections.
+Any business network requires an operating structure.  This may mean we are reusing, extending, or
+repurposing, an existing non-DLT based business network organisation.  We may also be creating a new legal entity.  Activities in this section aim to help establish a strawman structure.  More detailed needs are addressed in following sections.
 
 S.1. Define Business Network Mission
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -17,7 +16,7 @@ S.2. Assign Business Network Roles
 
 - Business Network Governor (BNG)?
 - Business Network Operator (BNO)?
-- If the BN already exists, are there roles already established that should be included or mapped to the above roles
+- If the BN already exists, are there roles already established that should be included or mapped to the above roles?
 
 S.3. Define the Governance Body Model
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
