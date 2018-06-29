@@ -63,6 +63,7 @@ O.7. Define audit, report and documentation requirements
 - What periodic network reports are required, and cadence?
 - What periodic business reports are required, and cadence?
 - What are the audit logging requirements?
+- Might there be a minimal node certification required, as set by the business network governing body?  
 - What documentation is needed?
 - Who is responsible for creating/maintaining documentation?
 - Where will documentation be available, accessible?
