@@ -10,7 +10,7 @@ BNMS consists of 2 CorDapps:
 * `membership-service-contracts-and-states` - contracts and states
 * `membership-service` - flows for both BNO and members
 
-Both of the CorDapps are required to be installed to the nodes of all members as well as BNO's node.
+Both of the CorDapps are required to be installed to the nodes of all Business Network participants as well as to the BNO's node.
 
 CorDapp configuration is red from the `membership-service.properties` file on the CorDapp's classpath.
 
