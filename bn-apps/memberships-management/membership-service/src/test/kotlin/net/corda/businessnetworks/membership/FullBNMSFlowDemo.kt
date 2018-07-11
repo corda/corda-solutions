@@ -15,7 +15,7 @@ import kotlin.test.fail
 
 /**
  * This is a demo of the Business Network Membership Service. The test demonstrates how a participant can request to join a Business Network
- * and then to interact with other Business Network members. The test also demonstrates how the BNO can activate / revoke memberships
+ * and then interact with other Business Network members. The test also demonstrates how the BNO can activate / revoke memberships
  */
 class FullBNMSFlowDemo : AbstractFlowTest(5) {
     override fun registerFlows() {
