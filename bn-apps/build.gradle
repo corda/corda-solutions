@@ -1,0 +1,32 @@
+buildscript {
+    ext.corda_release_group = 'net.corda'
+    ext.corda_release_version = '3.1-corda'
+    ext.corda_gradle_plugins_version = '4.0.25'
+    ext.kotlin_version = '1.1.60'
+    ext.junit_version = '4.12'
+}
+
+subprojects {
+    buildscript {
+        repositories {
+            mavenLocal()
+            jcenter()
+            mavenCentral()
+        }
+
+        dependencies {
+            classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+            classpath "net.corda.plugins:cordformation:$corda_gradle_plugins_version"
+            classpath "net.corda.plugins:quasar-utils:$corda_gradle_plugins_version"
+            classpath "net.corda.plugins:cordapp:$corda_gradle_plugins_version"
+        }
+    }
+
+    repositories {
+        mavenLocal()
+        jcenter()
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
+        maven { url 'https://ci-artifactory.corda.r3cev.com/artifactory/corda-releases' }
+    }
+}
