@@ -38,7 +38,8 @@ dependencies {
 
     testCompile "$corda_release_group:corda-node-driver:$corda_release_version"
 
-    cordapp project(":ledger-sync:ledger-sync-service")
+    cordapp project(":ledger-sync:ledger-sync-service-contracts-and-states")
+    cordapp project(":memberships-management:membership-service")
 }
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
