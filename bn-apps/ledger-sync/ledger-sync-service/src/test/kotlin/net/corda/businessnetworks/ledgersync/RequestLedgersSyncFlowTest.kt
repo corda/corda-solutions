@@ -17,8 +17,15 @@ import net.corda.testing.node.StartedMockNode
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.test.fail
+
+// TODO moritzplatt 07/08/2018 --
+// add readme + demo flow
+// run against enterprise
+//  - download dev pack with maven structure
+//  - re-test by changing target corda version in gradle
 
 @Suppress("PrivatePropertyName")
 class RequestLedgersSyncFlowTest {
@@ -58,21 +65,23 @@ class RequestLedgersSyncFlowTest {
     }
 
     @Test
-    fun `non-members cannot sync their ledger`() {
-        // use a valid participant to obtain BNO members as the non-member itself can't obtain a the member list
-        val knownMembers = participantsNodes.first().members()
-        nonMemberNode.runRequestLedgerSyncFlow(knownMembers)
-    }
-
-    @Test
     fun `members receive no ids to sync if they hold all transactions the counter party is aware of`() {
-        TODO()
+        val requester = participantsNodes[0]
+        val missingTransactions = requester.runRequestLedgerSyncFlow(requester.members())
+
+        assertEquals(mapOf(
+                participantsNodes[1].identity() to emptySet(),
+                participantsNodes[2].identity() to emptySet()
+        ), missingTransactions)
     }
 
     @Test
     fun `members ids sync if they only hold a subset of transactions the counter party is aware of`() {
         TODO()
+
+        // how to test: remove an event through a raw jdbc connection on serviceshub
     }
+
 
     private fun StartedMockNode.elevateToMember() {
         runRequestMembershipFlow()
@@ -95,8 +104,11 @@ class RequestLedgersSyncFlowTest {
         return future.getOrThrow()
     }
 
-    private fun StartedMockNode.runRequestLedgerSyncFlow(members: Map<Party, StateAndRef<Membership.State>>) =
-            startFlow(RequestLedgersSyncFlow(members))
+    private fun StartedMockNode.runRequestLedgerSyncFlow(members: Map<Party, StateAndRef<Membership.State>>): MissingIds {
+        val future = startFlow(RequestLedgersSyncFlow(members))
+        mockNetwork.runNetwork()
+        return future.getOrThrow()
+    }
 
     private fun StartedMockNode.members(): Map<Party, StateAndRef<Membership.State>> {
         val future = startFlow(GetMembershipsFlow(true))
@@ -105,4 +117,9 @@ class RequestLedgersSyncFlowTest {
         assertTrue(result.size == participantsNodes.size)
         return result
     }
+
+    private fun StartedMockNode.identity() = info.legalIdentities.first()
+
+
+
 }

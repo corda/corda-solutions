@@ -21,6 +21,7 @@ typealias MissingIds = Map<Party, Set<SecureHash>>
 @InitiatingFlow
 @StartableByRPC
 class RequestLedgersSyncFlow(
+        // TODO moritzplatt 07/08/2018 -- List<Party>
         private val members: Map<Party, StateAndRef<Membership.State>>
 ) : FlowLogic<MissingIds>() {
 
@@ -33,22 +34,27 @@ class RequestLedgersSyncFlow(
             party == ourIdentity
         }
 
+        // TODO moritzplatt 07/08/2018 -- notary?
+
         return relevantMembers.keys.toList().map { they ->
             val knownTransactionsIds = serviceHub.vaultService.withParticipants(ourIdentity, they)
+
             // TODO moritzplatt 06/08/2018 -- what level of validation is needed?
-            they to initiateFlow(they).sendAndReceive<Set<SecureHash>>(knownTransactionsIds).unwrap { it }
+            val flow = initiateFlow(they)
+            val unwrap = flow.sendAndReceive<Set<SecureHash>>(knownTransactionsIds).unwrap { it }
+            they to unwrap
         }.toMap()
     }
 }
 
 @InitiatedBy(RequestLedgersSyncFlow::class)
-class RequestLedgerSyncFlow(
+class RespondLedgerSyncFlow(
         val otherSideSession: FlowSession
 ) : FlowLogic<Unit>() {
 
     @Suspendable
     override fun call() {
-        // TODO moritzplatt 06/08/2018 -- validate requester is part of our business network
+        // TODO moritzplatt 06/08/2018 -- make public comment about necessity to determine BN membership
 
         val transactionsTheSenderIsAwareOf = otherSideSession
                 .receive<Set<SecureHash>>()
@@ -57,16 +63,21 @@ class RequestLedgerSyncFlow(
         // TODO moritzplatt 06/08/2018 -- is `otherSideSession.counterparty` actually what we're looking for?
         val transactionsWeAreAwareOf = serviceHub.vaultService.withParticipants(ourIdentity, otherSideSession.counterparty)
 
-        // TODO moritzplatt 06/08/2018 -- what to do if the sender holds a superset of transactions (protocol violation)
-        otherSideSession.send(transactionsWeAreAwareOf - transactionsTheSenderIsAwareOf)
+        // TODO moritzplatt 07/08/2018 -- instead of returning that, use new data class
+        val payload = transactionsWeAreAwareOf - transactionsTheSenderIsAwareOf
+        otherSideSession.send(payload)
     }
 }
 
 private fun VaultService.withParticipants(vararg parties: Party): Set<SecureHash> {
+    // TODO moritzplatt 07/08/2018 -- discuss best query strategy with #development
     val result = queryBy<ContractState>(QueryCriteria.VaultQueryCriteria())
     // TODO moritzplatt 06/08/2018 -- use database query to filter proper
 
     // TODO moritzplatt 06/08/2018 -- what to do for paging? 1 giant page? iterate and merge? or send blocks of tx in distinct flows?
+
+    // consider largest possible message size
+
     return result.states.filter {
         // TODO moritzplatt 06/08/2018 -- filter in query
         it.state.data.participants.containsAll(parties.toSet())
@@ -75,3 +86,8 @@ private fun VaultService.withParticipants(vararg parties: Party): Set<SecureHash
         it.ref.txhash
     }.toSet()
 }
+
+data class LedgerSyncResult(
+        val whatWeAreMissing: Set<SecureHash>,
+        val whatTheyAreMissing: Set<SecureHash>
+)
