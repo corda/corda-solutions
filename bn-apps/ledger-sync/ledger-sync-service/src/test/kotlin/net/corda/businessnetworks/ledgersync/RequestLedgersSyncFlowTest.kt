@@ -70,8 +70,8 @@ class RequestLedgersSyncFlowTest {
         val missingTransactions = requester.runRequestLedgerSyncFlow(requester.members())
 
         assertEquals(mapOf(
-                participantsNodes[1].identity() to emptySet(),
-                participantsNodes[2].identity() to emptySet()
+                participantsNodes[1].identity() to LedgerSyncFindings(emptyList(), emptyList()),
+                participantsNodes[2].identity() to LedgerSyncFindings(emptyList(), emptyList())
         ), missingTransactions)
     }
 
@@ -104,22 +104,21 @@ class RequestLedgersSyncFlowTest {
         return future.getOrThrow()
     }
 
-    private fun StartedMockNode.runRequestLedgerSyncFlow(members: Map<Party, StateAndRef<Membership.State>>): MissingIds {
+    private fun StartedMockNode.runRequestLedgerSyncFlow(members: List<Party>): Map<Party, LedgerSyncFindings> {
         val future = startFlow(RequestLedgersSyncFlow(members))
         mockNetwork.runNetwork()
         return future.getOrThrow()
     }
 
-    private fun StartedMockNode.members(): Map<Party, StateAndRef<Membership.State>> {
+    private fun StartedMockNode.members(): List<Party> {
         val future = startFlow(GetMembershipsFlow(true))
         mockNetwork.runNetwork()
         val result = future.getOrThrow()
         assertTrue(result.size == participantsNodes.size)
-        return result
+        return result.keys.toList()
     }
 
     private fun StartedMockNode.identity() = info.legalIdentities.first()
-
 
 
 }
