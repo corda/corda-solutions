@@ -2,6 +2,7 @@ package net.corda.businessnetworks.ledgersync
 
 import net.corda.businessnetworks.membership.bno.ActivateMembershipFlow
 import net.corda.businessnetworks.membership.bno.service.DatabaseService
+import net.corda.businessnetworks.membership.member.GetMembershipsFlow
 import net.corda.businessnetworks.membership.member.RequestMembershipFlow
 import net.corda.businessnetworks.membership.states.Membership
 import net.corda.businessnetworks.membership.states.MembershipMetadata
@@ -16,6 +17,7 @@ import net.corda.testing.node.StartedMockNode
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import kotlin.test.assertTrue
 import kotlin.test.fail
 
 @Suppress("PrivatePropertyName")
@@ -28,6 +30,8 @@ class RequestLedgersSyncFlowTest {
     private lateinit var bnoNode: StartedMockNode
     private lateinit var participantsNodes: List<StartedMockNode>
     private lateinit var nonMemberNode: StartedMockNode
+
+    private val MEMBERSHIP_DATA = MembershipMetadata("DEFAULT")
 
     @Before
     fun start() {
@@ -55,7 +59,9 @@ class RequestLedgersSyncFlowTest {
 
     @Test
     fun `non-members cannot sync their ledger`() {
-        TODO()
+        // use a valid participant to obtain BNO members as the non-member itself can't obtain a the member list
+        val knownMembers = participantsNodes.first().members()
+        nonMemberNode.runRequestLedgerSyncFlow(knownMembers)
     }
 
     @Test
@@ -78,7 +84,7 @@ class RequestLedgersSyncFlowTest {
     }
 
     private fun StartedMockNode.runRequestMembershipFlow(): SignedTransaction {
-        val future = startFlow(RequestMembershipFlow(MembershipMetadata("DEFAULT")))
+        val future = startFlow(RequestMembershipFlow(MEMBERSHIP_DATA))
         mockNetwork.runNetwork()
         return future.getOrThrow()
     }
@@ -89,7 +95,14 @@ class RequestLedgersSyncFlowTest {
         return future.getOrThrow()
     }
 
-    private fun StartedMockNode.runRequestLedgerSyncFlow(members: Map<Party, StateAndRef<Membership.State>>) {
-        startFlow(RequestLedgersSyncFlow(members))
+    private fun StartedMockNode.runRequestLedgerSyncFlow(members: Map<Party, StateAndRef<Membership.State>>) =
+            startFlow(RequestLedgersSyncFlow(members))
+
+    private fun StartedMockNode.members(): Map<Party, StateAndRef<Membership.State>> {
+        val future = startFlow(GetMembershipsFlow(true))
+        mockNetwork.runNetwork()
+        val result = future.getOrThrow()
+        assertTrue(result.size == participantsNodes.size)
+        return result
     }
 }

@@ -1,5 +1,6 @@
 package net.corda.businessnetworks.ledgersync
 
+import co.paralleluniverse.fibers.Suspendable
 import net.corda.businessnetworks.membership.states.Membership
 import net.corda.core.contracts.ContractState
 import net.corda.core.contracts.StateAndRef
@@ -20,9 +21,10 @@ typealias MissingIds = Map<Party, Set<SecureHash>>
 @InitiatingFlow
 @StartableByRPC
 class RequestLedgersSyncFlow(
-        val members: Map<Party, StateAndRef<Membership.State>>
+        private val members: Map<Party, StateAndRef<Membership.State>>
 ) : FlowLogic<MissingIds>() {
 
+    @Suspendable
     override fun call(): MissingIds {
         // only consider active members that are not us
         val relevantMembers = members.filter { (_, stateAndRef) ->
@@ -31,8 +33,7 @@ class RequestLedgersSyncFlow(
             party == ourIdentity
         }
 
-        return relevantMembers.keys.map { they ->
-            serviceHub.validatedTransactions
+        return relevantMembers.keys.toList().map { they ->
             val knownTransactionsIds = serviceHub.vaultService.withParticipants(ourIdentity, they)
             // TODO moritzplatt 06/08/2018 -- what level of validation is needed?
             they to initiateFlow(they).sendAndReceive<Set<SecureHash>>(knownTransactionsIds).unwrap { it }
@@ -45,12 +46,13 @@ class RequestLedgerSyncFlow(
         val otherSideSession: FlowSession
 ) : FlowLogic<Unit>() {
 
+    @Suspendable
     override fun call() {
         // TODO moritzplatt 06/08/2018 -- validate requester is part of our business network
 
-        val transactionsTheSenderIsAwareOf = otherSideSession.receive<Set<SecureHash>>().unwrap {
-            it
-        }
+        val transactionsTheSenderIsAwareOf = otherSideSession
+                .receive<Set<SecureHash>>()
+                .unwrap { it }
 
         // TODO moritzplatt 06/08/2018 -- is `otherSideSession.counterparty` actually what we're looking for?
         val transactionsWeAreAwareOf = serviceHub.vaultService.withParticipants(ourIdentity, otherSideSession.counterparty)
