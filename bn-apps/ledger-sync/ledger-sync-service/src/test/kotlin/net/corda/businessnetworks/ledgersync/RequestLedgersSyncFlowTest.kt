@@ -11,6 +11,7 @@ import net.corda.core.identity.CordaX500Name
 import net.corda.core.identity.Party
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.utilities.getOrThrow
+import net.corda.node.services.api.ServiceHubInternal
 import net.corda.testing.node.MockNetwork
 import net.corda.testing.node.MockNetworkNotarySpec
 import net.corda.testing.node.StartedMockNode
@@ -21,22 +22,14 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.test.fail
 
-// TODO moritzplatt 07/08/2018 --
-// add readme + demo flow
-// run against enterprise
-//  - download dev pack with maven structure
-//  - re-test by changing target corda version in gradle
-
 @Suppress("PrivatePropertyName")
 class RequestLedgersSyncFlowTest {
-    private val NOTARY = CordaX500Name("Notary", "London", "GB")
     private val BNO = CordaX500Name("BNO", "New York", "US")
-    private val NON_MEMBER = CordaX500Name("Non-Member", "Dublin", "IE")
+    private val NOTARY = CordaX500Name("Notary", "London", "GB")
 
     private lateinit var mockNetwork: MockNetwork
     private lateinit var bnoNode: StartedMockNode
     private lateinit var participantsNodes: List<StartedMockNode>
-    private lateinit var nonMemberNode: StartedMockNode
 
     private val MEMBERSHIP_DATA = MembershipMetadata("DEFAULT")
 
@@ -54,7 +47,6 @@ class RequestLedgersSyncFlowTest {
         participantsNodes = (1..3).map {
             mockNetwork.createNode(CordaX500Name("Member $it", "Paris", "FR"))
         }
-        nonMemberNode = mockNetwork.createNode(NON_MEMBER)
         mockNetwork.runNetwork()
         participantsNodes.forEach { it.elevateToMember() }
     }
@@ -67,6 +59,13 @@ class RequestLedgersSyncFlowTest {
     @Test
     fun `members receive no ids to sync if they hold all transactions the counter party is aware of`() {
         val requester = participantsNodes[0]
+
+        assertEquals(0, requester.bogusStateCount())
+
+        requester.createTransactions()
+
+        assertEquals(3, requester.bogusStateCount())
+
         val missingTransactions = requester.runRequestLedgerSyncFlow(requester.members())
 
         assertEquals(mapOf(
@@ -76,12 +75,39 @@ class RequestLedgersSyncFlowTest {
     }
 
     @Test
-    fun `members ids sync if they only hold a subset of transactions the counter party is aware of`() {
-        TODO()
+    fun `reports member ids to sync missing from requester`() {
+        val requester = participantsNodes[0]
 
-        // how to test: remove an event through a raw jdbc connection on serviceshub
+        requester.createTransactions()
+        assertEquals(3, requester.bogusStateCount())
+        requester.simulateCatastrophicFailure()
+        assertEquals(0, requester.bogusStateCount())
+        requester.runRequestLedgerSyncFlow(requester.members())
+
+        val missingTransactions = requester.runRequestLedgerSyncFlow(requester.members())
+
+        assertEquals(1, missingTransactions[participantsNodes[1].identity()]!!.missingAtRequester.size)
+        assertEquals(1, missingTransactions[participantsNodes[2].identity()]!!.missingAtRequester.size)
     }
 
+    @Test
+    fun `reports member ids to sync from requestee`() {
+        val requester = participantsNodes[0]
+
+        requester.createTransactions()
+        participantsNodes[1].simulateCatastrophicFailure()
+        assertEquals(0, participantsNodes[1].bogusStateCount())
+
+        participantsNodes[2].simulateCatastrophicFailure()
+        assertEquals(0, participantsNodes[2].bogusStateCount())
+
+        requester.runRequestLedgerSyncFlow(requester.members())
+
+        val missingTransactions = requester.runRequestLedgerSyncFlow(requester.members())
+
+        assertEquals(1, missingTransactions[participantsNodes[1].identity()]!!.missingAtRequestee.size)
+        assertEquals(1, missingTransactions[participantsNodes[2].identity()]!!.missingAtRequestee.size)
+    }
 
     private fun StartedMockNode.elevateToMember() {
         runRequestMembershipFlow()
@@ -120,5 +146,31 @@ class RequestLedgersSyncFlowTest {
 
     private fun StartedMockNode.identity() = info.legalIdentities.first()
 
+    /*
+     * The number of states in this node's vault
+     */
+    private fun StartedMockNode.bogusStateCount(): Int {
+        connection().prepareStatement("""SELECT COUNT(*) FROM VAULT_STATES WHERE CONTRACT_STATE_CLASS_NAME='${BogusState::class.java.canonicalName}'""").use {
+            val resultSet = it.executeQuery()
+            if (resultSet.next())
+                return resultSet.getInt(1)
+            else
+                fail("Can't obtain record count")
+        }
+    }
 
+    private fun StartedMockNode.connection() = (services as? ServiceHubInternal)?.database?.dataSource?.connection
+            ?: fail("Can't obtain vault database connection")
+
+    private fun StartedMockNode.simulateCatastrophicFailure() {
+        connection().prepareStatement("""DELETE FROM VAULT_STATES WHERE CONTRACT_STATE_CLASS_NAME='${BogusState::class.java.canonicalName}'""").execute()
+    }
+
+    private fun StartedMockNode.createTransactions() {
+        members().forEach {
+            val future = startFlow(BogusFlow(it))
+            mockNetwork.runNetwork()
+            future.getOrThrow()
+        }
+    }
 }
