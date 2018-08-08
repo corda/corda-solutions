@@ -168,7 +168,7 @@ class RequestLedgersSyncFlowTest {
 
     private fun StartedMockNode.createTransactions() {
         members().forEach {
-            val future = startFlow(BogusFlow(it))
+            val future = startFlow(BogusFlow(this.identity(), it))
             mockNetwork.runNetwork()
             future.getOrThrow()
         }

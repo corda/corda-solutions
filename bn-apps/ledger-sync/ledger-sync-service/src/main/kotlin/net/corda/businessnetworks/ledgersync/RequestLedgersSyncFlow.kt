@@ -8,8 +8,12 @@ import net.corda.core.flows.FlowSession
 import net.corda.core.flows.InitiatedBy
 import net.corda.core.flows.InitiatingFlow
 import net.corda.core.identity.Party
+import net.corda.core.node.services.Vault.StateStatus.ALL
 import net.corda.core.node.services.VaultService
 import net.corda.core.node.services.queryBy
+import net.corda.core.node.services.vault.MAX_PAGE_SIZE
+import net.corda.core.node.services.vault.PageSpecification
+import net.corda.core.node.services.vault.QueryCriteria.VaultQueryCriteria
 import net.corda.core.serialization.CordaSerializable
 import net.corda.core.utilities.unwrap
 
@@ -54,8 +58,10 @@ class RespondLedgerSyncFlow(
  * message size.
  */
 private fun VaultService.withParticipants(vararg parties: Party): List<SecureHash> =
-// TODO moritzplatt 08/08/2018 -- Query correctly, use a bigger page
-        queryBy<ContractState>().states.filter {
+        queryBy<ContractState>(
+                VaultQueryCriteria(status = ALL),
+                PageSpecification(1, MAX_PAGE_SIZE)
+        ).states.filter {
             it.state.data.participants.containsAll(parties.toList())
         }.map {
             it.ref.txhash

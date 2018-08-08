@@ -1,3 +1,2 @@
 include ':ledger-sync:ledger-sync-service'
-include ':ledger-sync:ledger-sync-service-contracts-and-states'
 include ':memberships-management:membership-service'

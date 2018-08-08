@@ -3,6 +3,8 @@ package net.corda.businessnetworks.ledgersync
 import co.paralleluniverse.fibers.Suspendable
 import net.corda.core.contracts.Command
 import net.corda.core.contracts.ContractState
+import net.corda.core.contracts.LinearState
+import net.corda.core.contracts.UniqueIdentifier
 import net.corda.core.flows.CollectSignaturesFlow
 import net.corda.core.flows.FinalityFlow
 import net.corda.core.flows.FlowLogic
@@ -21,24 +23,27 @@ import net.corda.core.transactions.TransactionBuilder
  */
 @InitiatingFlow
 class BogusFlow(
-        private val counterParty: Party
-) : FlowLogic<SignedTransaction>() {
+        us: Party,
+        private val them: Party,
+        override val linearId: UniqueIdentifier = UniqueIdentifier()
+) : FlowLogic<SignedTransaction>(), LinearState {
+    override val participants: List<AbstractParty> = listOf(us, them)
 
     @Suspendable
     override fun call(): SignedTransaction {
         val notary = serviceHub.networkMapCache.notaryIdentities.first()
 
-        val cmd = Command(BogusContract.Commands.Bogus(), listOf(counterParty.owningKey))
+        val cmd = Command(BogusContract.Commands.Bogus(), listOf(them.owningKey))
 
         val txBuilder = TransactionBuilder(notary)
-                .addOutputState(BogusState(listOf(ourIdentity, counterParty)), BOGUS_CONTRACT_ID)
+                .addOutputState(BogusState(listOf(ourIdentity, them)), BOGUS_CONTRACT_ID)
                 .addCommand(cmd).apply {
                     verify(serviceHub)
                 }
 
         val partiallySigned = serviceHub.signInitialTransaction(txBuilder)
 
-        val fullySigned = subFlow(CollectSignaturesFlow(partiallySigned, setOf(initiateFlow(counterParty))))
+        val fullySigned = subFlow(CollectSignaturesFlow(partiallySigned, setOf(initiateFlow(them))))
 
         return subFlow(FinalityFlow(fullySigned))
     }
