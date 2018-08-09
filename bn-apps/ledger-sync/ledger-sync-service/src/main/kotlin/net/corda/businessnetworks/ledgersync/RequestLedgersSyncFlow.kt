@@ -54,6 +54,9 @@ class RespondLedgerSyncFlow(
 
 /**
  * Provides a list of transaction hashes referring to transactions in which all of the given parties are participating.
+ *
+ * Due to limitations of filtering by [Party] in vault query criteria, this will load _all states_ into memory,
+ * potentially causing memory issues at the node running the query.
  * Note that this can be a lengthy list and no precautions are taken to ensure the output does not exceed the maximum
  * message size.
  */

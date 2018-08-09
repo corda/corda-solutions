@@ -23,12 +23,8 @@ import net.corda.core.transactions.TransactionBuilder
  */
 @InitiatingFlow
 class BogusFlow(
-        us: Party,
-        private val them: Party,
-        override val linearId: UniqueIdentifier = UniqueIdentifier()
-) : FlowLogic<SignedTransaction>(), LinearState {
-    override val participants: List<AbstractParty> = listOf(us, them)
-
+        private val them: Party
+) : FlowLogic<SignedTransaction>() {
     @Suspendable
     override fun call(): SignedTransaction {
         val notary = serviceHub.networkMapCache.notaryIdentities.first()
@@ -36,7 +32,7 @@ class BogusFlow(
         val cmd = Command(BogusContract.Commands.Bogus(), listOf(them.owningKey))
 
         val txBuilder = TransactionBuilder(notary)
-                .addOutputState(BogusState(listOf(ourIdentity, them)), BOGUS_CONTRACT_ID)
+                .addOutputState(BogusState(ourIdentity, them), BOGUS_CONTRACT_ID)
                 .addCommand(cmd).apply {
                     verify(serviceHub)
                 }
@@ -62,4 +58,10 @@ class BogusFlowFlowResponder(val flowSession: FlowSession) : FlowLogic<Unit>() {
     }
 }
 
-class BogusState(override val participants: List<AbstractParty>) : ContractState
+data class BogusState(
+        private val us: Party,
+        private val them: Party,
+        override val linearId: UniqueIdentifier = UniqueIdentifier()
+) : ContractState, LinearState {
+    override val participants: List<AbstractParty> = listOf(us, them)
+}
