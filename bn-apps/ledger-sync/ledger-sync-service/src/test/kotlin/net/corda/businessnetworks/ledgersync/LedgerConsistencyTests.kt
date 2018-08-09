@@ -23,7 +23,7 @@ import kotlin.test.assertTrue
 import kotlin.test.fail
 
 @Suppress("PrivatePropertyName")
-class RequestLedgersSyncFlowTest {
+class LedgerConsistencyTests {
     private val BNO = CordaX500Name("BNO", "New York", "US")
     private val NOTARY = CordaX500Name("Notary", "London", "GB")
 
@@ -109,6 +109,29 @@ class RequestLedgersSyncFlowTest {
         assertEquals(1, missingTransactions[participantsNodes[2].identity()]!!.missingAtRequestee.size)
     }
 
+    @Test
+    fun `ledger consistency is reported for consistent ledgers`() {
+        val requester = participantsNodes[0]
+        requester.createTransactions()
+        val actual = requester.runEvaluateLedgerConsistencyFlow(requester.members())
+        assertEquals(mapOf(
+                participantsNodes[1].identity() to true,
+                participantsNodes[2].identity() to true
+        ), actual)
+    }
+
+    @Test
+    fun `ledger consistency is reported for inconsistent ledgers`() {
+        val requester = participantsNodes[0]
+        requester.createTransactions()
+        participantsNodes[2].simulateCatastrophicFailure()
+        val actual = requester.runEvaluateLedgerConsistencyFlow(requester.members())
+        assertEquals(mapOf(
+                participantsNodes[1].identity() to true,
+                participantsNodes[2].identity() to false
+        ), actual)
+    }
+
     private fun StartedMockNode.elevateToMember() {
         runRequestMembershipFlow()
         val membership = transaction {
@@ -132,6 +155,12 @@ class RequestLedgersSyncFlowTest {
 
     private fun StartedMockNode.runRequestLedgerSyncFlow(members: List<Party>): Map<Party, LedgerSyncFindings> {
         val future = startFlow(RequestLedgersSyncFlow(members))
+        mockNetwork.runNetwork()
+        return future.getOrThrow()
+    }
+
+    private fun StartedMockNode.runEvaluateLedgerConsistencyFlow(members: List<Party>): Map<Party, Boolean> {
+        val future = startFlow(EvaluateLedgerConsistencyFlow(members))
         mockNetwork.runNetwork()
         return future.getOrThrow()
     }
@@ -168,9 +197,13 @@ class RequestLedgersSyncFlowTest {
 
     private fun StartedMockNode.createTransactions() {
         members().forEach {
-            val future = startFlow(BogusFlow(it))
-            mockNetwork.runNetwork()
-            future.getOrThrow()
+            createTransaction(it)
         }
+    }
+
+    private fun StartedMockNode.createTransaction(counterParty: Party) {
+        val future = startFlow(BogusFlow(counterParty))
+        mockNetwork.runNetwork()
+        future.getOrThrow()
     }
 }

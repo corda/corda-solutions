@@ -1,19 +1,12 @@
 package net.corda.businessnetworks.ledgersync
 
 import co.paralleluniverse.fibers.Suspendable
-import net.corda.core.contracts.ContractState
 import net.corda.core.crypto.SecureHash
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.FlowSession
 import net.corda.core.flows.InitiatedBy
 import net.corda.core.flows.InitiatingFlow
 import net.corda.core.identity.Party
-import net.corda.core.node.services.Vault.StateStatus.ALL
-import net.corda.core.node.services.VaultService
-import net.corda.core.node.services.queryBy
-import net.corda.core.node.services.vault.MAX_PAGE_SIZE
-import net.corda.core.node.services.vault.PageSpecification
-import net.corda.core.node.services.vault.QueryCriteria.VaultQueryCriteria
 import net.corda.core.serialization.CordaSerializable
 import net.corda.core.utilities.unwrap
 
@@ -51,24 +44,6 @@ class RespondLedgerSyncFlow(
         ))
     }
 }
-
-/**
- * Provides a list of transaction hashes referring to transactions in which all of the given parties are participating.
- *
- * Due to limitations of filtering by [Party] in vault query criteria, this will load _all states_ into memory,
- * potentially causing memory issues at the node running the query.
- * Note that this can be a lengthy list and no precautions are taken to ensure the output does not exceed the maximum
- * message size.
- */
-private fun VaultService.withParticipants(vararg parties: Party): List<SecureHash> =
-        queryBy<ContractState>(
-                VaultQueryCriteria(status = ALL),
-                PageSpecification(1, MAX_PAGE_SIZE)
-        ).states.filter {
-            it.state.data.participants.containsAll(parties.toList())
-        }.map {
-            it.ref.txhash
-        }
 
 /**
  * A class that encapsulates the findings of a [RequestLedgersSyncFlow], indicating which transactions the original
