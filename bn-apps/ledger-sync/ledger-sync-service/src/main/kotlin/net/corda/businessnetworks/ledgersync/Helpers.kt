@@ -14,7 +14,7 @@ import net.corda.core.node.services.vault.QueryCriteria.VaultQueryCriteria
 /**
  * Provides a list of transaction hashes referring to transactions in which all of the given parties are participating.
  *
- * Due to limitations of filtering by [Party] in vault query criteria (CORDA-1888), this will load _all states_ into
+ * Due to limitations of filtering by [Party] in vault query criteria (CORDA-1888), this will load ALL STATES into
  * memory, potentially causing memory issues at the node running the query. A proper vault query criterion should be
  * used once implemented.
  *

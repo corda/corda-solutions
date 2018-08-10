@@ -64,7 +64,7 @@ class LedgerConsistencyTests {
 
         requester.createTransactions()
 
-        assertEquals(3, requester.bogusStateCount())
+        assertEquals(2, requester.bogusStateCount())
 
         val missingTransactions = requester.runRequestLedgerSyncFlow(requester.members())
 
@@ -79,7 +79,7 @@ class LedgerConsistencyTests {
         val requester = participantsNodes[0]
 
         requester.createTransactions()
-        assertEquals(3, requester.bogusStateCount())
+        assertEquals(2, requester.bogusStateCount())
         requester.simulateCatastrophicFailure()
         assertEquals(0, requester.bogusStateCount())
         requester.runRequestLedgerSyncFlow(requester.members())
@@ -106,7 +106,9 @@ class LedgerConsistencyTests {
         val missingTransactions = requester.runRequestLedgerSyncFlow(requester.members())
 
         assertEquals(1, missingTransactions[participantsNodes[1].identity()]!!.missingAtRequestee.size)
+        assertEquals(0, missingTransactions[participantsNodes[1].identity()]!!.missingAtRequester.size)
         assertEquals(1, missingTransactions[participantsNodes[2].identity()]!!.missingAtRequestee.size)
+        assertEquals(0, missingTransactions[participantsNodes[2].identity()]!!.missingAtRequester.size)
     }
 
     @Test
@@ -121,7 +123,19 @@ class LedgerConsistencyTests {
     }
 
     @Test
-    fun `ledger consistency is reported for inconsistent ledgers`() {
+    fun `ledger consistency is reported for inconsistent ledger`() {
+        val requester = participantsNodes[0]
+        requester.createTransactions()
+        requester.simulateCatastrophicFailure()
+        val actual = requester.runEvaluateLedgerConsistencyFlow(requester.members())
+        assertEquals(mapOf(
+                participantsNodes[1].identity() to false,
+                participantsNodes[2].identity() to false
+        ), actual)
+    }
+
+    @Test
+    fun `ledger consistency is reported for inconsistent counter parties`() {
         val requester = participantsNodes[0]
         requester.createTransactions()
         participantsNodes[2].simulateCatastrophicFailure()
@@ -130,6 +144,29 @@ class LedgerConsistencyTests {
                 participantsNodes[1].identity() to true,
                 participantsNodes[2].identity() to false
         ), actual)
+    }
+
+    @Test
+    fun `transactions can be recovered`() {
+        val requester = participantsNodes[0]
+        requester.createTransactions()
+
+        assertEquals(2, requester.bogusStateCount())
+
+        requester.simulateCatastrophicFailure()
+
+        assertEquals(0, requester.bogusStateCount())
+
+        val results = requester.runRequestLedgerSyncFlow(requester.members())
+
+        requester.runTransactionRecoveryFlow(results)
+
+        assertEquals(2, requester.bogusStateCount())
+    }
+
+    @Test
+    fun `recovery is done as comprehensive as possible when a subset of transactions are irrecoverable`() {
+        // TODO moritzplatt 10/08/2018 --
     }
 
     private fun StartedMockNode.elevateToMember() {
@@ -157,6 +194,12 @@ class LedgerConsistencyTests {
         val future = startFlow(RequestLedgersSyncFlow(members))
         mockNetwork.runNetwork()
         return future.getOrThrow()
+    }
+
+    private fun StartedMockNode.runTransactionRecoveryFlow(report: Map<Party, LedgerSyncFindings>) {
+        val future = startFlow(TransactionRecoveryFlow(report))
+        mockNetwork.runNetwork()
+        future.getOrThrow()
     }
 
     private fun StartedMockNode.runEvaluateLedgerConsistencyFlow(members: List<Party>): Map<Party, Boolean> {
@@ -195,9 +238,11 @@ class LedgerConsistencyTests {
         connection().prepareStatement("""DELETE FROM VAULT_STATES WHERE CONTRACT_STATE_CLASS_NAME='${BogusState::class.java.canonicalName}'""").execute()
     }
 
-    private fun StartedMockNode.createTransactions() {
-        members().forEach {
-            createTransaction(it)
+    private fun StartedMockNode.createTransactions(count: Int = 1) {
+        (members() - identity()).forEach { party ->
+            repeat(count) {
+                createTransaction(party)
+            }
         }
     }
 
