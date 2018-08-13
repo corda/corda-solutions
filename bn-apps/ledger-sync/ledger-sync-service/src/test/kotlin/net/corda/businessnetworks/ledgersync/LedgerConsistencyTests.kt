@@ -150,29 +150,34 @@ class LedgerConsistencyTests {
                 participantsNodes[2].identity() to false
         ), actual)
     }
-//
-//    @Test
-//    fun `transactions can be recovered`() {
-//        val requester = participantsNodes[0]
-//        requester.createTransactions()
-//
-//        assertEquals(2, requester.bogusStateCount())
-//
-//        requester.simulateCatastrophicFailure()
-//
-//        assertEquals(0, requester.bogusStateCount())
-//
-//        val results = requester.runRequestLedgerSyncFlow(requester.members())
-//
-//        requester.runTransactionRecoveryFlow(results)
-//
-//        assertEquals(2, requester.bogusStateCount())
-//    }
-//
-//    @Test
-//    fun `recovery is done as comprehensive as possible when a subset of transactions are irrecoverable`() {
-//        // TODO moritzplatt 10/08/2018 --
-//    }
+
+    @Test
+    fun `transactions can be recovered`() {
+        val requester = participantsNodes[0]
+        requester.createTransactions(3)
+
+        assertEquals(6, requester.bogusStateCount())
+
+        requester.simulateCatastrophicFailure()
+
+        val consistencyResult = requester.runEvaluateLedgerConsistencyFlow(requester.members())
+
+        assertEquals(mapOf(
+                participantsNodes[1].identity() to false,
+                participantsNodes[2].identity() to false
+        ), consistencyResult)
+
+        assertEquals(0, requester.bogusStateCount())
+
+        val ledgerSyncResult = requester.runRequestLedgerSyncFlow(requester.members())
+
+        assertEquals(3, ledgerSyncResult[participantsNodes[1].identity()]!!.missingAtRequester.size)
+        assertEquals(3, ledgerSyncResult[participantsNodes[2].identity()]!!.missingAtRequester.size)
+
+        requester.runTransactionRecoveryFlow(ledgerSyncResult)
+
+        assertEquals(6, requester.bogusStateCount())
+    }
 
     private fun StartedMockNode.elevateToMember() {
         runRequestMembershipFlow()
@@ -240,7 +245,19 @@ class LedgerConsistencyTests {
             ?: fail("Can't obtain vault database connection")
 
     private fun StartedMockNode.simulateCatastrophicFailure() {
-        connection().prepareStatement("""DELETE FROM VAULT_STATES WHERE CONTRACT_STATE_CLASS_NAME='${BogusState::class.java.canonicalName}'""").execute()
+        transaction {
+            connection().use { connection ->
+                connection.prepareStatement("""SELECT transaction_id FROM VAULT_STATES WHERE CONTRACT_STATE_CLASS_NAME='${BogusState::class.java.canonicalName}'""").executeQuery().let { results ->
+                    while (results.next()) {
+                        results.getString(1).let { transactionId ->
+                            connection.prepareStatement("""DELETE FROM VAULT_LINEAR_STATES_PARTS WHERE transaction_id='$transactionId'""").execute()
+                            connection.prepareStatement("""DELETE FROM VAULT_LINEAR_STATES WHERE transaction_id='$transactionId'""").execute()
+                            connection.prepareStatement("""DELETE FROM VAULT_STATES WHERE transaction_id='$transactionId'""").execute()
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private fun StartedMockNode.createTransactions(count: Int = 1) {

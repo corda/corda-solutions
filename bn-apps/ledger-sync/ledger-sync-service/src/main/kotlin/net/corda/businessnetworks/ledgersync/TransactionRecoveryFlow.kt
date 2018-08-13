@@ -18,14 +18,17 @@ class TransactionRecoveryFlow(
 
     @Suspendable
     override fun call() {
-        report.forEach { counterParty, findings ->
-            val flow = initiateFlow(counterParty)
-
+        report.toList().map { (counterParty, findings) ->
+            val session = initiateFlow(counterParty)
             findings.recoverable().also {
-                flow.send(it)
-            }.forEach {
-                subFlow(ReceiveTransactionFlow(flow))
+                session.send(it)
+            }.map {
+                subFlow(ReceiveTransactionFlow(session))
             }
+        }.flatten().onEach {
+            it.verify(serviceHub)
+        }.also {
+            serviceHub.recordTransactions(it)
         }
     }
 
