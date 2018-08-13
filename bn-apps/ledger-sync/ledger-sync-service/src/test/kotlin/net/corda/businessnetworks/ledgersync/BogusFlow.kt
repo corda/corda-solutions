@@ -2,7 +2,6 @@ package net.corda.businessnetworks.ledgersync
 
 import co.paralleluniverse.fibers.Suspendable
 import net.corda.core.contracts.Command
-import net.corda.core.contracts.ContractState
 import net.corda.core.contracts.LinearState
 import net.corda.core.contracts.UniqueIdentifier
 import net.corda.core.flows.CollectSignaturesFlow
@@ -62,6 +61,6 @@ data class BogusState(
         private val us: Party,
         private val them: Party,
         override val linearId: UniqueIdentifier = UniqueIdentifier()
-) : ContractState, LinearState {
+) : LinearState {
     override val participants: List<AbstractParty> = listOf(us, them)
 }

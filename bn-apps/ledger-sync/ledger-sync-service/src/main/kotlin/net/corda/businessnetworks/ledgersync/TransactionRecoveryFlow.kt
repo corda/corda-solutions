@@ -29,7 +29,7 @@ class TransactionRecoveryFlow(
         }
     }
 
-    private fun LedgerSyncFindings.recoverable() = missingAtRequestee - missingAtRequester
+    private fun LedgerSyncFindings.recoverable() = missingAtRequester - missingAtRequestee
 }
 
 @Suppress("unused")
