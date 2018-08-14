@@ -11,7 +11,7 @@ abstract class BusinessNetworkAwareInitiatedFlow<out T>(val flowSession: FlowSes
 
     @Suspendable
     override fun call(): T {
-        confirmInitiatorIsAMemberOfOurBN(flowSession.counterparty)
+        verifyMembership(flowSession.counterparty)
         return onOtherPartyMembershipVerified()
     }
 
@@ -19,7 +19,7 @@ abstract class BusinessNetworkAwareInitiatedFlow<out T>(val flowSession: FlowSes
     abstract fun onOtherPartyMembershipVerified() : T
 
     @Suspendable
-    private fun confirmInitiatorIsAMemberOfOurBN(initiator : Party) {
+    private fun verifyMembership(initiator : Party) {
         val databaseService = serviceHub.cordaService(DatabaseService::class.java)
         val membership = databaseService.getMembership(initiator)
         if (membership == null) {
