@@ -50,7 +50,30 @@ class RevokeMembershipFlowTest : AbstractFlowTest(2) {
         assert(notifiedParties.toSet() == participantsNodes.map { identity(it) }.toSet())
     }
 
+    @Test
+    fun `membership revocation should succeed when using convenience flow`() {
+        val memberNode = participantsNodes.first()
+        val memberParty = identity(memberNode)
 
+        participantsNodes.forEach {
+            runRequestMembershipFlow(it)
+            runActivateMembershipFlow(bnoNode, identity(it))
+        }
+
+        val inputMembership = getMembership(memberNode, memberParty)
+        val stx = runRevokeMembershipForPartyFlow(bnoNode, memberParty)
+        stx.verifyRequiredSignatures()
+
+        val outputTxState = stx.tx.outputs.single()
+        val command = stx.tx.commands.single()
+
+        assert(Membership.CONTRACT_NAME == outputTxState.contract)
+        assert(command.value is Membership.Commands.Revoke)
+        assert(stx.inputs.single() == inputMembership.ref)
+
+        val notifiedParties = TestNotifyMembersFlowResponder.NOTIFICATIONS.filter { it.second is OnMembershipRevoked }.map { it.first }
+        assert(notifiedParties.toSet() == participantsNodes.map { identity(it) }.toSet())
+    }
 
     @Test
     fun `only BNO should be able to start the flow`() {

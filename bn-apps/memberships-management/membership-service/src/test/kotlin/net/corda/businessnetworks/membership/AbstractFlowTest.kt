@@ -3,6 +3,7 @@ package net.corda.businessnetworks.membership
 import net.corda.businessnetworks.membership.bno.ActivateMembershipFlow
 import net.corda.businessnetworks.membership.bno.ActivateMembershipForPartyFlow
 import net.corda.businessnetworks.membership.bno.RevokeMembershipFlow
+import net.corda.businessnetworks.membership.bno.RevokeMembershipForPartyFlow
 import net.corda.businessnetworks.membership.member.AmendMembershipMetadataFlow
 import net.corda.businessnetworks.membership.member.GetMembershipsFlow
 import net.corda.businessnetworks.membership.member.RequestMembershipFlow
@@ -68,6 +69,12 @@ abstract class AbstractFlowTest(
     fun runRevokeMembershipFlow(nodeToRunTheFlow : StartedMockNode, party : Party) : SignedTransaction {
         val membership = getMembership(nodeToRunTheFlow, party)
         val future = nodeToRunTheFlow.startFlow(RevokeMembershipFlow(membership))
+        mockNetwork.runNetwork()
+        return future.getOrThrow()
+    }
+
+    fun runRevokeMembershipForPartyFlow(nodeToRunTheFlow : StartedMockNode, party: Party) : SignedTransaction {
+        val future = nodeToRunTheFlow.startFlow(RevokeMembershipForPartyFlow(party))
         mockNetwork.runNetwork()
         return future.getOrThrow()
     }
