@@ -1,6 +1,8 @@
 package net.corda.businessnetworks.membership
 
 import net.corda.businessnetworks.membership.bno.GetMembershipListFlowResponder
+import net.corda.businessnetworks.membership.common.CounterPartyMembershipNotActive
+import net.corda.businessnetworks.membership.common.CounterPartyNotAMemberException
 import net.corda.core.flows.FlowException
 import org.junit.Test
 import kotlin.test.fail
@@ -60,20 +62,20 @@ class GetMembershipsFlowTest : AbstractFlowTest(5) {
         try {
             runGetMembershipsListFlow(notMember, true)
             fail()
-        } catch (e : FlowException) {
-            assert("${identity(notMember)} is not a member" == e.message)
+        } catch (e : CounterPartyNotAMemberException) {
+            assert("Counterparty ${identity(notMember)} is not a member of this business network" == e.message)
         }
         try {
             runGetMembershipsListFlow(pendingNode, true)
             fail()
-        } catch (e : FlowException) {
-            assert("${identity(pendingNode)} membership is not active" == e.message)
+        } catch (e : CounterPartyMembershipNotActive) {
+            assert("Counterparty's ${identity(pendingNode)} membership in this business network is not active" == e.message)
         }
         try {
             runGetMembershipsListFlow(revokedNode, true)
             fail()
-        } catch (e : FlowException) {
-            assert("${identity(revokedNode)} membership is not active" == e.message)
+        } catch (e : CounterPartyMembershipNotActive) {
+            assert("Counterparty's ${identity(revokedNode)} membership in this business network is not active" == e.message)
         }
     }
 }
