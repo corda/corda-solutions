@@ -2,6 +2,7 @@ package net.corda.businessnetworks.membership
 
 import net.corda.businessnetworks.membership.bno.OnMembershipRevoked
 import net.corda.businessnetworks.membership.bno.service.BNOConfigurationService
+import net.corda.businessnetworks.membership.common.NotBusinessOperatorOnThisMembership
 import net.corda.businessnetworks.membership.states.Membership
 import net.corda.core.flows.FlowException
 import org.junit.Before
@@ -60,8 +61,8 @@ class RevokeMembershipFlowTest : AbstractFlowTest(2) {
         try {
             runRevokeMembershipFlow(memberNode, memberParty)
             fail()
-        } catch (e : FlowException) {
-            assertEquals("Our identity has to be BNO", e.message)
+        } catch (e : NotBusinessOperatorOnThisMembership) {
+            assertEquals("This node is not the business network operator of this membership", e.message)
         }
     }
 

@@ -2,6 +2,7 @@ package net.corda.businessnetworks.membership.bno
 
 import co.paralleluniverse.fibers.Suspendable
 import net.corda.businessnetworks.membership.bno.service.BNOConfigurationService
+import net.corda.businessnetworks.membership.bno.support.BusinessNetworkAwareFlow
 import net.corda.businessnetworks.membership.states.Membership
 import net.corda.businessnetworks.membership.states.MembershipStatus
 import net.corda.core.contracts.StateAndRef
@@ -21,14 +22,11 @@ import net.corda.core.utilities.ProgressTracker
  */
 @InitiatingFlow
 @StartableByRPC
-class ActivateMembershipFlow(val membership : StateAndRef<Membership.State>) : FlowLogic<SignedTransaction>() {
+class ActivateMembershipFlow(val membership : StateAndRef<Membership.State>) : BusinessNetworkAwareFlow<SignedTransaction>() {
 
     @Suspendable
     override fun call() : SignedTransaction {
-        // Only BNO should be able to start this flow
-        if (ourIdentity != membership.state.data.bno) {
-            throw FlowException("Our identity has to be BNO")
-        }
+        checkWeAreTheBNOOnThisMembership(membership.state.data)
 
         val configuration = serviceHub.cordaService(BNOConfigurationService::class.java)
 

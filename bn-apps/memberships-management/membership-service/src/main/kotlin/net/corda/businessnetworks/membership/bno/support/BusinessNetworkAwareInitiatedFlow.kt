@@ -4,11 +4,10 @@ import co.paralleluniverse.fibers.Suspendable
 import net.corda.businessnetworks.membership.bno.service.DatabaseService
 import net.corda.businessnetworks.membership.common.CounterPartyMembershipNotActive
 import net.corda.businessnetworks.membership.common.CounterPartyNotAMemberException
-import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.FlowSession
 import net.corda.core.identity.Party
 
-abstract class BusinessNetworkAwareInitiatedFlow<out T>(val flowSession: FlowSession) : FlowLogic<T>() {
+abstract class BusinessNetworkAwareInitiatedFlow<out T>(val flowSession: FlowSession) : BusinessNetworkAwareFlow<T>() {
 
     @Suspendable
     override fun call(): T {
