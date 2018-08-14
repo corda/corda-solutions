@@ -1,7 +1,7 @@
 package net.corda.businessnetworks.membership.member.support
 
 import co.paralleluniverse.fibers.Suspendable
-import net.corda.businessnetworks.membership.common.CounterPartyNotAMemberException
+import net.corda.businessnetworks.membership.common.NotAMemberException
 import net.corda.businessnetworks.membership.member.GetMembershipsFlow
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.FlowSession
@@ -22,7 +22,7 @@ abstract class BusinessNetworkAwareInitiatedFlow<out T>(val flowSession: FlowSes
     private fun confirmInitiatorIsAMemberOfThisBN(initiator : Party) {
         val memberships = subFlow(GetMembershipsFlow())
         if(memberships[initiator] == null) {
-            throw CounterPartyNotAMemberException(initiator)
+            throw NotAMemberException(initiator)
         }
     }
 }

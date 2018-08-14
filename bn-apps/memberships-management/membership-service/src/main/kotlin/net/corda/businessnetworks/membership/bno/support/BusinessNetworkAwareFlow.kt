@@ -2,7 +2,7 @@ package net.corda.businessnetworks.membership.bno.support
 
 import net.corda.businessnetworks.membership.common.MembershipNotFound
 import net.corda.businessnetworks.membership.common.MultipleMembershipsFound
-import net.corda.businessnetworks.membership.common.NotBusinessOperatorOnThisMembership
+import net.corda.businessnetworks.membership.common.NotBNOException
 import net.corda.businessnetworks.membership.states.Membership
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.flows.FlowLogic
@@ -13,7 +13,7 @@ abstract class BusinessNetworkAwareFlow<out T>() : FlowLogic<T>() {
 
     protected fun verifyThatWeAreBNO(membership : Membership.State) {
         if(ourIdentity != membership.bno) {
-            throw NotBusinessOperatorOnThisMembership(membership)
+            throw NotBNOException(membership)
         }
     }
 

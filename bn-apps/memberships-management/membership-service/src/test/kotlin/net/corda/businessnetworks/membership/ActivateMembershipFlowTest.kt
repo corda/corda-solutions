@@ -2,9 +2,8 @@ package net.corda.businessnetworks.membership
 
 import net.corda.businessnetworks.membership.bno.OnMembershipActivated
 import net.corda.businessnetworks.membership.bno.service.BNOConfigurationService
-import net.corda.businessnetworks.membership.common.NotBusinessOperatorOnThisMembership
+import net.corda.businessnetworks.membership.common.NotBNOException
 import net.corda.businessnetworks.membership.states.Membership
-import net.corda.core.flows.FlowException
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -90,7 +89,7 @@ class ActivateMembershipFlowTest : AbstractFlowTest(2) {
         try {
             runActivateMembershipFlow(memberNode, memberParty)
             fail()
-        } catch (e : NotBusinessOperatorOnThisMembership) {
+        } catch (e : NotBNOException) {
             assertEquals("This node is not the business network operator of this membership", e.message)
         }
     }

@@ -2,8 +2,8 @@ package net.corda.businessnetworks.membership.bno.support
 
 import co.paralleluniverse.fibers.Suspendable
 import net.corda.businessnetworks.membership.bno.service.DatabaseService
-import net.corda.businessnetworks.membership.common.CounterPartyMembershipNotActive
-import net.corda.businessnetworks.membership.common.CounterPartyNotAMemberException
+import net.corda.businessnetworks.membership.common.MembershipNotActiveException
+import net.corda.businessnetworks.membership.common.NotAMemberException
 import net.corda.core.flows.FlowSession
 import net.corda.core.identity.Party
 
@@ -23,9 +23,9 @@ abstract class BusinessNetworkAwareInitiatedFlow<out T>(val flowSession: FlowSes
         val databaseService = serviceHub.cordaService(DatabaseService::class.java)
         val membership = databaseService.getMembership(initiator)
         if (membership == null) {
-            throw CounterPartyNotAMemberException(initiator)
+            throw NotAMemberException(initiator)
         } else if (!membership.state.data.isActive()) {
-            throw CounterPartyMembershipNotActive(initiator)
+            throw MembershipNotActiveException(initiator)
         }
     }
 }
