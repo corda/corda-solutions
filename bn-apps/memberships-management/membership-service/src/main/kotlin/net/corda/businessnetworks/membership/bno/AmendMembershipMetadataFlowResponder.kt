@@ -18,7 +18,7 @@ import net.corda.core.utilities.unwrap
 class AmendMembershipMetadataFlowResponder(flowSession : FlowSession) : BusinessNetworkAwareInitiatedFlow<Unit>(flowSession) {
 
     @Suspendable
-    override fun afterOtherPartyMembershipChecked() {
+    override fun onOtherPartyMembershipVerified() {
         // await for a message with a proposed metadata change
         val metadataChangeRequest = flowSession.receive<AmendMembershipMetadataRequest>().unwrap{ it }
 

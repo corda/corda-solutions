@@ -17,7 +17,7 @@ import net.corda.core.flows.InitiatedBy
 class GetMembershipListFlowResponder(flowSession : FlowSession) : BusinessNetworkAwareInitiatedFlow<Unit>(flowSession) {
 
     @Suspendable
-    override fun afterOtherPartyMembershipChecked() {
+    override fun onOtherPartyMembershipVerified() {
         //build memberships snapshot
         flowSession.receive<MembershipListRequest>()
         val databaseService = serviceHub.cordaService(DatabaseService::class.java)

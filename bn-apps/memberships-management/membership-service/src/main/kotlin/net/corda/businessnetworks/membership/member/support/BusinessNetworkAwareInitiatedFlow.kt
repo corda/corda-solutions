@@ -12,11 +12,11 @@ abstract class BusinessNetworkAwareInitiatedFlow<out T>(val flowSession: FlowSes
     @Suspendable
     override fun call(): T {
         confirmInitiatorIsAMemberOfThisBN(flowSession.counterparty)
-        return afterOtherPartyMembershipChecked()
+        return onOtherPartyMembershipVerified()
     }
 
     @Suspendable
-    abstract fun afterOtherPartyMembershipChecked() : T
+    abstract fun onOtherPartyMembershipVerified() : T
 
     @Suspendable
     private fun confirmInitiatorIsAMemberOfThisBN(initiator : Party) {
