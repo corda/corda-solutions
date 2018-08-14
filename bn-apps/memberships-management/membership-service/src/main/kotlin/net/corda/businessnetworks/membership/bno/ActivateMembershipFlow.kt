@@ -2,13 +2,12 @@ package net.corda.businessnetworks.membership.bno
 
 import co.paralleluniverse.fibers.Suspendable
 import net.corda.businessnetworks.membership.bno.service.BNOConfigurationService
-import net.corda.businessnetworks.membership.bno.support.BusinessNetworkAwareFlow
+import net.corda.businessnetworks.membership.bno.support.BusinessNetworkOperatorSupportFlow
 import net.corda.businessnetworks.membership.states.Membership
 import net.corda.businessnetworks.membership.states.MembershipStatus
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.flows.*
 import net.corda.core.identity.Party
-import net.corda.core.node.services.queryBy
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.ProgressTracker
@@ -22,7 +21,7 @@ import net.corda.core.utilities.ProgressTracker
  */
 @InitiatingFlow
 @StartableByRPC
-class ActivateMembershipFlow(val membership : StateAndRef<Membership.State>) : BusinessNetworkAwareFlow<SignedTransaction>() {
+class ActivateMembershipFlow(val membership : StateAndRef<Membership.State>) : BusinessNetworkOperatorSupportFlow<SignedTransaction>() {
 
     @Suspendable
     override fun call() : SignedTransaction {
@@ -56,7 +55,7 @@ class ActivateMembershipFlow(val membership : StateAndRef<Membership.State>) : B
  */
 @InitiatingFlow
 @StartableByRPC
-class ActivateMembershipForPartyFlow(val party : Party) : BusinessNetworkAwareFlow<SignedTransaction>() {
+class ActivateMembershipForPartyFlow(val party : Party) : BusinessNetworkOperatorSupportFlow<SignedTransaction>() {
 
     companion object {
         object LOOKING_FOR_MEMBERSHIP_STATE : ProgressTracker.Step("Looking for party's membership state")

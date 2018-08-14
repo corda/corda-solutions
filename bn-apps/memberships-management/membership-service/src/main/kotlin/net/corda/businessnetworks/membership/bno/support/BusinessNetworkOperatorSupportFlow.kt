@@ -1,5 +1,6 @@
 package net.corda.businessnetworks.membership.bno.support
 
+import net.corda.businessnetworks.membership.bno.service.DatabaseService
 import net.corda.businessnetworks.membership.common.MembershipNotFound
 import net.corda.businessnetworks.membership.common.MultipleMembershipsFound
 import net.corda.businessnetworks.membership.common.NotBNOException
@@ -9,7 +10,7 @@ import net.corda.core.flows.FlowLogic
 import net.corda.core.identity.Party
 import net.corda.core.node.services.queryBy
 
-abstract class BusinessNetworkAwareFlow<out T>() : FlowLogic<T>() {
+abstract class BusinessNetworkOperatorSupportFlow<out T>() : FlowLogic<T>() {
 
     protected fun verifyThatWeAreBNO(membership : Membership.State) {
         if(ourIdentity != membership.bno) {
@@ -25,6 +26,11 @@ abstract class BusinessNetworkAwareFlow<out T>() : FlowLogic<T>() {
             memberships.size == 1 -> memberships.first()
             else -> throw MultipleMembershipsFound(party)
         }
+    }
+
+    protected fun getActiveMembershipStates() : List<StateAndRef<Membership.State>> {
+        val databaseService = serviceHub.cordaService(DatabaseService::class.java)
+        return databaseService.getActiveMemberships()
     }
 
 }

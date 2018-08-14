@@ -3,7 +3,7 @@ package net.corda.businessnetworks.membership.bno
 import co.paralleluniverse.fibers.Suspendable
 import net.corda.businessnetworks.membership.bno.service.BNOConfigurationService
 import net.corda.businessnetworks.membership.bno.service.DatabaseService
-import net.corda.businessnetworks.membership.bno.support.BusinessNetworkAwareInitiatedFlow
+import net.corda.businessnetworks.membership.bno.support.BusinessNetworkOperatorInitiatedFlow
 import net.corda.businessnetworks.membership.member.AmendMembershipMetadataFlow
 import net.corda.businessnetworks.membership.member.AmendMembershipMetadataRequest
 import net.corda.businessnetworks.membership.states.Membership
@@ -15,7 +15,7 @@ import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.unwrap
 
 @InitiatedBy(AmendMembershipMetadataFlow::class)
-class AmendMembershipMetadataFlowResponder(flowSession : FlowSession) : BusinessNetworkAwareInitiatedFlow<Unit>(flowSession) {
+class AmendMembershipMetadataFlowResponder(flowSession : FlowSession) : BusinessNetworkOperatorInitiatedFlow<Unit>(flowSession) {
 
     @Suspendable
     override fun onOtherPartyMembershipVerified() {
