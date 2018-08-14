@@ -2,25 +2,23 @@ package net.corda.businessnetworks.membership.bno
 
 import co.paralleluniverse.fibers.Suspendable
 import net.corda.businessnetworks.membership.bno.service.BNOConfigurationService
+import net.corda.businessnetworks.membership.bno.support.BusinessNetworkAwareFlow
 import net.corda.businessnetworks.membership.states.Membership
 import net.corda.businessnetworks.membership.states.MembershipStatus
 import net.corda.core.contracts.StateAndRef
-import net.corda.core.flows.FinalityFlow
-import net.corda.core.flows.FlowException
-import net.corda.core.flows.FlowLogic
-import net.corda.core.flows.InitiatingFlow
+import net.corda.core.flows.*
+import net.corda.core.identity.Party
+import net.corda.core.node.services.queryBy
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
+import net.corda.core.utilities.ProgressTracker
 
 @InitiatingFlow
-class RevokeMembershipFlow(val membership : StateAndRef<Membership.State>) : FlowLogic<SignedTransaction>() {
+class RevokeMembershipFlow(val membership : StateAndRef<Membership.State>) : BusinessNetworkAwareFlow<SignedTransaction>() {
 
     @Suspendable
     override fun call() : SignedTransaction {
-        // only BNO should be able to start this flow
-        if (ourIdentity != membership.state.data.bno) {
-            throw FlowException("Our identity has to be BNO")
-        }
+        verifyThatWeAreBNO(membership.state.data)
         val configuration = serviceHub.cordaService(BNOConfigurationService::class.java)
         val notary = configuration.notaryParty()
 
@@ -43,4 +41,36 @@ class RevokeMembershipFlow(val membership : StateAndRef<Membership.State>) : Flo
 
         return finalisedTx
     }
+}
+
+/**
+ * This is a convenience flow that can be easily used from command line
+ *
+ * @param party whose membership state to be revoked
+ */
+@InitiatingFlow
+@StartableByRPC
+class RevokeMembershipForPartyFlow(val party : Party) : BusinessNetworkAwareFlow<SignedTransaction>() {
+
+    companion object {
+        object LOOKING_FOR_MEMBERSHIP_STATE : ProgressTracker.Step("Looking for party's membership state")
+        object REVOKING_THE_MEMBERSHIP_STATE : ProgressTracker.Step("Revoking the membership state")
+
+        fun tracker() = ProgressTracker(
+                LOOKING_FOR_MEMBERSHIP_STATE,
+                REVOKING_THE_MEMBERSHIP_STATE
+        )
+    }
+
+    override val progressTracker = tracker()
+
+    @Suspendable
+    override fun call() : SignedTransaction {
+        progressTracker.currentStep = LOOKING_FOR_MEMBERSHIP_STATE
+        val stateToActivate = findMembershipStateForParty(party)
+
+        progressTracker.currentStep = REVOKING_THE_MEMBERSHIP_STATE
+        return subFlow(RevokeMembershipFlow(stateToActivate))
+    }
+
 }

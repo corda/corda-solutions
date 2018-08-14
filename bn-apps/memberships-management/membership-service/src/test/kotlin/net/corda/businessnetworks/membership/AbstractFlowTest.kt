@@ -1,7 +1,9 @@
 package net.corda.businessnetworks.membership
 
 import net.corda.businessnetworks.membership.bno.ActivateMembershipFlow
+import net.corda.businessnetworks.membership.bno.ActivateMembershipForPartyFlow
 import net.corda.businessnetworks.membership.bno.RevokeMembershipFlow
+import net.corda.businessnetworks.membership.bno.RevokeMembershipForPartyFlow
 import net.corda.businessnetworks.membership.member.AmendMembershipMetadataFlow
 import net.corda.businessnetworks.membership.member.GetMembershipsFlow
 import net.corda.businessnetworks.membership.member.RequestMembershipFlow
@@ -54,7 +56,7 @@ abstract class AbstractFlowTest(
             mockNetwork.createNode(MockNodeParameters(legalName = name))
 
     @After
-    fun tearDown() {
+    open fun tearDown() {
         mockNetwork.stopNodes()
     }
 
@@ -71,9 +73,21 @@ abstract class AbstractFlowTest(
         return future.getOrThrow()
     }
 
+    fun runRevokeMembershipForPartyFlow(nodeToRunTheFlow : StartedMockNode, party: Party) : SignedTransaction {
+        val future = nodeToRunTheFlow.startFlow(RevokeMembershipForPartyFlow(party))
+        mockNetwork.runNetwork()
+        return future.getOrThrow()
+    }
+
     fun runActivateMembershipFlow(nodeToRunTheFlow : StartedMockNode, party : Party) : SignedTransaction {
         val membership = getMembership(nodeToRunTheFlow, party)
         val future = nodeToRunTheFlow.startFlow(ActivateMembershipFlow(membership))
+        mockNetwork.runNetwork()
+        return future.getOrThrow()
+    }
+
+    fun runActivateMembershipForPartyFlow(nodeToRunTheFlow : StartedMockNode, party : Party) : SignedTransaction {
+        val future = nodeToRunTheFlow.startFlow(ActivateMembershipForPartyFlow(party))
         mockNetwork.runNetwork()
         return future.getOrThrow()
     }
