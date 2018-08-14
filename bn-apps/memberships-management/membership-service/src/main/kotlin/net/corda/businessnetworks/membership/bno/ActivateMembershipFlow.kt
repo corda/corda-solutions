@@ -56,7 +56,7 @@ class ActivateMembershipFlow(val membership : StateAndRef<Membership.State>) : B
  */
 @InitiatingFlow
 @StartableByRPC
-class ActivateMembershipForPartyFlow(val party : Party) : FlowLogic<SignedTransaction>() {
+class ActivateMembershipForPartyFlow(val party : Party) : BusinessNetworkAwareFlow<SignedTransaction>() {
 
     companion object {
         object LOOKING_FOR_MEMBERSHIP_STATE : ProgressTracker.Step("Looking for party's membership state")
@@ -79,8 +79,4 @@ class ActivateMembershipForPartyFlow(val party : Party) : FlowLogic<SignedTransa
         return subFlow(ActivateMembershipFlow(stateToActivate))
     }
 
-    private fun findMembershipStateForParty(party : Party) : StateAndRef<Membership.State> {
-        //@todo this could be made more effective and look for the Party's state in the vault
-        return serviceHub.vaultService.queryBy<Membership.State>().states.filter { it.state.data.member == party }.single()
-    }
 }
