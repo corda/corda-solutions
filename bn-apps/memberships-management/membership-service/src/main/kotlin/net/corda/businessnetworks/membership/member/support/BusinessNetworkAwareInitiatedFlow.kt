@@ -11,7 +11,7 @@ abstract class BusinessNetworkAwareInitiatedFlow<out T>(val flowSession: FlowSes
 
     @Suspendable
     override fun call(): T {
-        confirmInitiatorIsAMemberOfThisBN(flowSession.counterparty)
+        verifyMembership(flowSession.counterparty)
         return onOtherPartyMembershipVerified()
     }
 
@@ -19,7 +19,7 @@ abstract class BusinessNetworkAwareInitiatedFlow<out T>(val flowSession: FlowSes
     abstract fun onOtherPartyMembershipVerified() : T
 
     @Suspendable
-    private fun confirmInitiatorIsAMemberOfThisBN(initiator : Party) {
+    private fun verifyMembership(initiator : Party) {
         val memberships = subFlow(GetMembershipsFlow())
         if(memberships[initiator] == null) {
             throw NotAMemberException(initiator)
