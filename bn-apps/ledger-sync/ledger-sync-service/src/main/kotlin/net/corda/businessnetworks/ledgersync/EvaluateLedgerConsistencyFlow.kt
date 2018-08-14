@@ -9,6 +9,10 @@ import net.corda.core.identity.Party
 import net.corda.core.utilities.OpaqueBytes
 import net.corda.core.utilities.unwrap
 
+/**
+ * A flow to run a pairwise evaluation to determine if the ledger is in a consistent consistent state with regards to
+ * the transactions both parties holds.
+ */
 @InitiatingFlow
 class EvaluateLedgerConsistencyFlow(
         private val members: List<Party>

@@ -11,6 +11,9 @@ import net.corda.core.flows.SendTransactionFlow
 import net.corda.core.identity.Party
 import net.corda.core.utilities.unwrap
 
+/**
+ * This flow allows for the recovery of transactions with IDs found previously.
+ */
 @InitiatingFlow
 class TransactionRecoveryFlow(
         private val report: Map<Party, LedgerSyncFindings>

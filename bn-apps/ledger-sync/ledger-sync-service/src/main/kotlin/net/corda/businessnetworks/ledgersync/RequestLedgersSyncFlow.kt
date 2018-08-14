@@ -10,6 +10,10 @@ import net.corda.core.identity.Party
 import net.corda.core.serialization.CordaSerializable
 import net.corda.core.utilities.unwrap
 
+/**
+ * If inconsistencies are flagged, the counter party can be queried for a more detailed report using this flow. Based
+ * the result, both the parties can take further action (such as notifying the BNO) or recover the transactions found.
+ */
 @InitiatingFlow
 class RequestLedgersSyncFlow(
         private val members: List<Party>
@@ -20,6 +24,7 @@ class RequestLedgersSyncFlow(
             .map { they ->
                 val knownTransactionsIds = serviceHub.vaultService.withParticipants(ourIdentity, they)
                 val findings = initiateFlow(they).sendAndReceive<LedgerSyncFindings>(knownTransactionsIds).unwrap { it }
+                // an individual implementation might treat findings individually
                 they to findings
             }.toMap()
 }

@@ -1,0 +1,38 @@
+@startuml
+== Get Memberships Flow ==
+
+Initiator -> "Business Network Operator": Get Members
+"Business Network Operator" --> Initiator: Set of BN members
+
+== Evaluate Ledger Consistency Flow ==
+
+loop for all node ∈ BN members
+    Initiator -> Initiator: Retrieve and hash transaction IDs\n\
+        of transactions with //Counterparty//
+    Initiator -> Counterparty: Compound hash of transactions
+    Counterparty -> Counterparty: Retrieve, hash transaction IDs of transactions\n\
+        with //Initiator// and compare with hash received
+    Counterparty --> Initiator: Do hashes match?
+end
+
+== Request Ledger Sync Flow ==
+
+loop for all node ∈ BN Members
+    alt hash_match == false
+        Initiator -> Counterparty: Set of IDs of transactions with //Counterparty//
+        Counterparty --> Initiator: Set of findings, indicating missing transaction\n\
+            both on the //Inititator// and //Counterparty// side
+    end
+end
+
+== Transaction Recovery Flow ==
+
+loop for all finding ∈ findings
+    alt contains recoverable transactions
+        Initiator -> Counterparty: Set of IDs of recoverable transactions with //Counterparty//
+            loop for all id ∈ relevant_transaction_ids
+                Counterparty --> Initiator: Transaction
+            end
+    end
+end
+@enduml
