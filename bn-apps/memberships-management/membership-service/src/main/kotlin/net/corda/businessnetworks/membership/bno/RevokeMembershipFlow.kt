@@ -18,7 +18,7 @@ class RevokeMembershipFlow(val membership : StateAndRef<Membership.State>) : Bus
 
     @Suspendable
     override fun call() : SignedTransaction {
-        checkWeAreTheBNOOnThisMembership(membership.state.data)
+        verifyThatWeAreBNO(membership.state.data)
         val configuration = serviceHub.cordaService(BNOConfigurationService::class.java)
         val notary = configuration.notaryParty()
 

@@ -26,7 +26,7 @@ class ActivateMembershipFlow(val membership : StateAndRef<Membership.State>) : B
 
     @Suspendable
     override fun call() : SignedTransaction {
-        checkWeAreTheBNOOnThisMembership(membership.state.data)
+        verifyThatWeAreBNO(membership.state.data)
 
         val configuration = serviceHub.cordaService(BNOConfigurationService::class.java)
 

@@ -6,7 +6,7 @@ import net.corda.core.flows.FlowLogic
 
 abstract class BusinessNetworkAwareFlow<out T>() : FlowLogic<T>() {
 
-    protected fun checkWeAreTheBNOOnThisMembership(membership : Membership.State) {
+    protected fun verifyThatWeAreBNO(membership : Membership.State) {
         if(ourIdentity != membership.bno) {
             throw NotBusinessOperatorOnThisMembership(membership)
         }
