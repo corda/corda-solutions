@@ -21,7 +21,7 @@ data class OnMembershipRevoked(val revokedMember : Party)
 class NotifyActiveMembersFlow(private val notification : Any) : BusinessNetworkAwareInitiatingFlow<Unit>() {
 
     @Suspendable
-    override fun callWithActiveMembershipList(memberships: List<StateAndRef<Membership.State>>) {
+    override fun callWithMembers(memberships: List<StateAndRef<Membership.State>>) {
         memberships.forEach { subFlow(NotifyMemberFlow(notification, it.state.data.member)) }
     }
 
