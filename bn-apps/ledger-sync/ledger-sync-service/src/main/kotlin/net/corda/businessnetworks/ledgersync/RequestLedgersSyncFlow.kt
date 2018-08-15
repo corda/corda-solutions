@@ -35,12 +35,17 @@ class RespondLedgerSyncFlow(
         private val otherSideSession: FlowSession
 ) : FlowLogic<Unit>() {
 
-    /**
-     * Depending on the use case, users of this flow might introduce additional validation logic. This could mean
-     * ensuring the requester is still a valid member of a network at the time of request or similar checks.
-     */
     @Suspendable
     override fun call() {
+        /**
+         * Depending on the use case, users of this flow might introduce additional validation logic. This could mean
+         * ensuring the requester is still a valid member of a network at the time of request, i.e.:
+         *
+         * subFlow(GetMembershipsFlow()).filter { (party: Party, stateAndRef: StateAndRef<Membership.State>) ->
+         *     party == otherSideSession.counterparty && stateAndRef.state.data.status == MembershipStatus.ACTIVE
+         * }.toList().firstOrNull() ?: throw FlowException("Ledger consistency check was requested by a party that is not member of the business network")
+         */
+
         val theirs = otherSideSession.receive<List<SecureHash>>().unwrap { it }
         val ours = serviceHub.vaultService.withParticipants(ourIdentity, otherSideSession.counterparty)
         otherSideSession.send(LedgerSyncFindings(
