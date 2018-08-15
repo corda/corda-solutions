@@ -19,6 +19,7 @@ Please see [FullBNMSFlowDemo](./membership-service/src/test/kotlin/net/corda/bus
 Note that during development you can take advantage of the following classes that encapsulate some commonly used logic:
 * If you are a business network operator: `BusinessNetworkOperatorFlowLogic` and `BusinessNetworkOperatorInitiatedFlow`
 * If you are a business network member: `BusinessNetworkAwareInitiatedFlow`
+
 Look at their respective class annotations for details.
 
 
