@@ -9,9 +9,9 @@ The actual recovery of transaction should be a last resort if other resiliency t
 Flows can be composed in a four-step process from the perspective of a node that suspects the vault has lost integrity.
 The flows can be utilised in the following way:
 
- 1. Determine potential counter parties by `querying the business network operator <../memberships-management/membership-service/src/main/kotlin/net/corda/businessnetworks/membership/member/GetMembershipsFlow.kt>`_.
- 2. `Evaluate pairwise if the ledger is consistent <ledger-sync-service/src/main/kotlin/net/corda/businessnetworks/ledgersync/EvaluateLedgerConsistencyFlow.kt>`_ with regards to the transactions the counter party holds.
- 3. If inconsistencies are flagged, the counter party can be `queried for a more detailed report<ledger-sync-service/src/main/kotlin/net/corda/businessnetworks/ledgersync/RequestLedgersSyncFlow.kt>`_ based on which both the parties can take further action (such as notifying the BNO) or recover the transactions found.
- 4. Transaction IDs can then be used in the `transaction recovery flow <ledger-sync-service/src/main/kotlin/net/corda/businessnetworks/ledgersync/TransactionRecoveryFlow.kt>`_ to recover individual transactions from counter parties.
+1. Determine potential counter parties by `querying the business network operator <../memberships-management/membership-service/src/main/kotlin/net/corda/businessnetworks/membership/member/GetMembershipsFlow.kt>`_.
+2. `Evaluate pairwise if the ledger is consistent <ledger-sync-service/src/main/kotlin/net/corda/businessnetworks/ledgersync/EvaluateLedgerConsistencyFlow.kt>`_ with regards to the transactions the counter party holds.
+3. If inconsistencies are flagged, the counter party can be `queried for a more detailed report <ledger-sync-service/src/main/kotlin/net/corda/businessnetworks/ledgersync/RequestLedgersSyncFlow.kt>`_ based on which both the parties can take further action (such as notifying the BNO) or recover the transactions found.
+4. Transaction IDs can then be used in the `transaction recovery flow <ledger-sync-service/src/main/kotlin/net/corda/businessnetworks/ledgersync/TransactionRecoveryFlow.kt>`_ to recover individual transactions from counter parties.
 
 .. image:: design/resources/ledger-sync-service.svg

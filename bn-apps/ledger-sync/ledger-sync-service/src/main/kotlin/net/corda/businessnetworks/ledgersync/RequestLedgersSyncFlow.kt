@@ -11,7 +11,7 @@ import net.corda.core.serialization.CordaSerializable
 import net.corda.core.utilities.unwrap
 
 /**
- * If inconsistencies are flagged, the counter party can be queried for a more detailed report using this flow. Based
+ * If inconsistencies are flagged, the counterparty can be queried for a more detailed report using this flow. Based
  * the result, both the parties can take further action (such as notifying the BNO) or recover the transactions found.
  */
 @InitiatingFlow
@@ -52,9 +52,9 @@ class RespondLedgerSyncFlow(
 
 /**
  * A class that encapsulates the findings of a [RequestLedgersSyncFlow], indicating which transactions the original
- * party and the counter party are respectively missing.
+ * party and the counterparty respectively are missing.
  *
- * Here, the "requester" is the party making the original sync flow request and the "requestee" is the counter party.
+ * Here, the "requester" is the party making the original sync flow request and the "requestee" is the counterparty.
  */
 @CordaSerializable
 data class LedgerSyncFindings(

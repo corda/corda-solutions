@@ -62,7 +62,7 @@ class LedgerConsistencyTests {
     }
 
     @Test
-    fun `members receive no ids to sync if they hold all transactions the counter party is aware of`() {
+    fun `members receive no ids to sync if they hold all transactions the counterparty is aware of`() {
         val requester = participantsNodes[0]
 
         assertEquals(0, requester.bogusStateCount())
@@ -140,7 +140,7 @@ class LedgerConsistencyTests {
     }
 
     @Test
-    fun `ledger consistency is reported for inconsistent counter parties`() {
+    fun `ledger consistency is reported for inconsistent counterparties`() {
         val requester = participantsNodes[0]
         requester.createTransactions()
         participantsNodes[2].simulateCatastrophicFailure()
