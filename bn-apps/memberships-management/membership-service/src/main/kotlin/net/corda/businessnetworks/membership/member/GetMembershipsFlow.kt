@@ -37,7 +37,6 @@ data class MembershipsListResponse(val memberships : List<StateAndRef<Membership
  *     }
  * }
  */
-@StartableByRPC
 @InitiatingFlow
 class GetMembershipsFlow(private val forceRefresh : Boolean = false) : FlowLogic<Map<Party, StateAndRef<Membership.State>>>() {
     @Suspendable
@@ -57,6 +56,14 @@ class GetMembershipsFlow(private val forceRefresh : Boolean = false) : FlowLogic
         } else {
             cache.membershipMap
         }
+    }
+}
+
+@StartableByRPC
+class GetMembersFlow(private val forceRefresh : Boolean = false) : FlowLogic<List<Party>>() {
+    @Suspendable
+    override fun call(): List<Party> {
+        return subFlow(GetMembershipsFlow(forceRefresh)).map { it.key }
     }
 }
 
