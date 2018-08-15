@@ -10,6 +10,7 @@ import net.corda.core.node.services.queryBy
 import net.corda.core.node.services.vault.MAX_PAGE_SIZE
 import net.corda.core.node.services.vault.PageSpecification
 import net.corda.core.node.services.vault.QueryCriteria.VaultQueryCriteria
+import sun.security.util.ByteArrayLexOrder
 
 /**
  * Provides a list of transaction hashes referring to transactions in which all of the given parties are participating.
@@ -30,6 +31,8 @@ fun VaultService.withParticipants(vararg parties: Party): List<SecureHash> = que
     it.ref.txhash
 }
 
-fun List<SecureHash>.hash(): SecureHash = fold(ByteArray(0)) { acc, hash ->
-    acc + hash.bytes
+fun List<SecureHash>.hash(): SecureHash = map {
+    it.bytes
+}.sortedWith(ByteArrayLexOrder()).fold(ByteArray(0)) { acc, hash ->
+    acc + hash
 }.sha256()
