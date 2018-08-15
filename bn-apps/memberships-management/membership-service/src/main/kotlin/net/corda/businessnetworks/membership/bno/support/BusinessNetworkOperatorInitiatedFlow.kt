@@ -7,7 +7,7 @@ import net.corda.businessnetworks.membership.common.NotAMemberException
 import net.corda.core.flows.FlowSession
 import net.corda.core.identity.Party
 
-abstract class BusinessNetworkOperatorInitiatedFlow<out T>(val flowSession: FlowSession) : BusinessNetworkOperatorSupportFlow<T>() {
+abstract class BusinessNetworkOperatorInitiatedFlow<out T>(val flowSession: FlowSession) : BusinessNetworkOperatorFlowLogic<T>() {
 
     @Suspendable
     override fun call(): T {

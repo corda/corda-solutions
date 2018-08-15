@@ -10,7 +10,7 @@ import net.corda.core.flows.FlowLogic
 import net.corda.core.identity.Party
 import net.corda.core.node.services.queryBy
 
-abstract class BusinessNetworkOperatorSupportFlow<out T>() : FlowLogic<T>() {
+abstract class BusinessNetworkOperatorFlowLogic<out T>() : FlowLogic<T>() {
 
     protected fun verifyThatWeAreBNO(membership : Membership.State) {
         if(ourIdentity != membership.bno) {

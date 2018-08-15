@@ -2,7 +2,7 @@ package net.corda.businessnetworks.membership.bno
 
 import co.paralleluniverse.fibers.Suspendable
 import net.corda.businessnetworks.membership.bno.service.BNOConfigurationService
-import net.corda.businessnetworks.membership.bno.support.BusinessNetworkOperatorSupportFlow
+import net.corda.businessnetworks.membership.bno.support.BusinessNetworkOperatorFlowLogic
 import net.corda.businessnetworks.membership.states.Membership
 import net.corda.businessnetworks.membership.states.MembershipStatus
 import net.corda.core.contracts.StateAndRef
@@ -13,7 +13,7 @@ import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.ProgressTracker
 
 @InitiatingFlow
-class RevokeMembershipFlow(val membership : StateAndRef<Membership.State>) : BusinessNetworkOperatorSupportFlow<SignedTransaction>() {
+class RevokeMembershipFlow(val membership : StateAndRef<Membership.State>) : BusinessNetworkOperatorFlowLogic<SignedTransaction>() {
 
     @Suspendable
     override fun call() : SignedTransaction {
@@ -49,7 +49,7 @@ class RevokeMembershipFlow(val membership : StateAndRef<Membership.State>) : Bus
  */
 @InitiatingFlow
 @StartableByRPC
-class RevokeMembershipForPartyFlow(val party : Party) : BusinessNetworkOperatorSupportFlow<SignedTransaction>() {
+class RevokeMembershipForPartyFlow(val party : Party) : BusinessNetworkOperatorFlowLogic<SignedTransaction>() {
 
     companion object {
         object LOOKING_FOR_MEMBERSHIP_STATE : ProgressTracker.Step("Looking for party's membership state")
