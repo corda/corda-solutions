@@ -2,7 +2,7 @@
 
 # Business Network Membership Service
 
-This is a reference implementation for the Business Network Membership Service. The implementation can, but doesn't have to be used as-is. Business Networks are encouraged to teak the code to fit their requirements.
+This is a reference implementation for the Business Network Membership Service. The implementation can, but doesn't have to be used as-is. Business Networks are encouraged to tweak the code to fit their requirements.
 
 Please see the [design doc](./design/design.md) for more information about the problem this service is aimed to tackle. 
 
@@ -15,6 +15,12 @@ Both of the CorDapps are required to be installed to the nodes of all Business N
 CorDapp configuration is red from the `membership-service.properties` file on the CorDapp's classpath.
 
 Please see [FullBNMSFlowDemo](./membership-service/src/test/kotlin/net/corda/businessnetworks/membership/FullBNMSFlowDemo.kt) for how-to-use example.
+
+Note that during development you can take advantage of the following classes that encapsulate some commonly used logic:
+* If you are a business network operator: `BusinessNetworkOperatorFlowLogic` and `BusinessNetworkOperatorInitiatedFlow`
+* If you are a business network member: `BusinessNetworkAwareInitiatedFlow`
+Look at their respective class annotations for details.
+
 
 ## Member configuration 
 

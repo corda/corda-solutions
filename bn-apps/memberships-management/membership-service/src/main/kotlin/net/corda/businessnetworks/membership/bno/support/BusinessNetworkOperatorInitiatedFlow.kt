@@ -7,6 +7,11 @@ import net.corda.businessnetworks.membership.common.NotAMemberException
 import net.corda.core.flows.FlowSession
 import net.corda.core.identity.Party
 
+/**
+ * Extend from this class if you are a business network operator and you don't want to be checking yourself whether
+ * the initiating party is member of your business network or not. Your code (inside onOtherPartyMembershipVerified)
+ * will be called only after the check is performed. If the initiating party is not a member an exception is thrown.
+ */
 abstract class BusinessNetworkOperatorInitiatedFlow<out T>(val flowSession: FlowSession) : BusinessNetworkOperatorFlowLogic<T>() {
 
     @Suspendable

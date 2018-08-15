@@ -10,6 +10,10 @@ import net.corda.core.flows.FlowLogic
 import net.corda.core.identity.Party
 import net.corda.core.node.services.queryBy
 
+/**
+ * Extend from this class if you are a business network operator and you want to make your life easier when writing
+ * flows by getting access to the useful methods in this class.
+ */
 abstract class BusinessNetworkOperatorFlowLogic<out T>() : FlowLogic<T>() {
 
     protected fun verifyThatWeAreBNO(membership : Membership.State) {
