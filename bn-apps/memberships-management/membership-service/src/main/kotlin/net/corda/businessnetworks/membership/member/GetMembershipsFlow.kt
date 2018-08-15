@@ -8,6 +8,7 @@ import net.corda.businessnetworks.membership.states.Membership
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.InitiatingFlow
+import net.corda.core.flows.StartableByRPC
 import net.corda.core.identity.Party
 import net.corda.core.serialization.CordaSerializable
 import net.corda.core.utilities.unwrap
@@ -36,6 +37,7 @@ data class MembershipsListResponse(val memberships : List<StateAndRef<Membership
  *     }
  * }
  */
+@StartableByRPC
 @InitiatingFlow
 class GetMembershipsFlow(private val forceRefresh : Boolean = false) : FlowLogic<Map<Party, StateAndRef<Membership.State>>>() {
     @Suspendable
