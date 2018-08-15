@@ -28,9 +28,7 @@ class TransactionRecoveryFlow(
             }.map {
                 subFlow(ReceiveTransactionFlow(session))
             }
-        }.flatten().onEach {
-            it.verify(serviceHub)
-        }.also {
+        }.flatten().also {
             serviceHub.recordTransactions(it)
         }
     }
