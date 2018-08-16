@@ -17,7 +17,7 @@ data class OnBoardingRequest(val metadata : MembershipMetadata)
  */
 @StartableByRPC
 @InitiatingFlow
-class RequestMembershipFlow(private val membershipMetadata : MembershipMetadata = MembershipMetadata("DEFAULT")) : FlowLogic<SignedTransaction>() {
+class RequestMembershipFlow(private val membershipMetadata : MembershipMetadata = MembershipMetadata(role="DEFAULT")) : FlowLogic<SignedTransaction>() {
 
     companion object {
         object SENDING_MEMBERSHIP_DATA_TO_BNO : ProgressTracker.Step("Sending membership data to BNO")

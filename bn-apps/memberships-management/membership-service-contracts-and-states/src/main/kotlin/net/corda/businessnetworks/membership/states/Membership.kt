@@ -107,7 +107,8 @@ class Membership : Contract {
 
 @CordaSerializable
 data class MembershipMetadata(
-        val role : String = ""
+        val role : String = "",
+        val alternativeName : String? = null
         // add more fields here
 )
 

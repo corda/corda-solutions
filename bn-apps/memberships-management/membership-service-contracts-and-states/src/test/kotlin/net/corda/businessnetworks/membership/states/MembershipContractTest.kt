@@ -135,7 +135,7 @@ class MembershipContractTest {
             transaction {
                 val input = membershipState(MembershipStatus.ACTIVE)
                 input(Membership.CONTRACT_NAME,  input)
-                output(Membership.CONTRACT_NAME,  input.copy(status = MembershipStatus.REVOKED, modified = input.modified.plusMillis(1), membershipMetadata = MembershipMetadata("Another role")))
+                output(Membership.CONTRACT_NAME,  input.copy(status = MembershipStatus.REVOKED, modified = input.modified.plusMillis(1), membershipMetadata = MembershipMetadata(role="Another role")))
                 command(listOf(bno.publicKey), Membership.Commands.Revoke())
                 this.`fails with`("Input and output states of a revocation transaction should have the same metadata")
             }
@@ -176,7 +176,7 @@ class MembershipContractTest {
             transaction {
                 val input = membershipState(MembershipStatus.REVOKED)
                 input(Membership.CONTRACT_NAME,  input)
-                output(Membership.CONTRACT_NAME,  input.copy(status = MembershipStatus.ACTIVE, modified = input.modified.plusMillis(1), membershipMetadata = MembershipMetadata("Another metadata")))
+                output(Membership.CONTRACT_NAME,  input.copy(status = MembershipStatus.ACTIVE, modified = input.modified.plusMillis(1), membershipMetadata = MembershipMetadata(role = "Another metadata")))
                 command(listOf(bno.publicKey), Membership.Commands.Activate())
                 this.`fails with`("Input and output states of a membership activation transaction should have the same metadata")
             }
@@ -187,7 +187,7 @@ class MembershipContractTest {
     @Test
     fun `test amend member's metadata`() {
         val input = membershipState(MembershipStatus.ACTIVE)
-        val output = input.copy(status = MembershipStatus.ACTIVE, modified = input.modified.plusMillis(1), membershipMetadata = MembershipMetadata("New metadata"))
+        val output = input.copy(status = MembershipStatus.ACTIVE, modified = input.modified.plusMillis(1), membershipMetadata = MembershipMetadata(role ="New metadata"))
         ledgerServices.ledger {
             transaction {
                 input(Membership.CONTRACT_NAME,  input)

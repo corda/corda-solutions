@@ -1,6 +1,7 @@
 package net.corda.businessnetworks.membership.member
 
 import co.paralleluniverse.fibers.Suspendable
+import net.corda.businessnetworks.membership.common.PartyAndMembershipMetadata
 import net.corda.businessnetworks.membership.member.service.MemberConfigurationService
 import net.corda.businessnetworks.membership.member.service.MembershipsCache
 import net.corda.businessnetworks.membership.member.service.MembershipsCacheHolder
@@ -60,10 +61,10 @@ class GetMembershipsFlow(private val forceRefresh : Boolean = false) : FlowLogic
 }
 
 @StartableByRPC
-class GetMembersFlow(private val forceRefresh : Boolean = false) : FlowLogic<List<Party>>() {
+class GetMembersFlow(private val forceRefresh : Boolean = false) : FlowLogic<List<PartyAndMembershipMetadata>>() {
     @Suspendable
-    override fun call(): List<Party> {
-        return subFlow(GetMembershipsFlow(forceRefresh)).map { it.key }
+    override fun call(): List<PartyAndMembershipMetadata> {
+        return subFlow(GetMembershipsFlow(forceRefresh)).map { PartyAndMembershipMetadata(it.key, it.value.state.data.membershipMetadata) }
     }
 }
 
