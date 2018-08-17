@@ -10,6 +10,8 @@ apply plugin: 'net.corda.plugins.cordformation'
 apply plugin: 'net.corda.plugins.quasar-utils'
 apply plugin: "kotlin-jpa"
 
+group "net.corda.businessnetworks"
+
 cordapp {
     info {
         name = "business-network-membership-service-states"
