@@ -18,6 +18,7 @@ class GetMembershipListFlowResponder(flowSession : FlowSession) : BusinessNetwor
 
     @Suspendable
     override fun onOtherPartyMembershipVerified() {
+        logger.info("Sending membership list to ${flowSession.counterparty}")
         //build memberships snapshot
         flowSession.receive<MembershipListRequest>()
         val databaseService = serviceHub.cordaService(DatabaseService::class.java)
