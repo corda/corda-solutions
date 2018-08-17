@@ -12,6 +12,7 @@ import net.corda.core.flows.InitiatingFlow
 import net.corda.core.flows.StartableByRPC
 import net.corda.core.identity.Party
 import net.corda.core.serialization.CordaSerializable
+import net.corda.core.utilities.ProgressTracker
 import net.corda.core.utilities.unwrap
 import java.time.Instant
 
@@ -62,8 +63,20 @@ class GetMembershipsFlow(private val forceRefresh : Boolean = false) : FlowLogic
 
 @StartableByRPC
 class GetMembersFlow(private val forceRefresh : Boolean = false) : FlowLogic<List<PartyAndMembershipMetadata>>() {
+
+    companion object {
+        object GOING_TO_CACHE_OR_BNO : ProgressTracker.Step("Going to cache or BNO for membership data")
+
+        fun tracker() = ProgressTracker(
+                GOING_TO_CACHE_OR_BNO
+        )
+    }
+
+    override val progressTracker = tracker()
+
     @Suspendable
     override fun call(): List<PartyAndMembershipMetadata> {
+        progressTracker.currentStep = GOING_TO_CACHE_OR_BNO
         return subFlow(GetMembershipsFlow(forceRefresh)).map { PartyAndMembershipMetadata(it.key, it.value.state.data.membershipMetadata) }
     }
 }
