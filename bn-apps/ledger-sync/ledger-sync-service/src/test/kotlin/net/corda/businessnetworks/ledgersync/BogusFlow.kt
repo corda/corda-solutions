@@ -11,6 +11,7 @@ import net.corda.core.flows.FlowSession
 import net.corda.core.flows.InitiatedBy
 import net.corda.core.flows.InitiatingFlow
 import net.corda.core.flows.SignTransactionFlow
+import net.corda.core.flows.StartableByRPC
 import net.corda.core.identity.AbstractParty
 import net.corda.core.identity.Party
 import net.corda.core.transactions.SignedTransaction
@@ -21,6 +22,7 @@ import net.corda.core.transactions.TransactionBuilder
  * participant's vaults
  */
 @InitiatingFlow
+@StartableByRPC
 class BogusFlow(
         private val them: Party
 ) : FlowLogic<SignedTransaction>() {

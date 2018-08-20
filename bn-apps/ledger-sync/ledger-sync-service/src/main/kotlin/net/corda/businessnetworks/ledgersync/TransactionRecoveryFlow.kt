@@ -8,6 +8,7 @@ import net.corda.core.flows.InitiatedBy
 import net.corda.core.flows.InitiatingFlow
 import net.corda.core.flows.ReceiveTransactionFlow
 import net.corda.core.flows.SendTransactionFlow
+import net.corda.core.flows.StartableByRPC
 import net.corda.core.identity.Party
 import net.corda.core.utilities.unwrap
 
@@ -15,15 +16,25 @@ import net.corda.core.utilities.unwrap
  * This flow allows for the recovery of transactions with IDs found previously.
  */
 @InitiatingFlow
+@StartableByRPC
 class TransactionRecoveryFlow(
         private val report: Map<Party, LedgerSyncFindings>
 ) : FlowLogic<Unit>() {
 
     @Suspendable
     override fun call() {
+        // pre filter map to remove multilateral transactions.
         report.toList().map { (counterParty, findings) ->
             val session = initiateFlow(counterParty)
-            findings.recoverable().also {
+            findings.recoverable().map {
+                /**
+                 * filter {
+                 *      serviceHub.validatedTransactions.getTransaction(it)
+                 * }
+                 */
+                serviceHub.validatedTransactions.getTransaction(it)
+                it
+            }.also {
                 session.send(it)
             }.map {
                 subFlow(ReceiveTransactionFlow(session))

@@ -5,6 +5,7 @@ import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.FlowSession
 import net.corda.core.flows.InitiatedBy
 import net.corda.core.flows.InitiatingFlow
+import net.corda.core.flows.StartableByRPC
 import net.corda.core.identity.Party
 import net.corda.core.utilities.OpaqueBytes
 import net.corda.core.utilities.unwrap
@@ -14,6 +15,7 @@ import net.corda.core.utilities.unwrap
  * the transactions both parties holds.
  */
 @InitiatingFlow
+@StartableByRPC
 class EvaluateLedgerConsistencyFlow(
         private val members: List<Party>
 ) : FlowLogic<Map<Party, Boolean>>() {

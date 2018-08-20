@@ -6,6 +6,7 @@ import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.FlowSession
 import net.corda.core.flows.InitiatedBy
 import net.corda.core.flows.InitiatingFlow
+import net.corda.core.flows.StartableByRPC
 import net.corda.core.identity.Party
 import net.corda.core.serialization.CordaSerializable
 import net.corda.core.utilities.unwrap
@@ -15,6 +16,7 @@ import net.corda.core.utilities.unwrap
  * the result, both the parties can take further action (such as notifying the BNO) or recover the transactions found.
  */
 @InitiatingFlow
+@StartableByRPC
 class RequestLedgersSyncFlow(
         private val members: List<Party>
 ) : FlowLogic<Map<Party, LedgerSyncFindings>>() {
@@ -24,7 +26,7 @@ class RequestLedgersSyncFlow(
             .map { they ->
                 val knownTransactionsIds = serviceHub.vaultService.withParticipants(ourIdentity, they)
                 val findings = initiateFlow(they).sendAndReceive<LedgerSyncFindings>(knownTransactionsIds).unwrap { it }
-                // an individual implementation might treat findings individually
+                // an individual implementation might treat findings differently, i.e. report them to the BNO
                 they to findings
             }.toMap()
 }

@@ -1,14 +1,15 @@
 package net.corda.businessnetworks.ledgersync
 
 import net.corda.businessnetworks.membership.bno.ActivateMembershipFlow
-import net.corda.businessnetworks.membership.bno.service.DatabaseService
 import net.corda.businessnetworks.membership.member.GetMembershipsFlow
 import net.corda.businessnetworks.membership.member.RequestMembershipFlow
 import net.corda.businessnetworks.membership.states.Membership
+import net.corda.businessnetworks.membership.states.Membership.State
 import net.corda.businessnetworks.membership.states.MembershipMetadata
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.identity.CordaX500Name
 import net.corda.core.identity.Party
+import net.corda.core.messaging.vaultQueryBy
 import net.corda.core.node.services.Vault.Page
 import net.corda.core.node.services.Vault.StateStatus.ALL
 import net.corda.core.node.services.vault.MAX_PAGE_SIZE
@@ -16,251 +17,257 @@ import net.corda.core.node.services.vault.PageSpecification
 import net.corda.core.node.services.vault.QueryCriteria.VaultQueryCriteria
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.utilities.getOrThrow
-import net.corda.node.services.api.ServiceHubInternal
-import net.corda.testing.node.MockNetwork
-import net.corda.testing.node.MockNetworkNotarySpec
-import net.corda.testing.node.StartedMockNode
-import org.junit.After
-import org.junit.Before
+import net.corda.testing.driver.DriverParameters
+import net.corda.testing.driver.NodeHandle
+import net.corda.testing.driver.NodeParameters
+import net.corda.testing.driver.driver
+import net.corda.testing.node.NotarySpec
+import net.corda.testing.node.User
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
-import kotlin.test.fail
 
 @Suppress("PrivatePropertyName")
 class LedgerConsistencyTests {
-    private val BNO = CordaX500Name("BNO", "New York", "US")
-    private val NOTARY = CordaX500Name("Notary", "London", "GB")
-
-    private lateinit var mockNetwork: MockNetwork
-    private lateinit var bnoNode: StartedMockNode
-    private lateinit var participantsNodes: List<StartedMockNode>
+    private lateinit var bnoNode: NodeHandle
+    private lateinit var participantsNodes: List<NodeHandle>
 
     private val MEMBERSHIP_DATA = MembershipMetadata("DEFAULT")
 
-    @Before
-    fun start() {
-        mockNetwork = MockNetwork(
-                cordappPackages = listOf(
+    private fun onNetwork(function: () -> Unit) {
+        val user = User("user1", "test", permissions = setOf("ALL"))
+
+        driver(DriverParameters(
+                isDebug = false,
+                extraCordappPackagesToScan = listOf(
                         "net.corda.businessnetworks.membership",
                         "net.corda.businessnetworks.membership.states",
                         "net.corda.businessnetworks.ledgersync"
                 ),
-                notarySpecs = listOf(MockNetworkNotarySpec(NOTARY))
-        )
-        bnoNode = mockNetwork.createNode(BNO)
-        participantsNodes = (1..3).map {
-            mockNetwork.createNode(CordaX500Name("Member $it", "Paris", "FR"))
-        }
-        mockNetwork.runNetwork()
-        participantsNodes.forEach { it.elevateToMember() }
-    }
+                notarySpecs = listOf(NotarySpec(CordaX500Name("Notary", "London", "GB"), true)),
+                waitForAllNodesToFinish = false,
+                startNodesInProcess = true
+        )) {
+            // TODO moritzplatt 17/08/2018 -- collect started futures to start in parallel
+            // TODO moritzplatt 17/08/2018 -- pr for annotations
+            // TODO moritzplatt 17/08/2018 -- pr for map
+            bnoNode = startNode(NodeParameters(providedName = CordaX500Name("BNO", "New York", "US")), rpcUsers = listOf(user)).getOrThrow()
 
-    @After
-    fun stop() {
-        mockNetwork.stopNodes()
+            participantsNodes = listOf(
+                    startNode(NodeParameters(providedName = CordaX500Name("Member 1", "Paris", "FR")), rpcUsers = listOf(user)).getOrThrow(),
+                    startNode(NodeParameters(providedName = CordaX500Name("Member 2", "Paris", "FR")), rpcUsers = listOf(user)).getOrThrow(),
+                    startNode(NodeParameters(providedName = CordaX500Name("Member 3", "Paris", "FR")), rpcUsers = listOf(user)).getOrThrow()
+            )
+
+            participantsNodes.forEach {
+                it.elevateToMember()
+            }
+
+            function()
+
+//            bnoNode.stop()
+//            participantsNodes.forEach {
+//                it.stop()
+//            }
+        }
     }
 
     @Test
     fun `members receive no ids to sync if they hold all transactions the counterparty is aware of`() {
-        val requester = participantsNodes[0]
+        onNetwork {
+            val requester = participantsNodes[0]
 
-        assertEquals(0, requester.bogusStateCount())
+            assertEquals(0, requester.bogusStateCount())
 
-        requester.createTransactions()
+            requester.createTransactions()
 
-        assertEquals(2, requester.bogusStateCount())
+            assertEquals(2, requester.bogusStateCount())
 
-        val missingTransactions = requester.runRequestLedgerSyncFlow(requester.members())
+            val missingTransactions = requester.runRequestLedgerSyncFlow(requester.members())
 
-        assertEquals(mapOf(
-                participantsNodes[1].identity() to LedgerSyncFindings(emptyList(), emptyList()),
-                participantsNodes[2].identity() to LedgerSyncFindings(emptyList(), emptyList())
-        ), missingTransactions)
+            assertEquals(mapOf(
+                    participantsNodes[1].identity() to LedgerSyncFindings(emptyList(), emptyList()),
+                    participantsNodes[2].identity() to LedgerSyncFindings(emptyList(), emptyList())
+            ), missingTransactions)
+        }
+
     }
 
     @Test
     fun `reports member ids to sync missing from requester`() {
-        val requester = participantsNodes[0]
+        onNetwork {
+            val requester = participantsNodes[0]
 
-        requester.createTransactions()
-        assertEquals(2, requester.bogusStateCount())
-        requester.simulateCatastrophicFailure()
-        assertEquals(0, requester.bogusStateCount())
-        requester.runRequestLedgerSyncFlow(requester.members())
+            requester.createTransactions()
+            assertEquals(2, requester.bogusStateCount())
+            requester.simulateCatastrophicFailure()
+            assertEquals(0, requester.bogusStateCount())
+            requester.runRequestLedgerSyncFlow(requester.members())
 
-        val missingTransactions = requester.runRequestLedgerSyncFlow(requester.members())
+            val missingTransactions = requester.runRequestLedgerSyncFlow(requester.members())
 
-        assertEquals(1, missingTransactions[participantsNodes[1].identity()]!!.missingAtRequester.size)
-        assertEquals(1, missingTransactions[participantsNodes[2].identity()]!!.missingAtRequester.size)
+            assertEquals(1, missingTransactions[participantsNodes[1].identity()]!!.missingAtRequester.size)
+            assertEquals(1, missingTransactions[participantsNodes[2].identity()]!!.missingAtRequester.size)
+        }
     }
 
     @Test
     fun `reports member ids to sync from requestee`() {
-        val requester = participantsNodes[0]
+        onNetwork {
+            val requester = participantsNodes[0]
 
-        requester.createTransactions()
-        participantsNodes[1].simulateCatastrophicFailure()
-        assertEquals(0, participantsNodes[1].bogusStateCount())
+            requester.createTransactions()
+            participantsNodes[1].simulateCatastrophicFailure()
+            assertEquals(0, participantsNodes[1].bogusStateCount())
 
-        participantsNodes[2].simulateCatastrophicFailure()
-        assertEquals(0, participantsNodes[2].bogusStateCount())
+            participantsNodes[2].simulateCatastrophicFailure()
+            assertEquals(0, participantsNodes[2].bogusStateCount())
 
-        requester.runRequestLedgerSyncFlow(requester.members())
+            requester.runRequestLedgerSyncFlow(requester.members())
 
-        val missingTransactions = requester.runRequestLedgerSyncFlow(requester.members())
+            val missingTransactions = requester.runRequestLedgerSyncFlow(requester.members())
 
-        assertEquals(1, missingTransactions[participantsNodes[1].identity()]!!.missingAtRequestee.size)
-        assertEquals(0, missingTransactions[participantsNodes[1].identity()]!!.missingAtRequester.size)
-        assertEquals(1, missingTransactions[participantsNodes[2].identity()]!!.missingAtRequestee.size)
-        assertEquals(0, missingTransactions[participantsNodes[2].identity()]!!.missingAtRequester.size)
+            assertEquals(1, missingTransactions[participantsNodes[1].identity()]!!.missingAtRequestee.size)
+            assertEquals(0, missingTransactions[participantsNodes[1].identity()]!!.missingAtRequester.size)
+            assertEquals(1, missingTransactions[participantsNodes[2].identity()]!!.missingAtRequestee.size)
+            assertEquals(0, missingTransactions[participantsNodes[2].identity()]!!.missingAtRequester.size)
+        }
     }
 
     @Test
     fun `ledger consistency is reported for consistent ledgers`() {
-        val requester = participantsNodes[0]
-        requester.createTransactions()
-        val actual = requester.runEvaluateLedgerConsistencyFlow(requester.members())
-        assertEquals(mapOf(
-                participantsNodes[1].identity() to true,
-                participantsNodes[2].identity() to true
-        ), actual)
+        onNetwork {
+            val requester = participantsNodes[0]
+            requester.createTransactions()
+            val actual = requester.runEvaluateLedgerConsistencyFlow(requester.members())
+            assertEquals(mapOf(
+                    participantsNodes[1].identity() to true,
+                    participantsNodes[2].identity() to true
+            ), actual)
+        }
     }
 
     @Test
     fun `ledger consistency is reported for inconsistent ledger`() {
-        val requester = participantsNodes[0]
-        requester.createTransactions()
-        requester.simulateCatastrophicFailure()
-        val actual = requester.runEvaluateLedgerConsistencyFlow(requester.members())
-        assertEquals(mapOf(
-                participantsNodes[1].identity() to false,
-                participantsNodes[2].identity() to false
-        ), actual)
+        onNetwork {
+            val requester = participantsNodes[0]
+            requester.createTransactions()
+            requester.simulateCatastrophicFailure()
+            val actual = requester.runEvaluateLedgerConsistencyFlow(requester.members())
+            assertEquals(mapOf(
+                    participantsNodes[1].identity() to false,
+                    participantsNodes[2].identity() to false
+            ), actual)
+        }
     }
 
     @Test
     fun `ledger consistency is reported for inconsistent counterparties`() {
-        val requester = participantsNodes[0]
-        requester.createTransactions()
-        participantsNodes[2].simulateCatastrophicFailure()
-        val actual = requester.runEvaluateLedgerConsistencyFlow(requester.members())
-        assertEquals(mapOf(
-                participantsNodes[1].identity() to true,
-                participantsNodes[2].identity() to false
-        ), actual)
+        onNetwork {
+            val requester = participantsNodes[0]
+            requester.createTransactions()
+            participantsNodes[2].simulateCatastrophicFailure()
+            val actual = requester.runEvaluateLedgerConsistencyFlow(requester.members())
+            assertEquals(mapOf(
+                    participantsNodes[1].identity() to true,
+                    participantsNodes[2].identity() to false
+            ), actual)
+        }
     }
 
     @Test
     fun `transactions can be recovered`() {
-        val requester = participantsNodes[0]
-        requester.createTransactions(3)
+        onNetwork {
+            val requester = participantsNodes[0]
+            requester.createTransactions(3)
 
-        assertEquals(6, requester.bogusStateCount())
+            assertEquals(6, requester.bogusStateCount())
 
-        requester.simulateCatastrophicFailure()
+            requester.simulateCatastrophicFailure()
 
-        val consistencyResult = requester.runEvaluateLedgerConsistencyFlow(requester.members())
+            val consistencyResult = requester.runEvaluateLedgerConsistencyFlow(requester.members())
 
-        assertEquals(mapOf(
-                participantsNodes[1].identity() to false,
-                participantsNodes[2].identity() to false
-        ), consistencyResult)
+            assertEquals(mapOf(
+                    participantsNodes[1].identity() to false,
+                    participantsNodes[2].identity() to false
+            ), consistencyResult)
 
-        assertEquals(0, requester.bogusStateCount())
+            assertEquals(0, requester.bogusStateCount())
 
-        val ledgerSyncResult = requester.runRequestLedgerSyncFlow(requester.members())
+            val ledgerSyncResult = requester.runRequestLedgerSyncFlow(requester.members())
 
-        assertEquals(3, ledgerSyncResult[participantsNodes[1].identity()]!!.missingAtRequester.size)
-        assertEquals(3, ledgerSyncResult[participantsNodes[2].identity()]!!.missingAtRequester.size)
+            assertEquals(3, ledgerSyncResult[participantsNodes[1].identity()]!!.missingAtRequester.size)
+            assertEquals(3, ledgerSyncResult[participantsNodes[2].identity()]!!.missingAtRequester.size)
 
-        requester.runTransactionRecoveryFlow(ledgerSyncResult)
+            requester.runTransactionRecoveryFlow(ledgerSyncResult)
 
-        assertEquals(6, requester.bogusStateCount())
+            assertEquals(6, requester.bogusStateCount())
+        }
     }
 
-    private fun StartedMockNode.elevateToMember() {
+    private fun NodeHandle.elevateToMember() {
         runRequestMembershipFlow()
-        val membership = transaction {
-            val dbService = services.cordaService(DatabaseService::class.java)
-            dbService.getMembership(info.legalIdentities.single()) ?: fail("Can't retrieve membership for ${this}")
-        }
+        Thread.sleep(1000)
+        val membership = rpc.vaultQueryBy<State>().states.single()
         bnoNode.runActivateMembershipFlow(membership)
     }
 
-    private fun StartedMockNode.runRequestMembershipFlow(): SignedTransaction {
-        val future = startFlow(RequestMembershipFlow(MEMBERSHIP_DATA))
-        mockNetwork.runNetwork()
-        return future.getOrThrow()
+    private fun NodeHandle.runRequestMembershipFlow() {
+        val future = rpc.startFlowDynamic(RequestMembershipFlow::class.java, MEMBERSHIP_DATA)
+        future.returnValue.getOrThrow()
     }
 
-    private fun StartedMockNode.runActivateMembershipFlow(membership: StateAndRef<Membership.State>): SignedTransaction {
-        val future = startFlow(ActivateMembershipFlow(membership))
-        mockNetwork.runNetwork()
-        return future.getOrThrow()
+    private fun NodeHandle.runGetMembershipsFlow(): Map<Party, StateAndRef<State>> {
+        val future = rpc.startFlowDynamic(GetMembershipsFlow::class.java, false)
+        return future.returnValue.getOrThrow()
     }
 
-    private fun StartedMockNode.runRequestLedgerSyncFlow(members: List<Party>): Map<Party, LedgerSyncFindings> {
-        val future = startFlow(RequestLedgersSyncFlow(members))
-        mockNetwork.runNetwork()
-        return future.getOrThrow()
+    private fun NodeHandle.runActivateMembershipFlow(membership: StateAndRef<Membership.State>): SignedTransaction {
+        val future = rpc.startFlowDynamic(ActivateMembershipFlow::class.java, membership)
+        return future.returnValue.getOrThrow()
     }
 
-    private fun StartedMockNode.runTransactionRecoveryFlow(report: Map<Party, LedgerSyncFindings>) {
-        val future = startFlow(TransactionRecoveryFlow(report))
-        mockNetwork.runNetwork()
-        future.getOrThrow()
+    private fun NodeHandle.runRequestLedgerSyncFlow(members: List<Party>): Map<Party, LedgerSyncFindings> {
+        val future = rpc.startFlowDynamic(RequestLedgersSyncFlow::class.java, members)
+        return future.returnValue.getOrThrow()
     }
 
-    private fun StartedMockNode.runEvaluateLedgerConsistencyFlow(members: List<Party>): Map<Party, Boolean> {
-        val future = startFlow(EvaluateLedgerConsistencyFlow(members))
-        mockNetwork.runNetwork()
-        return future.getOrThrow()
+    private fun NodeHandle.runTransactionRecoveryFlow(report: Map<Party, LedgerSyncFindings>) {
+        val future = rpc.startFlowDynamic(TransactionRecoveryFlow::class.java, report)
+        return future.returnValue.getOrThrow()
     }
 
-    private fun StartedMockNode.members(): List<Party> {
-        val future = startFlow(GetMembershipsFlow(true))
-        mockNetwork.runNetwork()
-        val result = future.getOrThrow()
+    private fun NodeHandle.runEvaluateLedgerConsistencyFlow(members: List<Party>): Map<Party, Boolean> {
+        val future = rpc.startFlowDynamic(EvaluateLedgerConsistencyFlow::class.java, members)
+        return future.returnValue.getOrThrow()
+    }
+
+    private fun NodeHandle.members(): List<Party> {
+        val future = rpc.startFlowDynamic(GetMembershipsFlow::class.java, true)
+        val result = future.returnValue.getOrThrow()
         assertTrue(result.size == participantsNodes.size)
         return result.keys.toList()
     }
 
-    private fun StartedMockNode.identity() = info.legalIdentities.first()
+    private fun NodeHandle.identity(): Party = rpc.nodeInfo().legalIdentities.first()
 
     /*
      * The number of states in this node's vault
      */
-    private fun StartedMockNode.bogusStateCount() = bogusStates().totalStatesAvailable.toInt()
+    private fun NodeHandle.bogusStateCount() = bogusStates().totalStatesAvailable.toInt()
 
-    private fun StartedMockNode.bogusStates(): Page<BogusState> = transaction {
-        services.vaultService.queryBy(
-                BogusState::class.java,
-                VaultQueryCriteria(ALL),
-                PageSpecification(1, MAX_PAGE_SIZE)
-        )
+    private fun NodeHandle.bogusStates(): Page<BogusState> = rpc.vaultQueryByWithPagingSpec(
+            BogusState::class.java,
+            VaultQueryCriteria(ALL),
+            PageSpecification(1, MAX_PAGE_SIZE)
+    )
+
+    private fun NodeHandle.simulateCatastrophicFailure() {
+        val future = rpc.startFlowDynamic(DestructiveFlow::class.java)
+        return future.returnValue.getOrThrow()
     }
 
-    private fun StartedMockNode.connection() = (services as? ServiceHubInternal)?.database?.dataSource?.connection
-            ?: fail("Can't obtain vault database connection")
-
-    private fun StartedMockNode.simulateCatastrophicFailure() {
-        transaction {
-            connection().use { connection ->
-                connection.prepareStatement("""SELECT transaction_id FROM VAULT_STATES WHERE CONTRACT_STATE_CLASS_NAME='${BogusState::class.java.canonicalName}'""").executeQuery().let { results ->
-                    while (results.next()) {
-                        results.getString(1).let { transactionId ->
-                            connection.prepareStatement("""DELETE FROM VAULT_LINEAR_STATES_PARTS WHERE transaction_id='$transactionId'""").execute()
-                            connection.prepareStatement("""DELETE FROM VAULT_LINEAR_STATES WHERE transaction_id='$transactionId'""").execute()
-                            connection.prepareStatement("""DELETE FROM VAULT_STATES WHERE transaction_id='$transactionId'""").execute()
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private fun StartedMockNode.createTransactions(count: Int = 1) {
+    private fun NodeHandle.createTransactions(count: Int = 1) {
         (members() - identity()).forEach { party ->
             repeat(count) {
                 createTransaction(party)
@@ -268,9 +275,8 @@ class LedgerConsistencyTests {
         }
     }
 
-    private fun StartedMockNode.createTransaction(counterParty: Party) {
-        val future = startFlow(BogusFlow(counterParty))
-        mockNetwork.runNetwork()
-        future.getOrThrow()
+    private fun NodeHandle.createTransaction(counterParty: Party) {
+        val future = rpc.startFlowDynamic(BogusFlow::class.java, counterParty)
+        future.returnValue.getOrThrow()
     }
 }
