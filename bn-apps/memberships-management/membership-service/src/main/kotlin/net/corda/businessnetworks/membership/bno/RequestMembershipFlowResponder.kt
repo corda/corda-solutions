@@ -61,7 +61,7 @@ class RequestMembershipFlowResponder(val session : FlowSession) : FlowLogic<Unit
             subFlow(FinalityFlow(allSignedTx))
         } finally {
             try {
-                // removing the pending request from the database
+                logger.info("Removing the pending request from the database")
                 databaseService.deletePendingMembershipRequest(session.counterparty)
             } catch (e : SQLException) {
                 logger.warn("Error when trying to delete pending membership request", e)
