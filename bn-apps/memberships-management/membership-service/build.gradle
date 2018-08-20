@@ -3,8 +3,6 @@ apply plugin: 'net.corda.plugins.cordapp'
 apply plugin: 'net.corda.plugins.cordformation'
 apply plugin: 'net.corda.plugins.quasar-utils'
 
-group "net.corda.businessnetworks"
-
 cordapp {
     info {
         name "business-network-membership-service"

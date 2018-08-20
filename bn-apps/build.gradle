@@ -26,6 +26,7 @@ plugins {
 
 allprojects {
     version "1.0-SNAPSHOT"
+    group "net.corda.businessnetworks"
 }
 
 subprojects {
