@@ -24,6 +24,7 @@ import net.corda.testing.driver.driver
 import net.corda.testing.node.NotarySpec
 import net.corda.testing.node.User
 import org.junit.Test
+import java.util.concurrent.CompletableFuture
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -48,27 +49,34 @@ class LedgerConsistencyTests {
                 waitForAllNodesToFinish = false,
                 startNodesInProcess = true
         )) {
-            // TODO moritzplatt 17/08/2018 -- collect started futures to start in parallel
-            // TODO moritzplatt 17/08/2018 -- pr for annotations
-            // TODO moritzplatt 17/08/2018 -- pr for map
-            bnoNode = startNode(NodeParameters(providedName = CordaX500Name("BNO", "New York", "US")), rpcUsers = listOf(user)).getOrThrow()
+            val bno = NodeParameters(providedName = CordaX500Name("BNO", "New York", "US"))
 
-            participantsNodes = listOf(
-                    startNode(NodeParameters(providedName = CordaX500Name("Member 1", "Paris", "FR")), rpcUsers = listOf(user)).getOrThrow(),
-                    startNode(NodeParameters(providedName = CordaX500Name("Member 2", "Paris", "FR")), rpcUsers = listOf(user)).getOrThrow(),
-                    startNode(NodeParameters(providedName = CordaX500Name("Member 3", "Paris", "FR")), rpcUsers = listOf(user)).getOrThrow()
+            val members = listOf(
+                    NodeParameters(providedName = CordaX500Name("Member 1", "Paris", "FR")),
+                    NodeParameters(providedName = CordaX500Name("Member 2", "Paris", "FR")),
+                    NodeParameters(providedName = CordaX500Name("Member 3", "Paris", "FR"))
             )
+
+            val nodes = (listOf(bno) + members).map {
+                startNode(it, rpcUsers = listOf(user))
+            }.map {
+                it.toCompletableFuture()
+            }.toTypedArray()
+
+            // await completion
+            CompletableFuture.allOf(*nodes).get()
+
+            nodes.map { it.join() }.let { started ->
+                bnoNode = started.first()
+                participantsNodes = started - bnoNode
+            }
 
             participantsNodes.forEach {
                 it.elevateToMember()
             }
 
+            // after initialising the network
             function()
-
-//            bnoNode.stop()
-//            participantsNodes.forEach {
-//                it.stop()
-//            }
         }
     }
 
@@ -215,11 +223,6 @@ class LedgerConsistencyTests {
     private fun NodeHandle.runRequestMembershipFlow() {
         val future = rpc.startFlowDynamic(RequestMembershipFlow::class.java, MEMBERSHIP_DATA)
         future.returnValue.getOrThrow()
-    }
-
-    private fun NodeHandle.runGetMembershipsFlow(): Map<Party, StateAndRef<State>> {
-        val future = rpc.startFlowDynamic(GetMembershipsFlow::class.java, false)
-        return future.returnValue.getOrThrow()
     }
 
     private fun NodeHandle.runActivateMembershipFlow(membership: StateAndRef<Membership.State>): SignedTransaction {
