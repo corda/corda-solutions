@@ -24,6 +24,10 @@ sourceSets {
     }
 }
 
+jar {
+    exclude('membership-service.properties')
+}
+
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
     testCompile "org.jetbrains.kotlin:kotlin-test:$kotlin_version"

@@ -60,7 +60,7 @@ abstract class AbstractFlowTest(
         mockNetwork.stopNodes()
     }
 
-    fun runRequestMembershipFlow(nodeToRunTheFlow : StartedMockNode, membershipMetadata : MembershipMetadata = MembershipMetadata("DEFAULT")) : SignedTransaction {
+    fun runRequestMembershipFlow(nodeToRunTheFlow : StartedMockNode, membershipMetadata : MembershipMetadata = MembershipMetadata(role="DEFAULT")) : SignedTransaction {
         val future = nodeToRunTheFlow.startFlow(RequestMembershipFlow(membershipMetadata))
         mockNetwork.runNetwork()
         return future.getOrThrow()

@@ -29,7 +29,7 @@ class FullBNMSFlowDemo : AbstractFlowTest(5) {
         val nonMember = participantsNodes[1]
 
         // participant submits a membership request to the BNO via RequestMembershipFlow
-        runRequestMembershipFlow(newJoiner, MembershipMetadata("My new role"))
+        runRequestMembershipFlow(newJoiner, MembershipMetadata(role="My new role"))
 
         // the flow issues MembershipState in PENDING status onto the ledger
         // After the state has been issued, the BNO needs to kick-off their internal KYC / on-boarding procedures, do all the paperwork and etc.
@@ -54,7 +54,7 @@ class FullBNMSFlowDemo : AbstractFlowTest(5) {
         }
 
         // Business Network members can amend their membership metadata via AmendMembershipMetadataFlow
-        runAmendMetadataFlow(newJoiner, MembershipMetadata("Some other role"))
+        runAmendMetadataFlow(newJoiner, MembershipMetadata(role="Some other role"))
 
         // BNO can revoke memberships via RevokeMembershipFlow
         runRevokeMembershipFlow(bnoNode, identity(newJoiner))

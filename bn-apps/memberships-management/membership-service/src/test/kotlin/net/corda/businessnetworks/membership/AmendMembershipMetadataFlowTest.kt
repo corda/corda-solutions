@@ -73,7 +73,7 @@ class AmendMembershipMetadataFlowTest : AbstractFlowTest(2) {
         runActivateMembershipFlow(bnoNode, memberParty)
 
         try {
-            runAmendMetadataFlow(memberNode, MembershipMetadata("Some role"))
+            runAmendMetadataFlow(memberNode, MembershipMetadata(role="Some role"))
         } catch (e : FlowException) {
             assert("$memberParty is not a member" == e.message)
         }
