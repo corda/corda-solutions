@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" contentScriptType="application/ecmascript" contentStyleType="text/css"
+     height="825px" preserveAspectRatio="none" style="width:863px;height:825px;" version="1.1" viewBox="0 0 863 825"
+     width="863px" zoomAndPan="magnify">
+    <defs>
+        <filter height="300%" id="f1d9d1t0fmknlj" width="300%" x="-1" y="-1">
+            <feGaussianBlur result="blurOut" stdDeviation="2.0"/>
+            <feColorMatrix in="blurOut" result="blurOut2" type="matrix"
+                           values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/>
+            <feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"/>
+            <feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/>
+        </filter>
+    </defs>
+    <g>
+        <rect fill="#FFFFFF" filter="url(#f1d9d1t0fmknlj)" height="191.1738" style="stroke: #000000; stroke-width: 2.0;"
+              width="808.5" x="33" y="200.7305"/>
+        <rect fill="#FFFFFF" filter="url(#f1d9d1t0fmknlj)" height="122.5527" style="stroke: #000000; stroke-width: 2.0;"
+              width="555" x="23" y="449.2148"/>
+        <rect fill="#FFFFFF" filter="url(#f1d9d1t0fmknlj)" height="91.2422" style="stroke: #000000; stroke-width: 2.0;"
+              width="535" x="33" y="473.5254"/>
+        <rect fill="#FFFFFF" filter="url(#f1d9d1t0fmknlj)" height="138.5527" style="stroke: #000000; stroke-width: 2.0;"
+              width="575" x="13" y="629.0781"/>
+        <rect fill="#FFFFFF" filter="url(#f1d9d1t0fmknlj)" height="107.2422" style="stroke: #000000; stroke-width: 2.0;"
+              width="555" x="23" y="653.3887"/>
+        <rect fill="#FFFFFF" filter="url(#f1d9d1t0fmknlj)" height="46.6211" style="stroke: #000000; stroke-width: 2.0;"
+              width="535" x="33" y="707.0098"/>
+        <line style="stroke: #A80036; stroke-width: 1.0; stroke-dasharray: 5.0,5.0;" x1="79" x2="79" y1="38.4883"
+              y2="784.6309"/>
+        <line style="stroke: #A80036; stroke-width: 1.0; stroke-dasharray: 5.0,5.0;" x1="337" x2="337" y1="38.4883"
+              y2="784.6309"/>
+        <line style="stroke: #A80036; stroke-width: 1.0; stroke-dasharray: 5.0,5.0;" x1="503" x2="503" y1="38.4883"
+              y2="784.6309"/>
+        <rect fill="#FEFECE" filter="url(#f1d9d1t0fmknlj)" height="30.4883" style="stroke: #A80036; stroke-width: 1.5;"
+              width="68" x="43" y="3"/>
+        <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="54"
+              x="50" y="23.5352">Initiator
+        </text>
+        <rect fill="#FEFECE" filter="url(#f1d9d1t0fmknlj)" height="30.4883" style="stroke: #A80036; stroke-width: 1.5;"
+              width="68" x="43" y="783.6309"/>
+        <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="54"
+              x="50" y="804.166">Initiator
+        </text>
+        <rect fill="#FEFECE" filter="url(#f1d9d1t0fmknlj)" height="30.4883" style="stroke: #A80036; stroke-width: 1.5;"
+              width="200" x="235" y="3"/>
+        <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="186"
+              x="242" y="23.5352">Business Network Operator
+        </text>
+        <rect fill="#FEFECE" filter="url(#f1d9d1t0fmknlj)" height="30.4883" style="stroke: #A80036; stroke-width: 1.5;"
+              width="200" x="235" y="783.6309"/>
+        <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="186"
+              x="242" y="804.166">Business Network Operator
+        </text>
+        <rect fill="#FEFECE" filter="url(#f1d9d1t0fmknlj)" height="30.4883" style="stroke: #A80036; stroke-width: 1.5;"
+              width="105" x="449" y="3"/>
+        <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="91"
+              x="456" y="23.5352">Counterparty
+        </text>
+        <rect fill="#FEFECE" filter="url(#f1d9d1t0fmknlj)" height="30.4883" style="stroke: #A80036; stroke-width: 1.5;"
+              width="105" x="449" y="783.6309"/>
+        <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="91"
+              x="456" y="804.166">Counterparty
+        </text>
+        <rect fill="#EEEEEE" filter="url(#f1d9d1t0fmknlj)" height="3" style="stroke: #EEEEEE; stroke-width: 1.0;"
+              width="848.5" x="3" y="69.1436"/>
+        <line style="stroke: #000000; stroke-width: 1.0;" x1="3" x2="851.5" y1="69.1436" y2="69.1436"/>
+        <line style="stroke: #000000; stroke-width: 1.0;" x1="3" x2="851.5" y1="72.1436" y2="72.1436"/>
+        <rect fill="#EEEEEE" filter="url(#f1d9d1t0fmknlj)" height="23.3105" style="stroke: #000000; stroke-width: 2.0;"
+              width="171" x="341.75" y="58.4883"/>
+        <text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs"
+              textLength="153" x="347.75" y="75.0566">Get Memberships Flow
+        </text>
+        <polygon fill="#A80036" points="325,108.7988,335,112.7988,325,116.7988,329,112.7988"
+                 style="stroke: #A80036; stroke-width: 1.0;"/>
+        <line style="stroke: #A80036; stroke-width: 1.0;" x1="79" x2="331" y1="112.7988" y2="112.7988"/>
+        <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="82"
+              x="86" y="108.3672">Get Members
+        </text>
+        <polygon fill="#A80036" points="90,138.1094,80,142.1094,90,146.1094,86,142.1094"
+                 style="stroke: #A80036; stroke-width: 1.0;"/>
+        <line style="stroke: #A80036; stroke-width: 1.0; stroke-dasharray: 2.0,2.0;" x1="84" x2="336" y1="142.1094"
+              y2="142.1094"/>
+        <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="119"
+              x="96" y="137.6777">Set of BN members
+        </text>
+        <rect fill="#EEEEEE" filter="url(#f1d9d1t0fmknlj)" height="3" style="stroke: #EEEEEE; stroke-width: 1.0;"
+              width="848.5" x="3" y="171.0752"/>
+        <line style="stroke: #000000; stroke-width: 1.0;" x1="3" x2="851.5" y1="171.0752" y2="171.0752"/>
+        <line style="stroke: #000000; stroke-width: 1.0;" x1="3" x2="851.5" y1="174.0752" y2="174.0752"/>
+        <rect fill="#EEEEEE" filter="url(#f1d9d1t0fmknlj)" height="23.3105" style="stroke: #000000; stroke-width: 2.0;"
+              width="247" x="303.75" y="160.4199"/>
+        <text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs"
+              textLength="229" x="309.75" y="176.9883">Evaluate Ledger Consistency Flow
+        </text>
+        <path d="M33,200.7305 L107,200.7305 L107,207.7305 L97,217.7305 L33,217.7305 L33,200.7305 " fill="#EEEEEE"
+              style="stroke: #000000; stroke-width: 1.0;"/>
+        <rect fill="none" height="191.1738" style="stroke: #000000; stroke-width: 2.0;" width="808.5" x="33"
+              y="200.7305"/>
+        <text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs"
+              textLength="29" x="48" y="214.2988">loop
+        </text>
+        <text fill="#000000" font-family="sans-serif" font-size="11" font-weight="bold" lengthAdjust="spacingAndGlyphs"
+              textLength="159" x="122" y="213.3652">[for all node ∈ BN members]
+        </text>
+        <line style="stroke: #A80036; stroke-width: 1.0;" x1="79" x2="121" y1="254.6621" y2="254.6621"/>
+        <line style="stroke: #A80036; stroke-width: 1.0;" x1="121" x2="121" y1="254.6621" y2="267.6621"/>
+        <line style="stroke: #A80036; stroke-width: 1.0;" x1="80" x2="121" y1="267.6621" y2="267.6621"/>
+        <polygon fill="#A80036" points="90,263.6621,80,267.6621,90,271.6621,86,267.6621"
+                 style="stroke: #A80036; stroke-width: 1.0;"/>
+        <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="211"
+              x="86" y="234.6094">Retrieve and hash transaction IDs
+        </text>
+        <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="126"
+              x="118" y="249.9199">of transactions with
+        </text>
+        <text fill="#000000" font-family="sans-serif" font-size="13" font-style="italic" lengthAdjust="spacingAndGlyphs"
+              textLength="82" x="248" y="249.9199">Counterparty
+        </text>
+        <polygon fill="#A80036" points="491.5,292.6621,501.5,296.6621,491.5,300.6621,495.5,296.6621"
+                 style="stroke: #A80036; stroke-width: 1.0;"/>
+        <line style="stroke: #A80036; stroke-width: 1.0;" x1="79" x2="497.5" y1="296.6621" y2="296.6621"/>
+        <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="202"
+              x="86" y="292.2305">Compound hash of transactions
+        </text>
+        <line style="stroke: #A80036; stroke-width: 1.0;" x1="503.5" x2="545.5" y1="341.5938" y2="341.5938"/>
+        <line style="stroke: #A80036; stroke-width: 1.0;" x1="545.5" x2="545.5" y1="341.5938" y2="354.5938"/>
+        <line style="stroke: #A80036; stroke-width: 1.0;" x1="504.5" x2="545.5" y1="354.5938" y2="354.5938"/>
+        <polygon fill="#A80036" points="514.5,350.5938,504.5,354.5938,514.5,358.5938,510.5,354.5938"
+                 style="stroke: #A80036; stroke-width: 1.0;"/>
+        <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="287"
+              x="510.5" y="321.541">Retrieve, hash transaction IDs of transactions
+        </text>
+        <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="27"
+              x="542.5" y="336.8516">with
+        </text>
+        <text fill="#000000" font-family="sans-serif" font-size="13" font-style="italic" lengthAdjust="spacingAndGlyphs"
+              textLength="50" x="573.5" y="336.8516">Initiator
+        </text>
+        <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="202"
+              x="627.5" y="336.8516">and compare with hash received
+        </text>
+        <polygon fill="#A80036" points="90,379.5938,80,383.5938,90,387.5938,86,383.5938"
+                 style="stroke: #A80036; stroke-width: 1.0;"/>
+        <line style="stroke: #A80036; stroke-width: 1.0; stroke-dasharray: 2.0,2.0;" x1="84" x2="502.5" y1="383.5938"
+              y2="383.5938"/>
+        <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="114"
+              x="96" y="379.1621">Do hashes match?
+        </text>
+        <rect fill="#EEEEEE" filter="url(#f1d9d1t0fmknlj)" height="3" style="stroke: #EEEEEE; stroke-width: 1.0;"
+              width="848.5" x="3" y="419.5596"/>
+        <line style="stroke: #000000; stroke-width: 1.0;" x1="3" x2="851.5" y1="419.5596" y2="419.5596"/>
+        <line style="stroke: #000000; stroke-width: 1.0;" x1="3" x2="851.5" y1="422.5596" y2="422.5596"/>
+        <rect fill="#EEEEEE" filter="url(#f1d9d1t0fmknlj)" height="23.3105" style="stroke: #000000; stroke-width: 2.0;"
+              width="194" x="330.25" y="408.9043"/>
+        <text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs"
+              textLength="176" x="336.25" y="425.4727">Request Ledger Sync Flow
+        </text>
+        <path d="M23,449.2148 L97,449.2148 L97,456.2148 L87,466.2148 L23,466.2148 L23,449.2148 " fill="#EEEEEE"
+              style="stroke: #000000; stroke-width: 1.0;"/>
+        <rect fill="none" height="122.5527" style="stroke: #000000; stroke-width: 2.0;" width="555" x="23"
+              y="449.2148"/>
+        <text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs"
+              textLength="29" x="38" y="462.7832">loop
+        </text>
+        <text fill="#000000" font-family="sans-serif" font-size="11" font-weight="bold" lengthAdjust="spacingAndGlyphs"
+              textLength="158" x="112" y="461.8496">[for all node ∈ BN Members]
+        </text>
+        <path d="M33,473.5254 L95,473.5254 L95,480.5254 L85,490.5254 L33,490.5254 L33,473.5254 " fill="#EEEEEE"
+              style="stroke: #000000; stroke-width: 1.0;"/>
+        <rect fill="none" height="91.2422" style="stroke: #000000; stroke-width: 2.0;" width="535" x="33" y="473.5254"/>
+        <text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs"
+              textLength="17" x="48" y="487.0938">alt
+        </text>
+        <text fill="#000000" font-family="sans-serif" font-size="11" font-weight="bold" lengthAdjust="spacingAndGlyphs"
+              textLength="127" x="110" y="486.1602">[hash_match == false]
+        </text>
+        <polygon fill="#A80036" points="491.5,507.8359,501.5,511.8359,491.5,515.8359,495.5,511.8359"
+                 style="stroke: #A80036; stroke-width: 1.0;"/>
+        <line style="stroke: #A80036; stroke-width: 1.0;" x1="79" x2="497.5" y1="511.8359" y2="511.8359"/>
+        <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="191"
+              x="86" y="507.4043">Set of IDs of transactions with
+        </text>
+        <text fill="#000000" font-family="sans-serif" font-size="13" font-style="italic" lengthAdjust="spacingAndGlyphs"
+              textLength="82" x="281" y="507.4043">Counterparty
+        </text>
+        <polygon fill="#A80036" points="90,552.1465,80,556.1465,90,560.1465,86,556.1465"
+                 style="stroke: #A80036; stroke-width: 1.0;"/>
+        <line style="stroke: #A80036; stroke-width: 1.0; stroke-dasharray: 2.0,2.0;" x1="84" x2="502.5" y1="556.1465"
+              y2="556.1465"/>
+        <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="292"
+              x="96" y="536.7148">Set of findings, indicating missing transaction
+        </text>
+        <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="73"
+              x="144" y="552.0254">both on the
+        </text>
+        <text fill="#000000" font-family="sans-serif" font-size="13" font-style="italic" lengthAdjust="spacingAndGlyphs"
+              textLength="55" x="221" y="552.0254">Inititator
+        </text>
+        <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="23"
+              x="280" y="552.0254">and
+        </text>
+        <text fill="#000000" font-family="sans-serif" font-size="13" font-style="italic" lengthAdjust="spacingAndGlyphs"
+              textLength="82" x="307" y="552.0254">Counterparty
+        </text>
+        <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="26"
+              x="393" y="552.0254">side
+        </text>
+        <rect fill="#EEEEEE" filter="url(#f1d9d1t0fmknlj)" height="3" style="stroke: #EEEEEE; stroke-width: 1.0;"
+              width="848.5" x="3" y="599.4229"/>
+        <line style="stroke: #000000; stroke-width: 1.0;" x1="3" x2="851.5" y1="599.4229" y2="599.4229"/>
+        <line style="stroke: #000000; stroke-width: 1.0;" x1="3" x2="851.5" y1="602.4229" y2="602.4229"/>
+        <rect fill="#EEEEEE" filter="url(#f1d9d1t0fmknlj)" height="23.3105" style="stroke: #000000; stroke-width: 2.0;"
+              width="198" x="328.25" y="588.7676"/>
+        <text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs"
+              textLength="180" x="334.25" y="605.3359">Transaction Recovery Flow
+        </text>
+        <path d="M13,629.0781 L87,629.0781 L87,636.0781 L77,646.0781 L13,646.0781 L13,629.0781 " fill="#EEEEEE"
+              style="stroke: #000000; stroke-width: 1.0;"/>
+        <rect fill="none" height="138.5527" style="stroke: #000000; stroke-width: 2.0;" width="575" x="13"
+              y="629.0781"/>
+        <text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs"
+              textLength="29" x="28" y="642.6465">loop
+        </text>
+        <text fill="#000000" font-family="sans-serif" font-size="11" font-weight="bold" lengthAdjust="spacingAndGlyphs"
+              textLength="149" x="102" y="641.7129">[for all finding ∈ findings]
+        </text>
+        <path d="M23,653.3887 L85,653.3887 L85,660.3887 L75,670.3887 L23,670.3887 L23,653.3887 " fill="#EEEEEE"
+              style="stroke: #000000; stroke-width: 1.0;"/>
+        <rect fill="none" height="107.2422" style="stroke: #000000; stroke-width: 2.0;" width="555" x="23"
+              y="653.3887"/>
+        <text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs"
+              textLength="17" x="38" y="666.957">alt
+        </text>
+        <text fill="#000000" font-family="sans-serif" font-size="11" font-weight="bold" lengthAdjust="spacingAndGlyphs"
+              textLength="196" x="100" y="666.0234">[contains recoverable transactions]
+        </text>
+        <polygon fill="#A80036" points="491.5,687.6992,501.5,691.6992,491.5,695.6992,495.5,691.6992"
+                 style="stroke: #A80036; stroke-width: 1.0;"/>
+        <line style="stroke: #A80036; stroke-width: 1.0;" x1="79" x2="497.5" y1="691.6992" y2="691.6992"/>
+        <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="267"
+              x="86" y="687.2676">Set of IDs of recoverable transactions with
+        </text>
+        <text fill="#000000" font-family="sans-serif" font-size="13" font-style="italic" lengthAdjust="spacingAndGlyphs"
+              textLength="82" x="357" y="687.2676">Counterparty
+        </text>
+        <path d="M33,707.0098 L107,707.0098 L107,714.0098 L97,724.0098 L33,724.0098 L33,707.0098 " fill="#EEEEEE"
+              style="stroke: #000000; stroke-width: 1.0;"/>
+        <rect fill="none" height="46.6211" style="stroke: #000000; stroke-width: 2.0;" width="535" x="33" y="707.0098"/>
+        <text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs"
+              textLength="29" x="48" y="720.5781">loop
+        </text>
+        <text fill="#000000" font-family="sans-serif" font-size="11" font-weight="bold" lengthAdjust="spacingAndGlyphs"
+              textLength="208" x="122" y="719.6445">[for all id ∈ relevant_transaction_ids]
+        </text>
+        <polygon fill="#A80036" points="90,741.3203,80,745.3203,90,749.3203,86,745.3203"
+                 style="stroke: #A80036; stroke-width: 1.0;"/>
+        <line style="stroke: #A80036; stroke-width: 1.0; stroke-dasharray: 2.0,2.0;" x1="84" x2="502.5" y1="745.3203"
+              y2="745.3203"/>
+        <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="74"
+              x="96" y="740.8887">Transaction
+        </text><!--
+@startuml
+== Get Memberships Flow ==
+
+Initiator -> "Business Network Operator": Get Members
+"Business Network Operator" - -> Initiator: Set of BN members
+
+== Evaluate Ledger Consistency Flow ==
+
+loop for all node ∈ BN members
+    Initiator -> Initiator: Retrieve and hash transaction IDs\n        of transactions with //Counterparty//
+    Initiator -> Counterparty: Compound hash of transactions
+    Counterparty -> Counterparty: Retrieve, hash transaction IDs of transactions\n        with //Initiator// and compare with hash received
+    Counterparty - -> Initiator: Do hashes match?
+end
+
+== Request Ledger Sync Flow ==
+
+loop for all node ∈ BN Members
+    alt hash_match == false
+        Initiator -> Counterparty: Set of IDs of transactions with //Counterparty//
+        Counterparty - -> Initiator: Set of findings, indicating missing transaction\n            both on the //Inititator// and //Counterparty// side
+    end
+end
+
+== Transaction Recovery Flow ==
+
+loop for all finding ∈ findings
+    alt contains recoverable transactions
+        Initiator -> Counterparty: Set of IDs of recoverable transactions with //Counterparty//
+            loop for all id ∈ relevant_transaction_ids
+                Counterparty - -> Initiator: Transaction
+            end
+    end
+end
+@enduml
+
+PlantUML version 1.2018.01(Sun Jan 28 18:08:22 GMT 2018)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Java Version: 1.8.0_152-release-1248-b8
+Operating System: Mac OS X
+OS Version: 10.12.6
+Default Encoding: UTF-8
+Language: en
+Country: GB
+-->
+    </g>
+</svg>
