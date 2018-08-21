@@ -41,7 +41,7 @@ class MembershipsCacheTest : AbstractFlowTest(5) {
         val cache = MembershipsCache.from(MembershipsListResponse(memberships, Instant.now()))
         val node = participantsNodes.first()
         val party = identity(node)
-        runAmendMetadataFlow(node, MembershipMetadata("New metadata"))
+        runAmendMetadataFlow(node, MembershipMetadata(role="New metadata"))
 
         val newMembership = getMembership(node, party)
 

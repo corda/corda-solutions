@@ -25,6 +25,7 @@ abstract class BusinessNetworkOperatorInitiatedFlow<out T>(val flowSession: Flow
 
     @Suspendable
     private fun verifyMembership(initiator : Party) {
+        logger.info("Verifying membership status of $initiator")
         val databaseService = serviceHub.cordaService(DatabaseService::class.java)
         val membership = databaseService.getMembership(initiator)
         if (membership == null) {
