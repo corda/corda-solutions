@@ -27,7 +27,7 @@ The following goals have been identified:
 Non-goals:
 * Automatic update installation. Node administrators will need to stop-update-restart their nodes manually.
 
-### Requirements
+### Goals
 
 The following requirements have been gathered from various internal discussions within R3 and from `groups.io` [mailing lists](https://groups.io/g/corda-dev/message/190?p=,,,20,0,0,0::relevance,,updates+distribution,20,2,0,22686107):
 
@@ -42,10 +42,11 @@ The following requirements have been gathered from various internal discussions 
 * Should support update descriptions
 * Should support update importance. The critical updates might require notification to be sent to the operator.
 
-### Non-requirements:
+### Non-goals:
 
 * CDS will not provide functionality for automatic update installation. Node administrator will still have to stop-update-restart their nodes manually.
 * CDS is not intended to be used to update the platform itself.
+* How to design a CorDapp to support upgrades is out of scope of this design document. Information about flow versioning, states evolution and contract constraints can be found on [Corda Docs](https://docs.corda.net)
 
 ### Target solution
 
@@ -106,6 +107,12 @@ Preferred transport will be overridable via custom property. *HTTP(s)* transport
 Under the hood, the CorDapp will be calling `cds-lib` for all Maven-related interactions.
 
 `cds-cordapp` will be relying on manually scanning CorDapp MANIFEST files until a better API is available.
+
+Full Maven coordinates will be used for all CorDapp related notifications, i.e. new version availability or revocation.  
+
+In the Business Networks where members host nodes by themselves, BNO can only do their best to encourage the members to upgrade by notifying them via CDS or sending them an email, but ultimately it will be up to a member to decide on whether they would like to upgrade or not. Members with stale CorDapp versions might loose their ability to transact on the BN if the CorDapp is not backwards compatible.
+
+CDS will not provide any automations around database or environment evolution. These procedures should be defined by a CorDapp vendor.
 
 ##### Using cds-lib as a standalone
 
