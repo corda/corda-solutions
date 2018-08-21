@@ -20,7 +20,7 @@ import java.time.Instant
 class MembershipListRequest
 
 @CordaSerializable
-data class MembershipsListResponse(val memberships : List<StateAndRef<Membership.State>>, val expires : Instant? = null)
+data class MembershipsListResponse(val memberships: List<StateAndRef<Membership.State>>, val expires: Instant? = null)
 
 /**
  * The flow pulls down a list of active members from the BNO. The list is cached via the [MembershipService].
@@ -40,9 +40,11 @@ data class MembershipsListResponse(val memberships : List<StateAndRef<Membership
  * }
  */
 @InitiatingFlow
-class GetMembershipsFlow(private val forceRefresh : Boolean = false) : FlowLogic<Map<Party, StateAndRef<Membership.State>>>() {
+@StartableByRPC
+class GetMembershipsFlow(private val forceRefresh: Boolean = false) : FlowLogic<Map<Party, StateAndRef<Membership.State>>>() {
+
     @Suspendable
-    override fun call() : Map<Party, StateAndRef<Membership.State>> {
+    override fun call(): Map<Party, StateAndRef<Membership.State>> {
         val membershipService = serviceHub.cordaService(MembershipsCacheHolder::class.java)
         val cache = membershipService.cache
         val now = serviceHub.clock.instant()
