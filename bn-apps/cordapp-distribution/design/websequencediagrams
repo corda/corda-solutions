@@ -1,0 +1,59 @@
+title CorDapp list processing logic
+
+note right of BNO:
+CorDapp list can be sent in response
+to a request from a node. For each updated CorDapp,
+BNO will be notifying all BN members by sending them
+a list of descriptors of updated CorDapps.
+end note
+BNO->Corda Node: Sends CorDapps list
+note right of Corda Node: Stores the list into the database
+note right of Corda Node: Builds installed CorDapps descriptors
+note right of Corda Node:
+Determines if any CorDapp is missing locally
+end note
+loop For each missing CorDapp
+    alt If a download adaptor is defined
+        note right of Corda Node:
+        Invokes the download adaptor with
+        a respective configuration
+        end note
+        note right of Corda Node:
+        Verifies JAR's hash and signature
+        end note
+    end
+end
+note right of Corda Node:
+Determines if since the last check any
+CorDapp got deprecated
+(got below the minimum supported version)
+end note
+loop For each newly deprecated CorDapp
+    alt If onDeprecation notification adaptor is defined:
+        note right of Corda Node:
+        Invokes the notificaton adaptor with
+        a respective configuration
+        end note
+    end
+end
+note right of Corda Node:
+Determines if since the last check any CorDapp
+got updated
+end note
+loop For each updated CorDapp
+    alt If a download adaptor is defined
+        note right of Corda Node:
+        Invokes the download adaptor with
+        a respective configuration
+        end note
+        note right of Corda Node:
+        Verifies JAR's hash and signature
+        end note
+    end
+    alt If onUpdate notification adaptor is defined
+        note right of Corda Node:
+        Invokes the notification adaptor with
+        a respective configuration
+        end note
+    end
+end
