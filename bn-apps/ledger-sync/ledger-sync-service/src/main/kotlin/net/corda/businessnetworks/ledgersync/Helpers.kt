@@ -31,6 +31,9 @@ fun VaultService.withParticipants(vararg parties: Party): List<SecureHash> = que
     it.ref.txhash
 }
 
+/**
+ * Calculates a compound hash of multiple hashes by hashing their concatenation in lexical order.
+ */
 fun List<SecureHash>.hash(): SecureHash = map {
     it.bytes
 }.sortedWith(ByteArrayLexOrder()).fold(ByteArray(0)) { acc, hash ->

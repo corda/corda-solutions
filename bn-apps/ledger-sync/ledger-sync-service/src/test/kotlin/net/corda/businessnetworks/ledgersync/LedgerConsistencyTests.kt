@@ -26,19 +26,16 @@ import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
 
-@Suppress("PrivatePropertyName")
 class LedgerConsistencyTests {
-    private val NOTARY = CordaX500Name("Notary", "London", "GB")
+    private val notary = CordaX500Name("Notary", "London", "GB")
 
-    private val BNO = CordaX500Name("BNO", "New York", "US")
+    private val bno = CordaX500Name("BNO", "New York", "US")
 
-    private val NODE_1 = CordaX500Name("Member 1", "Paris", "FR")
-    private val NODE_2 = CordaX500Name("Member 2", "Paris", "FR")
-    private val NODE_3 = CordaX500Name("Member 3", "Paris", "FR")
+    private val node1 = CordaX500Name("Member 1", "Paris", "FR")
+    private val node2 = CordaX500Name("Member 2", "Paris", "FR")
+    private val node3 = CordaX500Name("Member 3", "Paris", "FR")
 
     private lateinit var mockNetwork: InternalMockNetwork
-
-    private val MEMBERSHIP_DATA = MembershipMetadata("DEFAULT")
 
     @Before
     fun start() {
@@ -48,13 +45,13 @@ class LedgerConsistencyTests {
                         "net.corda.businessnetworks.membership.states",
                         "net.corda.businessnetworks.ledgersync"
                 ),
-                notarySpecs = listOf(MockNetworkNotarySpec(NOTARY))
+                notarySpecs = listOf(MockNetworkNotarySpec(notary))
         )
-        mockNetwork.createNode(InternalMockNodeParameters(legalName = BNO))
+        mockNetwork.createNode(InternalMockNodeParameters(legalName = bno))
 
-        mockNetwork.createNode(InternalMockNodeParameters(legalName = NODE_1)).elevateToMember()
-        mockNetwork.createNode(InternalMockNodeParameters(legalName = NODE_2)).elevateToMember()
-        mockNetwork.createNode(InternalMockNodeParameters(legalName = NODE_3)).elevateToMember()
+        mockNetwork.createNode(InternalMockNodeParameters(legalName = node1)).elevateToMember()
+        mockNetwork.createNode(InternalMockNodeParameters(legalName = node2)).elevateToMember()
+        mockNetwork.createNode(InternalMockNodeParameters(legalName = node3)).elevateToMember()
 
         mockNetwork.runNetwork()
     }
@@ -66,119 +63,119 @@ class LedgerConsistencyTests {
 
     @Test
     fun `members receive no ids to sync if they hold all transactions the counterparty is aware of`() {
-        assertEquals(0, NODE_1.asNode().bogusStateCount())
+        assertEquals(0, node1.fromNetwork().bogusStateCount())
 
-        NODE_1.asNode().createTransactions()
+        node1.fromNetwork().createTransactions()
 
-        assertEquals(2, NODE_1.asNode().bogusStateCount())
+        assertEquals(2, node1.fromNetwork().bogusStateCount())
 
-        val missingTransactions = NODE_1.asNode().runRequestLedgerSyncFlow(NODE_1.asNode().members())
+        val missingTransactions = node1.fromNetwork().runRequestLedgerSyncFlow(node1.fromNetwork().members())
 
         assertEquals(mapOf(
-                NODE_2.asNode().identity() to LedgerSyncFindings(emptyList(), emptyList()),
-                NODE_3.asNode().identity() to LedgerSyncFindings(emptyList(), emptyList())
+                node2.fromNetwork().identity() to LedgerSyncFindings(emptyList(), emptyList()),
+                node3.fromNetwork().identity() to LedgerSyncFindings(emptyList(), emptyList())
         ), missingTransactions)
     }
 
     @Test
     fun `reports member ids to sync missing from requester`() {
-        NODE_1.asNode().createTransactions()
-        assertEquals(2, NODE_1.asNode().bogusStateCount())
-        NODE_1.asNode().simulateCatastrophicFailure()
-        assertEquals(0, NODE_1.asNode().bogusStateCount())
-        NODE_1.asNode().runRequestLedgerSyncFlow(NODE_1.asNode().members())
+        node1.fromNetwork().createTransactions()
+        assertEquals(2, node1.fromNetwork().bogusStateCount())
+        node1.fromNetwork().simulateCatastrophicFailure()
+        assertEquals(0, node1.fromNetwork().bogusStateCount())
+        node1.fromNetwork().runRequestLedgerSyncFlow(node1.fromNetwork().members())
 
-        val missingTransactions = NODE_1.asNode().runRequestLedgerSyncFlow(NODE_1.asNode().members())
+        val missingTransactions = node1.fromNetwork().runRequestLedgerSyncFlow(node1.fromNetwork().members())
 
-        assertEquals(1, missingTransactions[NODE_2.asNode().identity()]!!.missingAtRequester.size)
-        assertEquals(1, missingTransactions[NODE_3.asNode().identity()]!!.missingAtRequester.size)
+        assertEquals(1, missingTransactions[node2.fromNetwork().identity()]!!.missingAtRequester.size)
+        assertEquals(1, missingTransactions[node3.fromNetwork().identity()]!!.missingAtRequester.size)
     }
 
     @Test
     fun `reports member ids to sync from requestee`() {
-        NODE_1.asNode().createTransactions()
-        NODE_2.asNode().simulateCatastrophicFailure()
-        assertEquals(0, NODE_2.asNode().bogusStateCount())
+        node1.fromNetwork().createTransactions()
+        node2.fromNetwork().simulateCatastrophicFailure()
+        assertEquals(0, node2.fromNetwork().bogusStateCount())
 
-        NODE_3.asNode().simulateCatastrophicFailure()
-        assertEquals(0, NODE_3.asNode().bogusStateCount())
+        node3.fromNetwork().simulateCatastrophicFailure()
+        assertEquals(0, node3.fromNetwork().bogusStateCount())
 
-        NODE_1.asNode().runRequestLedgerSyncFlow(NODE_1.asNode().members())
+        node1.fromNetwork().runRequestLedgerSyncFlow(node1.fromNetwork().members())
 
-        val missingTransactions = NODE_1.asNode().runRequestLedgerSyncFlow(NODE_1.asNode().members())
+        val missingTransactions = node1.fromNetwork().runRequestLedgerSyncFlow(node1.fromNetwork().members())
 
-        assertEquals(1, missingTransactions[NODE_2.asNode().identity()]!!.missingAtRequestee.size)
-        assertEquals(0, missingTransactions[NODE_2.asNode().identity()]!!.missingAtRequester.size)
-        assertEquals(1, missingTransactions[NODE_3.asNode().identity()]!!.missingAtRequestee.size)
-        assertEquals(0, missingTransactions[NODE_3.asNode().identity()]!!.missingAtRequester.size)
+        assertEquals(1, missingTransactions[node2.fromNetwork().identity()]!!.missingAtRequestee.size)
+        assertEquals(0, missingTransactions[node2.fromNetwork().identity()]!!.missingAtRequester.size)
+        assertEquals(1, missingTransactions[node3.fromNetwork().identity()]!!.missingAtRequestee.size)
+        assertEquals(0, missingTransactions[node3.fromNetwork().identity()]!!.missingAtRequester.size)
     }
 
     @Test
     fun `ledger consistency is reported for consistent ledgers`() {
-        NODE_1.asNode().createTransactions()
-        val actual = NODE_1.asNode().runEvaluateLedgerConsistencyFlow(NODE_1.asNode().members())
+        node1.fromNetwork().createTransactions()
+        val actual = node1.fromNetwork().runEvaluateLedgerConsistencyFlow(node1.fromNetwork().members())
         assertEquals(mapOf(
-                NODE_2.asNode().identity() to true,
-                NODE_3.asNode().identity() to true
+                node2.fromNetwork().identity() to true,
+                node3.fromNetwork().identity() to true
         ), actual)
     }
 
     @Test
     fun `ledger consistency is reported for inconsistent ledger`() {
-        NODE_1.asNode().createTransactions()
-        NODE_1.asNode().simulateCatastrophicFailure()
-        val actual = NODE_1.asNode().runEvaluateLedgerConsistencyFlow(NODE_1.asNode().members())
+        node1.fromNetwork().createTransactions()
+        node1.fromNetwork().simulateCatastrophicFailure()
+        val actual = node1.fromNetwork().runEvaluateLedgerConsistencyFlow(node1.fromNetwork().members())
         assertEquals(mapOf(
-                NODE_2.asNode().identity() to false,
-                NODE_3.asNode().identity() to false
+                node2.fromNetwork().identity() to false,
+                node3.fromNetwork().identity() to false
         ), actual)
     }
 
     @Test
     fun `ledger consistency is reported for inconsistent counterparties`() {
-        NODE_1.asNode().createTransactions()
-        NODE_3.asNode().simulateCatastrophicFailure()
-        val actual = NODE_1.asNode().runEvaluateLedgerConsistencyFlow(NODE_1.asNode().members())
+        node1.fromNetwork().createTransactions()
+        node3.fromNetwork().simulateCatastrophicFailure()
+        val actual = node1.fromNetwork().runEvaluateLedgerConsistencyFlow(node1.fromNetwork().members())
         assertEquals(mapOf(
-                NODE_2.asNode().identity() to true,
-                NODE_3.asNode().identity() to false
+                node2.fromNetwork().identity() to true,
+                node3.fromNetwork().identity() to false
         ), actual)
     }
 
     @Test
     fun `transactions can be recovered`() {
-        NODE_1.asNode().createTransactions(3)
+        node1.fromNetwork().createTransactions(3)
 
-        assertEquals(6, NODE_1.asNode().bogusStateCount())
+        assertEquals(6, node1.fromNetwork().bogusStateCount())
 
-        NODE_1.asNode().simulateCatastrophicFailure()
+        node1.fromNetwork().simulateCatastrophicFailure()
 
-        val consistencyResult = NODE_1.asNode().runEvaluateLedgerConsistencyFlow(NODE_1.asNode().members())
+        val consistencyResult = node1.fromNetwork().runEvaluateLedgerConsistencyFlow(node1.fromNetwork().members())
 
         assertEquals(mapOf(
-                NODE_2.asNode().identity() to false,
-                NODE_3.asNode().identity() to false
+                node2.fromNetwork().identity() to false,
+                node3.fromNetwork().identity() to false
         ), consistencyResult)
 
-        assertEquals(0, NODE_1.asNode().bogusStateCount())
+        assertEquals(0, node1.fromNetwork().bogusStateCount())
 
-        val ledgerSyncResult = NODE_1.asNode().runRequestLedgerSyncFlow(NODE_1.asNode().members())
+        val ledgerSyncResult = node1.fromNetwork().runRequestLedgerSyncFlow(node1.fromNetwork().members())
 
-        assertEquals(3, ledgerSyncResult[NODE_2.asNode().identity()]!!.missingAtRequester.size)
-        assertEquals(3, ledgerSyncResult[NODE_3.asNode().identity()]!!.missingAtRequester.size)
+        assertEquals(3, ledgerSyncResult[node2.fromNetwork().identity()]!!.missingAtRequester.size)
+        assertEquals(3, ledgerSyncResult[node3.fromNetwork().identity()]!!.missingAtRequester.size)
 
-        NODE_1.asNode().runTransactionRecoveryFlow(ledgerSyncResult)
+        node1.fromNetwork().runTransactionRecoveryFlow(ledgerSyncResult)
 
-        assertEquals(6, NODE_1.asNode().bogusStateCount())
+        assertEquals(6, node1.fromNetwork().bogusStateCount())
     }
 
     private fun StartedNode<MockNode>.elevateToMember() {
         val membershipRequest = runRequestMembershipFlow().coreTransaction.outRef<Membership.State>(0)
-        BNO.asNode().runActivateMembershipFlow(membershipRequest)
+        bno.fromNetwork().runActivateMembershipFlow(membershipRequest)
     }
 
     private fun StartedNode<MockNode>.runRequestMembershipFlow(): SignedTransaction {
-        val future = services.startFlow(RequestMembershipFlow(MEMBERSHIP_DATA)).resultFuture
+        val future = services.startFlow(RequestMembershipFlow(MembershipMetadata("DEFAULT"))).resultFuture
         mockNetwork.runNetwork()
         return future.getOrThrow()
     }
@@ -233,6 +230,7 @@ class LedgerConsistencyTests {
             connection.prepareStatement("""SELECT transaction_id FROM VAULT_STATES WHERE CONTRACT_STATE_CLASS_NAME='${BogusState::class.java.canonicalName}'""").executeQuery().let { results ->
                 while (results.next()) {
                     results.getString(1).let { transactionId ->
+                        connection.prepareStatement("""DELETE FROM NODE_TRANSACTIONS WHERE tx_id='$transactionId'""").execute()
                         connection.prepareStatement("""DELETE FROM VAULT_LINEAR_STATES_PARTS WHERE transaction_id='$transactionId'""").execute()
                         connection.prepareStatement("""DELETE FROM VAULT_LINEAR_STATES WHERE transaction_id='$transactionId'""").execute()
                         connection.prepareStatement("""DELETE FROM VAULT_STATES WHERE transaction_id='$transactionId'""").execute()
@@ -244,17 +242,9 @@ class LedgerConsistencyTests {
         restart()
     }
 
-    private fun CordaX500Name.asNode(): StartedNode<MockNode> {
-        println("NODES")
-        println("searching for " + this)
-        mockNetwork.nodes.forEach {
-
-            println(it.configuration.myLegalName)
-        }
-        return mockNetwork.nodes.lastOrNull {
-            it.configuration.myLegalName == this
-        }?.started!!
-    }
+    private fun CordaX500Name.fromNetwork(): StartedNode<MockNode> = mockNetwork.nodes.lastOrNull {
+        it.configuration.myLegalName == this
+    }?.started!!
 
     private fun StartedNode<MockNode>.createTransactions(count: Int = 1) {
         (members() - identity()).forEach { party ->
