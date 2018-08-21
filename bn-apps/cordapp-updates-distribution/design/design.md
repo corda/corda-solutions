@@ -45,6 +45,7 @@ The following requirements have been gathered from various internal discussions 
 ### Non-requirements:
 
 * CDS will not provide functionality for automatic update installation. Node administrator will still have to stop-update-restart their nodes manually.
+* CDS is not intended to be used to update the platform itself.
 
 ### Target solution
 
@@ -64,7 +65,7 @@ However, Maven doesn't support some of the required features, such as realtime n
 
 CDS will be shipped as 2 components:
 * **CDS library (cds-lib)** - wrapper around Maven Resolver, which will be handling all heavy-lifting, such as artifact resolution and downloading. The library will also include custom transport implementations.
-* **CDS CorDapp (cds-cordapp)**, which will provide scheduling, notification, revocation and reporting functionality on top of the *cds-lib*.
+* **CDS CorDapp (cds-cordapp)**, which will provide scheduling, notification, revocation and reporting functionality on top of the `cds-lib`.
 
 CDS can be used as a CorDapp or as a standalone library. High level architectures are outlined below.
 
@@ -74,15 +75,15 @@ CDS can be used as a CorDapp or as a standalone library. High level architecture
 **CDS as a library**
 ![CDS as library](./resources/cds-as-library.png)
 
-There are no strict limitations on following one architecture or the other. BNs can mix and match depending on their requirements.
+There are no strict limitations on following one architecture or the other. BNs can mix and match depending on their requirements. For example BNO might prefer to notify BN members via email and then let everyone to pull down the latest versions manually.
 
 ##### cds-lib
 
-*cds-lib* will be used to sync down one or more versions of CorDapp(s) from a remote repository. The library will be embeddable into third-party software or usable as a standalone from a command line. This will give BNs flexibility to utilise the service in the best way to fit their requirements.
+`cds-lib` will be used to sync down one or more versions of CorDapp(s) from a remote repository. The library will be embeddable into third-party software or usable as a standalone from a command line. This will give BNs flexibility to utilise the service in the best way to fit their requirements.
 
-*cds-lib* will be configurable via system properties and via external configuration file.
+`cds-lib` will be configurable via system properties and via external configuration file.
 
-*cds-lib* will support the following transports:
+`cds-lib` will support the following transports:
 * *HTTP(s)*. Available in Maven Resolver out-of-the-box with proxy- and repository- level authentications support.
 * *Corda Flows*. Will be used if `cds-lib` is invoked from within Corda Node.
 * *Corda RPC*. Its essentially the same as *Corda Flows*, with the difference that the *RPC* version will be used if `cds-lib` is invoked from outside of a Corda node.
@@ -100,8 +101,11 @@ Preferred transport will be overridable via custom property. *HTTP(s)* transport
 * Flows for BNO to notify BN members about CorDapp version revocations. If a version of CorDapp was revoked, BN members are expected to manually update their nodes with the latest not-revoked version ASAP.
 * Flows for BNO to collect reports from BN members about CorDapp versions installed on their nodes. Only versions of CorDapps related to this Business Network should be reported. CDS will rely on the information provided in CorDapp `MANIFEST` file.
 * Flows for BN members to manually request a list of revoked CorDapp versions from BNO.
+* Flows to optionally notify member in the case if not latest / revoked version of CorDapp is installed on their node.
 
 Under the hood, the CorDapp will be calling `cds-lib` for all Maven-related interactions.
+
+`cds-cordapp` will be relying on manually scanning CorDapp MANIFEST files until a better API is available.
 
 ##### Using cds-lib as a standalone
 
@@ -148,3 +152,7 @@ public interface Transporter
 ```
 * Wrapper around Maven Resolver, with support of CLI interface and custom configuration parameters.
 * CorDapp with the flows, specified in the previous sections.
+
+#### API extension points
+
+* TODO
