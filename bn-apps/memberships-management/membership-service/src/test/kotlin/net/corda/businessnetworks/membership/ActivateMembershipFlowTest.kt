@@ -2,8 +2,9 @@ package net.corda.businessnetworks.membership
 
 import net.corda.businessnetworks.membership.bno.OnMembershipActivated
 import net.corda.businessnetworks.membership.bno.service.BNOConfigurationService
+import net.corda.businessnetworks.membership.common.NotBNOException
 import net.corda.businessnetworks.membership.states.Membership
-import net.corda.core.flows.FlowException
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
@@ -20,6 +21,12 @@ class ActivateMembershipFlowTest : AbstractFlowTest(2) {
         super.setup()
         // This is ugly, but there is no other way to check whether the responding flow was actually triggered
         TestNotifyMembersFlowResponder.NOTIFICATIONS.clear()
+    }
+
+    @After
+    override fun tearDown() {
+        super.tearDown()
+        TestNotifyMembersFlowResponder.NOTIFICATIONS.clear() //if we don't do that it can interfere with tests in other classes
     }
 
     @Test
@@ -47,6 +54,31 @@ class ActivateMembershipFlowTest : AbstractFlowTest(2) {
         assert(notification.second is OnMembershipActivated)
     }
 
+    @Test
+    fun `membership activation should succeed when using convenience flow`() {
+        val memberNode = participantsNodes.first()
+        val memberParty = identity(memberNode)
+
+        runRequestMembershipFlow(memberNode)
+
+        // membership state before activation
+        val inputMembership = getMembership(memberNode, memberParty)
+
+        val stx = runActivateMembershipForPartyFlow(bnoNode, memberParty)
+        stx.verifyRequiredSignatures()
+
+        val outputTxState = stx.tx.outputs.single()
+        val command = stx.tx.commands.single()
+
+        assert(Membership.CONTRACT_NAME == outputTxState.contract)
+        assert(command.value is Membership.Commands.Activate)
+        assert(stx.tx.inputs.single() == inputMembership.ref)
+
+        val notification = TestNotifyMembersFlowResponder.NOTIFICATIONS.single()
+        assert(notification.first == memberParty)
+        assert(notification.second is OnMembershipActivated)
+    }
+
 
     @Test
     fun `only BNO should be able to start the flow`() {
@@ -57,8 +89,8 @@ class ActivateMembershipFlowTest : AbstractFlowTest(2) {
         try {
             runActivateMembershipFlow(memberNode, memberParty)
             fail()
-        } catch (e : FlowException) {
-            assertEquals("Our identity has to be BNO", e.message)
+        } catch (e : NotBNOException) {
+            assertEquals("This node is not the business network operator of this membership", e.message)
         }
     }
 

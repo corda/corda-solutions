@@ -4,12 +4,10 @@ import co.paralleluniverse.fibers.Suspendable
 import net.corda.businessnetworks.membership.member.service.MemberConfigurationService
 import net.corda.businessnetworks.membership.states.MembershipMetadata
 import net.corda.businessnetworks.membership.states.Membership
-import net.corda.core.flows.FlowException
-import net.corda.core.flows.FlowLogic
-import net.corda.core.flows.InitiatingFlow
-import net.corda.core.flows.SignTransactionFlow
+import net.corda.core.flows.*
 import net.corda.core.serialization.CordaSerializable
 import net.corda.core.transactions.SignedTransaction
+import net.corda.core.utilities.ProgressTracker
 
 @CordaSerializable
 data class OnBoardingRequest(val metadata : MembershipMetadata)
@@ -17,11 +15,25 @@ data class OnBoardingRequest(val metadata : MembershipMetadata)
 /**
  * The flow requests BNO to kick-off the on-boarding procedure
  */
+@StartableByRPC
 @InitiatingFlow
-class RequestMembershipFlow(private val membershipMetadata : MembershipMetadata = MembershipMetadata("DEFAULT")) : FlowLogic<SignedTransaction>() {
+class RequestMembershipFlow(private val membershipMetadata : MembershipMetadata = MembershipMetadata(role="DEFAULT")) : FlowLogic<SignedTransaction>() {
+
+    companion object {
+        object SENDING_MEMBERSHIP_DATA_TO_BNO : ProgressTracker.Step("Sending membership data to BNO")
+        object ACCEPTING_INCOMING_PENDING_MEMBERSHIP : ProgressTracker.Step("Accepting incoming pending membership")
+
+        fun tracker() = ProgressTracker(
+                SENDING_MEMBERSHIP_DATA_TO_BNO,
+                ACCEPTING_INCOMING_PENDING_MEMBERSHIP
+        )
+    }
+
+    override val progressTracker = tracker()
 
     @Suspendable
     override fun call() : SignedTransaction {
+        progressTracker.currentStep = SENDING_MEMBERSHIP_DATA_TO_BNO
         val configuration = serviceHub.cordaService(MemberConfigurationService::class.java)
         val bno = configuration.bnoParty()
 
@@ -50,6 +62,7 @@ class RequestMembershipFlow(private val membershipMetadata : MembershipMetadata 
                 stx.toLedgerTransaction(serviceHub, false).verify()
             }
         }
+        progressTracker.currentStep = ACCEPTING_INCOMING_PENDING_MEMBERSHIP
         return subFlow(signResponder)
     }
 }

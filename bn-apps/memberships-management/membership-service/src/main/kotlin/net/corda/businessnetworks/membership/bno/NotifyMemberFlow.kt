@@ -1,7 +1,7 @@
 package net.corda.businessnetworks.membership.bno
 
 import co.paralleluniverse.fibers.Suspendable
-import net.corda.businessnetworks.membership.bno.service.DatabaseService
+import net.corda.businessnetworks.membership.bno.support.BusinessNetworkOperatorFlowLogic
 import net.corda.businessnetworks.membership.states.Membership
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.flows.FlowLogic
@@ -18,12 +18,14 @@ data class OnMembershipChanged(val changedMembership : StateAndRef<Membership.St
 @CordaSerializable
 data class OnMembershipRevoked(val revokedMember : Party)
 
-class NotifyActiveMembersFlow(private val notification : Any) : FlowLogic<Unit>() {
+class NotifyActiveMembersFlow(private val notification : Any) : BusinessNetworkOperatorFlowLogic<Unit>() {
+
     @Suspendable
     override fun call() {
-        val databaseService = serviceHub.cordaService(DatabaseService::class.java)
-        databaseService.getActiveMemberships().forEach { subFlow(NotifyMemberFlow(notification, it.state.data.member)) }
+        val memberships = getActiveMembershipStates()
+        memberships.forEach { subFlow(NotifyMemberFlow(notification, it.state.data.member)) }
     }
+
 }
 
 @InitiatingFlow
