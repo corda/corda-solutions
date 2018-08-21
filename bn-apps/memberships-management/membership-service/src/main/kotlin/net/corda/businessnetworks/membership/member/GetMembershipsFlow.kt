@@ -42,7 +42,6 @@ data class MembershipsListResponse(val memberships: List<StateAndRef<Membership.
 @InitiatingFlow
 @StartableByRPC
 class GetMembershipsFlow(private val forceRefresh: Boolean = false) : FlowLogic<Map<Party, StateAndRef<Membership.State>>>() {
-
     @Suspendable
     override fun call(): Map<Party, StateAndRef<Membership.State>> {
         val membershipService = serviceHub.cordaService(MembershipsCacheHolder::class.java)
@@ -56,9 +55,9 @@ class GetMembershipsFlow(private val forceRefresh: Boolean = false) : FlowLogic<
             val response = bnoSession.sendAndReceive<MembershipsListResponse>(MembershipListRequest()).unwrap { it }
             val newCache = MembershipsCache.from(response)
             membershipService.cache = newCache
-            newCache.membershipMap
+            newCache.membershipMap.toMap()
         } else {
-            cache.membershipMap
+            cache.membershipMap.toMap()
         }
     }
 }
