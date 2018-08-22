@@ -88,7 +88,7 @@ Preferred transport will be overridable via custom property. *HTTP(s)* transport
 * Scheduled state for BN Members to periodically sync down their local CorDapp repositories with the BNO repository.
 * Flows for BNO to notify BN members about new CorDapp version availability. BN members will be able to setup custom integration hooks via API extensions points, such as to send an email, download a CorDapp and etc.
 * Flows for BNO to notify BN members about CorDapp version revocations. If a version of CorDapp was revoked, BN members are expected to manually update their nodes with the latest not-revoked version ASAP.
-* Flows for BNO to collect reports from BN members about CorDapp versions installed on their nodes. Only versions of CorDapps related to *this* Business Network should be reported. CDS will rely on the information provided in CorDapp `MANIFEST` file. `cds-cordapp` will be relying on manually scanning CorDapp `MANIFEST` files until a better API is available.
+* Flows for BNO to collect reports from BN members about CorDapp versions installed on their nodes. Only versions of CorDapps related to *this* Business Network should be reported. CDS will rely on the information provided in CorDapp `MANIFEST` files until a better API is available.
 * Flows for BN members to manually request a list of revoked CorDapp versions from BNO.
 * Flows to optionally notify members in the case if not latest or revoked version of CorDapp is installed on their node.
 
