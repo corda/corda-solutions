@@ -90,7 +90,7 @@ Preferred transport will be overridable via custom property. *HTTP(s)* transport
 * Flows for BNO to notify BN members about CorDapp version revocations. If a version of CorDapp was revoked, BN members are expected to manually update their nodes with the latest not-revoked version ASAP.
 * Flows for BNO to collect reports from BN members about CorDapp versions installed on their nodes. Only versions of CorDapps related to *this* Business Network should be reported. CDS will rely on the information provided in CorDapp `MANIFEST` files until a better API is available.
 * Flows for BN members to manually request a list of revoked CorDapp versions from BNO.
-* Flows to optionally notify members in the case if not latest or revoked version of CorDapp is installed on their node.
+* Flows to optionally notify members if they've got not latest or revoked versions of CorDapps installed on their nodes.
 
 Under the hood, `cd-cordapp` will be calling `cds-lib` for all Maven-related interactions.
 
