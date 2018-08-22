@@ -94,9 +94,7 @@ Preferred transport will be overridable via custom property. *HTTP(s)* transport
 
 Under the hood, `cd-cordapp` will be calling `cds-lib` for all Maven-related interactions.
 
-Full Maven coordinates will be used for all CorDapp related notifications, i.e. new version availability or revocation.  
-
-In the Business Networks where members host nodes by themselves, BNO can only do their best to encourage the members to upgrade by notifying them via CDS or sending them an email, but ultimately it will be up to a member to decide on whether they would like to upgrade or not. Members with stale CorDapp versions might loose their ability to transact on the BN if the CorDapp is not backwards compatible.
+In the Business Networks where members host nodes by themselves, BNO can only do their best to encourage the members to upgrade by notifying them via CDS or sending them an email, but ultimately it will be up to a member to decide on whether they would like to upgrade or not. Members with a stale CorDapp versions might loose their ability to transact on the BN if the CorDapp is not backwards compatible. 
 
 CDS will not provide any automations around database or environment evolution. These procedures should be defined by a CorDapp vendor.
 
