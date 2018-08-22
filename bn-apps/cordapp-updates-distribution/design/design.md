@@ -7,9 +7,9 @@ DOCUMENT MANAGEMENT
 
 ## Document Control
 
-| Title                | Ledger Synchronisation Service                            |
+| Title                | CordApp distribution service                             |
 | -------------------- | ------------------------------------------------------------ |
-| Date                 | 17 May 2018                                                |
+| Date                 | 22 Aug 2018                                                |
 | Author               | Ivan Schasny, Mike Hearn |
 | Distribution         | Design Review Board, Product Management, Solutions Engineering, Platform Delivery |
 | Corda target version | OS                                                   |
@@ -36,7 +36,7 @@ The following requirements have been gathered from various internal discussions 
 * It should be possible to prevent CorDapp from working if a newer version is available
 * CDS should support release channels
 * CDS should be integratable into CI/CD pipelines
-* BNO should be able to provide a textual description along with an upgrade
+* BNO should be able to provide a textual description along with each CorDapp version
 
 ### Non-requirements:
 
@@ -51,7 +51,7 @@ The following requirements have been gathered from various internal discussions 
 
 The proposal is to distribute CorDapps via standard Maven repository mechanism. This would allow BNOs to benefit from the existing rich Maven infrastructure. CorDapp distribution will be performed on per Business Network basis. BNOs will need to host a Maven repo as a part of their infrastructures. This is not envisaged to become a bottleneck: a lot of open source repositories are available there on the market and usually corporates already have Maven repositories running as a part of their software stack anyway, so they are expected to be familiar with the process.
 
-[Maven Resolver](https://wiki.eclipse.org/Aether) will be used on the client side as a library for programmatic dependency resolution. Maven Resolver supports pluggable transports and is shipped with `HTTP(s)` transport available out-of-the-box. To ease an integration into the existing enterprise infrastructures, the proposal is to provide a bespoke implementation of *Maven transport over Corda flows*. This would allow corporates to deploy CDS on-premises without having to reconfigure firewalls to allow HTTP traffic.
+[Maven Resolver](https://wiki.eclipse.org/Aether) will be used on the client side as a library for programmatic dependency resolution. Maven Resolver supports pluggable transports and is shipped with `HTTP(s)` transport available out-of-the-box. To ease an integration into the existing enterprise infrastructures, the proposal is to provide a bespoke implementation of *Maven transport over Corda flows*. This would allow corporates to deploy CDS on-premises without having to reconfigure their firewalls to allow HTTP traffic.
 
 CDS will support standard Maven Artifact naming notation `<groupId>:<artifactId>[:<extension>[:<classifier>]]:<version>`. CDS will utilise Maven classifiers that will allow publishing CorDapps targeting different hardware / software configurations.
 
@@ -85,7 +85,7 @@ There are no strict limitations around following one architecture or the other. 
 
 ##### cds-lib
 
-`cds-lib` will be used to pull down one or more versions of CorDapp(s) from a remote repository. The library will be embeddable into a third-party software or usable as a standalone from a command line. This will give BNs flexibility to utilise CDS in the best way to fit their requirements.
+`cds-lib` will be used to pull down artifacts from a remote repository. The library will be embeddable into a third-party software or usable as a standalone from a command line. This will give BNs flexibility to utilise CDS in the best way to fit their requirements.
 
 `cds-lib` will be configurable via system properties and via external configuration file.
 
