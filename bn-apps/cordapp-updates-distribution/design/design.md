@@ -16,17 +16,6 @@ DOCUMENT MANAGEMENT
 
 ## HIGH LEVEL DESIGN
 
-### Scope
-
-The following goals have been identified:
-
-* Allow BNO to distribute CorDapp(s) updates to the BN.
-* Allow BNO to promptly notify BN members about such events as new update availability and CorDapp version revocations.
-* Give BNO visibility over what CorDapp(s) versions BN members have installed on their nodes.
-
-Non-goals:
-* Automatic update installation. Node administrators will need to stop-update-restart their nodes manually.
-
 ### Goals
 
 The following requirements have been gathered from various internal discussions within R3 and from `groups.io` [mailing lists](https://groups.io/g/corda-dev/message/190?p=,,,20,0,0,0::relevance,,updates+distribution,20,2,0,22686107):
