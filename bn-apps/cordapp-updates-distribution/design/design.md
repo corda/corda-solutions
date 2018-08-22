@@ -67,16 +67,16 @@ CDS will be shipped as 2 components:
 
 CDS can be used as a CorDapp or as a standalone library. High level architectures are outlined below.
 
-**CDS as a CorDapp with a transport over HTTP**
+##### CDS as a CorDapp with a transport over HTTP
 ![CDS as CorDapp](./resources/cds-as-cordapp-http.png)
 
-**CDS as a CorDapp with a transport over Corda Flows**
+##### CDS as a CorDapp with a transport over Corda Flows
 ![CDS as CorDapp](./resources/cds-as-cordapp-flows.png)
 
-**CDS as a library over HTTP**
+##### CDS as a library over HTTP
 ![CDS as library](./resources/cds-as-library-http.png)
 
-**CDS as a library over Corda RPC**
+##### CDS as a library over Corda RPC
 ![CDS as library](./resources/cds-as-library-rpc.png)
 
 There are no strict limitations around following one architecture or the other. BNs can mix and match depending on their requirements. While HTTP transport might seem to be an easier option, using Corda flows have got a couple of benefits over it, in particular:
