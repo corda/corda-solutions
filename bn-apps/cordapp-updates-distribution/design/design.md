@@ -18,7 +18,7 @@ DOCUMENT MANAGEMENT
 
 ### Goals
 
-The following requirements have been gathered from various internal discussions within R3 and from `groups.io` [mailing lists](https://groups.io/g/corda-dev/message/190?p=,,,20,0,0,0::relevance,,updates+distribution,20,2,0,22686107):
+The following requirements have been gathered from various internal discussions within R3 and from [groups.io mailing lists](https://groups.io/g/corda-dev/message/190?p=,,,20,0,0,0::relevance,,updates+distribution,20,2,0,22686107):
 
 * Notification of new CorDapp version availability
 * Revocation of a specific CorDapp version
