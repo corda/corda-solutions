@@ -24,7 +24,7 @@ This proposal describes the architecture of a reference implementation for a Cor
 
 TODO
 
-### Goals
+### Requirements
 
 The following requirements have been gathered from various internal discussions within R3 and from [groups.io mailing lists](https://groups.io/g/corda-dev/message/190?p=,,,20,0,0,0::relevance,,updates+distribution,20,2,0,22686107):
 
@@ -38,7 +38,7 @@ The following requirements have been gathered from various internal discussions 
 * CDS should be integratable into CI/CD pipelines
 * BNO should be able to provide a textual description along with an upgrade
 
-### Non-goals:
+### Non-requirements:
 
 * CDS will not provide functionality for automatic updates installation. Node administrator will still have to stop-upgrade-restart their nodes manually.
 * CDS is not intended to be used to update the platform itself.
