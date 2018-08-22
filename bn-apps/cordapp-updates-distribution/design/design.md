@@ -32,41 +32,40 @@ Non-goals:
 The following requirements have been gathered from various internal discussions within R3 and from `groups.io` [mailing lists](https://groups.io/g/corda-dev/message/190?p=,,,20,0,0,0::relevance,,updates+distribution,20,2,0,22686107):
 
 * Notification of new CorDapp version availability
-* Revocation of a specific CorDapp version due to a critical bug or vulnerability
-* Download of a specific version of CorDapp
+* Revocation of a specific CorDapp version
+* Download of a specific CorDapp version
 * BNO should be aware of what version of the CorDapp each BN member is running
 * A node should be able to subscribe to a repository channel and be aware of it's synchronicity
 * CorDapp may refuse to work if out of Sync
 * Release channels
 * Should be integratable into CI/CD pipelines
-* Should support update descriptions
-* Should support update importance. The critical updates might require notification to be sent to the operator.
+* Should support upgrade descriptions
 
 ### Non-goals:
 
-* CDS will not provide functionality for automatic update installation. Node administrator will still have to stop-update-restart their nodes manually.
+* CDS will not provide functionality for automatic updates installation. Node administrator will still have to stop-upgrade-restart their nodes manually.
 * CDS is not intended to be used to update the platform itself.
-* How to design a CorDapp to support upgrades is out of scope of this design document. Information about flow versioning, states evolution and contract constraints can be found on [Corda Docs](https://docs.corda.net)
+* How to design a CorDapp that supports upgrades is out of scope of this design document. Information about flow versioning, states evolution and contract constraints can be found on the [Corda Docs](https://docs.corda.net)
 
 ### Target solution
 
 #### General CorDapp distribution mechanism
 
-The proposal is to distribute CorDapps via standard Maven repository mechanism. This would allow BNOs to benefit from the existing rich Maven infrastructure. CorDapp distribution will be performed on per Business Network basis. BNOs will need to host a Maven repo as a part of their infrastructure. This is not envisaged to become a bottleneck: a lot of open source repositories are available on the market and usually corporates already have Maven repositories running as a part of their software stack, so they are expected to be familiar with the process.
+The proposal is to distribute CorDapps via standard Maven repository mechanism. This would allow BNOs to benefit from the existing rich Maven infrastructure. CorDapp distribution will be performed on per Business Network basis. BNOs will need to host a Maven repo as a part of their infrastructures. This is not envisaged to become a bottleneck: a lot of open source repositories are available there on the market and usually corporates already have Maven repositories running as a part of their software stack anyway, so they are expected to be familiar with the process.
 
 [Maven Resolver](https://wiki.eclipse.org/Aether) will be used on the client side as a library for programmatic dependency resolution. Maven Resolver supports pluggable transports and is shipped with `HTTP(s)` transport available out-of-the-box. To ease an integration into the existing enterprise infrastructures, the proposal is to provide a bespoke implementation of *Maven transport over Corda flows*. This would allow corporates to deploy CDS on-premises without having to reconfigure firewalls to allow HTTP traffic.
 
 CDS will support standard Maven Artifact naming notation `<groupId>:<artifactId>[:<extension>[:<classifier>]]:<version>`. CDS will utilise Maven classifiers that will allow publishing CorDapps targeting different hardware / software configurations.
 
-CDS will not initially support a concept of release channels. Release channels can be simulated by using multiple Maven repositories (a repo per channel). Users can sync different remote repositories to different local locations and then manually install a desired version of CorDapp to their node.
+CDS will not initially support a concept of *release channels*. Release channels can be simulated by using multiple Maven repositories (a repo per channel). Users can sync different remote repositories to different local locations and then manually install a desired version of CorDapp to their nodes. Users will have to have a node-per-environment anyway, so this approach is not envisaged to become a bottleneck.
 
 Reusing Maven infrastructure will also enable a seamless integration into the existing CI/CD pipelines.
 
-However, Maven doesn't support some of the required features, such as realtime notifications, revocations, version reporting and some others. To address these requirements CDS will be shipped with a CorDapp that will provide the above functionality on top of Maven Resolver.
+However, Maven doesn't support some of the required features, such as realtime notifications, revocations, version reporting and some others. To address these requirements CDS will be shipped with a CorDapp that will provide the above-mentioned functionality on top of Maven Resolver.
 
 CDS will be shipped as 2 components:
-* **CDS library (cds-lib)** - wrapper around Maven Resolver, which will be handling all heavy-lifting, such as artifact resolution and downloading. The library will also include custom transport implementations.
-* **CDS CorDapp (cds-cordapp)**, which will provide scheduling, notification, revocation and reporting functionality on top of the `cds-lib`.
+* **CDS library (cds-lib)** - a wrapper around Maven Resolver, that will be handling all heavy-lifting, such as artifact resolution and downloading. The library will also include custom transport implementations.
+* **CDS CorDapp (cds-cordapp)** - a CorDapp that will provide scheduling, notification, revocation and reporting functionality on top of the `cds-lib`.
 
 CDS can be used as a CorDapp or as a standalone library. High level architectures are outlined below.
 
@@ -76,11 +75,11 @@ CDS can be used as a CorDapp or as a standalone library. High level architecture
 **CDS as a library**
 ![CDS as library](./resources/cds-as-library.png)
 
-There are no strict limitations on following one architecture or the other. BNs can mix and match depending on their requirements. For example BNO might prefer to notify BN members via email and then let everyone to pull down the latest versions manually.
+There are no strict limitations around following one architecture or the other. BNs can mix and match depending on their requirements. For example BNO might prefer to notify members via email and then they can pull down the repo manually at the later date.
 
 ##### cds-lib
 
-`cds-lib` will be used to sync down one or more versions of CorDapp(s) from a remote repository. The library will be embeddable into third-party software or usable as a standalone from a command line. This will give BNs flexibility to utilise the service in the best way to fit their requirements.
+`cds-lib` will be used to pull down one or more versions of CorDapp(s) from a remote repository. The library will be embeddable into a third-party software or usable as a standalone from a command line. This will give BNs flexibility to utilise CDS in the best way to fit their requirements.
 
 `cds-lib` will be configurable via system properties and via external configuration file.
 
@@ -91,22 +90,20 @@ There are no strict limitations on following one architecture or the other. BNs 
 
 Preferred transport will be overridable via custom property. *HTTP(s)* transport will be used by default.
 
-`cds-lib` is CorDapp agnostic and can be used to resolve regular artifacts.
+`cds-lib` is CorDapp agnostic and can be used to pull down any type of artifacts from any Maven2 compatible repository.
 
 ##### cds-cordapp
 
 `cds-cordapp` will provide the following functionality on top of the `cds-lib`:
 
 * Scheduled state for BN Members to periodically sync down their local CorDapp repositories with the BNO repository.
-* Flows for BNO to notify BN members about new CorDapp version availability. BN members will be able to setup custom integrations hooks via API extensions points, such as to send an email, download a CorDapp and etc.
+* Flows for BNO to notify BN members about new CorDapp version availability. BN members will be able to setup custom integration hooks via API extensions points, such as to send an email, download a CorDapp and etc.
 * Flows for BNO to notify BN members about CorDapp version revocations. If a version of CorDapp was revoked, BN members are expected to manually update their nodes with the latest not-revoked version ASAP.
-* Flows for BNO to collect reports from BN members about CorDapp versions installed on their nodes. Only versions of CorDapps related to this Business Network should be reported. CDS will rely on the information provided in CorDapp `MANIFEST` file.
+* Flows for BNO to collect reports from BN members about CorDapp versions installed on their nodes. Only versions of CorDapps related to *this* Business Network should be reported. CDS will rely on the information provided in CorDapp `MANIFEST` file. `cds-cordapp` will be relying on manually scanning CorDapp `MANIFEST` files until a better API is available.
 * Flows for BN members to manually request a list of revoked CorDapp versions from BNO.
-* Flows to optionally notify member in the case if not latest / revoked version of CorDapp is installed on their node.
+* Flows to optionally notify members in the case if not latest or revoked version of CorDapp is installed on their node.
 
-Under the hood, the CorDapp will be calling `cds-lib` for all Maven-related interactions.
-
-`cds-cordapp` will be relying on manually scanning CorDapp MANIFEST files until a better API is available.
+Under the hood, `cd-cordapp` will be calling `cds-lib` for all Maven-related interactions.
 
 Full Maven coordinates will be used for all CorDapp related notifications, i.e. new version availability or revocation.  
 
@@ -139,11 +136,11 @@ CDS will not provide any automations around database or environment evolution. T
 
 Command line parameters will take precedence over the configuration file.
 
-More configuration parameters will be added and documented during the implementation.
+Exact configuration parameters will be documented during the implementation phase.
 
 #### Implementation details
 
-The proposed solution would require implementation of the following components:
+The proposed solution will require implementation of the following components:
 
 * Custom Maven Resolver transports over flows and RPC. This will require the following interface to be implemented, which should be fairly straightforward to do:
 ```
@@ -158,7 +155,7 @@ public interface Transporter
 }
 ```
 * Wrapper around Maven Resolver, with support of CLI interface and custom configuration parameters.
-* CorDapp with the flows, specified in the previous sections.
+* `cds-cordapp` with the functionality, described in the previous sections.
 
 #### API extension points
 
