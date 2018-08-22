@@ -16,19 +16,27 @@ DOCUMENT MANAGEMENT
 
 ## HIGH LEVEL DESIGN
 
+### Overview
+
+This proposal describes the architecture of a reference implementation for a CorDapp Distribution Service.
+
+### Background
+
+TODO
+
 ### Goals
 
 The following requirements have been gathered from various internal discussions within R3 and from [groups.io mailing lists](https://groups.io/g/corda-dev/message/190?p=,,,20,0,0,0::relevance,,updates+distribution,20,2,0,22686107):
 
-* Notification of new CorDapp version availability
-* Revocation of a specific CorDapp version
-* Download of a specific CorDapp version
-* BNO should be aware of what version of the CorDapp each BN member is running
+* BNO should be able to notify BN members about new CorDapp version availability
+* BNO should be able to revoke a specific CorDapp version from their BN
+* BN members should be able to download a specific CorDapp version
+* BNO should be aware of what version of their CorDapp(s) each BN member is running
 * A node should be able to subscribe to a repository channel and be aware of it's synchronicity
-* CorDapp may refuse to work if out of Sync
-* Release channels
-* Should be integratable into CI/CD pipelines
-* Should support upgrade descriptions
+* It should be possible to prevent CorDapp from working if a newer version is available
+* CDS should support release channels
+* CDS should be integratable into CI/CD pipelines
+* BNO should be able to provide a textual description along with an upgrade
 
 ### Non-goals:
 
