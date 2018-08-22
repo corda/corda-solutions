@@ -35,6 +35,7 @@ The following requirements have been gathered from various internal discussions 
 * CDS will not provide functionality for automatic updates installation. Node administrator will still have to stop-upgrade-restart their nodes manually.
 * CDS is not intended to be used to update the platform itself.
 * How to design a CorDapp that supports upgrades is out of scope of this design document. Information about flow versioning, states evolution and contract constraints can be found on the [Corda Docs](https://docs.corda.net)
+* Packaging of CorDapp. CDS is agnostic to it and will support multiple packaging formats.
 
 ### Target solution
 
@@ -100,6 +101,8 @@ In the Business Networks where members host nodes by themselves, BNO can only do
 CorDapps can be designed in the way that they stop working if a newer version of the CorDapp is available. This can be done by making CorDapps flows to compare the current CorDapp version against the list of all available versions from the BNO. If the current version is not the latest - the flows might refuse to start. It will be up to the CorDapp developers to use such technics if they need to.
 
 CDS will not provide any automations around database or environment evolution. These procedures should be defined by a CorDapp vendor.
+
+Description of an update can be distributed along with the notifications or packaged into the artifact itself.
 
 ##### Using cds-lib as a standalone
 
