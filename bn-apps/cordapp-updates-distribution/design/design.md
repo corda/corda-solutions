@@ -91,10 +91,13 @@ Preferred transport will be overridable via custom property. *HTTP(s)* transport
 * Flows for BNO to collect reports from BN members about CorDapp versions installed on their nodes. Only versions of CorDapps related to *this* Business Network should be reported. CDS will rely on the information provided in CorDapp `MANIFEST` files until a better API is available.
 * Flows for BN members to manually request a list of revoked CorDapp versions from BNO.
 * Flows to optionally notify members if they've got not latest or revoked versions of CorDapps installed on their nodes.
+* Flows for members to fetch a list of available CorDapps versions from BNO.
 
 Under the hood, `cd-cordapp` will be calling `cds-lib` for all Maven-related interactions.
 
-In the Business Networks where members host nodes by themselves, BNO can only do their best to encourage the members to upgrade by notifying them via CDS or sending them an email, but ultimately it will be up to a member to decide on whether they would like to upgrade or not. Members with a stale CorDapp versions might loose their ability to transact on the BN if the CorDapp is not backwards compatible. 
+In the Business Networks where members host nodes by themselves, BNO can only do their best to encourage the members to upgrade by notifying them via CDS or sending them an email, but ultimately it will be up to a member to decide on whether they would like to upgrade or not. Members with a stale CorDapp versions might loose their ability to transact on the BN if the CorDapp is not backwards compatible.
+
+CorDapps can be designed in the way that they stop working if a newer version of the CorDapp is available. This can be done by making CorDapps flows to compare the current CorDapp version against the list of all available versions from the BNO. If the current version is not the latest - the flows might refuse to start. It will be up to the CorDapp developers to use such technics if they need to.
 
 CDS will not provide any automations around database or environment evolution. These procedures should be defined by a CorDapp vendor.
 
