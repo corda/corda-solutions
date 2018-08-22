@@ -74,8 +74,8 @@ There are no strict limitations around following one architecture or the other. 
 
 `cds-lib` will support the following transports:
 * *HTTP(s)*. Available in Maven Resolver out-of-the-box with proxy- and repository- level authentications support.
-* *Corda Flows*. Will be used if `cds-lib` is invoked from within Corda Node.
-* *Corda RPC*. Its essentially the same as *Corda Flows*, with the difference that the *RPC* version will be used if `cds-lib` is invoked from outside of a Corda node.
+* *Corda Flows*. Transport implementation that allows transferring files over Corda Flows.
+* *Corda RPC*. Its essentially the same as *Corda Flows*, with the difference that the *RPC* version can be used if `cds-lib` is invoked from outside of a Corda node.
 
 Preferred transport will be overridable via custom property. *HTTP(s)* transport will be used by default.
 
