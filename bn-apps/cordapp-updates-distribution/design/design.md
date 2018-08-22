@@ -64,7 +64,7 @@ CDS can be used as a CorDapp or as a standalone library. High level architecture
 **CDS as a library**
 ![CDS as library](./resources/cds-as-library.png)
 
-There are no strict limitations around following one architecture or the other. BNs can mix and match depending on their requirements. For example BNO might prefer to notify members via email and then they can pull down the repo manually at the later date.
+There are no strict limitations around following one architecture or the other. BNs can mix and match depending on their requirements. For example BNO might prefer to notify members via email and then they can pull down artifacts manually at the later date.
 
 ##### cds-lib
 
