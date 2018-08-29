@@ -61,7 +61,7 @@ class RequestMembershipFlowResponder(val session : FlowSession) : BusinessNetwor
             val allSignedTx = subFlow(CollectSignaturesFlow(selfSignedTx, listOf(session)))
             subFlow(FinalityFlow(allSignedTx))
 
-            if(activateRightAway(membership)) {
+            if(activateRightAway(membership, configuration)) {
                 logger.info("Auto-activating membership for party ${membership.member}")
                 val stateToActivate = findMembershipStateForParty(membership.member)
                 subFlow(ActivateMembershipFlow(stateToActivate))
@@ -76,7 +76,7 @@ class RequestMembershipFlowResponder(val session : FlowSession) : BusinessNetwor
         }
     }
 
-    private fun activateRightAway(membershipState : Membership.State) : Boolean {
-        return false
+    private fun activateRightAway(membershipState : Membership.State, configuration : BNOConfigurationService) : Boolean {
+        return configuration.getBnoDecisionMaker()?.autoActivateThisMembership(membershipState) ?: false
     }
 }
