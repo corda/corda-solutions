@@ -5,6 +5,7 @@ import net.corda.businessnetworks.membership.member.OnBoardingRequest
 import net.corda.businessnetworks.membership.member.RequestMembershipFlow
 import net.corda.businessnetworks.membership.bno.service.BNOConfigurationService
 import net.corda.businessnetworks.membership.bno.service.DatabaseService
+import net.corda.businessnetworks.membership.bno.support.BusinessNetworkOperatorFlowLogic
 import net.corda.businessnetworks.membership.states.Membership
 import net.corda.core.flows.CollectSignaturesFlow
 import net.corda.core.flows.FinalityFlow
@@ -22,7 +23,7 @@ import java.sql.SQLException
  * via [ActivateMembershipFlow].
  */
 @InitiatedBy(RequestMembershipFlow::class)
-class RequestMembershipFlowResponder(val session : FlowSession) : FlowLogic<Unit>() {
+class RequestMembershipFlowResponder(val session : FlowSession) : BusinessNetworkOperatorFlowLogic<Unit>() {
 
     @Suspendable
     override fun call() {
@@ -59,6 +60,12 @@ class RequestMembershipFlowResponder(val session : FlowSession) : FlowLogic<Unit
             val selfSignedTx = serviceHub.signInitialTransaction(builder)
             val allSignedTx = subFlow(CollectSignaturesFlow(selfSignedTx, listOf(session)))
             subFlow(FinalityFlow(allSignedTx))
+
+            if(activateRightAway(membership)) {
+                logger.info("Auto-activating membership for party ${membership.member}")
+                val stateToActivate = findMembershipStateForParty(membership.member)
+                subFlow(ActivateMembershipFlow(stateToActivate))
+            }
         } finally {
             try {
                 logger.info("Removing the pending request from the database")
@@ -67,5 +74,9 @@ class RequestMembershipFlowResponder(val session : FlowSession) : FlowLogic<Unit
                 logger.warn("Error when trying to delete pending membership request", e)
             }
         }
+    }
+
+    private fun activateRightAway(membershipState : Membership.State) : Boolean {
+        return false
     }
 }
