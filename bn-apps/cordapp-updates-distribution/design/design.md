@@ -27,7 +27,7 @@ The following requirements have been gathered from various internal discussions 
 * BNO should be able to notify BN members about new CorDapp version availability
 * BNO should be able to revoke a specific version of CorDapp from their BN
 * BN members should be able to download a specific version of CorDapp
-* BNO should be able to collect a report from BN members about CorDapp versions installed to their nodes
+* BNO should be able to collect a report from BN members about CorDapp versions installed on their nodes
 * A node should be able to subscribe to a repository channel and be aware of it's synchronicity
 * It should be possible to prevent CorDapp from working if a newer version is available
 * CDS should support release channels
@@ -39,19 +39,19 @@ The following requirements have been gathered from various internal discussions 
 * CDS will not provide functionality for automatic updates installation. Node administrator will still have to stop-upgrade-restart their nodes manually.
 * CDS is not intended to be used to update the platform itself.
 * How to design a CorDapp that supports upgrades is out of scope of this design document. Information about flow versioning, states evolution and contract constraints can be found in the [Corda Docs](https://docs.corda.net)
-* Packaging of CorDapp. CDS is agnostic to it and will support multiple packaging formats.
+* Packaging of a downloadable. CDS is agnostic to it and will support multiple packaging formats. However CDS expects CorDapps to contain standard information such as vendor, name and version in their MANIFEST file. This information is automatically added by the `cordapp` plugin.
 
 ### Target solution
 
 #### General CorDapp distribution mechanism
 
-The proposal is to distribute CorDapps via standard Maven repositories. This would allow BNOs to benefit from the existing rich Maven infrastructure. CorDapp distribution will be performed on per Business Network basis by BNO, who will need to host a Maven repo as a part of their infrastructure. BNOs will be able to choose from a variety of open source repositories that are available on the market. Also, usually corporates already have Maven repositories running as a part of their software stack anyway, so they are expected to be familiar with the process.
+The proposal is to distribute CorDapps via Maven repositories. This would allow BNOs to benefit from the existing rich Maven infrastructure. CorDapp distribution will be performed on per Business Network basis by BNO, who will need to host a Maven repo as a part of their infrastructure. BNOs will be able to choose from a variety of open source repositories that are available on the market. Also, usually corporates already have Maven repositories running as a part of their software stack anyway, so they are expected to be familiar with the process.
 
 [Maven Resolver](https://wiki.eclipse.org/Aether) will be used on the client side as a library for programmatic dependency resolution. Maven Resolver supports pluggable transports and is shipped with `HTTP(s)` transport available out-of-the-box. To ease an integration into the existing enterprise infrastructures, the proposal is to provide a bespoke implementation of *Maven transport over Corda flows*. This would allow corporates to deploy CDS on-premises without having to reconfigure their firewalls to allow extra HTTP traffic.
 
 CDS will support standard Maven Artifact naming notation `<groupId>:<artifactId>[:<extension>[:<classifier>]]:<version>`. CDS will utilise Maven classifiers that will allow publishing CorDapps targeting different hardware / software configurations.
 
-CDS will not initially support a concept of *release channels*. Release channels can be simulated by using multiple Maven repositories (a repo per channel). Users can sync different remote repositories to different local locations and then manually install a desired version of CorDapp to their nodes. Users will have to have a node-per-environment anyway, so this shouldn't become a problem .
+CDS will not initially support a concept of *release channels*. Release channels can be simulated by using multiple Maven repositories (a repo per channel). Users can sync down different remote repositories to different local locations and then manually install a desired version of CorDapp to their nodes. Users will have to have a node-per-environment anyway, so this shouldn't become a problem .
 
 Reusing Maven infrastructure will also enable a seamless integration into the existing CI/CD pipelines.
 
