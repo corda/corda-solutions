@@ -18,7 +18,7 @@ DOCUMENT MANAGEMENT
 
 ### Overview
 
-This proposal describes the architecture of a reference implementation for a CorDapp Distribution Service (CDS), that would allow BNO to distribute CorDapps and updates to the Business Network participants.
+This proposal describes the architecture of a reference implementation for a CorDapp Distribution Service (CDS), that would allow BNO to distribute CorDapps and their updates to the Business Network participants.
 
 ### Requirements
 
