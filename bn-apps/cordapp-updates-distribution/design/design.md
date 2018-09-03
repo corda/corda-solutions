@@ -25,9 +25,9 @@ This proposal describes the architecture of a reference implementation for a Cor
 The following requirements have been gathered from various internal discussions within R3 and from [groups.io mailing lists](https://groups.io/g/corda-dev/message/190?p=,,,20,0,0,0::relevance,,updates+distribution,20,2,0,22686107):
 
 * BNO should be able to notify BN members about new CorDapp version availability
-* BNO should be able to revoke a specific CorDapp version from their BN
-* BN members should be able to download a specific CorDapp version
-* BNO should be aware of what version of their CorDapp(s) each BN member is running
+* BNO should be able to revoke a specific version of CorDapp from their BN
+* BN members should be able to download a specific version of CorDapp
+* BNO should be able to collect a report from BN members about CorDapp versions installed to their nodes
 * A node should be able to subscribe to a repository channel and be aware of it's synchronicity
 * It should be possible to prevent CorDapp from working if a newer version is available
 * CDS should support release channels
