@@ -33,6 +33,7 @@ The following requirements have been gathered from various internal discussions 
 * CDS should support release channels
 * CDS should be integratable into CI/CD pipelines
 * BNO should be able to provide a textual description along with each CorDapp version
+* Members should be aware of current and revoked versions of CorDapps
 
 ### Non-requirements:
 
@@ -109,7 +110,7 @@ Exact configuration parameters will be documented during the implementation.
 
 #### High level architecture diagrams
 
-CDS can be used as a CorDapp or as a standalone library, with pluggable transports over HTTP or Corda flows. Based on this, the following architectures can be utilised
+CDS can be used as a CorDapp or as a standalone library, with pluggable transports over HTTP or Corda flows. The following component architectures can be utilised:
 
 ##### CDS as a CorDapp with a transport over HTTP
 
