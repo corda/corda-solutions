@@ -52,9 +52,7 @@ The proposal is to distribute CorDapps via Maven repositories. This would allow 
 
 [Maven Resolver](https://wiki.eclipse.org/Aether) will be utilised as a library for programmatic dependency resolution. Maven Resolver supports pluggable transports and is shipped with `HTTP(s)` available out-of-the-box. To ease an integration into the existing enterprise infrastructures, the proposal is to provide a bespoke implementation of *Maven transport over Corda flows*. This would allow corporates to deploy CDS on-premises without having to reconfigure their firewalls to allow extra HTTP traffic.
 
-```
-CDS won't natively support *release channels*. Release channels can be simulated by using multiple Maven repositories (a repo per channel). Users can sync down different remote repositories to different local locations and then manually install a desired version of CorDapp to their nodes.
-```
+> CDS won't natively support *release channels*. Release channels can be simulated by using multiple Maven repositories (a repo per channel). Users can sync down different remote repositories to different local locations and then manually install a desired version of CorDapp to their nodes.
 
 Maven doesn't support some of the required features, such as notifications, revocations, version reporting and etc. To address these requirements CDS will be implemented as two components:
 
@@ -105,13 +103,9 @@ Exact configuration parameters will be documented during the implementation.
 * Flows for members to manually request lists of available / revoked versions and their descriptions from BNO.
 * Flows for BNO to optionally notify members if they have an outdated or revoked version of CorDapp installed on their nodes.
 
-```
-It's important to emphasise, that in the Business Networks where members host nodes by themselves, BNO can only *do their best* to encourage members to upgrade by notifying them via CDS or sending them an email. Ultimately it will be up to a member to decide on whether they would like to upgrade or not. It should be in a member's best interest to promptly upgrade as otherwise they might loose ability to transact if a CorDapp is not backwards compatible.
-```
+> It's important to emphasise, that in the Business Networks where members host nodes by themselves, BNO can only *do their best* to encourage members to upgrade by notifying them via CDS or sending them an email. Ultimately it will be up to a member to decide on whether they would like to upgrade or not. It should be in a member's best interest to promptly upgrade as otherwise they might loose ability to transact if a CorDapp is not backwards compatible.
 
-```
-CorDapps can be designed to stop working if a newer version is available. This can be done by making flows to compare the current version against the list of available versions from CDS. If the current version is not the latest - the flows might refuse to start. It will be up to the CorDapp developers to utilise such technics.
-```
+> CorDapps can be designed to stop working if a newer version is available. This can be done by making flows to compare the current version against the list of available versions from CDS. If the current version is not the latest - the flows might refuse to start. It will be up to the CorDapp developers to utilise such technics.
 
 #### High level architecture diagrams
 
