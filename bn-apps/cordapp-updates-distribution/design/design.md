@@ -52,12 +52,12 @@ The proposal is to distribute CorDapps via Maven repositories. This would allow 
 
 [Maven Resolver](https://wiki.eclipse.org/Aether) will be utilised as a library for programmatic dependency resolution. Maven Resolver supports pluggable transports and is shipped with `HTTP(s)` available out-of-the-box. To ease an integration into the existing enterprise infrastructures, the proposal is to provide a bespoke implementation of *Maven transport over Corda flows*. This would allow corporates to deploy CDS on-premises without having to reconfigure their firewalls to allow extra HTTP traffic.
 
-> CDS won't natively support *release channels*. Release channels can be simulated by using multiple Maven repositories (a repo per channel). Users can sync down different remote repositories to different local locations and then manually install a desired version of CorDapp to their nodes.
-
-Maven doesn't support some of the required features, such as notifications, revocations, version reporting and etc. To address these requirements CDS will be implemented as two components:
+However, Maven doesn't support some of the required features, such as notifications, revocations, version reporting and etc. To address these requirements CDS will be implemented as two components:
 
 * **CDS library (cds-lib)** - a wrapper around Maven Resolver, that will be handling all Maven-related interactions, such as artifact resolution, downloading and others. `cds-lib` will include custom transport implementations and will be usable as a library or from a command line.
 * **CDS CorDapp (cds-cordapp)** - a CorDapp that will provide scheduling, notification, revocation and reporting functionalities on top of the `cds-lib`.
+
+> CDS won't natively support *release channels*. Release channels can be simulated by using multiple Maven repositories (a repo per channel). Users can sync down different remote repositories to different local locations and then manually install a desired version of CorDapp to their nodes.
 
 ##### cds-lib
 
