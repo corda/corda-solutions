@@ -61,9 +61,9 @@ However, Maven doesn't support some of the required features, such as notificati
 
 ##### cds-lib
 
-`cds-lib` is a convenience wrapper around Maven Resolver. It will support full Maven coordinates as well as version ranges. Version ranges will be specifiable in mathematical range notation, i.e. "[1.0,2.0)", "[1.0,)" or "[1.0]". Range queries are supported by Maven Resolver out-of-the-box and will not require extra development efforts. `cds-lib` will allow to:
+`cds-lib` is a convenience wrapper around Maven Resolver. It will support full Maven coordinates, in the format of `<groupId>:<artifactId>[:<extension>[:<classifier>]]:<version>` as well as version ranges. Version ranges will be specifiable in mathematical range notation, i.e. "[1.0,2.0)", "[1.0,)" or "[1.0]". Range queries are supported by Maven Resolver out-of-the-box and will not require extra development efforts. `cds-lib` will allow to:
 * Fetch metadata about a single or a range of versions from a remote Maven repository.
-* Download a single or a range of versions from a remote repository based on provided full maven coordinates in the format of `<groupId>:<artifactId>[:<extension>[:<classifier>]]:<version>`. `cds-lib` is packaging-type agnostic and can be used to pull down any type of artifacts from any Maven2 compatible repository. Support of classifiers will allow devs to publish CorDapps targeting different hardware / software configurations.
+* Download a single or a range of versions from a remote repository. `cds-lib` is packaging-type agnostic and can be used to pull down any type of artifacts from any Maven2 compatible repository. Support of classifiers will allow devs to publish CorDapps targeting different hardware / software configurations.
 
 `cds-lib` will support pluggable transports:
 * *HTTP(s)*. Available in Maven Resolver out-of-the-box with proxy- and repository- level authentications support.
