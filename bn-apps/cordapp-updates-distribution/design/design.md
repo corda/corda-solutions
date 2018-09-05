@@ -55,62 +55,53 @@ The proposal is to distribute CorDapps via Maven repositories. This would allow 
 
 However, Maven doesn't support some of the required features, such as notifications, revocations, version reporting and etc. To address these requirements CDS will be implemented as two components:
 
-* **CDS library (cds-lib)** - a wrapper around Maven Resolver, that will be handling all Maven-related interactions, such as artifact resolution, downloading and others. `cds-lib` will include custom transport implementations and will be usable as a library or from a command line.
-* **CDS CorDapp (cds-cordapp)** - a CorDapp that will provide scheduling, notification, revocation and reporting functionalities on top of the `cds-lib`.
+* **CDS library (corda-updates-core)** - a wrapper around Maven Resolver, that will be handling all Maven-related interactions, such as artifact resolution, downloading and others. `corda-updates-core` will include custom transport implementations and will be usable as a library or from a command line.
+* **CDS CorDapp (corda-updates-app)** - a CorDapp that will provide scheduling, revocation and reporting functionalities on top of the `corda-updates-core`.
 
 > CDS won't natively support *release channels*. Release channels can be simulated by using multiple Maven repositories (a repo per channel). Users can sync down different remote repositories to different local locations and then manually install a desired version of CorDapp to their nodes.
 
-##### cds-lib
+##### corda-updates-core
 
-`cds-lib` is a convenience wrapper around Maven Resolver. It will support full Maven coordinates, in the format of `<groupId>:<artifactId>[:<extension>[:<classifier>]]:<version>` as well as version ranges. Version ranges will be specifiable in mathematical range notation, i.e. "[1.0,2.0)", "[1.0,)" or "[1.0]". Range queries are supported by Maven Resolver out-of-the-box and will not require extra development efforts. `cds-lib` will allow to:
+`corda-updates-core` is a convenience wrapper around Maven Resolver. It will support full Maven coordinates, in the format of `<groupId>:<artifactId>[:<extension>[:<classifier>]]:<version>` as well as version ranges. Version ranges will be specifiable in mathematical range notation, i.e. "[1.0,2.0)", "[1.0,)" or "[1.0]". Range queries are supported by Maven Resolver out-of-the-box and will not require extra development efforts. `corda-updates-core` will allow to:
 * Fetch metadata about a single or a range of versions from a remote Maven repository.
-* Download a single or a range of versions from a remote repository. `cds-lib` is packaging-type agnostic and can be used to pull down any type of artifacts from any Maven2 compatible repository. Support of classifiers will allow devs to publish CorDapps targeting different hardware / software configurations.
+* Download a single or a range of versions from a remote repository. `corda-updates-core` is packaging-type agnostic and can be used to pull down any type of artifacts from any Maven2 compatible repository. Support of classifiers will allow devs to publish CorDapps targeting different hardware / software configurations.
 
-`cds-lib` will support pluggable transports:
+`corda-updates-core` will support pluggable transports:
 * *HTTP(s)*. Available in Maven Resolver out-of-the-box with proxy- and repository- level authentications support.
 * *Corda Flows*. Transport implementation that allows transferring files over Corda Flows.
-* *Corda RPC*. Its essentially the same as *Corda Flows*, with the difference that the *RPC* version will be used if `cds-lib` is invoked from outside of a Corda node.
 
-`cds-lib` will be invokable from a command line, with command line parameters taking precedence over the configuration file. CLI invocation *could* look like:
+`corda-updates-core` will be invokable from a command line, with command line parameters taking precedence over the configuration file. CLI invocation *might* look like:
 
 ```
-# Will pull down a single version of cordapp and its dependencies
-> java -jar cds-lib.jar
-    -Dcordapp="com.my.company.name:corda-name:1.0"
-    -DremoteRepo="https://my-company-repo.com"
-    -DlocalRepo="/path/to/my/local/repo"
-    -Dtransport="rpc"
-    -Dconfiguration="config.properties"
-
 # Will pull down all versions of cordapps and their dependencies
-> java -jar cds-lib.jar
+> java -jar corda-updates-core.jar
     -Dcordapp="com.my.company.name:corda-name:[0,)"
     -DremoteRepo="https://my-company-repo.com"
     -DlocalRepo="/path/to/my/local/repo"
-    -Dtransport="http"
     -Dconfiguration="config.properties"
 
 ```
 
 Exact configuration parameters will be documented during the implementation.
 
-##### cds-cordapp
+##### corda-updates-app
 
-`cds-cordapp` will provide the following functionality on *top* of the `cds-lib`:
+`corda-updates-app` will provide the following functionality on *top* of the `corda-updates-core`:
 * Scheduled state for members to periodically sync their local repos with a single remote repository.
-* Flows for BNO to notify members about new CorDapp version availability. Members CorDapp will automatically attempt to download a new version.
-* Flows for BNO to notify members about CorDapp version revocations. If a version of CorDapp was revoked, members are expected to manually update their nodes to the last not-revoked version ASAP.
-* Flows for BNO to collect reports from members about CorDapp versions installed on their nodes. Only versions of CorDapps related to *this* Business Network should be reported. CDS will rely on the information provided in CorDapp `MANIFEST` files until a better API is available.
-* Flows for members to manually request lists of available / revoked versions and their descriptions from BNO.
-* Flows for BNO to optionally notify members if they have an outdated or revoked version of CorDapp installed on their nodes.
+* Flows for BNO to collect reports from members about CorDapp versions installed on their nodes. Only versions of CorDapps related to *this* Business Network should be reported. CDS will rely on the information provided in CorDapp `MANIFEST` files until a better API is available. With the future support for the *package namespace ownership*, CDS will report only cordapps that are a part of this particular Business Network.
+* Flows for members to manually request lists of revoked versions from BNO. Revocations will contain full Maven coordinates + optional description (reasons for revocation). If a version of CorDapp was revoked, members are expected to manually update their nodes to the last not-revoked version ASAP.
+* Flows for members to get a list of available CorDapp versions, which is essentially contents of the local cache.
+* Corda shell extensions to query a list of available / revoked versions or to trigger a sync manually. 
 
-> It's important to emphasise, that in the Business Networks where members host nodes by themselves, BNO can only *do their best* to encourage members to upgrade by notifying them via CDS or sending them an email. Ultimately it will be up to a member to decide on whether they would like to upgrade or not. It should be in a member's best interest to promptly upgrade as otherwise they might loose ability to transact if a CorDapp is not backwards compatible.
+> It's important to emphasise, that in the Business Networks where members host nodes by themselves, BNO can only *do their best* to encourage members to upgrade by notifying them via CDS or sending them an email. Ultimately it will be up to a member to decide on whether they would like to upgrade or not. It should be in a member's best interest to promptly upgrade as otherwise they might lose ability to transact if a CorDapp is not backwards compatible.
 
-> CorDapps can be designed to stop working if a newer version is available. This can be done by making flows to compare the current version against the list of available versions from CDS. If the current version is not the latest - the flows might refuse to start. It will be up to the CorDapp developers to utilise such technics.
+> CorDapps can be designed to stop working if a newer version is available. This can be done by making flows to compare the current version against the list of available versions from CDS. If the current version is not the latest - the flows might refuse to start. It will be up to the CorDapp developers to utilise such techniques.
+
+`corda-updates-app` will not include functionality to notify about a new update availability or a version revocation. Such information can be distributed via emails instead, as installation procedure requires manual intervention (stop-update-restart) anyway. This might be improved in the future, when hot reloading of cordapps is supported.
 
 #### High level architecture diagrams
 
-CDS can be used as a CorDapp or as a standalone library, with pluggable transports over HTTP or Corda flows. The following component architectures can be utilised:
+CDS can be used as a CorDapp or as a standalone library, with pluggable transports over HTTP or Corda flows. Sample component architectures can be found below:
 
 ##### CDS as a CorDapp with a transport over HTTP
 
@@ -119,21 +110,15 @@ CDS can be used as a CorDapp or as a standalone library, with pluggable transpor
 ##### CDS as a CorDapp with a transport over Corda Flows
 ![CDS as CorDapp](./resources/cds-as-cordapp-flows.png)
 
-##### CDS as a library over HTTP
-![CDS as library](./resources/cds-as-library-http.png)
-
-##### CDS as a library over Corda RPC
-![CDS as library](./resources/cds-as-library-rpc.png)
-
 There are no strict limitations around following one architecture or the other. BNs can mix and match depending on their requirements. While HTTP transport might seem to be an easier option, using Corda flows have a couple of benefits over it, in particular:
 * BNO will be able to host Maven in a private segment of their network, without exposing it to internet, effectively hidden behind firewalls and Corda.
-* BNO will be able to expose the repo to their BN members only by integrating `cds-cordapp` with Business Network Management Service.
+* BNO will be able to expose the repo to their BN members only by integrating `corda-updates-app` with Business Network Management Service.
 
 #### Implementation details
 
 The proposed solution will require implementation of the following components:
 
-* Custom Maven Resolver transports over flows and RPC. This will require the following interface to be implemented, which should be fairly straightforward to do:
+* Custom Maven Resolver transports over flows. This will require the following interface to be implemented, which should be fairly straightforward to do:
 ```
 public interface Transporter
     extends Closeable
@@ -145,5 +130,6 @@ public interface Transporter
     void close();
 }
 ```
+We might also have to fork Maven Resolver and add `@Suspendable` annotations to it (requires PoC). This problem will go away with Java 9.
 * Wrapper around Maven Resolver, with support of CLI interface and custom configuration parameters.
-* `cds-cordapp` with the functionality, described in the previous sections.
+* `corda-updates-app` with the functionality, described in the previous sections.
