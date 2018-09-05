@@ -64,7 +64,7 @@ However, Maven doesn't support some of the required features, such as notificati
 
 `corda-updates-core` is a convenience wrapper around Maven Resolver. It will support full Maven coordinates, in the format of `<groupId>:<artifactId>[:<extension>[:<classifier>]]:<version>` as well as version ranges. Version ranges will be specifiable in mathematical range notation, i.e. "[1.0,2.0)", "[1.0,)" or "[1.0]". Range queries are supported by Maven Resolver out-of-the-box and will not require extra development efforts. `corda-updates-core` will allow to:
 * Fetch metadata about a single or a range of versions from a remote Maven repository.
-* Download a single or a range of versions from a remote repository. `corda-updates-core` is packaging-type agnostic and can be used to pull down any type of artifacts from any Maven2 compatible repository. Support of classifiers will allow devs to publish CorDapps targeting different hardware / software configurations.
+* Download a single or a range of versions from a remote repository. `corda-updates-core` will be packaging-type agnostic and can be used to pull down any type of artifacts from any Maven2 compatible repository. Support of classifiers will allow devs to publish CorDapps targeting different hardware / software configurations.
 
 `corda-updates-core` will support pluggable transports:
 * *HTTP(s)*. Available in Maven Resolver out-of-the-box with proxy- and repository- level authentications support.
@@ -89,11 +89,11 @@ Exact configuration parameters will be documented during the implementation.
 `corda-updates-app` will provide the following functionality on *top* of the `corda-updates-core`:
 * Scheduled state for members to periodically sync their local repos with a single remote repository.
 * Flows for BNO to collect reports from members about CorDapp versions installed on their nodes. Only versions of CorDapps related to *this* Business Network should be reported. CDS will rely on the information provided in CorDapp `MANIFEST` files until a better API is available. With the future support for the *package namespace ownership*, CDS will report only cordapps that are a part of this particular Business Network.
-* Flows for members to manually request lists of revoked versions from BNO. Revocations will contain full Maven coordinates + optional description (reasons for revocation). If a version of CorDapp was revoked, members are expected to manually update their nodes to the last not-revoked version ASAP.
+* Flows for members to manually query a list of revoked versions from BNO. Revocations will contain full Maven coordinates + optional description (reasons for revocation). If a version of CorDapp was revoked, members are expected to manually update their nodes to the last not-revoked version ASAP.
 * Flows for members to get a list of available CorDapp versions, which is essentially contents of the local cache.
-* Corda shell extensions to query a list of available / revoked versions or to trigger a sync manually. 
+* Corda shell extensions to query a list of available / revoked versions or to trigger a sync manually.
 
-> It's important to emphasise, that in the Business Networks where members host nodes by themselves, BNO can only *do their best* to encourage members to upgrade by notifying them via CDS or sending them an email. Ultimately it will be up to a member to decide on whether they would like to upgrade or not. It should be in a member's best interest to promptly upgrade as otherwise they might lose ability to transact if a CorDapp is not backwards compatible.
+> It's important to emphasise, that in the Business Networks where members host nodes by themselves, BNO can only *do their best* to encourage the members to upgrade by notifying them via CDS or sending them an email. Ultimately it will be up to a member to decide on whether they would like to upgrade or not. It should be in a member's best interest to promptly upgrade as otherwise they might lose an ability to transact if a CorDapp is not backwards compatible.
 
 > CorDapps can be designed to stop working if a newer version is available. This can be done by making flows to compare the current version against the list of available versions from CDS. If the current version is not the latest - the flows might refuse to start. It will be up to the CorDapp developers to utilise such techniques.
 
