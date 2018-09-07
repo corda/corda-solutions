@@ -13,6 +13,7 @@ import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.ProgressTracker
 
 @InitiatingFlow
+@StartableByRPC
 class RevokeMembershipFlow(val membership : StateAndRef<Membership.State>) : BusinessNetworkOperatorFlowLogic<SignedTransaction>() {
 
     @Suspendable
