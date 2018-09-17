@@ -10,7 +10,6 @@ import net.corda.businessnetworks.membership.states.Membership
 import net.corda.core.flows.CollectSignaturesFlow
 import net.corda.core.flows.FinalityFlow
 import net.corda.core.flows.FlowException
-import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.FlowSession
 import net.corda.core.flows.InitiatedBy
 import net.corda.core.transactions.TransactionBuilder
@@ -77,6 +76,6 @@ class RequestMembershipFlowResponder(val session : FlowSession) : BusinessNetwor
     }
 
     private fun activateRightAway(membershipState : Membership.State, configuration : BNOConfigurationService) : Boolean {
-        return configuration.getBnoDecisionMaker()?.autoActivateThisMembership(membershipState) ?: false
+        return configuration.getMembershipAutoAcceptor()?.autoActivateThisMembership(membershipState) ?: false
     }
 }
