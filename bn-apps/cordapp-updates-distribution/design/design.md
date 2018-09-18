@@ -18,17 +18,17 @@ DOCUMENT MANAGEMENT
 
 ### Overview
 
-This proposal describes the architecture of a reference implementation for a CorDapp Distribution Service (CDS), that would allow BNOs to distribute CorDapps updates to Business Network participants. This design targets scenarios when Business Network members maintain their nodes by themselves and can decide on what version of a CorDapp they would like to upgrade to. This design does *not* target scenarios, when upgrade function is centralised and the whole network can be shut down to perform stop-upgrade-restart.
+This proposal describes the architecture of a reference implementation for a CorDapp Distribution Service (CDS), that would allow BNOs to distribute updates to CorDapps to Business Network participants. This design targets scenarios when Business Network members maintain their nodes by themselves and can decide on what version of a CorDapp they would like to upgrade to. This design does *not* target scenarios where upgrade function is centralised and the whole network can be shut down to perform stop-upgrade-restart.
 
 ### Requirements
 
-The following requirements have been gathered from various internal discussions within R3 and from [groups.io mailing lists](https://groups.io/g/corda-dev/message/190?p=,,,20,0,0,0::relevance,,updates+distribution,20,2,0,22686107):
+The following requirements have been gathered from various internal discussions within R3 and from [groups.io mailing lists](https://groups.io/g/corda-dev/topic/22686107#190), which is recommended for reading prior to the design.
 
 * BNO should be able to notify members about new CorDapp version availability
 * BNO should be able to revoke a specific version of CorDapp from their BN
-* A member should be able to download a specific version of CorDapp
+* A member should be able to download a specific version of a CorDapp
 * BNO should be able to collect a report from members about CorDapp versions installed on their nodes
-* Members should be able to subscribe to a repository channel and be aware of it's synchronicity
+* Members should be able to sync their local repositories with the remote
 * It should be possible to prevent a CorDapp from working if a newer version is available
 * CDS should support release channels
 * CDS should be integratable into CI/CD pipelines
@@ -39,7 +39,7 @@ The following requirements have been gathered from various internal discussions 
 
 * CDS will not provide functionality for automatic updates installation. Node administrator will still have to stop-upgrade-restart their nodes manually.
 * CDS is not intended to be used to update the platform itself.
-* How to design a CorDapp that supports upgrades is out of scope of this design document. Information about flow versioning, states evolution and contract constraints can be found in the [Corda Docs](https://docs.corda.net)
+* How to design a CorDapp that supports upgrades is out of scope of this design document. Information about [flow versioning](https://docs.corda.net/upgrading-cordapps.html#flow-versioning), [states evolution](https://docs.corda.net/upgrading-cordapps.html#contract-and-state-versioning) and [contract constraints](https://docs.corda.net/api-contract-constraints.html) and more can be found in the [Corda Docs](https://docs.corda.net)
 * Packaging of a downloadable. CDS is agnostic to it and will support multiple packaging formats. However CDS expects CorDapps to contain a default metadata such as `vendor`, `name` and `version` in their `MANIFEST` file. Such metadata is automatically added by the `cordapp` plugin during CorDapp packaging.
 * CDS will not provide any automations around database or environment evolution. These procedures should be defined separately by a CorDapp vendor.
 
