@@ -36,3 +36,11 @@ Look at their respective class annotations for details.
 | `net.corda.businessnetworks.membership.notaryName` | Fully qualified X500 name of the Notary to be used for membership states notarisation|
 | `net.corda.businessnetworks.membership.cacheRefreshPeriod` | Specifies how often (in seconds) BN members should be refreshing their membership list caches. If this attribute is not set, then the BN members will pull membership list only once, when their node starts, and then will rely on the BNO to notify them about all memberships changes.|
 | `net.corda.businessnetworks.membership.notificationsEnabled` | If `true`, then the BNO will notify all members about any change to the memberships |
+
+## Behaviour customization
+
+If you don't want to manually activate every membership request and would like to instead automate the process then implement the interface `MembershipAutoAcceptor`. Then add a new entry into the membership-service.properties file
+
+| Property        | Description         |
+| ------------- |:-------------:|
+| `net.corda.businessnetworks.membership.membershipAutoAcceptor` | Class implementing the MembershipAutoAcceptor interface, including package name |

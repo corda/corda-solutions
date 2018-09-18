@@ -1,6 +1,7 @@
 package net.corda.businessnetworks.membership.bno.service
 
 import net.corda.businessnetworks.membership.Utils.readProps
+import net.corda.businessnetworks.membership.bno.extension.MembershipAutoAcceptor
 import net.corda.core.identity.CordaX500Name
 import net.corda.core.node.ServiceHub
 import net.corda.core.node.services.CordaService
@@ -17,6 +18,8 @@ class BNOConfigurationService(private val serviceHub : ServiceHub) : SingletonSe
         const val CACHE_REFRESH_PERIOD = "net.corda.businessnetworks.membership.cacheRefreshPeriod"
         // Specifies whether Notifications are enabled. Should be set to true if CACHE_REFRESH_PERIOD is not specified.
         const val NOTIFICATIONS_ENABLED = "net.corda.businessnetworks.membership.notificationsEnabled"
+        // Specifies the class for delegating BNO decisions to
+        const val MEMBERSHIP_AUTO_ACCEPTOR = "net.corda.businessnetworks.membership.membershipAutoAcceptor"
     }
     private var _config = readProps(PROPERTIES_FILE_NAME)
 
@@ -24,6 +27,16 @@ class BNOConfigurationService(private val serviceHub : ServiceHub) : SingletonSe
     fun notaryParty() = serviceHub.networkMapCache.getNotary(notaryName())!!
     fun cacheRefreshPeriod() = _config[CACHE_REFRESH_PERIOD]?.toInt()
     fun areNotificationEnabled() = _config[NOTIFICATIONS_ENABLED]?.toBoolean() ?: false
+
+    fun getMembershipAutoAcceptor() : MembershipAutoAcceptor? {
+        val className = _config[MEMBERSHIP_AUTO_ACCEPTOR]
+        if(className == null) {
+            return null
+        } else {
+            val clazz = Class.forName(className)
+            return clazz.newInstance() as MembershipAutoAcceptor
+        }
+    }
 
     fun reloadPropertiesFromFile(fileName : String) {
         _config = readProps(fileName)

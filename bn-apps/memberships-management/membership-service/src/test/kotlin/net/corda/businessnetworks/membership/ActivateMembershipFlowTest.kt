@@ -8,6 +8,7 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import kotlin.test.fail
 
 class ActivateMembershipFlowTest : AbstractFlowTest(2) {
@@ -107,5 +108,24 @@ class ActivateMembershipFlowTest : AbstractFlowTest(2) {
         runActivateMembershipFlow(bnoNode, memberParty)
 
         assert(TestNotifyMembersFlowResponder.NOTIFICATIONS.isEmpty())
+    }
+
+    @Test
+    fun `membership can be auto activated`() {
+        val bnoConfiguration = bnoNode.services.cordaService(BNOConfigurationService::class.java)
+        bnoConfiguration.reloadPropertiesFromFile("membership-service-with-auto-approver.properties")
+        val memberNode = participantsNodes.first()
+        val memberParty = identity(memberNode)
+
+        runRequestMembershipFlow(memberNode)
+
+        // membership state before activation
+        val inputMembership = getMembership(memberNode, memberParty)
+        assertTrue(inputMembership.state.data.isActive())
+
+
+        val notification = TestNotifyMembersFlowResponder.NOTIFICATIONS.single()
+        assert(notification.first == memberParty)
+        assert(notification.second is OnMembershipActivated)
     }
 }
