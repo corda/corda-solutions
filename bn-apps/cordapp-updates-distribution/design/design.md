@@ -24,16 +24,16 @@ This proposal describes the architecture of a reference implementation for a Cor
 
 The following requirements have been gathered from various internal discussions within R3 and from [groups.io mailing lists](https://groups.io/g/corda-dev/topic/22686107#190), which is recommended for reading prior to the design.
 
-* BNO should be able to notify members about new CorDapp version availability
-* BNO should be able to revoke a specific version of CorDapp from their BN
-* A member should be able to download a specific version of a CorDapp
-* BNO should be able to collect a report from members about CorDapp versions installed on their nodes
-* Members should be able to sync their local repositories with the remote
-* It should be possible to prevent a CorDapp from working if a newer version is available
-* CDS should support release channels
-* CDS should be integratable into CI/CD pipelines
-* BNO should be able to provide a textual description along with each CorDapp version
-* Members should be aware of current and revoked versions of CorDapps
+* BNO should be able to notify members about new CorDapp version availability.
+* BNO should be able to revoke a specific version of CorDapp from their BN. In this context revocation means that BNO should be able to notify members that a specific version of a CorDapp should no longer be considered valid, so members can promptly update their nodes.
+* A member should be able to download a specific version of a CorDapp.
+* BNO should be able to collect a report from members about CorDapp versions installed on their nodes.
+* Members should be able to sync their local repositories with the remote.
+* Developer should be able to programmatically prevent their CorDapp from working if a newer version of the CorDapp is available.
+* CDS should support release channels.
+* CDS should be integratable into CI/CD pipelines.
+* BNO should be able to provide a textual description along with each CorDapp version.
+* Members should be aware of current and revoked versions of CorDapps.
 
 ### Non-requirements:
 
