@@ -1,0 +1,52 @@
+buildscript {
+    ext.aetherVersion = '1.0.0.v20140518'
+    ext.mavenVersion = '3.1.0'
+    ext.maven_resolver_version = "1.1.1"
+
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-noarg:$kotlin_version"
+    }
+}
+
+apply plugin: 'kotlin'
+
+sourceSets {
+    main {
+        resources {
+            srcDir "config/dev"
+        }
+    }
+    test {
+        resources {
+            srcDir "config/test"
+        }
+    }
+}
+
+dependencies {
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
+
+    compile "org.apache.maven.resolver:maven-resolver-api:$maven_resolver_version"
+    compile "org.apache.maven.resolver:maven-resolver-impl:$maven_resolver_version"
+    compile "org.apache.maven.resolver:maven-resolver-connector-basic:$maven_resolver_version"
+    compile "org.apache.maven.resolver:maven-resolver-transport-http:$maven_resolver_version"
+    compile "org.apache.maven.resolver:maven-resolver-transport-file:$maven_resolver_version"
+    compile "org.apache.maven.resolver:maven-resolver-util:$maven_resolver_version"
+    compile "org.apache.maven.resolver:maven-resolver-spi:$maven_resolver_version"
+    compile("org.apache.maven:maven-resolver-provider:3.5.4") {
+        exclude group: "org.apache.maven.resolver", module: "*"
+    }
+
+
+    testCompile "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
+    testCompile "junit:junit:$junit_version"
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+    kotlinOptions {
+        languageVersion = "1.1"
+        apiVersion = "1.1"
+        jvmTarget = "1.8"
+        javaParameters = true   // Useful for reflection.
+    }
+}
