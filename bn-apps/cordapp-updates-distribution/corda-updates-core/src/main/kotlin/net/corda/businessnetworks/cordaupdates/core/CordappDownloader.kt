@@ -50,8 +50,11 @@ class CordappDownloader(remoteRepoUrl : String, val localRepoPath : String) {
 
     fun downloadVersionRange(rangeRequest : String) {
         val versions = listVersions(rangeRequest)
+        val artifact = DefaultArtifact(rangeRequest)
         versions.versions.forEach {
-
+            val artifactVersion = artifact.setVersion(it.toString())!!
+            logger.info("Downloading $artifactVersion")
+            downloadVersion(artifactVersion.toString())
         }
     }
 
