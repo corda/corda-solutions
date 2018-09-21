@@ -18,9 +18,14 @@ import org.eclipse.aether.spi.connector.RepositoryConnectorFactory
 import org.eclipse.aether.spi.connector.transport.TransporterFactory
 import org.eclipse.aether.transport.file.FileTransporterFactory
 import org.eclipse.aether.transport.http.HttpTransporterFactory
+import org.slf4j.LoggerFactory
 import java.lang.Exception
 
 class CordappDownloader(remoteRepoUrl : String, val localRepoPath : String) {
+    companion object {
+        val logger = LoggerFactory.getLogger(CordappDownloader::class.java)
+    }
+
     private val repositorySystem : RepositorySystem by lazy {
         val locator = MavenRepositorySystemUtils.newServiceLocator()
         locator.addService<RepositoryConnectorFactory>(RepositoryConnectorFactory::class.java, BasicRepositoryConnectorFactory::class.java)
@@ -44,7 +49,10 @@ class CordappDownloader(remoteRepoUrl : String, val localRepoPath : String) {
     }
 
     fun downloadVersionRange(rangeRequest : String) {
+        val versions = listVersions(rangeRequest)
+        versions.versions.forEach {
 
+        }
     }
 
     fun downloadVersion(mavenCoords : String) {
