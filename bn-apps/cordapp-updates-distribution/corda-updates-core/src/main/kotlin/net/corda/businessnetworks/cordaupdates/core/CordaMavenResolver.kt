@@ -1,6 +1,7 @@
 package net.corda.businessnetworks.cordaupdates.core
 
 
+import net.corda.businessnetworks.cordaupdates.core.flowstransport.FlowsTransporterFactory
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils.newSession
 import org.eclipse.aether.RepositorySystem
@@ -12,6 +13,7 @@ import org.eclipse.aether.internal.impl.SimpleLocalRepositoryManagerFactory
 import org.eclipse.aether.repository.LocalRepository
 import org.eclipse.aether.repository.RemoteRepository
 import org.eclipse.aether.resolution.DependencyRequest
+import org.eclipse.aether.resolution.DependencyResult
 import org.eclipse.aether.resolution.VersionRangeRequest
 import org.eclipse.aether.resolution.VersionRangeResult
 import org.eclipse.aether.spi.connector.RepositoryConnectorFactory
@@ -21,9 +23,10 @@ import org.eclipse.aether.transport.http.HttpTransporterFactory
 import org.slf4j.LoggerFactory
 import java.lang.Exception
 
-class CordappDownloader(remoteRepoUrl : String, val localRepoPath : String) {
+class CordaMavenResolver(remoteRepoUrl : String?,
+                         private val localRepoPath : String?) {
     companion object {
-        val logger = LoggerFactory.getLogger(CordappDownloader::class.java)
+        val logger = LoggerFactory.getLogger(CordaMavenResolver::class.java)
     }
 
     private val repositorySystem : RepositorySystem by lazy {
@@ -31,6 +34,7 @@ class CordappDownloader(remoteRepoUrl : String, val localRepoPath : String) {
         locator.addService<RepositoryConnectorFactory>(RepositoryConnectorFactory::class.java, BasicRepositoryConnectorFactory::class.java)
         locator.addService<TransporterFactory>(TransporterFactory::class.java, FileTransporterFactory::class.java)
         locator.addService<TransporterFactory>(TransporterFactory::class.java, HttpTransporterFactory::class.java)
+        locator.addService<TransporterFactory>(TransporterFactory::class.java, FlowsTransporterFactory::class.java)
         locator.getService(RepositorySystem::class.java)
     }
 
@@ -38,28 +42,35 @@ class CordappDownloader(remoteRepoUrl : String, val localRepoPath : String) {
         RemoteRepository.Builder("remote", "default", remoteRepoUrl).build()
     }
 
-    fun listVersions(rangeRequest : String) : VersionRangeResult {
+    fun peekVersion(mavenCoords : String) : Boolean {
+        val artifact = DefaultArtifact(mavenCoords)
+        val modifiedVersion = artifact.setVersion("[${artifact.version}]")
+        return resolveVersionRange(modifiedVersion.toString()).versions.isNotEmpty()
+    }
+
+    fun resolveVersionRange(rangeRequest : String) : VersionRangeResult {
         val versionRangeRequest = VersionRangeRequest(DefaultArtifact(rangeRequest),
                 listOf(remoteRepository), null)
 
         val session = newSession()
-        session.localRepositoryManager = SimpleLocalRepositoryManagerFactory().newInstance(session, LocalRepository(localRepoPath))
+        session.localRepositoryManager = SimpleLocalRepositoryManagerFactory().newInstance(session, LocalRepository(""))
 
-        return repositorySystem.resolveVersionRange(session, versionRangeRequest) ?: throw CordaUpdatesException("Unable to resolve versions range for $rangeRequest")
+        return repositorySystem.resolveVersionRange(session, versionRangeRequest)
     }
 
-    fun downloadVersionRange(rangeRequest : String) {
-        val versions = listVersions(rangeRequest)
+    fun downloadVersionRange(rangeRequest : String) : List<DependencyResult> {
+        val versions = resolveVersionRange(rangeRequest)
         val artifact = DefaultArtifact(rangeRequest)
-        versions.versions.forEach {
+        return versions.versions.map {
             val artifactVersion = artifact.setVersion(it.toString())!!
             logger.info("Downloading $artifactVersion")
             downloadVersion(artifactVersion.toString())
         }
     }
 
-    fun downloadVersion(mavenCoords : String) {
+    fun downloadVersion(mavenCoords : String) : DependencyResult {
         val session = newSession()
+
         session.localRepositoryManager = SimpleLocalRepositoryManagerFactory().newInstance(session, LocalRepository(localRepoPath))
 
         val dependency = Dependency(DefaultArtifact(mavenCoords), "compile")
@@ -72,8 +83,8 @@ class CordappDownloader(remoteRepoUrl : String, val localRepoPath : String) {
         val dependencyRequest = DependencyRequest()
         dependencyRequest.root = node
 
-        repositorySystem.resolveDependencies(session, dependencyRequest)
+        return repositorySystem.resolveDependencies(session, dependencyRequest)
     }
 }
 
-class CordaUpdatesException(message : String) : Exception(message)
+class CordappDownloaderException(message : String) : Exception(message)
