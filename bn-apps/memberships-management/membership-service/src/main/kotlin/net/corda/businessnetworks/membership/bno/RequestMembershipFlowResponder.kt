@@ -42,16 +42,17 @@ class RequestMembershipFlowResponder(val session : FlowSession) : BusinessNetwor
             throw FlowException("Membership request already exists")
         }
 
+        val configuration = serviceHub.cordaService(BNOConfigurationService::class.java)
+        val membership : Membership.State
         // Issuing PENDING membership state onto the ledger
         try {
             // receive an on-boarding request
             val request = session.receive<OnBoardingRequest>().unwrap { it }
 
-            val configuration = serviceHub.cordaService(BNOConfigurationService::class.java)
             val notary = configuration.notaryParty()
 
             // issue pending membership state on the ledger
-            val membership = Membership.State(counterparty, ourIdentity, request.metadata)
+            membership = Membership.State(counterparty, ourIdentity, request.metadata)
             val builder = TransactionBuilder(notary)
                     .addOutputState(membership, Membership.CONTRACT_NAME)
                     .addCommand(Membership.Commands.Request(), counterparty.owningKey, ourIdentity.owningKey)
@@ -59,12 +60,6 @@ class RequestMembershipFlowResponder(val session : FlowSession) : BusinessNetwor
             val selfSignedTx = serviceHub.signInitialTransaction(builder)
             val allSignedTx = subFlow(CollectSignaturesFlow(selfSignedTx, listOf(session)))
             subFlow(FinalityFlow(allSignedTx))
-
-            if(activateRightAway(membership, configuration)) {
-                logger.info("Auto-activating membership for party ${membership.member}")
-                val stateToActivate = findMembershipStateForParty(membership.member)
-                subFlow(ActivateMembershipFlow(stateToActivate))
-            }
         } finally {
             try {
                 logger.info("Removing the pending request from the database")
@@ -72,6 +67,12 @@ class RequestMembershipFlowResponder(val session : FlowSession) : BusinessNetwor
             } catch (e : SQLException) {
                 logger.warn("Error when trying to delete pending membership request", e)
             }
+        }
+
+        if (activateRightAway(membership, configuration)) {
+            logger.info("Auto-activating membership for party ${membership.member}")
+            val stateToActivate = findMembershipStateForParty(membership.member)
+            subFlow(ActivateMembershipFlow(stateToActivate))
         }
     }
 

@@ -2,7 +2,6 @@ package net.corda.businessnetworks.membership
 
 import net.corda.businessnetworks.membership.bno.OnMembershipActivated
 import net.corda.businessnetworks.membership.bno.service.BNOConfigurationService
-import net.corda.businessnetworks.membership.common.NotBNOException
 import net.corda.businessnetworks.membership.states.Membership
 import org.junit.After
 import org.junit.Before
