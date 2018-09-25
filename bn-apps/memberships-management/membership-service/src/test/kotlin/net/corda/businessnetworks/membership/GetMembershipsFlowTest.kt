@@ -1,8 +1,6 @@
 package net.corda.businessnetworks.membership
 
 import net.corda.businessnetworks.membership.bno.GetMembershipListFlowResponder
-import net.corda.businessnetworks.membership.common.MembershipNotActiveException
-import net.corda.businessnetworks.membership.common.NotAMemberException
 import org.junit.Test
 import kotlin.test.fail
 

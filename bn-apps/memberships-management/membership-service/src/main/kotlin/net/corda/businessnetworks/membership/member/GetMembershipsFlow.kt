@@ -1,11 +1,11 @@
 package net.corda.businessnetworks.membership.member
 
 import co.paralleluniverse.fibers.Suspendable
-import net.corda.businessnetworks.membership.common.PartyAndMembershipMetadata
 import net.corda.businessnetworks.membership.member.service.MemberConfigurationService
 import net.corda.businessnetworks.membership.member.service.MembershipsCache
 import net.corda.businessnetworks.membership.member.service.MembershipsCacheHolder
 import net.corda.businessnetworks.membership.states.Membership
+import net.corda.businessnetworks.membership.states.MembershipMetadata
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.InitiatingFlow
@@ -82,3 +82,5 @@ class GetMembersFlow(private val forceRefresh : Boolean = false) : FlowLogic<Lis
     }
 }
 
+@CordaSerializable
+data class PartyAndMembershipMetadata(val party : Party, val membershipMetadata: MembershipMetadata)

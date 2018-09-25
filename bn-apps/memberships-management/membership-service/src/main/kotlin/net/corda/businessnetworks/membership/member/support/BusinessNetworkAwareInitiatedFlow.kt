@@ -1,7 +1,7 @@
 package net.corda.businessnetworks.membership.member.support
 
 import co.paralleluniverse.fibers.Suspendable
-import net.corda.businessnetworks.membership.common.NotAMemberException
+import net.corda.businessnetworks.membership.NotAMemberException
 import net.corda.businessnetworks.membership.member.GetMembershipsFlow
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.FlowSession

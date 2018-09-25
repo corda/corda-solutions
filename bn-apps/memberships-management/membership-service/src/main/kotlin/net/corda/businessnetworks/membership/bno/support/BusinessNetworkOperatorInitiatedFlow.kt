@@ -2,8 +2,8 @@ package net.corda.businessnetworks.membership.bno.support
 
 import co.paralleluniverse.fibers.Suspendable
 import net.corda.businessnetworks.membership.bno.service.DatabaseService
-import net.corda.businessnetworks.membership.common.MembershipNotActiveException
-import net.corda.businessnetworks.membership.common.NotAMemberException
+import net.corda.businessnetworks.membership.MembershipNotActiveException
+import net.corda.businessnetworks.membership.NotAMemberException
 import net.corda.core.flows.FlowSession
 import net.corda.core.identity.Party
 
