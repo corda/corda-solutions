@@ -43,6 +43,9 @@ dependencies {
         exclude group: "org.apache.maven.resolver", module: "*"
     }
 
+    // transport over flows
+    compile project(':cordapp-updates-distribution:maven-resolver-transport-flows')
+
     // corda dependencies
     cordaCompile "$corda_release_group:corda-core:$corda_release_version"
     cordaCompile "$corda_release_group:corda-rpc:$corda_release_version"

@@ -14,25 +14,19 @@ class CordaMavenResolverTests {
         val LOCAL_REPO_PATH_PREFIX = "TestLocalRepo"
     }
 
-    lateinit var resolver : CordaMavenResolver
+    lateinit var resolver : CordaMavenResolverImpl
     lateinit var localRepoPath : Path
 
     @Before
     fun setup() {
         localRepoPath = Files.createTempDirectory(LOCAL_REPO_PATH_PREFIX)
-        resolver = CordaMavenResolver("file://${CordaMavenResolverTests::class.java.classLoader.getResource("TestRepo").file!!}",
+        resolver = CordaMavenResolverImpl("file://${CordaMavenResolverTests::class.java.classLoader.getResource("TestRepo").file!!}",
                 localRepoPath.toAbsolutePath().toString())
     }
 
     @Test
     fun shutDown() {
         localRepoPath.toFile().deleteOnExit()
-    }
-
-    @Test
-    fun peekVersion() {
-        assertTrue(resolver.peekVersion("net.example:test-artifact:1.5"))
-        assertFalse(resolver.peekVersion("net.example:not-existing:0.1"))
     }
 
     @Test
