@@ -208,7 +208,7 @@ Inputs:
   participants: member and BNO (optionally others)
 
 Commands:
-  Revoke
+  Amend
   signers: member, BNO
 
 Outputs:
