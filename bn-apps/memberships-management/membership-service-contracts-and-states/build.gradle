@@ -14,7 +14,6 @@ cordapp {
     info {
         name = "business-network-membership-service-states"
         vendor = "com.r3"
-        version = "1.0"
     }
 }
 

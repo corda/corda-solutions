@@ -17,7 +17,7 @@ import java.time.Instant
 
 class Membership : Contract {
     companion object {
-        val CONTRACT_NAME = "net.corda.businessnetworks.membership.states.Membership"
+        const val CONTRACT_NAME = "net.corda.businessnetworks.membership.states.Membership"
     }
 
     open class Commands : CommandData, TypeOnlyCommandData() {

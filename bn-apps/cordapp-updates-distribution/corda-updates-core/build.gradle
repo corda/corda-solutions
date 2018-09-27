@@ -1,10 +1,6 @@
 buildscript {
-    ext.aetherVersion = '1.0.0.v20140518'
-    ext.mavenVersion = '3.1.0'
-    ext.maven_resolver_version = "1.1.2-SNAPSHOT"
     ext.slf4j_version = '1.7.25'
     ext.tinylog_version = '1.3.5'
-
 
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-noarg:$kotlin_version"
@@ -12,7 +8,6 @@ buildscript {
 }
 
 apply plugin: 'kotlin'
-apply plugin: 'net.corda.plugins.cordapp'
 
 sourceSets {
     main {
@@ -45,12 +40,13 @@ dependencies {
 
     // transport over flows
     compile project(':cordapp-updates-distribution:maven-resolver-transport-flows')
+    compile project(':cordapp-updates-distribution:maven-resolver-transport-rpc')
 
     // corda dependencies
-    cordaCompile "$corda_release_group:corda-core:$corda_release_version"
-    cordaCompile "$corda_release_group:corda-rpc:$corda_release_version"
-    cordaCompile "$corda_release_group:corda-node-api:$corda_release_version"
-    cordaRuntime "$corda_release_group:corda:$corda_release_version"
+    compileOnly "$corda_release_group:corda-core:$corda_release_version"
+    compileOnly "$corda_release_group:corda-rpc:$corda_release_version"
+    compileOnly "$corda_release_group:corda-node-api:$corda_release_version"
+    compileOnly "$corda_release_group:corda:$corda_release_version"
     testCompile "$corda_release_group:corda-node-driver:$corda_release_version"
 
     // corda RPC
@@ -68,7 +64,7 @@ dependencies {
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
     kotlinOptions {
-        languageVersion = "1.1"
+        languageVersion = "1.2"
         apiVersion = "1.1"
         jvmTarget = "1.8"
         javaParameters = true   // Useful for reflection.

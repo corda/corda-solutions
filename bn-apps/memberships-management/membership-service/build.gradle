@@ -7,7 +7,6 @@ cordapp {
     info {
         name "business-network-membership-service"
         vendor "com.r3"
-        version "1.0"
     }
 }
 

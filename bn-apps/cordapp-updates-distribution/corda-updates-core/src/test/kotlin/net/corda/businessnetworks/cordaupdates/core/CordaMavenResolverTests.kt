@@ -3,6 +3,7 @@ package net.corda.businessnetworks.cordaupdates.core
 import org.eclipse.aether.resolution.VersionRangeResult
 import org.junit.Before
 import org.junit.Test
+import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.test.assertEquals
@@ -14,13 +15,13 @@ class CordaMavenResolverTests {
         val LOCAL_REPO_PATH_PREFIX = "TestLocalRepo"
     }
 
-    lateinit var resolver : CordaMavenResolverImpl
+    lateinit var resolver : CordaMavenResolver
     lateinit var localRepoPath : Path
 
     @Before
     fun setup() {
         localRepoPath = Files.createTempDirectory(LOCAL_REPO_PATH_PREFIX)
-        resolver = CordaMavenResolverImpl("file://${CordaMavenResolverTests::class.java.classLoader.getResource("TestRepo").file!!}",
+        resolver = CordaMavenResolver("file://${File("../TestRepo").canonicalPath}",
                 localRepoPath.toAbsolutePath().toString())
     }
 
