@@ -27,7 +27,7 @@ class CordaMavenResolverTests {
 
     @Test
     fun shutDown() {
-        localRepoPath.toFile().deleteOnExit()
+        localRepoPath.toFile().deleteRecursively()
     }
 
     @Test

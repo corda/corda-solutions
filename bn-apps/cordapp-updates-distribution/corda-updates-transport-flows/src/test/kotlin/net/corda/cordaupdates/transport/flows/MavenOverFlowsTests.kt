@@ -45,7 +45,7 @@ class MavenOverFlowsTests {
 
             testFunction()
 
-            nodeLocalRepoPath.toFile().deleteOnExit()
+            nodeLocalRepoPath.toFile().deleteRecursively()
         }
     }
 
