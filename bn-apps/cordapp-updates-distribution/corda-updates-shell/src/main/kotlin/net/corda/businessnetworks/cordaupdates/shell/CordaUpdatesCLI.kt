@@ -2,111 +2,99 @@ package net.corda.businessnetworks.cordaupdates.shell
 
 import net.corda.businessnetworks.cordaupdates.core.CordaMavenResolver
 import net.corda.cliutils.CordaCliWrapper
-import net.corda.cliutils.CordaVersionProvider
 import net.corda.cliutils.ExitCodes
 import net.corda.cordaupdates.transport.flows.ConfigurationProperties
 import net.corda.core.utilities.loggerFor
+import org.eclipse.aether.artifact.DefaultArtifact
 import org.eclipse.aether.repository.Authentication
 import org.eclipse.aether.repository.Proxy
 import org.eclipse.aether.util.repository.AuthenticationBuilder
 import org.slf4j.event.Level
 import picocli.CommandLine
 
-
-
-@CommandLine.Command(mixinStandardHelpOptions = true,
-        versionProvider = CordaVersionProvider::class,
-        sortOptions = false,
-        showDefaultValues = true,
-        synopsisHeading = "%n@|bold,underline Usage|@:%n%n",
-        descriptionHeading = "%n@|bold,underline Description|@:%n%n",
-        parameterListHeading = "%n@|bold,underline Parameters|@:%n%n",
-        optionListHeading = "%n@|bold,underline Options|@:%n%n",
-        commandListHeading = "%n@|bold,underline Commands|@:%n%n")
-class CordaUpdatesCLI : CordaCliWrapper("corda-updates-shell", "Shell for corda-updates CLI utility") {
+abstract class AbstractCommand(alias : String, description : String) : CordaCliWrapper(alias, description) {
     companion object {
-        private val logger by lazy { loggerFor<CordaCliWrapper>() }
+        val logger = loggerFor<DownloadCommand>()
     }
 
     @CommandLine.Option(names = ["--remoteRepoUrl", "-r"],
             description = ["Remote repository URL."],
             required = true)
-    private var remoteRepoUrl : String? = null
+    protected var remoteRepoUrl : String? = null
 
     @CommandLine.Option(names = ["--localRepoPath", "-l"],
             description = ["Local repository path."],
             required = true)
-    private var localRepoPath : String? = null
+    protected var localRepoPath : String? = null
 
     @CommandLine.Option(names = ["--artifact", "-a"],
             description = ["Coordinates of artifact to download in standard Maven notation. Supports version ranges i.e. [0,10.1)."],
             required = true)
-    private var artifact : String? = null
+    protected var artifact : String? = null
 
-    @CommandLine.Option(names = ["--username", "-u"],
-            description = ["Username for remote repository."])
-    private var password : String? = null
+    @CommandLine.Option(names = ["--httpUsername", "-hu"],
+            description = ["Username for the remote repository. Support only for HTTP transport."])
+    protected var httpUsername : String? = null
 
-    @CommandLine.Option(names = ["--password", "-p"],
-            description = ["Password for remote repository."])
-    private var username : String? = null
+    @CommandLine.Option(names = ["--httpPassword", "-hp"],
+            description = ["Password for the remote repository. Support only for HTTP transport."])
+    protected var httpPassword : String? = null
 
-    @CommandLine.Option(names = ["--proxyUrl", "-pr"],
-            description = ["Proxy URL."])
-    private var proxyUrl : String? = null
+    @CommandLine.Option(names = ["--httpProxyUrl", "-hpu"],
+            description = ["Proxy URL. Support only for HTTP transport."])
+    protected var httpProxyUrl : String? = null
 
-    @CommandLine.Option(names = ["--proxyType", "-pt"],
-            description = ["Proxy type. HTTP or HTTPS"],
+    @CommandLine.Option(names = ["--httpProxyType", "-hpt"],
+            description = ["Proxy type. HTTP or HTTPS. Support only for HTTP transport."],
             defaultValue = "HTTP")
-    private var proxyType : String? = null
+    protected var httpProxyType : String? = null
 
-    @CommandLine.Option(names = ["--proxyPort", "-pp"],
-            description = ["Proxy port."])
-    private var proxyPort : Int? = null
+    @CommandLine.Option(names = ["--httpProxyPort", "-hpp"],
+            description = ["Proxy port. Support only for HTTP transport."])
+    protected var httpProxyPort : Int? = null
 
-    @CommandLine.Option(names = ["--proxyUsername", "-pu"],
-            description = ["Proxy username."])
-    private var proxyUsername : String? = null
+    @CommandLine.Option(names = ["--httpProxyUsername", "-hpus"],
+            description = ["Proxy username. Support only for HTTP transport."])
+    protected var httpProxyUsername : String? = null
 
-    @CommandLine.Option(names = ["--proxyUsername", "-pu"],
-            description = ["Proxy username."])
-    private var proxyPassword : String? = null
+    @CommandLine.Option(names = ["--httpProxyPassword", "-hppa"],
+            description = ["Proxy username. Support only for HTTP transport."])
+    protected var httpProxyPassword : String? = null
 
     @CommandLine.Option(names = ["--rpcHost", "-rh"],
-            description = ["RPC host. Should be set only if RPC transport is used."])
-    private var rpcHost : String? = null
+            description = ["RPC host. Support only for RPC transport."])
+    protected var rpcHost : String? = null
 
     @CommandLine.Option(names = ["--rpcPort", "-rp"],
-            description = ["RPC port. Should be set only if RPC transport is used."])
-    private var rpcPort : String? = null
+            description = ["RPC port. Support only for RPC transport."])
+    protected var rpcPort : String? = null
 
     @CommandLine.Option(names = ["--rpcUsername", "-ru"],
-            description = ["RPC username. Should be set only if RPC transport is used."])
-    private var rpcUsername : String? = null
+            description = ["RPC username. Support only for RPC transport."])
+    protected var rpcUsername : String? = null
 
-    @CommandLine.Option(names = ["--rpcPassword", "-rp"],
-            description = ["RPC password. Should be set only if RPC transport is used."])
-    private var rpcPassword: String? = null
-
+    @CommandLine.Option(names = ["--rpcPassword", "-rpa"],
+            description = ["RPC password. Support only for RPC transport."])
+    protected var rpcPassword : String? = null
 
     override fun runProgram() : Int {
         // setting up authentication
         var authentication : Authentication? = null
-        if (username != null && password != null) {
-            authentication = AuthenticationBuilder().addUsername(username).addPassword(password).build()
-            if (logInfo()) {
-                logger.info("Using authentication username=$username password=******")
+        if (httpUsername != null && httpPassword != null) {
+            authentication = AuthenticationBuilder().addUsername(httpUsername).addPassword(httpPassword).build()
+            if (isLogInfo()) {
+                logger.info("Using authentication username=$httpUsername password=******")
             }
         }
 
         // setting up proxy
         var proxy : Proxy? = null
-        if (proxyUrl != null && proxyType != null && proxyPort != null) {
+        if (httpProxyUrl != null && httpProxyType != null && httpProxyPort != null) {
             var proxyAuthentication : Authentication? = null
-            if (proxyPassword != null && proxyUsername != null) {
-                proxyAuthentication = AuthenticationBuilder().addUsername(username).addPassword(password).build()
+            if (httpProxyPassword != null && httpProxyUsername != null) {
+                proxyAuthentication = AuthenticationBuilder().addUsername(httpProxyUsername).addPassword(httpProxyPassword).build()
             }
-            proxy = Proxy(proxyType, proxyUrl, proxyPort!!, proxyAuthentication)
+            proxy = Proxy(httpProxyType, httpProxyUrl, httpProxyPort!!, proxyAuthentication)
         }
 
         val configurationProperties = mutableMapOf<String, Any>()
@@ -117,7 +105,6 @@ class CordaUpdatesCLI : CordaCliWrapper("corda-updates-shell", "Shell for corda-
         rpcUsername?.let { configurationProperties[ConfigurationProperties.RPC_USERNAME] = it }
         rpcPassword?.let { configurationProperties[ConfigurationProperties.RPC_PASSWORD] = it }
 
-
         val resolver = CordaMavenResolver(remoteRepoUrl!!, localRepoPath!!, authentication, proxy)
         // attaching console loggers only if --verbose flag have been specified
         if (verbose) {
@@ -125,11 +112,28 @@ class CordaUpdatesCLI : CordaCliWrapper("corda-updates-shell", "Shell for corda-
             resolver.transferListener = ConsoleTransferListener(logger)
         }
 
-        resolver.downloadVersionRange(artifact!!, configurationProperties)
-
-        return ExitCodes.SUCCESS
+        return invokeResolver(resolver, configurationProperties)
     }
 
-    private fun logInfo() : Boolean = verbose && loggingLevel.toInt() <= Level.INFO.toInt()
+    protected fun isLogInfo() : Boolean = verbose && loggingLevel.toInt() <= Level.INFO.toInt()
 
+    abstract fun invokeResolver(resolver : CordaMavenResolver, configurationProperties: Map<String, Any>) : Int
+}
+
+class DownloadCommand : AbstractCommand("download", "Download a single artifact version or version range") {
+    override fun invokeResolver(resolver : CordaMavenResolver, configurationProperties: Map<String, Any>) : Int {
+        resolver.downloadVersionRange(artifact!!, configurationProperties)
+        return ExitCodes.SUCCESS
+    }
+}
+
+class VersionRangeCommand : AbstractCommand("versionRange", "Print versions within the specified version range") {
+    override fun invokeResolver(resolver : CordaMavenResolver, configurationProperties: Map<String, Any>) : Int {
+        val versionRangeResult = resolver.resolveVersionRange(artifact!!, configurationProperties)
+        versionRangeResult.versions.forEach {
+            val versionedArtifact = DefaultArtifact(artifact).setVersion(it.toString())
+            println(versionedArtifact)
+        }
+        return ExitCodes.SUCCESS
+    }
 }
