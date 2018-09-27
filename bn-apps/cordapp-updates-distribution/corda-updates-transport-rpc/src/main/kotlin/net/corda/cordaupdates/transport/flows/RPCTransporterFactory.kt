@@ -60,7 +60,7 @@ class RPCTransporter(private val session : RepositorySystemSession,
         val host = ConfigUtils.getString(session, null, ConfigurationProperties.RPC_HOST)!!
         val port = ConfigUtils.getInteger(session, 0, ConfigurationProperties.RPC_PORT)
         val username = ConfigUtils.getString(session, null, ConfigurationProperties.RPC_USERNAME)!!
-        val password = ConfigUtils.getString(session.configProperties, null, ConfigurationProperties.RPC_PASSWORD)
+        val password = ConfigUtils.getString(session.configProperties, null, ConfigurationProperties.RPC_PASSWORD)!!
 
         val rpcAddress = NetworkHostAndPort(host, port)
         val rpcClient = CordaRPCClient(rpcAddress)

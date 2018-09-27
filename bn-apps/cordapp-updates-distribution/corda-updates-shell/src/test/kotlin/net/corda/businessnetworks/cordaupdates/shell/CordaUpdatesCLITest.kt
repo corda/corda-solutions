@@ -30,7 +30,7 @@ class CordaUpdatesCLITest {
 
     @After
     fun cleanUp() {
-        localRepoPath.toFile().delete()
+        localRepoPath.toFile().deleteRecursively()
     }
 
     @Test

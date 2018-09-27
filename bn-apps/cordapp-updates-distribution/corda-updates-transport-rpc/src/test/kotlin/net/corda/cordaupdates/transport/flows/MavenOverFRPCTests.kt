@@ -41,7 +41,7 @@ class MavenOverFRPCTests {
 
             testFunction()
 
-            nodeLocalRepoPath.toFile().deleteOnExit()
+            nodeLocalRepoPath.toFile().deleteRecursively()
         }
     }
 
