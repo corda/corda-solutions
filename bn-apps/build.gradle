@@ -3,7 +3,7 @@ buildscript {
         corda_release_group = 'net.corda'
         corda_release_version = '3.2-corda'
         corda_gradle_plugins_version = '4.0.25'
-        kotlin_version = '1.1.60'
+        kotlin_version = '1.2.71'
         junit_version = '4.12'
     }
 
