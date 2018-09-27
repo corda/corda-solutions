@@ -15,11 +15,11 @@ sourceSets {
 }
 
 dependencies {
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 
     // corda dependencies
     compile "$corda_release_group:corda-rpc:$corda_release_version"
-    compile project(':cordapp-updates-distribution:maven-resolver-transport-flows')
+    compile project(':cordapp-updates-distribution:corda-updates-transport-flows')
 
     // test dependencies
     testCompile "$corda_release_group:corda-core:$corda_release_version"
@@ -34,7 +34,7 @@ dependencies {
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
     kotlinOptions {
         languageVersion = "1.2"
-        apiVersion = "1.1"
+        apiVersion = "1.2"
         jvmTarget = "1.8"
         javaParameters = true   // Useful for reflection.
     }
