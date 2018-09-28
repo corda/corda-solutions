@@ -8,8 +8,8 @@ import java.util.*
 @CordaService
 class BNOConfigurationService(private val serviceHub : AppServiceHub) : SingletonSerializeAsToken() {
     companion object {
-        const val PROPERTIES_FILE_NAME = "corda-updates.properties"
-        const val REMOTE_REPO_URL = "corda-updates.remoteRepoUrl"
+        const val PROPERTIES_FILE_NAME = "bno-corda-updates.properties"
+        const val REMOTE_REPO_URL = "bno-corda-updates.remoteRepoUrl"
     }
     private var _config = readProps(PROPERTIES_FILE_NAME).toMutableMap()
 

@@ -1,0 +1,21 @@
+localRepoPath: /var/temp
+httpProxyType: HTTP
+httpProxyUrl: 10.0.0.1
+httpProxyPort: 187
+httpProxyUsername: ProxyUsername
+httpProxyPassword: ProxyPassword
+rpcHost: localhost
+rpcPort: 8007
+rpcUsername: RpcUsername
+rpcPassword: RpcPassword
+tasks:
+- remoteRepoUrl: http://search.maven.org
+  artifacts:
+  - com.test:test-1
+  - com.test:test-2
+- remoteRepoUrl: http://search2.maven.org
+  artifacts:
+  - net.test:test-1
+  - net.test:test-2
+  httpUsername: User2
+  httpPassword: Password2

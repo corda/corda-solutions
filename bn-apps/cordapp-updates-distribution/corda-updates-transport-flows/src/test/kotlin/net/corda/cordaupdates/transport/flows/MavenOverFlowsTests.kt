@@ -1,10 +1,13 @@
 package net.corda.cordaupdates.transport.flows
 
 import co.paralleluniverse.fibers.Suspendable
-import net.corda.businessnetworks.cordaupdates.core.CordaMavenResolverService
+import net.corda.businessnetworks.cordaupdates.core.CordaMavenResolver
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.StartableByRPC
 import net.corda.core.identity.CordaX500Name
+import net.corda.core.node.AppServiceHub
+import net.corda.core.node.services.CordaService
+import net.corda.core.serialization.SingletonSerializeAsToken
 import net.corda.core.utilities.getOrThrow
 import net.corda.testing.driver.DriverParameters
 import net.corda.testing.driver.NodeHandle
@@ -12,21 +15,19 @@ import net.corda.testing.driver.NodeParameters
 import net.corda.testing.driver.driver
 import net.corda.testing.node.NotarySpec
 import net.corda.testing.node.User
+import org.eclipse.aether.resolution.DependencyResult
 import org.junit.Test
 import java.lang.Thread.sleep
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.concurrent.Callable
+import java.util.concurrent.Executors
 import kotlin.test.assertTrue
 
 class MavenOverFlowsTests {
-    companion object {
-        const val BNO_LOCAL_REPO_PATH_PREFIX = "TestLocalRepoBNO"
-        const val NODE_LOCAL_REPO_PATH_PREFIX = "TestLocalRepoNode"
-    }
-
-    lateinit var bnoNode: NodeHandle
-    lateinit var participantNode: NodeHandle
-    lateinit var nodeLocalRepoPath : Path
+    private lateinit var bnoNode: NodeHandle
+    private lateinit var participantNode: NodeHandle
+    private lateinit var nodeLocalRepoPath : Path
 
     fun genericTest(testFunction : () -> Unit) {
         val user1 = User("test", "test", permissions = setOf("ALL"))
@@ -41,7 +42,7 @@ class MavenOverFlowsTests {
 
             bnoNode = startNode(NodeParameters(providedName = bnoName)).getOrThrow()
             participantNode = startNode(NodeParameters(providedName = participantName), rpcUsers = listOf(user1)).getOrThrow()
-            nodeLocalRepoPath = Files.createTempDirectory(NODE_LOCAL_REPO_PATH_PREFIX)
+            nodeLocalRepoPath = Files.createTempDirectory("FakeRepo")
 
             testFunction()
 
@@ -68,7 +69,23 @@ class TestFlow(private val remoteRepoUrl : String, private val localRepoPath : S
     @Suspendable
     override fun call() {
         logger.info("Starting TestFlow")
-        val executor = serviceHub.cordaService(CordaMavenResolverService::class.java)
+        val executor = serviceHub.cordaService(ExecutorService::class.java)
         executor.downloadVersionAsync(remoteRepoUrl, localRepoPath, mavenCoords)
+    }
+}
+
+
+@CordaService
+class ExecutorService(private val appServiceHub : AppServiceHub) : SingletonSerializeAsToken() {
+    companion object {
+        val executor = Executors.newSingleThreadExecutor()!!
+    }
+
+    fun downloadVersionAsync(remoteRepoUrl : String, localRepoPath : String, mavenCoords : String, onComplete : (result : DependencyResult) -> Unit = {}) {
+        executor.submit(Callable {
+            val resolver = CordaMavenResolver.create(remoteRepoUrl = remoteRepoUrl, localRepoPath = localRepoPath)
+            val result = resolver.downloadVersion(mavenCoords, configProps = mapOf(Pair(ConfigurationProperties.APP_SERVICE_HUB, appServiceHub)))
+            onComplete(result)
+        })
     }
 }

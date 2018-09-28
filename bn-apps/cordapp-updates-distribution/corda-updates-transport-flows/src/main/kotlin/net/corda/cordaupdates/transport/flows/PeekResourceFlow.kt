@@ -45,7 +45,6 @@ class PeekArtifactFlowResponder(val session : FlowSession) : FlowLogic<Unit>() {
         try {
             transporter.peek(PeekTask(URI.create(location)))
         } catch (ex : Exception) {
-            logger.info("Error peeking resource at $location")
             throw toCordaException(ex, transporter)
         }
         session.send(true)
