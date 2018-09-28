@@ -74,6 +74,21 @@ class CordaMavenResolver private constructor(private val remoteRepoUrl : String,
 
             return CordaMavenResolver(remoteRepoUrl!!, localRepoPath!!, authentication, proxy, configurationProperties)
         }
+
+        fun create(syncerConf : SyncerConfiguration, syncTask : SyncerTask) =
+                create(remoteRepoUrl = syncTask.remoteRepoUrl,
+                        localRepoPath = syncerConf.localRepoPath,
+                        httpUsername = syncTask.httpUsername,
+                        httpPassword = syncTask.httpPassword,
+                        httpProxyUrl = syncerConf.httpProxyUrl,
+                        httpProxyType = syncerConf.httpProxyType,
+                        httpProxyPort = syncerConf.httpProxyPort,
+                        httpProxyUsername = syncerConf.httpProxyUsername,
+                        httpProxyPassword = syncerConf.httpProxyPassword,
+                        rpcHost = syncerConf.rpcHost,
+                        rpcPort = syncerConf.rpcPort,
+                        rpcUsername = syncerConf.rpcUsername,
+                        rpcPassword = syncerConf.rpcPassword)
     }
 
     var repositoryListener : RepositoryListener? = null
@@ -119,7 +134,6 @@ class CordaMavenResolver private constructor(private val remoteRepoUrl : String,
     fun downloadVersion(mavenCoords : String,
                         configProps : Map<String, Any> = mapOf()) : DependencyResult {
         val session = createRepositorySession(configProps)
-
 
         val dependency = Dependency(DefaultArtifact(mavenCoords), "compile")
 

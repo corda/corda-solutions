@@ -7,24 +7,11 @@ import java.io.File
 import java.lang.IllegalArgumentException
 import java.nio.file.Files
 
+
 class RepositorySyncer(private val syncerConf : SyncerConfiguration) {
     fun sync(additionalConfigurationProperties : Map<String, Any> = mapOf()) {
         syncerConf.tasks.forEach { syncTask ->
-            val resolver = CordaMavenResolver.create(
-                    remoteRepoUrl = syncTask.remoteRepoUrl,
-                    localRepoPath = syncerConf.localRepoPath,
-                    httpUsername = syncTask.httpUsername,
-                    httpPassword = syncTask.httpPassword,
-                    httpProxyUrl = syncerConf.httpProxyUrl,
-                    httpProxyType = syncerConf.httpProxyType,
-                    httpProxyPort = syncerConf.httpProxyPort,
-                    httpProxyUsername = syncerConf.httpProxyUsername,
-                    httpProxyPassword = syncerConf.httpProxyPassword,
-                    rpcHost = syncerConf.rpcHost,
-                    rpcPort = syncerConf.rpcPort,
-                    rpcUsername = syncerConf.rpcUsername,
-                    rpcPassword = syncerConf.rpcPassword
-            )
+            val resolver = CordaMavenResolver.create(syncerConf, syncTask)
             syncTask.artifacts.forEach {
                 resolver.downloadVersionRange("$it:[,)", additionalConfigurationProperties)
             }

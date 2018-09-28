@@ -1,5 +1,6 @@
 package net.corda.cordaupdates.app
 
+import net.corda.core.identity.CordaX500Name
 import net.corda.core.node.AppServiceHub
 import net.corda.core.node.services.CordaService
 import net.corda.core.serialization.SingletonSerializeAsToken
@@ -8,10 +9,18 @@ import java.util.*
 @CordaService
 class ClientConfiguration(private val serviceHub : AppServiceHub) : SingletonSerializeAsToken() {
     companion object {
-        const val PROPERTIES_PREFIX = "client-corda-updates"
-        const val PROPERTIES_FILE_NAME = "client-corda-updates.properties"
+        const val PROPERTIES_FILE_NAME = "corda-updates.properties"
+        const val SYNCER_CONFIGURATION_PATH = "corda-updates.syncerConfig"
+        const val SYNC_INTERVAL = "corda-updates.syncInterval"
+        const val NOTARY_NAME = "corda-updates.notary"
     }
     val config = readProps(PROPERTIES_FILE_NAME).toMap()
+
+    fun syncerConfig() = config[SYNCER_CONFIGURATION_PATH]
+    fun syncInterval() = config[SYNC_INTERVAL]?.toLong() ?: 18000L
+    fun notaryName() = CordaX500Name.parse(config[NOTARY_NAME]!!)
+    fun notaryParty() = serviceHub.identityService.wellKnownPartyFromX500Name(notaryName())!!
+
 
     private fun readProps(fileName : String) : Map<String, String> {
         val input = ClientConfiguration::class.java.classLoader.getResourceAsStream(fileName)

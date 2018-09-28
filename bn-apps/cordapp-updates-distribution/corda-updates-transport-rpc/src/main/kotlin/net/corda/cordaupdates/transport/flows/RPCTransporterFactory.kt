@@ -45,7 +45,7 @@ class RPCTransporter(private val session : RepositorySystemSession,
         utilGet(task, ByteInputStream(bytes, bytes.size), true, bytes.size.toLong(), false)
     }
 
-    override fun implPut(task : PutTask?) = throw Exception("Flows transport doesn't support PUT")
+    override fun implPut(task : PutTask?) = throw Exception("RPC transport doesn't support PUT")
 
     override fun classify(error : Throwable?) : Int {
         if (error is ResourceNotFoundException)
