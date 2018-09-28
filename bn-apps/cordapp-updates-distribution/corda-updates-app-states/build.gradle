@@ -4,7 +4,7 @@ apply plugin: 'net.corda.plugins.quasar-utils'
 
 cordapp {
     info {
-        name "corda-updates-app"
+        name "corda-updates-app-states"
         vendor "com.r3"
     }
 }
@@ -27,7 +27,6 @@ dependencies {
 
     // corda maven resolver
     compile project(":cordapp-updates-distribution:corda-updates-core")
-    cordapp project(":cordapp-updates-distribution:corda-updates-app-states")
 
     // corda dependencies
     cordaCompile "$corda_release_group:corda-core:$corda_release_version"
