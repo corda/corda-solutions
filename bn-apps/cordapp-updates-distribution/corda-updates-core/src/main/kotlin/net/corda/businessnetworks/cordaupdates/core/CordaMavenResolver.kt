@@ -3,9 +3,6 @@ package net.corda.businessnetworks.cordaupdates.core
 import net.corda.cordaupdates.transport.flows.ConfigurationProperties
 import net.corda.cordaupdates.transport.flows.FlowsTransporterFactory
 import net.corda.cordaupdates.transport.flows.RPCTransporterFactory
-import net.corda.core.node.AppServiceHub
-import net.corda.core.node.services.CordaService
-import net.corda.core.serialization.SingletonSerializeAsToken
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils.newSession
 import org.eclipse.aether.DefaultRepositorySystemSession
@@ -29,17 +26,56 @@ import org.eclipse.aether.spi.connector.transport.TransporterFactory
 import org.eclipse.aether.transfer.TransferListener
 import org.eclipse.aether.transport.file.FileTransporterFactory
 import org.eclipse.aether.transport.http.HttpTransporterFactory
-import java.util.concurrent.Callable
-import java.util.concurrent.Executors
+import org.eclipse.aether.util.repository.AuthenticationBuilder
 
-/**
- * Basic interface over maven resolver
- */
+class CordaMavenResolver private constructor(private val remoteRepoUrl : String,
+                                             private val localRepoPath : String,
+                                             private val repoAuthentication : Authentication? = null,
+                                             private val proxy : Proxy? = null,
+                                             private val configProperties : Map<String, Any> = mapOf()) {
 
-class CordaMavenResolver(private val remoteRepoUrl : String,
-                         private val localRepoPath : String,
-                         private val repoAuthentication : Authentication? = null,
-                         private val proxy: Proxy? = null) {
+    companion object {
+        fun create(remoteRepoUrl : String? = null,
+                   localRepoPath : String? = null,
+                   httpUsername : String? = null,
+                   httpPassword : String? = null,
+                   httpProxyUrl : String? = null,
+                   httpProxyType : String? = null,
+                   httpProxyPort : Int? = null,
+                   httpProxyUsername : String? = null,
+                   httpProxyPassword : String? = null,
+                   rpcHost : String? = null,
+                   rpcPort : String? = null,
+                   rpcUsername : String? = null,
+                   rpcPassword : String? = null) : CordaMavenResolver {
+            // setting up authentication
+            var authentication : Authentication? = null
+            if (httpUsername != null && httpPassword != null) {
+                authentication = AuthenticationBuilder().addUsername(httpUsername).addPassword(httpPassword).build()
+            }
+
+            // setting up proxy
+            var proxy : Proxy? = null
+            if (httpProxyUrl != null && httpProxyType != null && httpProxyPort != null) {
+                var proxyAuthentication : Authentication? = null
+                if (httpProxyPassword != null && httpProxyUsername != null) {
+                    proxyAuthentication = AuthenticationBuilder().addUsername(httpProxyUsername).addPassword(httpProxyPassword).build()
+                }
+                proxy = Proxy(httpProxyType, httpProxyUrl, httpProxyPort, proxyAuthentication)
+            }
+
+            val configurationProperties = mutableMapOf<String, Any>()
+
+            // RPC options
+            rpcHost?.let { configurationProperties[ConfigurationProperties.RPC_HOST] = it }
+            rpcPort?.let { configurationProperties[ConfigurationProperties.RPC_PORT] = it }
+            rpcUsername?.let { configurationProperties[ConfigurationProperties.RPC_USERNAME] = it }
+            rpcPassword?.let { configurationProperties[ConfigurationProperties.RPC_PASSWORD] = it }
+
+            return CordaMavenResolver(remoteRepoUrl!!, localRepoPath!!, authentication, proxy, configurationProperties)
+        }
+    }
+
     var repositoryListener : RepositoryListener? = null
     var transferListener : TransferListener? = null
 
@@ -66,7 +102,6 @@ class CordaMavenResolver(private val remoteRepoUrl : String,
                 listOf(remoteRepository), null)
 
         val session = createRepositorySession(configProps)
-        session.localRepositoryManager = SimpleLocalRepositoryManagerFactory().newInstance(session, LocalRepository(""))
 
         return repositorySystem.resolveVersionRange(session, versionRangeRequest)
     }
@@ -85,7 +120,6 @@ class CordaMavenResolver(private val remoteRepoUrl : String,
                         configProps : Map<String, Any> = mapOf()) : DependencyResult {
         val session = createRepositorySession(configProps)
 
-        session.localRepositoryManager = SimpleLocalRepositoryManagerFactory().newInstance(session, LocalRepository(localRepoPath))
 
         val dependency = Dependency(DefaultArtifact(mavenCoords), "compile")
 
@@ -102,42 +136,12 @@ class CordaMavenResolver(private val remoteRepoUrl : String,
 
     private fun createRepositorySession(additionalConfigProperties : Map<String, Any>) : DefaultRepositorySystemSession {
         val session = newSession()!!
-        additionalConfigProperties.forEach {
+        (configProperties + additionalConfigProperties).forEach {
             session.setConfigProperty(it.key, it.value)
         }
         if (repositoryListener != null) session.repositoryListener = repositoryListener
         if (transferListener != null) session.transferListener = transferListener
+        session.localRepositoryManager = SimpleLocalRepositoryManagerFactory().newInstance(session, LocalRepository(localRepoPath))
         return session
-    }
-}
-
-@CordaService
-class CordaMavenResolverService(private val appServiceHub : AppServiceHub) : SingletonSerializeAsToken() {
-    companion object {
-        val executor = Executors.newSingleThreadExecutor()!!
-    }
-
-    fun resolveVersionRangeAsync(remoteRepoUrl : String, localRepoPath : String, rangeRequest : String, onComplete : (result : VersionRangeResult) -> Unit = {}) {
-        executor.submit(Callable {
-            val resolver = CordaMavenResolver(remoteRepoUrl, localRepoPath)
-            val result = resolver.resolveVersionRange(rangeRequest, configProps = mapOf(Pair(ConfigurationProperties.APP_SERVICE_HUB, appServiceHub)))
-            onComplete(result)
-        })
-    }
-
-    fun downloadVersionRangeAsync(remoteRepoUrl : String, localRepoPath : String, rangeRequest : String, onComplete : (result : List<DependencyResult>) -> Unit = {}) {
-        executor.submit(Callable {
-            val resolver = CordaMavenResolver(remoteRepoUrl, localRepoPath)
-            val result = resolver.downloadVersionRange(rangeRequest, configProps = mapOf(Pair(ConfigurationProperties.APP_SERVICE_HUB, appServiceHub)))
-            onComplete(result)
-        })
-    }
-
-    fun downloadVersionAsync(remoteRepoUrl : String, localRepoPath : String, mavenCoords : String, onComplete : (result : DependencyResult) -> Unit = {}) {
-        executor.submit(Callable {
-            val resolver = CordaMavenResolver(remoteRepoUrl, localRepoPath)
-            val result = resolver.downloadVersion(mavenCoords, configProps = mapOf(Pair(ConfigurationProperties.APP_SERVICE_HUB, appServiceHub)))
-            onComplete(result)
-        })
     }
 }

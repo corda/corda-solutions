@@ -37,7 +37,7 @@ class CordaUpdatesCLITest {
     fun testDownload() {
         logger.info("")
         val args = arrayOf(
-                "--remoteRepoUrl", "file://${File("../TestRepo").canonicalPath}",
+                "--remoteRepoUrl", "file:${File("../TestRepo").canonicalPath}",
                 "--localRepoPath", localRepoPath.toAbsolutePath().toString(),
                 "--artifact", "net.example:test-artifact:[0.2,1.4]")
 

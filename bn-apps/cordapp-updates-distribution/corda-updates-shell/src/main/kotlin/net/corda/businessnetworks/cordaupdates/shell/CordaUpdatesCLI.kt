@@ -3,13 +3,8 @@ package net.corda.businessnetworks.cordaupdates.shell
 import net.corda.businessnetworks.cordaupdates.core.CordaMavenResolver
 import net.corda.cliutils.CordaCliWrapper
 import net.corda.cliutils.ExitCodes
-import net.corda.cordaupdates.transport.flows.ConfigurationProperties
 import net.corda.core.utilities.loggerFor
 import org.eclipse.aether.artifact.DefaultArtifact
-import org.eclipse.aether.repository.Authentication
-import org.eclipse.aether.repository.Proxy
-import org.eclipse.aether.util.repository.AuthenticationBuilder
-import org.slf4j.event.Level
 import picocli.CommandLine
 
 abstract class AbstractCommand(alias : String, description : String) : CordaCliWrapper(alias, description) {
@@ -78,58 +73,43 @@ abstract class AbstractCommand(alias : String, description : String) : CordaCliW
     protected var rpcPassword : String? = null
 
     override fun runProgram() : Int {
-        // setting up authentication
-        var authentication : Authentication? = null
-        if (httpUsername != null && httpPassword != null) {
-            authentication = AuthenticationBuilder().addUsername(httpUsername).addPassword(httpPassword).build()
-            if (isLogInfo()) {
-                logger.info("Using authentication username=$httpUsername password=******")
-            }
-        }
+        val resolver = CordaMavenResolver.create(
+                remoteRepoUrl = remoteRepoUrl,
+                localRepoPath = localRepoPath,
+                httpUsername = httpUsername,
+                httpPassword = httpPassword,
+                httpProxyUrl = httpProxyUrl,
+                httpProxyType = httpProxyType,
+                httpProxyPort = httpProxyPort,
+                httpProxyUsername = httpProxyUsername,
+                httpProxyPassword = httpProxyPassword,
+                rpcHost = rpcHost,
+                rpcPort = rpcPort,
+                rpcUsername = rpcUsername,
+                rpcPassword = rpcPassword
+        )
 
-        // setting up proxy
-        var proxy : Proxy? = null
-        if (httpProxyUrl != null && httpProxyType != null && httpProxyPort != null) {
-            var proxyAuthentication : Authentication? = null
-            if (httpProxyPassword != null && httpProxyUsername != null) {
-                proxyAuthentication = AuthenticationBuilder().addUsername(httpProxyUsername).addPassword(httpProxyPassword).build()
-            }
-            proxy = Proxy(httpProxyType, httpProxyUrl, httpProxyPort!!, proxyAuthentication)
-        }
-
-        val configurationProperties = mutableMapOf<String, Any>()
-
-        // RPC options
-        rpcHost?.let { configurationProperties[ConfigurationProperties.RPC_HOST] = it }
-        rpcPort?.let { configurationProperties[ConfigurationProperties.RPC_PORT] = it }
-        rpcUsername?.let { configurationProperties[ConfigurationProperties.RPC_USERNAME] = it }
-        rpcPassword?.let { configurationProperties[ConfigurationProperties.RPC_PASSWORD] = it }
-
-        val resolver = CordaMavenResolver(remoteRepoUrl!!, localRepoPath!!, authentication, proxy)
-        // attaching console loggers only if --verbose flag have been specified
         if (verbose) {
             resolver.repositoryListener = ConsoleRepositoryListener(logger)
             resolver.transferListener = ConsoleTransferListener(logger)
         }
 
-        return invokeResolver(resolver, configurationProperties)
+        return invokeResolver(resolver)
     }
 
-    protected fun isLogInfo() : Boolean = verbose && loggingLevel.toInt() <= Level.INFO.toInt()
-
-    abstract fun invokeResolver(resolver : CordaMavenResolver, configurationProperties: Map<String, Any>) : Int
+    abstract fun invokeResolver(resolver : CordaMavenResolver) : Int
 }
 
 class DownloadCommand : AbstractCommand("download", "Download a single artifact version or version range") {
-    override fun invokeResolver(resolver : CordaMavenResolver, configurationProperties: Map<String, Any>) : Int {
-        resolver.downloadVersionRange(artifact!!, configurationProperties)
+    override fun invokeResolver(resolver : CordaMavenResolver) : Int {
+        resolver.downloadVersionRange(artifact!!)
         return ExitCodes.SUCCESS
     }
 }
 
 class VersionRangeCommand : AbstractCommand("versionRange", "Print versions within the specified version range") {
-    override fun invokeResolver(resolver : CordaMavenResolver, configurationProperties: Map<String, Any>) : Int {
-        val versionRangeResult = resolver.resolveVersionRange(artifact!!, configurationProperties)
+    override fun invokeResolver(resolver : CordaMavenResolver) : Int {
+        val versionRangeResult = resolver.resolveVersionRange(artifact!!)
         versionRangeResult.versions.forEach {
             val versionedArtifact = DefaultArtifact(artifact).setVersion(it.toString())
             println(versionedArtifact)

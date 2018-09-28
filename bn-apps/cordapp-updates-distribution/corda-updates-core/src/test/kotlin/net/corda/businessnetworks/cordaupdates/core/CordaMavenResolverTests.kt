@@ -1,5 +1,6 @@
 package net.corda.businessnetworks.cordaupdates.core
 
+import org.eclipse.aether.resolution.DependencyResolutionException
 import org.eclipse.aether.resolution.VersionRangeResult
 import org.junit.Before
 import org.junit.Test
@@ -11,18 +12,15 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class CordaMavenResolverTests {
-    companion object {
-        val LOCAL_REPO_PATH_PREFIX = "TestLocalRepo"
-    }
-
-    lateinit var resolver : CordaMavenResolver
-    lateinit var localRepoPath : Path
+    private lateinit var resolver : CordaMavenResolver
+    private lateinit var localRepoPath : Path
 
     @Before
     fun setup() {
-        localRepoPath = Files.createTempDirectory(LOCAL_REPO_PATH_PREFIX)
-        resolver = CordaMavenResolver("file://${File("../TestRepo").canonicalPath}",
-                localRepoPath.toAbsolutePath().toString())
+        localRepoPath = Files.createTempDirectory("FakeLocalRepo")
+        resolver = CordaMavenResolver.create(
+                remoteRepoUrl = "file:${File("../TestRepo").canonicalPath}",
+                localRepoPath = localRepoPath.toAbsolutePath().toString())
     }
 
     @Test
@@ -53,5 +51,22 @@ class CordaMavenResolverTests {
         assertFalse(localRepoPath.resolve("net/example/test-artifact/2.0/test-artifact-2.0.jar").toFile()!!.exists())
     }
 
-    fun versionSet(rangeResult : VersionRangeResult) = rangeResult.versions!!.asSequence().map { it.toString() }.toSet()
+    @Test
+    fun `downloadVersionRange should return empty list if artifact was not found`() {
+        val result = resolver.downloadVersionRange("net.example:does-not-exist:[0.2,1.7]")
+        assertTrue(result.isEmpty())
+    }
+
+    @Test(expected = DependencyResolutionException::class)
+    fun `downloadArtifact throws DependencyResolutionException if artifact was not found`() {
+        resolver.downloadVersion("net.example:does-not-exist:0.5")
+    }
+
+    @Test
+    fun `resolveVersionRange should return an empty version set if artifact was not found`() {
+        val result = resolver.resolveVersionRange("net.example:does-not-exist:[0.2,1.7]")
+        assertTrue(result.versions.isEmpty())
+    }
+
+    private fun versionSet(rangeResult : VersionRangeResult) = rangeResult.versions!!.asSequence().map { it.toString() }.toSet()
 }

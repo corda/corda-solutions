@@ -48,7 +48,9 @@ class MavenOverFRPCTests {
     @Test
     fun testRpc() {
         genericTest {
-            val resolver = CordaMavenResolver("rpc:O=BNO,L=New York,C=US", nodeLocalRepoPath.toAbsolutePath().toString())
+            val resolver = CordaMavenResolver.create(
+                    remoteRepoUrl = "rpc:O=BNO,L=New York,C=US",
+                    localRepoPath = nodeLocalRepoPath.toAbsolutePath().toString())
             val result = resolver.downloadVersion("net.example:test-artifact:1.5", configProps = mapOf(
                     Pair(ConfigurationProperties.RPC_HOST, participantNode.rpcAddress.host),
                     Pair(ConfigurationProperties.RPC_PORT, participantNode.rpcAddress.port),

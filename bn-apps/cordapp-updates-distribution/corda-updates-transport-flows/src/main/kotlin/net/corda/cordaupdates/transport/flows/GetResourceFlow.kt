@@ -24,7 +24,6 @@ import java.util.*
 class GetResourceFlow(private val resourceLocation : String, private val bnoName : String) : FlowLogic<ByteArray>() {
     @Suspendable
     override fun call() : ByteArray {
-        logger.info("Hello from here")
         val bnoParty = serviceHub.identityService.wellKnownPartyFromX500Name(CordaX500Name.parse(bnoName))!!
         val bnoSession = initiateFlow(bnoParty)
 
@@ -64,7 +63,6 @@ class GetResourceFlowResponder(private val session : FlowSession) : FlowLogic<Un
         try {
             transporter.get(getTask)
         } catch (ex : Exception) {
-            logger.info("Error resolving resource at $location", ex)
             throw toCordaException(ex, transporter)
         }
         return getTask.dataBytes
