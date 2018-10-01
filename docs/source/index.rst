@@ -26,6 +26,12 @@ This site aims to ask some of these questions and offer some solutions.
    designs/ledger-synchronisation-service.rst
 
 .. toctree::
+    :caption: Corda Modelling Notation
+    :maxdepth: 1
+
+    corda-modelling-notation/intro.rst
+
+.. toctree::
    :caption: FAQ
    :maxdepth: 1
 
