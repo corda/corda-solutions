@@ -125,7 +125,9 @@ class CordaMavenResolver private constructor(private val remoteRepoUrl : String,
                              configProps : Map<String, Any> = mapOf()) : List<DependencyResult> {
         val versions = resolveVersionRange(rangeRequest, configProps)
         val artifact = DefaultArtifact(rangeRequest)
-        return versions.versions.map {
+
+        // downloading the most recent version first
+        return versions.versions.asReversed().map {
             val artifactVersion = artifact.setVersion(it.toString())!!
             downloadVersion(artifactVersion.toString(), configProps)
         }

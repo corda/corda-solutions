@@ -38,7 +38,7 @@ class FlowsTransporter(private val session : RepositorySystemSession,
 
     override fun implPeek(task : PeekTask?) {
         val appServiceHub = ConfigUtils.getObject(session, null, ConfigurationProperties.APP_SERVICE_HUB) as AppServiceHub
-        appServiceHub.startFlow(PeekArtifactFlow(task!!.location.toString(), bnoName)).returnValue.getOrThrow()
+        appServiceHub.startFlow(PeekResourceFlow(task!!.location.toString(), bnoName)).returnValue.getOrThrow()
     }
 
     override fun implGet(task : GetTask?) {

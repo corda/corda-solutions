@@ -2,6 +2,7 @@ package net.corda.cordaupdates.app
 
 import co.paralleluniverse.fibers.Suspendable
 import net.corda.businessnetworks.cordaupdates.core.RepositorySyncer
+import net.corda.businessnetworks.cordaupdates.core.SyncerConfiguration
 import net.corda.cordaupdates.app.states.ScheduledSyncContract
 import net.corda.cordaupdates.app.states.ScheduledSyncState
 import net.corda.cordaupdates.transport.flows.ConfigurationProperties.APP_SERVICE_HUB
@@ -19,18 +20,18 @@ import java.util.concurrent.Callable
 import java.util.concurrent.Executors
 
 @SchedulableFlow
-class SyncWithRemoteRepositoryFlow : FlowLogic<Unit>() {
+class SyncWithRemoteRepositoryFlow (private val syncerConfig : SyncerConfiguration? = null) : FlowLogic<Unit>() {
+    constructor() : this(null)
 
     @Suspendable
     override fun call() {
         val syncerService = serviceHub.cordaService(SyncerService::class.java)
-        syncerService.launchAsync { }
+        syncerService.launchAsync(syncerConfig) { }
     }
 }
 
-
 @StartableByRPC
-class ScheduleSyncFlow : FlowLogic<Unit>() {
+class ScheduleSyncFlow @JvmOverloads constructor(private val syncerConfig : SyncerConfiguration? = null) : FlowLogic<Unit>() {
 
     @Suspendable
     override fun call() {
@@ -41,9 +42,9 @@ class ScheduleSyncFlow : FlowLogic<Unit>() {
         if (scheduledStates.size > 1) {
             scheduledStates.forEach { spendScheduledState(it) }
             // issuing a new state
-            issuesScheduledState()
+            issueScheduledState()
         } else if (scheduledStates.isEmpty()) {
-            issuesScheduledState()
+            issueScheduledState()
         } else {
             val scheduledStateAndRef = scheduledStates.single()
             val scheduledState = scheduledStateAndRef.state.data
@@ -51,12 +52,12 @@ class ScheduleSyncFlow : FlowLogic<Unit>() {
             // reissue state if the sync interval has changed
             if (configuration.syncInterval() != scheduledState.syncInterval) {
                 spendScheduledState(scheduledStateAndRef)
-                issuesScheduledState()
+                issueScheduledState()
             }
         }
 
         // launch sync flow
-        subFlow(SyncWithRemoteRepositoryFlow())
+        subFlow(SyncWithRemoteRepositoryFlow(syncerConfig))
     }
 
     @Suspendable
@@ -72,7 +73,7 @@ class ScheduleSyncFlow : FlowLogic<Unit>() {
     }
 
     @Suspendable
-    private fun issuesScheduledState() {
+    private fun issueScheduledState() {
         val configuration = serviceHub.cordaService(ClientConfiguration::class.java)
         val notary  = configuration.notaryParty()
         val builder = TransactionBuilder(notary)
@@ -92,8 +93,12 @@ class SyncerService(private val appServiceHub : AppServiceHub) : SingletonSerial
         val executor = Executors.newSingleThreadExecutor()!!
     }
 
-    fun launchAsync(onComplete : () -> Unit = {}) {
-        val syncer = RepositorySyncer(Utils.syncerConfiguration(appServiceHub))
+    fun launchAsync(syncerConfiguration : SyncerConfiguration? = null,
+                    onComplete : () -> Unit = {}) {
+
+
+        val syncer = RepositorySyncer(syncerConfiguration ?: Utils.syncerConfiguration(appServiceHub))
+
         executor.submit(Callable {
             syncer.sync(mapOf(Pair(APP_SERVICE_HUB, appServiceHub)))
             onComplete()

@@ -1,5 +1,6 @@
 package net.corda.businessnetworks.cordaupdates.shell
 
+import net.corda.businessnetworks.cordaupdates.testutils.RepoVerifier
 import net.corda.cliutils.CordaCliWrapper
 import net.corda.cliutils.CordaSystemUtils
 import net.corda.cliutils.ExitCodes
@@ -14,7 +15,6 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class CordaUpdatesCLITest {
     companion object {
@@ -22,10 +22,12 @@ class CordaUpdatesCLITest {
     }
 
     lateinit var localRepoPath : Path
+    lateinit var repoVerifier : RepoVerifier
 
     @Before
     fun setup() {
         localRepoPath = Files.createTempDirectory("LocalRepo")
+        repoVerifier = RepoVerifier(localRepoPath.toString())
     }
 
     @After
@@ -44,8 +46,7 @@ class CordaUpdatesCLITest {
         val result = DownloadCommand().runCommand(args)!!
 
         assertEquals(ExitCodes.SUCCESS, result)
-        assertTrue(localRepoPath.resolve("net/example/test-artifact/0.5/test-artifact-0.5.jar").toFile()!!.exists())
-        assertTrue(localRepoPath.resolve("net/example/test-artifact/1.0/test-artifact-1.0.jar").toFile()!!.exists())
+        repoVerifier.shouldContain("net:example", "test-artifact", setOf("0.5", "1.0")).verify()
     }
 
 

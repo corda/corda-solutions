@@ -1,0 +1,34 @@
+apply plugin: 'kotlin'
+
+sourceSets {
+    main {
+        resources {
+            srcDir "config/dev"
+        }
+    }
+    test {
+        resources {
+            srcDir "config/test"
+        }
+    }
+}
+
+dependencies {
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    compile "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
+    compile "junit:junit:$junit_version"
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+    kotlinOptions {
+        languageVersion = "1.2"
+        apiVersion = "1.2"
+        jvmTarget = "1.8"
+        javaParameters = true   // Useful for reflection.
+    }
+}
+compileKotlin {
+    kotlinOptions {
+        languageVersion = "1.2"
+    }
+}

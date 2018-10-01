@@ -37,7 +37,7 @@ class RPCTransporter(private val session : RepositorySystemSession,
     }
 
     override fun implPeek(task : PeekTask?) {
-        rpcOps().startFlowDynamic(PeekArtifactFlow::class.java, task!!.location.toString(), bnoName).returnValue.getOrThrow()
+        rpcOps().startFlowDynamic(PeekResourceFlow::class.java, task!!.location.toString(), bnoName).returnValue.getOrThrow()
     }
 
     override fun implGet(task : GetTask?) {

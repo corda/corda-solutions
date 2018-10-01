@@ -16,7 +16,7 @@ import java.time.Instant
 
 class ScheduledSyncContract : Contract {
     companion object {
-        const val CONTRACT_NAME = "net.corda.cordaupdates.app.states.ScheduleSyncContract"
+        const val CONTRACT_NAME = "net.corda.cordaupdates.app.states.ScheduledSyncContract"
     }
 
     interface Commands : CommandData {
