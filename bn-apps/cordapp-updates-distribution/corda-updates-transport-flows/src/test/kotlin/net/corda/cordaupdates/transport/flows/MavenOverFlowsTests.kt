@@ -2,6 +2,7 @@ package net.corda.cordaupdates.transport.flows
 
 import co.paralleluniverse.fibers.Suspendable
 import net.corda.businessnetworks.cordaupdates.core.CordaMavenResolver
+import net.corda.businessnetworks.cordaupdates.testutils.RepoVerifier
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.StartableByRPC
 import net.corda.core.identity.CordaX500Name
@@ -22,12 +23,12 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.Callable
 import java.util.concurrent.Executors
-import kotlin.test.assertTrue
 
 class MavenOverFlowsTests {
     private lateinit var bnoNode: NodeHandle
     private lateinit var participantNode: NodeHandle
     private lateinit var nodeLocalRepoPath : Path
+    private lateinit var repoVerifier : RepoVerifier
 
     fun genericTest(testFunction : () -> Unit) {
         val user1 = User("test", "test", permissions = setOf("ALL"))
@@ -43,10 +44,13 @@ class MavenOverFlowsTests {
             bnoNode = startNode(NodeParameters(providedName = bnoName)).getOrThrow()
             participantNode = startNode(NodeParameters(providedName = participantName), rpcUsers = listOf(user1)).getOrThrow()
             nodeLocalRepoPath = Files.createTempDirectory("FakeRepo")
+            repoVerifier = RepoVerifier(nodeLocalRepoPath.toString())
 
-            testFunction()
-
-            nodeLocalRepoPath.toFile().deleteRecursively()
+            try {
+                testFunction()
+            } finally {
+                nodeLocalRepoPath.toFile().deleteRecursively()
+            }
         }
     }
 
@@ -58,8 +62,7 @@ class MavenOverFlowsTests {
                     nodeLocalRepoPath.toAbsolutePath().toString(),
                     "net.example:test-artifact:1.5").returnValue.getOrThrow()
             sleep(5000)
-            assertTrue(nodeLocalRepoPath.resolve("net/example/test-artifact/1.5/test-artifact-1.5.jar").toFile()!!.exists())
-            assertTrue(nodeLocalRepoPath.resolve("net/example/test-artifact/1.5/test-artifact-1.5.pom").toFile()!!.exists())
+            repoVerifier.shouldContain("net:example", "test-artifact", setOf("1.5")).verify()
         }
     }
 }

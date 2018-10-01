@@ -20,7 +20,7 @@ import java.net.URI
 @InitiatingFlow
 @StartableByRPC
 @StartableByService
-class PeekArtifactFlow(private val resourceLocation : String, private val bnoName : String) : FlowLogic<Unit>() {
+class PeekResourceFlow(private val resourceLocation : String, private val bnoName : String) : FlowLogic<Unit>() {
     @Suspendable
     override fun call() {
         val bnoParty = serviceHub.identityService.wellKnownPartyFromX500Name(CordaX500Name.parse(bnoName))!!
@@ -29,8 +29,8 @@ class PeekArtifactFlow(private val resourceLocation : String, private val bnoNam
     }
 }
 
-@InitiatedBy(PeekArtifactFlow::class)
-class PeekArtifactFlowResponder(val session : FlowSession) : FlowLogic<Unit>() {
+@InitiatedBy(PeekResourceFlow::class)
+class PeekResourceFlowResponder(val session : FlowSession) : FlowLogic<Unit>() {
     @Suspendable
     override fun call() {
         val location = session.receive<String>().unwrap { it }

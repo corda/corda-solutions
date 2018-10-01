@@ -8,6 +8,6 @@ object Utils {
     fun syncerConfiguration(serviceHub : ServiceHub) : SyncerConfiguration {
         val configuration = serviceHub.cordaService(ClientConfiguration::class.java)
         val syncerConfigPath = configuration.syncerConfig()
-        return if (syncerConfigPath == null) SyncerConfiguration.readFromFile() else SyncerConfiguration.readFromFile(File(syncerConfigPath))
+        return if (syncerConfigPath == null) SyncerConfiguration.readFromDefaultLocations() else SyncerConfiguration.readFromFile(File(syncerConfigPath))
     }
 }

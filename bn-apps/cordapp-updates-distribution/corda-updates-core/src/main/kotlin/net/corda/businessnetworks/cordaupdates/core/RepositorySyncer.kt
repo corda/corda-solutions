@@ -22,7 +22,8 @@ class RepositorySyncer(private val syncerConf : SyncerConfiguration) {
 data class SyncerTask(val remoteRepoUrl : String,
                       val artifacts : List<String>,
                       val httpUsername : String? = null,
-                      val httpPassword : String? = null)
+                      val httpPassword : String? = null,
+                      val syncLatestOnly : Boolean = false)
 
 data class SyncerConfiguration(val localRepoPath : String,
                                val httpProxyUrl : String? = null,
@@ -36,8 +37,8 @@ data class SyncerConfiguration(val localRepoPath : String,
                                val rpcPassword : String? = null,
                                val tasks : List<SyncerTask>) {
     companion object {
-        fun readFromFile() : SyncerConfiguration  {
-            val localConfig = File("config.yaml")
+        fun readFromDefaultLocations() : SyncerConfiguration  {
+            val localConfig = File(".corda-updates/config.yaml")
             if (localConfig.exists()) return readFromFile(localConfig)
             val userConfig = File("${System.getProperty("user.home")}/.corda-updates/config.yaml")
             if (userConfig.exists()) return readFromFile(localConfig)

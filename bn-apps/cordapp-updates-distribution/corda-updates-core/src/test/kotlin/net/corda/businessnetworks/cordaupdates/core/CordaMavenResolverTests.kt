@@ -1,5 +1,6 @@
 package net.corda.businessnetworks.cordaupdates.core
 
+import net.corda.businessnetworks.cordaupdates.testutils.RepoVerifier
 import org.eclipse.aether.resolution.DependencyResolutionException
 import org.eclipse.aether.resolution.VersionRangeResult
 import org.junit.Before
@@ -8,12 +9,12 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class CordaMavenResolverTests {
     private lateinit var resolver : CordaMavenResolver
     private lateinit var localRepoPath : Path
+    private lateinit var repoVerifier : RepoVerifier
 
     @Before
     fun setup() {
@@ -21,6 +22,7 @@ class CordaMavenResolverTests {
         resolver = CordaMavenResolver.create(
                 remoteRepoUrl = "file:${File("../TestRepo").canonicalPath}",
                 localRepoPath = localRepoPath.toAbsolutePath().toString())
+        repoVerifier = RepoVerifier(localRepoPath.toString())
     }
 
     @Test
@@ -38,17 +40,13 @@ class CordaMavenResolverTests {
     @Test
     fun downloadArtifact() {
         resolver.downloadVersion("net.example:test-artifact:0.5")
-        assertTrue(localRepoPath.resolve("net/example/test-artifact/0.5/test-artifact-0.5.jar").toFile()!!.exists())
+        repoVerifier.shouldContain("net:example", "test-artifact", setOf("0.5")).verify()
     }
 
     @Test
     fun downloadVersionRange() {
         resolver.downloadVersionRange("net.example:test-artifact:[0.2,1.7]")
-        assertTrue(localRepoPath.resolve("net/example/test-artifact/0.5/test-artifact-0.5.jar").toFile()!!.exists())
-        assertTrue(localRepoPath.resolve("net/example/test-artifact/1.0/test-artifact-1.0.jar").toFile()!!.exists())
-        assertTrue(localRepoPath.resolve("net/example/test-artifact/1.5/test-artifact-1.5.jar").toFile()!!.exists())
-        assertFalse(localRepoPath.resolve("net/example/test-artifact/0.1/test-artifact-0.1.jar").toFile()!!.exists())
-        assertFalse(localRepoPath.resolve("net/example/test-artifact/2.0/test-artifact-2.0.jar").toFile()!!.exists())
+        repoVerifier.shouldContain("net:example", "test-artifact", setOf("0.5", "1.0", "1.5")).verify()
     }
 
     @Test
