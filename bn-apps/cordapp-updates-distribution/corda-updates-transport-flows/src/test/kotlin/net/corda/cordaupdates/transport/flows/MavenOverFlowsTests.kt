@@ -16,7 +16,6 @@ import net.corda.testing.driver.NodeParameters
 import net.corda.testing.driver.driver
 import net.corda.testing.node.NotarySpec
 import net.corda.testing.node.User
-import org.eclipse.aether.resolution.DependencyResult
 import org.junit.Test
 import java.lang.Thread.sleep
 import java.nio.file.Files
@@ -84,11 +83,10 @@ class ExecutorService(private val appServiceHub : AppServiceHub) : SingletonSeri
         val executor = Executors.newSingleThreadExecutor()!!
     }
 
-    fun downloadVersionAsync(remoteRepoUrl : String, localRepoPath : String, mavenCoords : String, onComplete : (result : DependencyResult) -> Unit = {}) {
+    fun downloadVersionAsync(remoteRepoUrl : String, localRepoPath : String, mavenCoords : String) {
         executor.submit(Callable {
             val resolver = CordaMavenResolver.create(remoteRepoUrl = remoteRepoUrl, localRepoPath = localRepoPath)
-            val result = resolver.downloadVersion(mavenCoords, configProps = mapOf(Pair(ConfigurationProperties.APP_SERVICE_HUB, appServiceHub)))
-            onComplete(result)
+            resolver.downloadVersion(mavenCoords, configProps = mapOf(Pair(ConfigurationProperties.APP_SERVICE_HUB, appServiceHub)))
         })
     }
 }

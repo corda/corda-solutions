@@ -1,123 +1,161 @@
 package net.corda.cordaupdates.app
 
 import co.paralleluniverse.fibers.Suspendable
+import net.corda.businessnetworks.cordaupdates.core.ArtifactMetadata
 import net.corda.businessnetworks.cordaupdates.core.SyncerConfiguration
 import net.corda.businessnetworks.cordaupdates.core.SyncerTask
 import net.corda.businessnetworks.cordaupdates.testutils.RepoVerifier
-import net.corda.client.rpc.CordaRPCClient
 import net.corda.cordaupdates.app.states.ScheduledSyncContract
 import net.corda.cordaupdates.app.states.ScheduledSyncState
 import net.corda.core.flows.FinalityFlow
 import net.corda.core.flows.FlowLogic
-import net.corda.core.flows.StartableByRPC
 import net.corda.core.identity.CordaX500Name
-import net.corda.core.messaging.CordaRPCOps
-import net.corda.core.messaging.vaultQueryBy
+import net.corda.core.node.services.queryBy
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.getOrThrow
-import net.corda.testing.driver.DriverParameters
-import net.corda.testing.driver.NodeHandle
-import net.corda.testing.driver.NodeParameters
-import net.corda.testing.driver.driver
-import net.corda.testing.node.NotarySpec
-import net.corda.testing.node.User
+import net.corda.testing.node.MockNetwork
+import net.corda.testing.node.MockNetworkNotarySpec
+import net.corda.testing.node.StartedMockNode
+import org.junit.After
+import org.junit.Before
 import org.junit.Test
-import java.lang.Thread.sleep
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.test.assertEquals
 
 class SyncWithRemoteRepositoryFlowTest {
-    private lateinit var node: NodeHandle
+    private lateinit var mockNetwork : MockNetwork
+    private lateinit var node : StartedMockNode
     private lateinit var localRepoPath : Path
     private lateinit var repoVerifier : RepoVerifier
     private lateinit var syncerConfig : SyncerConfiguration
 
+    @Before
+    fun setup() {
+        localRepoPath = Files.createTempDirectory("FakeRepo")
+        repoVerifier = RepoVerifier(localRepoPath.toString())
+        syncerConfig = SyncerConfiguration(localRepoPath = localRepoPath.toString(),
+                tasks = listOf(SyncerTask("file:../TestRepo",
+                        artifacts = listOf("net.example:test-artifact", "net.example:test-artifact-2"))))
 
-    private fun genericTest(testFunction : (rpc : CordaRPCOps) -> Unit) {
-        val user1 = User("test", "test", permissions = setOf("ALL"))
-        val participantName = CordaX500Name("Participant","New York","US")
+        val participantName = CordaX500Name("Participant", "New York", "US")
         val notaryName = CordaX500Name.parse("O=Notary,L=London,C=GB")
 
-        driver(DriverParameters(
-                extraCordappPackagesToScan = listOf("net.corda.cordaupdates.app"),
-                startNodesInProcess = true,
-                notarySpecs = listOf(NotarySpec(notaryName, false)))) {
+        mockNetwork = MockNetwork(cordappPackages = listOf("net.corda.cordaupdates.app", "net.corda.cordaupdates.states"),
+                notarySpecs = listOf(MockNetworkNotarySpec(notaryName)))
+        node = mockNetwork.createPartyNode(participantName)
+    }
 
-            node = startNode(NodeParameters(providedName = participantName), rpcUsers = listOf(user1)).getOrThrow()
-            localRepoPath = Files.createTempDirectory("FakeRepo")
-            repoVerifier = RepoVerifier(localRepoPath.toString())
-            syncerConfig = SyncerConfiguration(localRepoPath = localRepoPath.toString(),
-                    tasks = listOf(SyncerTask("file:../TestRepo",
-                            artifacts = listOf("net.example:test-artifact", "net.example:test-artifact-2"))))
-
-            val rpcClient = CordaRPCClient(node.rpcAddress)
-            val rpcProxy: CordaRPCOps = rpcClient.start("test", "test").proxy
-
-            try {
-                testFunction(rpcProxy)
-            } finally {
-                localRepoPath.toFile().deleteRecursively()
-            }
-            node.stop()
-        }
+    @After
+    fun tearDown() {
+        localRepoPath.toFile().deleteRecursively()
+        mockNetwork.stopNodes()
     }
 
     @Test
     fun happyPath() {
-        genericTest {rpc ->
+        val future = node.startFlow(ScheduleSyncFlow(syncerConfig, false))
+        mockNetwork.runNetwork()
+        val artifacts = future.getOrThrow()!!
 
-            val future = rpc.startFlowDynamic(ScheduleSyncFlow::class.java, syncerConfig).returnValue
-            future.getOrThrow()
+        // verify local repo contents
+        repoVerifier.shouldContain("net:example", "test-artifact", setOf("0.1", "0.5", "1.0", "1.5", "2.0"))
+                .shouldContain("net:example", "test-artifact-2", setOf("1.0", "2.0"))
+                .verify()
 
-            // repo sync is done asynchronously, give it some time to finish
-            sleep(5000)
+        // verify returned metadata
+        assertEquals(
+                setOf(ArtifactMetadata("net.example", "test-artifact", versions = listOf("0.1", "0.5", "1.0", "1.5", "2.0")),
+                        ArtifactMetadata("net.example", "test-artifact-2", versions = listOf("1.0", "2.0"))),
+                artifacts.toSet()
+        )
 
-            // Repo should be in sync with remote
-            repoVerifier.shouldContain("net:example", "test-artifact", setOf("0.1", "0.5", "1.0", "1.5", "2.0"))
-                    .shouldContain("net:example", "test-artifact-2", setOf("1.0", "2.0"))
-                    .verify()
+        // make sure that metadata holder service has been updated
+        val dataFromServiceFuture = node.startFlow(GetDataFromMetadataHolderFlow())
+        mockNetwork.runNetwork()
+        val dataFromService = dataFromServiceFuture.getOrThrow()
+        assertEquals(artifacts.toSet(), dataFromService.toSet())
 
-            // should issue a scheduled state on the ledger
-            verifySyncState(rpc)
-        }
+        // verify that scheduled state has been issued
+        verifyScheduledState()
     }
 
     @Test
     fun `if multiple of ScheduleSyncStates exist on the ledger - spend them and issue a new one`() {
-        genericTest {rpc ->
-            // issue some states onto the ledger
-            val issueSomeStatesFuture = rpc.startFlowDynamic(IssueSomeScheduledStatesFlow::class.java).returnValue
-            issueSomeStatesFuture.getOrThrow()
+        // issue some states onto the ledger
+        val issueSomeStatesFuture = node.startFlow(IssueSomeScheduledStatesFlow(1000000L, 5))
+        mockNetwork.runNetwork()
+        issueSomeStatesFuture.getOrThrow()
 
-            val scheduleSyncFuture = rpc.startFlowDynamic(ScheduleSyncFlow::class.java,syncerConfig).returnValue
-            scheduleSyncFuture.getOrThrow()
+        val scheduleSyncFuture = node.startFlow(ScheduleSyncFlow(syncerConfig, false))
+        mockNetwork.runNetwork()
+        scheduleSyncFuture.getOrThrow()
 
-            // should contain a single sync state on the ledger
-            verifySyncState(rpc)
-        }
+        // should contain a single sync state on the ledger
+        verifyScheduledState()
     }
 
-    private fun verifySyncState(rpc : CordaRPCOps) {
-        val syncState = rpc.vaultQueryBy<ScheduledSyncState>().states.single().state.data
-        assertEquals(9999999L, syncState.syncInterval)
-        assertEquals(rpc.nodeInfo().legalIdentities.single(), syncState.owner)
+    @Test
+    fun `should reissue ScheduleSyncState if sync interval has changed`() {
+        // issue some states onto the ledger
+        val issueSomeStatesFuture = node.startFlow(IssueSomeScheduledStatesFlow(1000000L, 1))
+        mockNetwork.runNetwork()
+        issueSomeStatesFuture.getOrThrow()
+
+        val scheduleSyncFuture = node.startFlow(ScheduleSyncFlow(syncerConfig, false))
+        mockNetwork.runNetwork()
+        scheduleSyncFuture.getOrThrow()
+
+        // should contain a single sync state on the ledger
+        verifyScheduledState()
+    }
+
+    @Test
+    fun `should not reissue state if sync interval is up to date`() {
+        // issue some states onto the ledger
+        val issueSomeStatesFuture = node.startFlow(IssueSomeScheduledStatesFlow(9999999L, 1))
+        mockNetwork.runNetwork()
+        issueSomeStatesFuture.getOrThrow()
+
+        val existingState = node.transaction { node.services.vaultService.queryBy<ScheduledSyncState>().states.single().state.data }
+
+        val scheduleSyncFuture = node.startFlow(ScheduleSyncFlow(syncerConfig, false))
+        mockNetwork.runNetwork()
+        scheduleSyncFuture.getOrThrow()
+
+        val newState = node.transaction { node.services.vaultService.queryBy<ScheduledSyncState>().states.single().state.data }
+
+        assertEquals(existingState, newState)
+    }
+
+    private fun verifyScheduledState() {
+        val vaultState = node.transaction { node.services.vaultService.queryBy<ScheduledSyncState>().states.single().state.data }
+        assertEquals(9999999L, vaultState.syncInterval)
+        assertEquals(node.services.myInfo.legalIdentities.single(), vaultState.owner)
     }
 }
 
 // Flow to issue some random ScheduledSyncState onto the ledger
-@StartableByRPC
-class IssueSomeScheduledStatesFlow : FlowLogic<Unit>() {
+class IssueSomeScheduledStatesFlow(val syncInterval : Long, val statesQty : Int) : FlowLogic<Unit>() {
     @Suspendable
     override fun call() {
-        (1..5).forEach { _ ->
+        (1..statesQty).forEach { _ ->
             val notary = serviceHub.networkMapCache.notaryIdentities.single()
             val builder = TransactionBuilder(notary)
-                    .addOutputState(ScheduledSyncState(10000000L, ourIdentity), ScheduledSyncContract.CONTRACT_NAME)
+                    .addOutputState(ScheduledSyncState(syncInterval, ourIdentity), ScheduledSyncContract.CONTRACT_NAME)
                     .addCommand(ScheduledSyncContract.Commands.Start(), ourIdentity.owningKey)
             builder.verify(serviceHub)
             val signedTx = serviceHub.signInitialTransaction(builder)
             subFlow(FinalityFlow(signedTx))
         }
+    }
+}
+
+
+class GetDataFromMetadataHolderFlow : FlowLogic<List<ArtifactMetadata>>() {
+    @Suspendable
+    override fun call() : List<ArtifactMetadata> {
+        val service = serviceHub.cordaService(ArtifactMetadataHolder::class.java)
+        return service.artifacts
     }
 }

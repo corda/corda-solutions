@@ -9,14 +9,13 @@ import java.nio.file.Files
 
 
 class RepositorySyncer(private val syncerConf : SyncerConfiguration) {
-    fun sync(additionalConfigurationProperties : Map<String, Any> = mapOf()) {
-        syncerConf.tasks.forEach { syncTask ->
+    fun sync(additionalConfigurationProperties : Map<String, Any> = mapOf()) =
+        syncerConf.tasks.flatMap { syncTask ->
             val resolver = CordaMavenResolver.create(syncerConf, syncTask)
-            syncTask.artifacts.forEach {
+            syncTask.artifacts.map {
                 resolver.downloadVersionRange("$it:[,)", additionalConfigurationProperties)
             }
         }
-    }
 }
 
 data class SyncerTask(val remoteRepoUrl : String,
