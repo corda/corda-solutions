@@ -9,18 +9,14 @@ import org.eclipse.aether.DefaultRepositorySystemSession
 import org.eclipse.aether.RepositoryListener
 import org.eclipse.aether.RepositorySystem
 import org.eclipse.aether.artifact.DefaultArtifact
-import org.eclipse.aether.collection.CollectRequest
 import org.eclipse.aether.connector.basic.BasicRepositoryConnectorFactory
-import org.eclipse.aether.graph.Dependency
 import org.eclipse.aether.internal.impl.SimpleLocalRepositoryManagerFactory
 import org.eclipse.aether.repository.Authentication
 import org.eclipse.aether.repository.LocalRepository
 import org.eclipse.aether.repository.Proxy
 import org.eclipse.aether.repository.RemoteRepository
-import org.eclipse.aether.resolution.DependencyRequest
-import org.eclipse.aether.resolution.DependencyResult
+import org.eclipse.aether.resolution.ArtifactRequest
 import org.eclipse.aether.resolution.VersionRangeRequest
-import org.eclipse.aether.resolution.VersionRangeResult
 import org.eclipse.aether.spi.connector.RepositoryConnectorFactory
 import org.eclipse.aether.spi.connector.transport.TransporterFactory
 import org.eclipse.aether.transfer.TransferListener
@@ -112,42 +108,34 @@ class CordaMavenResolver private constructor(private val remoteRepoUrl : String,
     }
 
     fun resolveVersionRange(rangeRequest : String,
-                            configProps : Map<String, Any> = mapOf()) : VersionRangeResult {
-        val versionRangeRequest = VersionRangeRequest(DefaultArtifact(rangeRequest),
-                listOf(remoteRepository), null)
-
+                            configProps : Map<String, Any> = mapOf()) : ArtifactMetadata {
+        val artifact = DefaultArtifact(rangeRequest)
+        val versionRangeRequest = VersionRangeRequest(artifact, listOf(remoteRepository), null)
         val session = createRepositorySession(configProps)
-
-        return repositorySystem.resolveVersionRange(session, versionRangeRequest)
+        val versionRangeResult = repositorySystem.resolveVersionRange(session, versionRangeRequest)!!
+        return ArtifactMetadata(artifact.groupId, artifact.artifactId, artifact.classifier, artifact.extension, versionRangeResult.versions.map { it.toString() })
     }
 
     fun downloadVersionRange(rangeRequest : String,
-                             configProps : Map<String, Any> = mapOf()) : List<DependencyResult> {
-        val versions = resolveVersionRange(rangeRequest, configProps)
-        val artifact = DefaultArtifact(rangeRequest)
+                             configProps : Map<String, Any> = mapOf()) : ArtifactMetadata {
+        val artifactMetadata = resolveVersionRange(rangeRequest, configProps)
+        val aetherArtifact = DefaultArtifact(rangeRequest)
 
         // downloading the most recent version first
-        return versions.versions.asReversed().map {
-            val artifactVersion = artifact.setVersion(it.toString())!!
+        artifactMetadata.versions.asReversed().forEach {
+            val artifactVersion = aetherArtifact.setVersion(it)!!
             downloadVersion(artifactVersion.toString(), configProps)
         }
+        return artifactMetadata
     }
 
     fun downloadVersion(mavenCoords : String,
-                        configProps : Map<String, Any> = mapOf()) : DependencyResult {
+                        configProps : Map<String, Any> = mapOf()) : ArtifactMetadata {
         val session = createRepositorySession(configProps)
-
-        val dependency = Dependency(DefaultArtifact(mavenCoords), "compile")
-
-        val collectRequest = CollectRequest()
-        collectRequest.root = dependency
-        collectRequest.addRepository(remoteRepository)
-        val node = repositorySystem.collectDependencies(session, collectRequest).root
-
-        val dependencyRequest = DependencyRequest()
-        dependencyRequest.root = node
-
-        return repositorySystem.resolveDependencies(session, dependencyRequest)
+        val aetherArtifact = DefaultArtifact(mavenCoords)
+        val artifactRequest = ArtifactRequest(aetherArtifact, listOf(remoteRepository), null)
+        repositorySystem.resolveArtifact(session, artifactRequest)!!
+        return ArtifactMetadata(aetherArtifact.groupId, aetherArtifact.artifactId, aetherArtifact.classifier, aetherArtifact.extension, listOf(aetherArtifact.version))
     }
 
     private fun createRepositorySession(additionalConfigProperties : Map<String, Any>) : DefaultRepositorySystemSession {
@@ -161,3 +149,5 @@ class CordaMavenResolver private constructor(private val remoteRepoUrl : String,
         return session
     }
 }
+
+data class ArtifactMetadata(val group : String, val name : String, val classifier : String = "", val extension : String = "jar", val versions : List<String> = listOf())

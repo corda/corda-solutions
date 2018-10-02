@@ -1,6 +1,7 @@
 package net.corda.cordaupdates.app
 
 import co.paralleluniverse.fibers.Suspendable
+import net.corda.businessnetworks.cordaupdates.core.ArtifactMetadata
 import net.corda.businessnetworks.cordaupdates.core.RepositorySyncer
 import net.corda.businessnetworks.cordaupdates.core.SyncerConfiguration
 import net.corda.cordaupdates.app.states.ScheduledSyncContract
@@ -15,26 +16,32 @@ import net.corda.core.node.AppServiceHub
 import net.corda.core.node.services.CordaService
 import net.corda.core.node.services.queryBy
 import net.corda.core.serialization.SingletonSerializeAsToken
+import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 import java.util.concurrent.Callable
 import java.util.concurrent.Executors
 
 @SchedulableFlow
-class SyncWithRemoteRepositoryFlow (private val syncerConfig : SyncerConfiguration? = null) : FlowLogic<Unit>() {
-    constructor() : this(null)
+class SyncWithRemoteRepositoryFlow (private val syncerConfig : SyncerConfiguration? = null, private val launchAsync : Boolean = true) : FlowLogic<List<ArtifactMetadata>?>() {
+    constructor() : this(null, true)
 
     @Suspendable
-    override fun call() {
+    override fun call() : List<ArtifactMetadata>? {
         val syncerService = serviceHub.cordaService(SyncerService::class.java)
-        syncerService.launchAsync(syncerConfig) { }
+        return if (launchAsync) {
+            syncerService.launchAsync(syncerConfig)
+            null
+        } else {
+            syncerService.launch(syncerConfig)
+        }
     }
 }
 
 @StartableByRPC
-class ScheduleSyncFlow @JvmOverloads constructor(private val syncerConfig : SyncerConfiguration? = null) : FlowLogic<Unit>() {
+class ScheduleSyncFlow @JvmOverloads constructor(private val syncerConfig : SyncerConfiguration? = null, private val launchAsync : Boolean = true) : FlowLogic<List<ArtifactMetadata>?>() {
 
     @Suspendable
-    override fun call() {
+    override fun call() : List<ArtifactMetadata>?? {
         val scheduledStates = serviceHub.vaultService.queryBy<ScheduledSyncState>().states
 
         // There should never be more than one sync schedule state stored in the vault
@@ -57,7 +64,7 @@ class ScheduleSyncFlow @JvmOverloads constructor(private val syncerConfig : Sync
         }
 
         // launch sync flow
-        subFlow(SyncWithRemoteRepositoryFlow(syncerConfig))
+        return subFlow(SyncWithRemoteRepositoryFlow(syncerConfig, launchAsync))
     }
 
     @Suspendable
@@ -73,7 +80,7 @@ class ScheduleSyncFlow @JvmOverloads constructor(private val syncerConfig : Sync
     }
 
     @Suspendable
-    private fun issueScheduledState() {
+    private fun issueScheduledState() : SignedTransaction {
         val configuration = serviceHub.cordaService(ClientConfiguration::class.java)
         val notary  = configuration.notaryParty()
         val builder = TransactionBuilder(notary)
@@ -82,9 +89,16 @@ class ScheduleSyncFlow @JvmOverloads constructor(private val syncerConfig : Sync
 
         builder.verify(serviceHub)
         val signedTx = serviceHub.signInitialTransaction(builder)
-        subFlow(FinalityFlow(signedTx))
+        return subFlow(FinalityFlow(signedTx))
     }
+}
 
+@CordaService
+class ArtifactMetadataHolder(private val appServiceHub : AppServiceHub) : SingletonSerializeAsToken() {
+    private var _artifacts : List<ArtifactMetadata> = listOf()
+    var artifacts : List<ArtifactMetadata>
+        internal set(value) { _artifacts = value }
+        get() = _artifacts
 }
 
 @CordaService
@@ -93,15 +107,15 @@ class SyncerService(private val appServiceHub : AppServiceHub) : SingletonSerial
         val executor = Executors.newSingleThreadExecutor()!!
     }
 
-    fun launchAsync(syncerConfiguration : SyncerConfiguration? = null,
-                    onComplete : () -> Unit = {}) {
-
-
+    fun launch(syncerConfiguration : SyncerConfiguration? = null) : List<ArtifactMetadata> {
         val syncer = RepositorySyncer(syncerConfiguration ?: Utils.syncerConfiguration(appServiceHub))
+        val artifacts = syncer.sync(mapOf(Pair(APP_SERVICE_HUB, appServiceHub)))
+        val artifactMetadataHolder = appServiceHub.cordaService(ArtifactMetadataHolder::class.java)
+        artifactMetadataHolder.artifacts = artifacts
+        return artifacts
+    }
 
-        executor.submit(Callable {
-            syncer.sync(mapOf(Pair(APP_SERVICE_HUB, appServiceHub)))
-            onComplete()
-        })
+    fun launchAsync(syncerConfiguration : SyncerConfiguration? = null) {
+        executor.submit(Callable { launch(syncerConfiguration) })
     }
 }
