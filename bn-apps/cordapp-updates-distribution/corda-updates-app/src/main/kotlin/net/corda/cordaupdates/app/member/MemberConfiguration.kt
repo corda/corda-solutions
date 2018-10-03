@@ -19,10 +19,11 @@ class MemberConfiguration(private val serviceHub : AppServiceHub) : SingletonSer
 
     fun syncerConfig() = config[SYNCER_CONFIGURATION_PATH]
     fun syncInterval() = config[SYNC_INTERVAL]?.toLong() ?: 18000L
-    fun notaryName() = CordaX500Name.parse(config[NOTARY_NAME]!!)
     fun notaryParty() = serviceHub.networkMapCache.getNotary(notaryName())!!
-    fun bnoName() = CordaX500Name.parse(config[BNO_NAME]!!)
-    fun bnoParty() = serviceHub.networkMapCache.getNotary(bnoName())!!
+    fun bnoParty() = serviceHub.identityService.wellKnownPartyFromX500Name(bnoName())!!
+
+    private fun bnoName() = CordaX500Name.parse(config[BNO_NAME]!!)
+    private fun notaryName() = CordaX500Name.parse(config[NOTARY_NAME]!!)
 
     private fun readProps(fileName : String) : Map<String, String> {
         val input = MemberConfiguration::class.java.classLoader.getResourceAsStream(fileName)

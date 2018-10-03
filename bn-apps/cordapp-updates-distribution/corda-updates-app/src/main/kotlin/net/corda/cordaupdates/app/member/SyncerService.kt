@@ -12,15 +12,15 @@ import java.util.concurrent.Callable
 import java.util.concurrent.Executors
 
 @CordaService
-class ArtifactMetadataHolder(private val appServiceHub : AppServiceHub) : SingletonSerializeAsToken() {
-    private var _artifacts : List<ArtifactMetadata> = listOf()
-    var artifacts : List<ArtifactMetadata>
-        internal set(value) { _artifacts = value }
-        get() = _artifacts
+class ArtifactsMetadataCache(private val appServiceHub : AppServiceHub) : SingletonSerializeAsToken() {
+    private var _artifactsCache : List<ArtifactMetadata> = listOf()
+    var artifactsCache : List<ArtifactMetadata>
+        internal set(value) { _artifactsCache = value }
+        get() = _artifactsCache
 }
 
 @CordaService
-class SyncerService(private val appServiceHub : AppServiceHub) : SingletonSerializeAsToken() {
+internal class SyncerService(private val appServiceHub : AppServiceHub) : SingletonSerializeAsToken() {
     companion object {
         val executor = Executors.newSingleThreadExecutor()!!
     }
@@ -28,20 +28,19 @@ class SyncerService(private val appServiceHub : AppServiceHub) : SingletonSerial
     private fun syncer(syncerConfiguration : SyncerConfiguration? = null) = ArtifactsSyncer(syncerConfiguration ?: Utils.syncerConfiguration(appServiceHub))
     private fun extraConfig() = mapOf(Pair(ConfigurationProperties.APP_SERVICE_HUB, appServiceHub))
 
-
     fun syncArtifacts(syncerConfiguration : SyncerConfiguration? = null) : List<ArtifactMetadata> {
         val syncer = syncer(syncerConfiguration)
         val artifacts = syncer.syncArtifacts(extraConfig())
-        val artifactMetadataHolder = appServiceHub.cordaService(ArtifactMetadataHolder::class.java)
-        artifactMetadataHolder.artifacts = artifacts
+        val artifactsMetadataCache = appServiceHub.cordaService(ArtifactsMetadataCache::class.java)
+        artifactsMetadataCache.artifactsCache = artifacts
         return artifacts
     }
 
     fun getArtifactsMetadata(syncerConfiguration : SyncerConfiguration? = null) : List<ArtifactMetadata>  {
         val syncer = syncer(syncerConfiguration)
         val artifacts = syncer.getAvailableVersions(extraConfig())
-        val artifactMetadataHolder = appServiceHub.cordaService(ArtifactMetadataHolder::class.java)
-        artifactMetadataHolder.artifacts = artifacts
+        val artifactsMetadataCache = appServiceHub.cordaService(ArtifactsMetadataCache::class.java)
+        artifactsMetadataCache.artifactsCache = artifacts
         return artifacts
     }
 
