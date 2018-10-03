@@ -1,1 +1,1 @@
-net.corda.cordaupdates.app.CordaUpdatesSerialisationWhitelist
+net.corda.cordaupdates.app.member.CordaUpdatesSerialisationWhitelist

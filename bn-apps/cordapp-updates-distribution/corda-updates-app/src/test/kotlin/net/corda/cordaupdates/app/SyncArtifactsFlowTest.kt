@@ -5,6 +5,9 @@ import net.corda.businessnetworks.cordaupdates.core.ArtifactMetadata
 import net.corda.businessnetworks.cordaupdates.core.SyncerConfiguration
 import net.corda.businessnetworks.cordaupdates.core.SyncerTask
 import net.corda.businessnetworks.cordaupdates.testutils.RepoVerifier
+import net.corda.cordaupdates.app.member.ArtifactMetadataHolder
+import net.corda.cordaupdates.app.member.ScheduleSyncFlow
+import net.corda.cordaupdates.app.member.SyncArtifactsFlow
 import net.corda.cordaupdates.app.states.ScheduledSyncContract
 import net.corda.cordaupdates.app.states.ScheduledSyncState
 import net.corda.core.flows.FinalityFlow
@@ -23,7 +26,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.test.assertEquals
 
-class SyncWithRemoteRepositoryFlowTest {
+class SyncArtifactsFlowTest {
     private lateinit var mockNetwork : MockNetwork
     private lateinit var node : StartedMockNode
     private lateinit var localRepoPath : Path
@@ -53,8 +56,8 @@ class SyncWithRemoteRepositoryFlowTest {
     }
 
     @Test
-    fun happyPath() {
-        val future = node.startFlow(ScheduleSyncFlow(syncerConfig, false))
+    fun `syncWithRemoteRepositoryFlow happy path`() {
+        val future = node.startFlow(SyncArtifactsFlow(syncerConfig, false))
         mockNetwork.runNetwork()
         val artifacts = future.getOrThrow()!!
 
