@@ -1,0 +1,13 @@
+{
+    "versions" : {
+        "head": {
+            "commit": "master",
+            "dropdownText": "Master",
+            "url": "https://solutions.corda.net/head"
+        },
+    },
+    "repo" : [ "https://github.com/corda/corda-solutions", "solutions_repo" ],
+    "git_output" : "git.op",
+    "primary" : "master",
+    "commit_history" : "commit-history.yaml"
+}
