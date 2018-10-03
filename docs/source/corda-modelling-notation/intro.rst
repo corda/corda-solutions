@@ -1,6 +1,6 @@
-========================
-Corda Modelling Notation
-========================
+=================================
+Corda Modelling Notation Overview
+=================================
 
 As CorDapps become more complicated there is a need for CorDapp analysts, designers and developers to be able to document and reason about CorDapp designs. This paper proposes Corda Modelling Notation (CMN), a bespoke modelling notation to represent CorDapp designs.
 

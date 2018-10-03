@@ -30,6 +30,7 @@ This site aims to ask some of these questions and offer some solutions.
     :maxdepth: 1
 
     corda-modelling-notation/intro.rst
+    corda-modelling-notation/why-do-we-need-CMN.rst
 
 .. toctree::
    :caption: FAQ
