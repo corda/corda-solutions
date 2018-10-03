@@ -1,4 +1,4 @@
-package net.corda.cordaupdates.app
+package net.corda.cordaupdates.app.member
 
 import net.corda.businessnetworks.cordaupdates.core.SyncerConfiguration
 import net.corda.businessnetworks.cordaupdates.core.SyncerTask
