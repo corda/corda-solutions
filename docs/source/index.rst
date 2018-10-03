@@ -31,6 +31,7 @@ This site aims to ask some of these questions and offer some solutions.
 
     corda-modelling-notation/intro.rst
     corda-modelling-notation/why-do-we-need-CMN.rst
+    corda-modelling-notation/state-machine-view.rst
 
 .. toctree::
    :caption: FAQ
