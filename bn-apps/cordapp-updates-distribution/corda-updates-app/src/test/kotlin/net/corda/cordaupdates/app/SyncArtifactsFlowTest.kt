@@ -5,7 +5,7 @@ import net.corda.businessnetworks.cordaupdates.core.ArtifactMetadata
 import net.corda.businessnetworks.cordaupdates.core.SyncerConfiguration
 import net.corda.businessnetworks.cordaupdates.core.SyncerTask
 import net.corda.businessnetworks.cordaupdates.testutils.RepoVerifier
-import net.corda.cordaupdates.app.member.ArtifactMetadataHolder
+import net.corda.cordaupdates.app.member.ArtifactsMetadataCache
 import net.corda.cordaupdates.app.member.ScheduleSyncFlow
 import net.corda.cordaupdates.app.member.SyncArtifactsFlow
 import net.corda.cordaupdates.app.states.ScheduledSyncContract
@@ -74,7 +74,7 @@ class SyncArtifactsFlowTest {
         )
 
         // make sure that metadata holder service has been updated
-        val dataFromServiceFuture = node.startFlow(GetDataFromMetadataHolderFlow())
+        val dataFromServiceFuture = node.startFlow(GetDataFromSyncerServiceFlow())
         mockNetwork.runNetwork()
         val dataFromService = dataFromServiceFuture.getOrThrow()
         assertEquals(artifacts.toSet(), dataFromService.toSet())
@@ -155,10 +155,10 @@ class IssueSomeScheduledStatesFlow(val syncInterval : Long, val statesQty : Int)
 }
 
 
-class GetDataFromMetadataHolderFlow : FlowLogic<List<ArtifactMetadata>>() {
+class GetDataFromSyncerServiceFlow : FlowLogic<List<ArtifactMetadata>>() {
     @Suspendable
     override fun call() : List<ArtifactMetadata> {
-        val service = serviceHub.cordaService(ArtifactMetadataHolder::class.java)
-        return service.artifacts
+        val service = serviceHub.cordaService(ArtifactsMetadataCache::class.java)
+        return service.artifactsCache
     }
 }
