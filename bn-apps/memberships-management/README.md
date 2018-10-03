@@ -12,7 +12,7 @@ BNMS consists of 2 CorDapps:
 
 Both of the CorDapps are required to be installed to the nodes of all Business Network participants as well as to the BNO's node.
 
-CorDapp configuration is red from the `membership-service.properties` file on the CorDapp's classpath.
+CorDapp configuration is read from the `membership-service.properties` file on the CorDapp's classpath.
 
 Please see [FullBNMSFlowDemo](./membership-service/src/test/kotlin/net/corda/businessnetworks/membership/FullBNMSFlowDemo.kt) for how-to-use example.
 
