@@ -71,7 +71,7 @@ class GetMembershipsFlow(private val forceRefresh: Boolean = false, private val 
 }
 
 @StartableByRPC
-class GetMembersFlow(private val forceRefresh : Boolean = false) : FlowLogic<List<PartyAndMembershipMetadata>>() {
+class GetMembersFlow(private val forceRefresh : Boolean = false, private val filterOutNotExisting : Boolean = true) : FlowLogic<List<PartyAndMembershipMetadata>>() {
 
     companion object {
         object GOING_TO_CACHE_OR_BNO : ProgressTracker.Step("Going to cache or BNO for membership data")
@@ -86,7 +86,7 @@ class GetMembersFlow(private val forceRefresh : Boolean = false) : FlowLogic<Lis
     @Suspendable
     override fun call(): List<PartyAndMembershipMetadata> {
         progressTracker.currentStep = GOING_TO_CACHE_OR_BNO
-        return subFlow(GetMembershipsFlow(forceRefresh)).map { PartyAndMembershipMetadata(it.key, it.value.state.data.membershipMetadata) }
+        return subFlow(GetMembershipsFlow(forceRefresh, filterOutNotExisting)).map { PartyAndMembershipMetadata(it.key, it.value.state.data.membershipMetadata) }
     }
 }
 

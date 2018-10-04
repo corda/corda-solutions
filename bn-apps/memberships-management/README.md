@@ -22,6 +22,7 @@ Note that during development you can take advantage of the following classes tha
 
 Look at their respective class annotations for details.
 
+> By default membership states for parties that don't exist in the Network Map are not considered as valid. To change this behaviour please see `GetMembershipsFlow.filterOutNotExisting` flag. 
 
 ## Member configuration 
 
