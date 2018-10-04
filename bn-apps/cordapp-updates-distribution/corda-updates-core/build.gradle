@@ -46,8 +46,7 @@ dependencies {
     compile "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jackson_version"
 
     // transport over flows
-    compile project(':cordapp-updates-distribution:corda-updates-transport-flows')
-    compile project(':cordapp-updates-distribution:corda-updates-transport-rpc')
+    compile project(':cordapp-updates-distribution:corda-updates-transport')
 
     // corda RPC
     compile "$corda_release_group:corda-rpc:$corda_release_version"

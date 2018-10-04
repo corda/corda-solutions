@@ -1,4 +1,4 @@
-package net.corda.cordaupdates.transport.flows
+package net.corda.cordaupdates.transport
 
 import co.paralleluniverse.fibers.Suspendable
 import net.corda.businessnetworks.cordaupdates.core.CordaMavenResolver
@@ -57,9 +57,10 @@ class MavenOverFlowsTests {
     fun testFlows() {
         genericTest {
             participantNode.rpc.startFlowDynamic(TestFlow::class.java,
-                    "flow:O=BNO,L=New York,C=US",
+                    "corda-flows:O=BNO,L=New York,C=US",
                     nodeLocalRepoPath.toAbsolutePath().toString(),
                     "net.example:test-artifact:1.5").returnValue.getOrThrow()
+            // let the flow to finish its job as it runs asynchronously
             sleep(5000)
             repoVerifier.shouldContain("net:example", "test-artifact", setOf("1.5")).verify()
         }

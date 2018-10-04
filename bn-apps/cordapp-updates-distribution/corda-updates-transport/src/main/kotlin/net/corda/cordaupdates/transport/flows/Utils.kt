@@ -1,5 +1,6 @@
 package net.corda.cordaupdates.transport.flows
 
+import net.corda.cordaupdates.transport.ResourceNotFoundException
 import net.corda.core.flows.FlowException
 import org.eclipse.aether.spi.connector.transport.Transporter
 import org.eclipse.aether.spi.connector.transport.TransporterFactory

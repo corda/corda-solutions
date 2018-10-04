@@ -3,7 +3,7 @@ package net.corda.cordaupdates.app
 import co.paralleluniverse.fibers.Suspendable
 import net.corda.businessnetworks.cordaupdates.core.ArtifactMetadata
 import net.corda.businessnetworks.cordaupdates.core.SyncerConfiguration
-import net.corda.businessnetworks.cordaupdates.core.SyncerTask
+import net.corda.businessnetworks.cordaupdates.core.CordappSource
 import net.corda.businessnetworks.cordaupdates.testutils.RepoVerifier
 import net.corda.cordaupdates.app.member.ArtifactsMetadataCache
 import net.corda.cordaupdates.app.member.ScheduleSyncFlow
@@ -38,8 +38,8 @@ class SyncArtifactsFlowTest {
         localRepoPath = Files.createTempDirectory("FakeRepo")
         repoVerifier = RepoVerifier(localRepoPath.toString())
         syncerConfig = SyncerConfiguration(localRepoPath = localRepoPath.toString(),
-                tasks = listOf(SyncerTask("file:../TestRepo",
-                        artifacts = listOf("net.example:test-artifact", "net.example:test-artifact-2"))))
+                cordappSources = listOf(CordappSource("file:../TestRepo",
+                        cordapps = listOf("net.example:test-artifact", "net.example:test-artifact-2"))))
 
         val participantName = CordaX500Name("Participant", "New York", "US")
         val notaryName = CordaX500Name.parse("O=Notary,L=London,C=GB")

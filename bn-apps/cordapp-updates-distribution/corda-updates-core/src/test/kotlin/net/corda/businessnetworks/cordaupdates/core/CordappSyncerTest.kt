@@ -27,11 +27,11 @@ class CordappSyncerTest {
     fun happyPath() {
         val syncConfiguration = SyncerConfiguration(
                 localRepoPath = localRepoPath.toAbsolutePath().toString(),
-                tasks = listOf(SyncerTask(remoteRepoUrl = "file:${File("../TestRepo").canonicalPath}",
-                                artifacts = listOf("net.example:test-artifact", "net.example:test-artifact-3"))))
+                cordappSources = listOf(CordappSource(remoteRepoUrl = "file:${File("../TestRepo").canonicalPath}",
+                    cordapps = listOf("net.example:test-artifact", "net.example:test-artifact-3"))))
         val syncer = CordappSyncer(syncConfiguration)
 
-        syncer.syncArtifacts()
+        syncer.syncCordapps()
 
         repoVerifier
                 .shouldContain("net:example", "test-artifact", setOf("0.1", "0.5", "1.0", "1.5", "2.0"))

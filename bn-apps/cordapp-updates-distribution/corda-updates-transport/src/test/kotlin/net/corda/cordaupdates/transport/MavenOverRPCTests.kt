@@ -1,4 +1,4 @@
-package net.corda.cordaupdates.transport.flows
+package net.corda.cordaupdates.transport
 
 import net.corda.businessnetworks.cordaupdates.core.CordaMavenResolver
 import net.corda.businessnetworks.cordaupdates.testutils.RepoVerifier
@@ -14,7 +14,7 @@ import org.junit.Test
 import java.nio.file.Files
 import java.nio.file.Path
 
-class MavenOverFRPCTests {
+class MavenOverRPCTests {
     companion object {
         const val NODE_LOCAL_REPO_PATH_PREFIX = "TestLocalRepoNode"
     }
@@ -52,7 +52,7 @@ class MavenOverFRPCTests {
     fun testRpc() {
         genericTest {
             val resolver = CordaMavenResolver.create(
-                    remoteRepoUrl = "rpc:O=BNO,L=New York,C=US",
+                    remoteRepoUrl = "corda-rpc:O=BNO,L=New York,C=US",
                     localRepoPath = nodeLocalRepoPath.toAbsolutePath().toString())
             val result = resolver.downloadVersion("net.example:test-artifact:1.5", configProps = mapOf(
                     Pair(ConfigurationProperties.RPC_HOST, participantNode.rpcAddress.host),

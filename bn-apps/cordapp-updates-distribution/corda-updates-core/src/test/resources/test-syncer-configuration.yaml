@@ -8,7 +8,7 @@ rpcHost: localhost
 rpcPort: 8007
 rpcUsername: RpcUsername
 rpcPassword: RpcPassword
-tasks:
+artifactSources:
 - remoteRepoUrl: http://search.maven.org
   artifacts:
   - com.test:test-1

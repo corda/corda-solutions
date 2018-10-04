@@ -2,7 +2,7 @@ package net.corda.cordaupdates.app
 
 import net.corda.businessnetworks.cordaupdates.core.ArtifactMetadata
 import net.corda.businessnetworks.cordaupdates.core.SyncerConfiguration
-import net.corda.businessnetworks.cordaupdates.core.SyncerTask
+import net.corda.businessnetworks.cordaupdates.core.CordappSource
 import net.corda.cordaupdates.app.member.GetAvailableVersionsFlow
 import net.corda.core.identity.CordaX500Name
 import net.corda.core.utilities.getOrThrow
@@ -26,8 +26,8 @@ class GetAvailableVersionsFlowTest {
     fun setup() {
         localRepoPath = Files.createTempDirectory("FakeRepo")
         syncerConfig = SyncerConfiguration(localRepoPath = localRepoPath.toString(),
-                tasks = listOf(SyncerTask("file:../TestRepo",
-                        artifacts = listOf("net.example:test-artifact", "net.example:test-artifact-2"))))
+                cordappSources = listOf(CordappSource("file:../TestRepo",
+                        cordapps = listOf("net.example:test-artifact", "net.example:test-artifact-2"))))
 
         val participantName = CordaX500Name("Participant", "New York", "US")
         val notaryName = CordaX500Name.parse("O=Notary,L=London,C=GB")
