@@ -78,9 +78,6 @@ class SyncArtifactsFlowTest {
         mockNetwork.runNetwork()
         val dataFromService = dataFromServiceFuture.getOrThrow()
         assertEquals(artifacts.toSet(), dataFromService.toSet())
-
-        // verify that scheduled state has been issued
-        verifyScheduledState()
     }
 
     @Test

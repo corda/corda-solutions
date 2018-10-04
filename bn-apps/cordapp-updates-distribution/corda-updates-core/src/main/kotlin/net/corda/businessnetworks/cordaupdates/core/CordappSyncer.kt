@@ -7,7 +7,7 @@ import java.io.File
 import java.lang.IllegalArgumentException
 import java.nio.file.Files
 
-class ArtifactsSyncer(private val syncerConf : SyncerConfiguration) {
+class CordappSyncer(private val syncerConf : SyncerConfiguration) {
     fun syncArtifacts(additionalConfigurationProperties : Map<String, Any> = mapOf()) =
             syncerConf.tasks.flatMap { syncTask ->
                 val resolver = CordaMavenResolver.create(syncerConf, syncTask)

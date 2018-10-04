@@ -19,4 +19,3 @@ class GetAvailableVersionsFlow(private val syncerConfig : SyncerConfiguration? =
         }
     }
 }
-

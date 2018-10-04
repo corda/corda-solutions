@@ -47,8 +47,6 @@ class ScheduledSyncContract : Contract {
 data class ScheduledSyncState(val syncInterval : Long, val owner : Party) : SchedulableState {
     override val participants = listOf(owner)
 
-    override fun nextScheduledActivity(thisStateRef : StateRef, flowLogicRefFactory : FlowLogicRefFactory) : ScheduledActivity? {
-        val now = Instant.now().plusMillis(syncInterval)
-        return ScheduledActivity(flowLogicRefFactory.create("net.corda.cordaupdates.app.SyncWithRemoteRepositoryFlow"), Instant.now().plusMillis(syncInterval))
-    }
+    override fun nextScheduledActivity(thisStateRef : StateRef, flowLogicRefFactory : FlowLogicRefFactory)
+            = ScheduledActivity(flowLogicRefFactory.create("net.corda.cordaupdates.app.member.SyncArtifactsFlow"), Instant.now().plusMillis(syncInterval))
 }
