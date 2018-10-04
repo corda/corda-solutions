@@ -27,6 +27,9 @@ data class MembershipsListResponse(val memberships: List<StateAndRef<Membership.
  * The cached list will be reused until it expires or util it gets force-refreshed.
  * GetMembershipsFlow can be used as follows:
  *
+ * @param forceRefresh set to true to request memberships from BNO instead of the local cache
+ * @param filterOutNotExisting if true then nodes that are not in the network map will be filtered out from the results list
+ *
  * @InitiatedBy(SomeInitiatedFlow::class)
  * class MyAuthenticatedFlowResponder(val session : FlowSession) : FlowLogic<Unit>() {
  *     @Suspendable
@@ -41,25 +44,30 @@ data class MembershipsListResponse(val memberships: List<StateAndRef<Membership.
  */
 @InitiatingFlow
 @StartableByRPC
-class GetMembershipsFlow(private val forceRefresh: Boolean = false) : FlowLogic<Map<Party, StateAndRef<Membership.State>>>() {
+class GetMembershipsFlow(private val forceRefresh: Boolean = false, private val filterOutNotExisting : Boolean = true) : FlowLogic<Map<Party, StateAndRef<Membership.State>>>() {
     @Suspendable
     override fun call(): Map<Party, StateAndRef<Membership.State>> {
         val membershipService = serviceHub.cordaService(MembershipsCacheHolder::class.java)
         val cache = membershipService.cache
         val now = serviceHub.clock.instant()
 
-        return if (forceRefresh || cache == null || if (cache.expires == null) false else cache.expires < (now)) {
+        val membershipsToReturn : Map<Party, StateAndRef<Membership.State>>
+        if (forceRefresh || cache == null || if (cache.expires == null) false else cache.expires < (now)) {
             val configuration = serviceHub.cordaService(MemberConfigurationService::class.java)
             val bno = configuration.bnoParty()
             val bnoSession = initiateFlow(bno)
             val response = bnoSession.sendAndReceive<MembershipsListResponse>(MembershipListRequest()).unwrap { it }
             val newCache = MembershipsCache.from(response)
             membershipService.cache = newCache
-            newCache.membershipMap.toMap()
+            membershipsToReturn = newCache.membershipMap.toMap()
         } else {
-            cache.membershipMap.toMap()
+            membershipsToReturn = cache.membershipMap.toMap()
         }
+
+        return if (filterOutNotExisting) membershipsToReturn.filterOutInactive() else membershipsToReturn
     }
+
+    private fun Map<Party, StateAndRef<Membership.State>>.filterOutInactive() = filter { serviceHub.networkMapCache.getNodeByLegalIdentity(it.key) != null }
 }
 
 @StartableByRPC
