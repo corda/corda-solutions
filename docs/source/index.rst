@@ -33,6 +33,9 @@ This site aims to ask some of these questions and offer some solutions.
     corda-modelling-notation/why-do-we-need-CMN.rst
     corda-modelling-notation/state-machine-view.rst
     corda-modelling-notation/state_instance_view.rst
+    corda-modelling-notation/bpmn-view.rst
+    corda-modelling-notation/transaction-instance-view.rst
+    corda-modelling-notation/flow-sequence-view.rst
     corda-modelling-notation/managing-complexity.rst
 
 .. toctree::

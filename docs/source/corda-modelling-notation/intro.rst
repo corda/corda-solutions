@@ -1,6 +1,6 @@
-=================================
-Corda Modelling Notation Overview
-=================================
+===================================
+Corda Modelling Notation - Overview
+===================================
 
 As CorDapps become more complicated there is a need for CorDapp analysts, designers and developers to be able to document and reason about CorDapp designs. This paper proposes Corda Modelling Notation (CMN), a bespoke modelling notation to represent CorDapp designs.
 
@@ -85,7 +85,7 @@ It needs to be compatible with the allowed transitions in the Transaction Layer 
 
 The Flow Sequence view shows how the Corda Flow frame work is used to correctly form, agree, notarise and distribute the transaction in the Transaction Instance View. For example:
 
-.. image:: resources/CMN_Reduced_sequence_flow.png
+.. image:: resources/CMN_Reduced_sequence.png
   :width: 80%
   :align: center
 

@@ -1,6 +1,6 @@
-=================================
-Ledger Layer – State Machine View
-=================================
+===========================
+Ledger – State Machine View
+===========================
 
 In this discussion we will use the following definitions:
 
@@ -201,7 +201,7 @@ The Contract verify() method’s behaviour is usually parameterised on the Comma
 
 For example:
 
-.. code:: kotlin
+.. code-block:: kotlin
 
     class AgreementContract : Contract {
 
@@ -214,11 +214,9 @@ For example:
         }
 
         override fun verify(tx: LedgerTransaction) {
-
             requireThat {
 
-                *** State Level Constraints, ie Constraints which are independent of the Command ***
-
+                //*** State Level Constraints, ie Constraints which are independent of the Command ***
             }
 
             val command = tx.commands.requireSingleCommand<MyContract.Commands>()
@@ -226,33 +224,27 @@ For example:
             when (command.value) {
                 is Commands.Draft -> requireThat {
 
-                    *** Constraints applicable for the Draft transition ***
-
+                    //*** Constraints applicable for the Draft transition ***
                 }
                 is Commands.Amend -> requireThat {
 
-                    *** Constraints applicable for the Amend transition ***
-
+                    //*** Constraints applicable for the Amend transition ***
                 }
                 is Commands.AgreeDeal -> requireThat {
 
-                    *** Constraints applicable for the Agree transition ***
-
+                    //*** Constraints applicable for the Agree transition ***
                 }
 
                 is Commands.UpdateDeal -> requireThat {
 
-                    *** Constraints applicable for the Agree transition ***
-
+                    //*** Constraints applicable for the Agree transition ***
                 }
                 is Commands.Cancel -> requireThat {
 
-                    *** Constraints applicable for the Cancel transition ***
-
+                    //*** Constraints applicable for the Cancel transition ***
                 }
 
                 else -> {
-
                     throw TransactionVerificationException
                 }
             }
