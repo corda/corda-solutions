@@ -1,8 +1,7 @@
 package net.corda.businessnetworks.cordaupdates.core
 
-import net.corda.cordaupdates.transport.flows.ConfigurationProperties
-import net.corda.cordaupdates.transport.flows.FlowsTransporterFactory
-import net.corda.cordaupdates.transport.flows.RPCTransporterFactory
+import net.corda.cordaupdates.transport.ConfigurationProperties
+import net.corda.cordaupdates.transport.CordaTransporterFactory
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils.newSession
 import org.eclipse.aether.DefaultRepositorySystemSession
@@ -71,11 +70,11 @@ class CordaMavenResolver private constructor(private val remoteRepoUrl : String,
             return CordaMavenResolver(remoteRepoUrl!!, localRepoPath!!, authentication, proxy, configurationProperties)
         }
 
-        fun create(syncerConf : SyncerConfiguration, syncTask : SyncerTask) =
-                create(remoteRepoUrl = syncTask.remoteRepoUrl,
+        fun create(syncerConf : SyncerConfiguration, cordappSource : CordappSource) =
+                create(remoteRepoUrl = cordappSource.remoteRepoUrl,
                         localRepoPath = syncerConf.localRepoPath,
-                        httpUsername = syncTask.httpUsername,
-                        httpPassword = syncTask.httpPassword,
+                        httpUsername = cordappSource.httpUsername,
+                        httpPassword = cordappSource.httpPassword,
                         httpProxyUrl = syncerConf.httpProxyUrl,
                         httpProxyType = syncerConf.httpProxyType,
                         httpProxyPort = syncerConf.httpProxyPort,
@@ -95,8 +94,7 @@ class CordaMavenResolver private constructor(private val remoteRepoUrl : String,
         locator.addService<RepositoryConnectorFactory>(RepositoryConnectorFactory::class.java, BasicRepositoryConnectorFactory::class.java)
         locator.addService<TransporterFactory>(TransporterFactory::class.java, FileTransporterFactory::class.java)
         locator.addService<TransporterFactory>(TransporterFactory::class.java, HttpTransporterFactory::class.java)
-        locator.addService<TransporterFactory>(TransporterFactory::class.java, FlowsTransporterFactory::class.java)
-        locator.addService<TransporterFactory>(TransporterFactory::class.java, RPCTransporterFactory::class.java)
+        locator.addService<TransporterFactory>(TransporterFactory::class.java, CordaTransporterFactory::class.java)
         locator.getService(RepositorySystem::class.java)
     }
 
@@ -150,4 +148,6 @@ class CordaMavenResolver private constructor(private val remoteRepoUrl : String,
     }
 }
 
-data class ArtifactMetadata(val group : String, val name : String, val classifier : String = "", val extension : String = "jar", val versions : List<String> = listOf())
+data class ArtifactMetadata(val group : String, val name : String, val classifier : String = "", val extension : String = "jar", val versions : List<String> = listOf()) {
+    fun toMavenArtifacts() = versions.map { DefaultArtifact(group, name, classifier, extension, it) }
+}

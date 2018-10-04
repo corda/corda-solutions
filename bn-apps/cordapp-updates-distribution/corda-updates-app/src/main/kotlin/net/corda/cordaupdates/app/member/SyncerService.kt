@@ -4,7 +4,7 @@ import net.corda.businessnetworks.cordaupdates.core.ArtifactMetadata
 import net.corda.businessnetworks.cordaupdates.core.CordappSyncer
 import net.corda.businessnetworks.cordaupdates.core.SyncerConfiguration
 import net.corda.cordaupdates.app.Utils
-import net.corda.cordaupdates.transport.flows.ConfigurationProperties
+import net.corda.cordaupdates.transport.ConfigurationProperties
 import net.corda.core.node.AppServiceHub
 import net.corda.core.node.services.CordaService
 import net.corda.core.serialization.SingletonSerializeAsToken
@@ -30,7 +30,7 @@ internal class SyncerService(private val appServiceHub : AppServiceHub) : Single
 
     fun syncArtifacts(syncerConfiguration : SyncerConfiguration? = null) : List<ArtifactMetadata> {
         val syncer = syncer(syncerConfiguration)
-        val artifacts = syncer.syncArtifacts(extraConfig())
+        val artifacts = syncer.syncCordapps(extraConfig())
         val artifactsMetadataCache = appServiceHub.cordaService(ArtifactsMetadataCache::class.java)
         artifactsMetadataCache.artifactsCache = artifacts
         return artifacts

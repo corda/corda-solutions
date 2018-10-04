@@ -57,7 +57,7 @@ class ScheduleSyncFlow @JvmOverloads constructor(private val syncerConfig : Sync
             }
         }
 
-        // syncArtifacts sync flow
+        // syncCordapps sync flow
         return subFlow(SyncArtifactsFlow(syncerConfig, launchAsync))
     }
 
