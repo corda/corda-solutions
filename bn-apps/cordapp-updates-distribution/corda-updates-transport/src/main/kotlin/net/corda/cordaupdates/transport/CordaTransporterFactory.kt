@@ -7,7 +7,7 @@ import org.eclipse.aether.RepositorySystemSession
 import org.eclipse.aether.repository.RemoteRepository
 import org.eclipse.aether.spi.connector.transport.Transporter
 import org.eclipse.aether.spi.connector.transport.TransporterFactory
-import java.lang.Exception
+import org.eclipse.aether.transfer.NoTransporterException
 
 class CordaTransporterFactory : TransporterFactory {
     override fun getPriority() = 5.0f
@@ -22,10 +22,10 @@ class CordaTransporterFactory : TransporterFactory {
                 when (mode) {
                     CORDA_RPC -> RPCTransporter(session, repository)
                     CORDA_FLOWS -> FlowsTransporter(session, repository)
-                    else -> throw CordaTransportException("Unsupported auto transporter mode $mode")
+                    else -> throw NoTransporterException(repository)
                 }
             }
-            else -> throw CordaTransportException("Unsupported protocol $protocol")
+            else -> throw NoTransporterException(repository)
         }
     }
 }
