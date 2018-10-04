@@ -1,7 +1,7 @@
 package net.corda.cordaupdates.app.member
 
 import net.corda.businessnetworks.cordaupdates.core.ArtifactMetadata
-import net.corda.businessnetworks.cordaupdates.core.ArtifactsSyncer
+import net.corda.businessnetworks.cordaupdates.core.CordappSyncer
 import net.corda.businessnetworks.cordaupdates.core.SyncerConfiguration
 import net.corda.cordaupdates.app.Utils
 import net.corda.cordaupdates.transport.flows.ConfigurationProperties
@@ -25,7 +25,7 @@ internal class SyncerService(private val appServiceHub : AppServiceHub) : Single
         val executor = Executors.newSingleThreadExecutor()!!
     }
 
-    private fun syncer(syncerConfiguration : SyncerConfiguration? = null) = ArtifactsSyncer(syncerConfiguration ?: Utils.syncerConfiguration(appServiceHub))
+    private fun syncer(syncerConfiguration : SyncerConfiguration? = null) = CordappSyncer(syncerConfiguration ?: Utils.syncerConfiguration(appServiceHub))
     private fun extraConfig() = mapOf(Pair(ConfigurationProperties.APP_SERVICE_HUB, appServiceHub))
 
     fun syncArtifacts(syncerConfiguration : SyncerConfiguration? = null) : List<ArtifactMetadata> {

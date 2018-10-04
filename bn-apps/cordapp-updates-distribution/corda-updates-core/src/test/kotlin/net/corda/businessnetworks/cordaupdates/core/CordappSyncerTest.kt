@@ -8,7 +8,7 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 
-class ArtifactsSyncerTest {
+class CordappSyncerTest {
     private lateinit var localRepoPath : Path
     private lateinit var repoVerifier : RepoVerifier
 
@@ -29,7 +29,7 @@ class ArtifactsSyncerTest {
                 localRepoPath = localRepoPath.toAbsolutePath().toString(),
                 tasks = listOf(SyncerTask(remoteRepoUrl = "file:${File("../TestRepo").canonicalPath}",
                                 artifacts = listOf("net.example:test-artifact", "net.example:test-artifact-3"))))
-        val syncer = ArtifactsSyncer(syncConfiguration)
+        val syncer = CordappSyncer(syncConfiguration)
 
         syncer.syncArtifacts()
 
@@ -41,6 +41,6 @@ class ArtifactsSyncerTest {
 
     @Test
     fun testConfigurationFormat() {
-        SyncerConfiguration.readFromFile(File(ArtifactsSyncerTest::class.java.classLoader.getResource("test-syncer-configuration.yaml").file))
+        SyncerConfiguration.readFromFile(File(CordappSyncerTest::class.java.classLoader.getResource("test-syncer-configuration.yaml").file))
     }
 }
