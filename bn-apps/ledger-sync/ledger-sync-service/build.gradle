@@ -38,7 +38,7 @@ dependencies {
 
     testCompile "$corda_release_group:corda-node-driver:$corda_release_version"
 
-    cordapp project(":memberships-management:membership-service")
+    cordapp project(":bn-apps:memberships-management:membership-service")
 }
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
