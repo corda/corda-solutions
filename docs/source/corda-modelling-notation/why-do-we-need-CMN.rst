@@ -1,6 +1,6 @@
-==========================================
-Why do we need a Corda Modelling Notation?
-==========================================
+=============================
+Why Corda Modelling Notation?
+=============================
 
 From working with several of R3’s members and partners, a common challenge is how to write down a Corda design. A CorDapp has a lot of interacting parts: States, Contracts, Flows, Transactions, API’s, Participants, Signers. It’s difficult to capture, and hence reason, about the behaviour of the whole CorDapp.
 
