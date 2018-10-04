@@ -29,8 +29,7 @@ This site aims to ask some of these questions and offer some solutions.
     :caption: Corda Modelling Notation
     :maxdepth: 1
 
-    corda-modelling-notation/intro.rst
-    corda-modelling-notation/why-do-we-need-CMN.rst
+    corda-modelling-notation/intro-to-cmn.rst
     corda-modelling-notation/state-machine-view.rst
     corda-modelling-notation/state_instance_view.rst
     corda-modelling-notation/bpmn-view.rst
