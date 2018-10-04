@@ -29,7 +29,7 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 
     // transport over flows
-    compile project(':cordapp-updates-distribution:corda-updates-core')
+    compile project(':bn-apps:cordapp-updates-distribution:corda-updates-core')
 
     // cli utils
     // TODO: this is a temporary hack until v3.3. is released
@@ -37,7 +37,7 @@ dependencies {
 
     testCompile "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
     testCompile "junit:junit:$junit_version"
-    testCompile project(":cordapp-updates-distribution:corda-updates-test-utils")
+    testCompile project(":bn-apps:cordapp-updates-distribution:corda-updates-test-utils")
 
     // SLF4J and TinyLog - convenient, small and fast logging libraries.
     compile "org.slf4j:slf4j-api:$slf4j_version"

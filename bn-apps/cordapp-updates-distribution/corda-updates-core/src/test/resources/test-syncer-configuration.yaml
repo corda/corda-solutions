@@ -8,13 +8,13 @@ rpcHost: localhost
 rpcPort: 8007
 rpcUsername: RpcUsername
 rpcPassword: RpcPassword
-artifactSources:
+cordappSources:
 - remoteRepoUrl: http://search.maven.org
-  artifacts:
+  cordapps:
   - com.test:test-1
   - com.test:test-2
 - remoteRepoUrl: http://search2.maven.org
-  artifacts:
+  cordapps:
   - net.test:test-1
   - net.test:test-2
   httpUsername: User2
