@@ -26,6 +26,18 @@ This site aims to ask some of these questions and offer some solutions.
    designs/ledger-synchronisation-service.rst
 
 .. toctree::
+    :caption: Corda Modelling Notation
+    :maxdepth: 1
+
+    corda-modelling-notation/intro-to-cmn.rst
+    corda-modelling-notation/state-machine-view.rst
+    corda-modelling-notation/state_instance_view.rst
+    corda-modelling-notation/bpmn-view.rst
+    corda-modelling-notation/transaction-instance-view.rst
+    corda-modelling-notation/flow-sequence-view.rst
+    corda-modelling-notation/managing-complexity.rst
+
+.. toctree::
    :caption: FAQ
    :maxdepth: 1
 
