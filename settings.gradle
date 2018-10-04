@@ -1,0 +1,4 @@
+include ':docs'
+include ':bn-apps:ledger-sync:ledger-sync-service'
+include ':bn-apps:memberships-management:membership-service'
+include ':bn-apps:memberships-management:membership-service-contracts-and-states'

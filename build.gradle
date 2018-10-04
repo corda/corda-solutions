@@ -5,6 +5,7 @@ buildscript {
         corda_gradle_plugins_version = '4.0.25'
         kotlin_version = '1.2.71'
         junit_version = '4.12'
+        dokka_version = '0.9.17'
     }
 
     repositories {
@@ -17,6 +18,7 @@ buildscript {
         classpath "net.corda.plugins:cordformation:$corda_gradle_plugins_version"
         classpath "net.corda.plugins:quasar-utils:$corda_gradle_plugins_version"
         classpath "net.corda.plugins:cordapp:$corda_gradle_plugins_version"
+        classpath "org.jetbrains.dokka:dokka-gradle-plugin:${dokka_version}"
     }
 }
 
@@ -109,6 +111,6 @@ artifactory {
 }
 
 wrapper {
-    gradleVersion = "4.9"
+    gradleVersion = "4.10.2"
     distributionType = Wrapper.DistributionType.ALL
 }

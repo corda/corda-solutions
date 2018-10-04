@@ -1,3 +1,0 @@
-include ':ledger-sync:ledger-sync-service'
-include ':memberships-management:membership-service'
-include ':memberships-management:membership-service-contracts-and-states'
