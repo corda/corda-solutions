@@ -3,17 +3,7 @@
 {% extends "!layout.html" %}
 {% block sidebartitle %}
 {{ super() }}
-<br>
-API reference: <a href="api/kotlin/corda/index.html">Kotlin</a>/ <a href="api/javadoc/index.html">JavaDoc</a>
-<br>
-<a href="http://slack.corda.net">Slack</a>
-<br>
-<a href="https://stackoverflow.com/questions/tagged/corda">Stack Overflow</a>
-<br>
-<select id="versionDropdown" class="version-dropdown" onChange="window.location.href=this.value"></select>
-<br>
-<span style="display:none" id="version">{{ version }}</span>
-{% endblock %}
+% endblock %}
 
 {% block footer %}
 <script>
