@@ -4,6 +4,7 @@ import co.paralleluniverse.fibers.Suspendable
 import net.corda.businessnetworks.cordaupdates.core.ArtifactMetadata
 import net.corda.businessnetworks.cordaupdates.core.SyncerConfiguration
 import net.corda.businessnetworks.cordaupdates.core.CordappSource
+import net.corda.businessnetworks.cordaupdates.core.VersionMetadata
 import net.corda.businessnetworks.cordaupdates.testutils.RepoVerifier
 import net.corda.cordaupdates.app.member.ArtifactsMetadataCache
 import net.corda.cordaupdates.app.member.ScheduleSyncFlow
@@ -68,8 +69,8 @@ class SyncArtifactsFlowTest {
 
         // verify returned metadata
         assertEquals(
-                setOf(ArtifactMetadata("net.example", "test-artifact", versions = listOf("0.1", "0.5", "1.0", "1.5", "2.0")),
-                        ArtifactMetadata("net.example", "test-artifact-2", versions = listOf("1.0", "2.0"))),
+                setOf(ArtifactMetadata("net.example", "test-artifact", versions = listOf("0.1", "0.5", "1.0", "1.5", "2.0").map { VersionMetadata(it, false) }),
+                        ArtifactMetadata("net.example", "test-artifact-2", versions = listOf("1.0", "2.0").map { VersionMetadata(it, false) })),
                 artifacts.toSet()
         )
 

@@ -3,8 +3,16 @@ package net.corda.businessnetworks.cordaupdates.shell
 import org.eclipse.aether.AbstractRepositoryListener
 import org.eclipse.aether.RepositoryEvent
 import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
-class ConsoleRepositoryListener constructor(val logger : Logger) : AbstractRepositoryListener() {
+/**
+ * Simple maven resolver repository listener that logs everything into the console
+ * The implementation is kindly borrowed from https://github.com/eclipse/aether-demo/blob/master/aether-demo-snippets/src/main/java/org/eclipse/aether/examples/util/ConsoleRepositoryListener.java
+ */
+class ConsoleRepositoryListener : AbstractRepositoryListener() {
+    companion object {
+        val logger : Logger by lazy { LoggerFactory.getLogger("corda-updates") }
+    }
 
     override fun artifactDeployed(event : RepositoryEvent) =
             logger.info("Deployed ${event.artifact} to ${event.repository}")

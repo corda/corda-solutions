@@ -3,16 +3,20 @@ package net.corda.businessnetworks.cordaupdates.core
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.KotlinModule
+import org.eclipse.aether.RepositoryListener
 import org.eclipse.aether.artifact.DefaultArtifact
+import org.eclipse.aether.transfer.TransferListener
 import java.io.File
 import java.lang.IllegalArgumentException
 import java.nio.file.Files
 
-class CordappSyncer(private val syncerConf : SyncerConfiguration) {
+class CordappSyncer(private val syncerConf : SyncerConfiguration,
+                    private val repositoryListener : RepositoryListener? = null,
+                    private val transferListener : TransferListener? = null) {
     fun syncCordapps(additionalConfigurationProperties : Map<String, Any> = mapOf(), cordappToSync : String? = null) : List<ArtifactMetadata> {
         return if (cordappToSync == null) {
             syncerConf.cordappSources.flatMap { syncTask ->
-                val resolver = CordaMavenResolver.create(syncerConf, syncTask)
+                val resolver = CordaMavenResolver.create(syncerConf, syncTask, repositoryListener = repositoryListener, transferListener = transferListener)
                 syncTask.cordapps.map {
                     resolver.downloadVersionRange("$it:[,)", additionalConfigurationProperties)
                 }
@@ -48,7 +52,7 @@ data class CordappSource(
 
 data class SyncerConfiguration(
         val localRepoPath : String,
-        val httpProxyUrl : String? = null,
+        val httpProxyHost : String? = null,
         val httpProxyType : String? = null,
         val httpProxyPort : Int? = null,
         val httpProxyUsername : String? = null,
@@ -59,18 +63,6 @@ data class SyncerConfiguration(
         val rpcPassword : String? = null,
         val cordappSources : List<CordappSource>) {
     companion object {
-        fun readFromFileOrDefaultLocations(file : String? = null) : SyncerConfiguration {
-            return if (file != null) readFromFile(File(file)) else readFromDefaultLocations()
-        }
-
-        fun readFromDefaultLocations() : SyncerConfiguration {
-            val localConfig = File(".corda-updates/settings.yaml")
-            if (localConfig.exists()) return readFromFile(localConfig)
-            val userConfig = File("${System.getProperty("user.home")}/.corda-updates/settings.yaml")
-            if (userConfig.exists()) return readFromFile(localConfig)
-            throw SyncerConfigurationNotFoundException()
-        }
-
         fun readFromFile(file : File) : SyncerConfiguration {
             val mapper = when {
                 file.name.endsWith("yaml") -> ObjectMapper(YAMLFactory())
