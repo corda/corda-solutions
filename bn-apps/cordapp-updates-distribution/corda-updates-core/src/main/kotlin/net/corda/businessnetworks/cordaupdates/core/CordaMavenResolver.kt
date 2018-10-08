@@ -5,6 +5,7 @@ import net.corda.cordaupdates.transport.CordaTransporterFactory
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils.newSession
 import org.eclipse.aether.DefaultRepositorySystemSession
+import org.eclipse.aether.RepositoryException
 import org.eclipse.aether.RepositoryListener
 import org.eclipse.aether.RepositorySystem
 import org.eclipse.aether.artifact.DefaultArtifact
@@ -15,9 +16,12 @@ import org.eclipse.aether.repository.LocalRepository
 import org.eclipse.aether.repository.Proxy
 import org.eclipse.aether.repository.RemoteRepository
 import org.eclipse.aether.resolution.ArtifactRequest
+import org.eclipse.aether.resolution.ArtifactResult
 import org.eclipse.aether.resolution.VersionRangeRequest
 import org.eclipse.aether.spi.connector.RepositoryConnectorFactory
 import org.eclipse.aether.spi.connector.transport.TransporterFactory
+import org.eclipse.aether.transfer.ArtifactNotFoundException
+import org.eclipse.aether.transfer.ArtifactTransferException
 import org.eclipse.aether.transfer.TransferListener
 import org.eclipse.aether.transport.file.FileTransporterFactory
 import org.eclipse.aether.transport.http.HttpTransporterFactory
@@ -34,7 +38,7 @@ class CordaMavenResolver private constructor(private val remoteRepoUrl : String,
                    localRepoPath : String? = null,
                    httpUsername : String? = null,
                    httpPassword : String? = null,
-                   httpProxyUrl : String? = null,
+                   httpProxyHost : String? = null,
                    httpProxyType : String? = null,
                    httpProxyPort : Int? = null,
                    httpProxyUsername : String? = null,
@@ -42,7 +46,9 @@ class CordaMavenResolver private constructor(private val remoteRepoUrl : String,
                    rpcHost : String? = null,
                    rpcPort : String? = null,
                    rpcUsername : String? = null,
-                   rpcPassword : String? = null) : CordaMavenResolver {
+                   rpcPassword : String? = null,
+                   repositoryListener : RepositoryListener? = null,
+                   transferListener : TransferListener? = null) : CordaMavenResolver {
             // setting up authentication
             var authentication : Authentication? = null
             if (httpUsername != null && httpPassword != null) {
@@ -51,12 +57,12 @@ class CordaMavenResolver private constructor(private val remoteRepoUrl : String,
 
             // setting up proxy
             var proxy : Proxy? = null
-            if (httpProxyUrl != null && httpProxyType != null && httpProxyPort != null) {
+            if (httpProxyHost != null && httpProxyType != null && httpProxyPort != null) {
                 var proxyAuthentication : Authentication? = null
                 if (httpProxyPassword != null && httpProxyUsername != null) {
                     proxyAuthentication = AuthenticationBuilder().addUsername(httpProxyUsername).addPassword(httpProxyPassword).build()
                 }
-                proxy = Proxy(httpProxyType, httpProxyUrl, httpProxyPort, proxyAuthentication)
+                proxy = Proxy(httpProxyType, httpProxyHost, httpProxyPort, proxyAuthentication)
             }
 
             val configurationProperties = mutableMapOf<String, Any>()
@@ -67,15 +73,22 @@ class CordaMavenResolver private constructor(private val remoteRepoUrl : String,
             rpcUsername?.let { configurationProperties[ConfigurationProperties.RPC_USERNAME] = it }
             rpcPassword?.let { configurationProperties[ConfigurationProperties.RPC_PASSWORD] = it }
 
-            return CordaMavenResolver(remoteRepoUrl!!, localRepoPath!!, authentication, proxy, configurationProperties)
+            val resolver = CordaMavenResolver(remoteRepoUrl!!, localRepoPath!!, authentication, proxy, configurationProperties)
+            resolver.repositoryListener = repositoryListener
+            resolver.transferListener = transferListener
+
+            return resolver
         }
 
-        fun create(syncerConf : SyncerConfiguration, cordappSource : CordappSource) =
+        fun create(syncerConf : SyncerConfiguration,
+                   cordappSource : CordappSource,
+                   repositoryListener : RepositoryListener? = null,
+                   transferListener : TransferListener? = null) =
                 create(remoteRepoUrl = cordappSource.remoteRepoUrl,
                         localRepoPath = syncerConf.localRepoPath,
                         httpUsername = cordappSource.httpUsername,
                         httpPassword = cordappSource.httpPassword,
-                        httpProxyUrl = syncerConf.httpProxyUrl,
+                        httpProxyHost = syncerConf.httpProxyHost,
                         httpProxyType = syncerConf.httpProxyType,
                         httpProxyPort = syncerConf.httpProxyPort,
                         httpProxyUsername = syncerConf.httpProxyUsername,
@@ -83,7 +96,9 @@ class CordaMavenResolver private constructor(private val remoteRepoUrl : String,
                         rpcHost = syncerConf.rpcHost,
                         rpcPort = syncerConf.rpcPort,
                         rpcUsername = syncerConf.rpcUsername,
-                        rpcPassword = syncerConf.rpcPassword)
+                        rpcPassword = syncerConf.rpcPassword,
+                        repositoryListener = repositoryListener,
+                        transferListener = transferListener)
     }
 
     var repositoryListener : RepositoryListener? = null
@@ -111,20 +126,26 @@ class CordaMavenResolver private constructor(private val remoteRepoUrl : String,
         val versionRangeRequest = VersionRangeRequest(artifact, listOf(remoteRepository), null)
         val session = createRepositorySession(configProps)
         val versionRangeResult = repositorySystem.resolveVersionRange(session, versionRangeRequest)!!
-        return ArtifactMetadata(artifact.groupId, artifact.artifactId, artifact.classifier, artifact.extension, versionRangeResult.versions.map { it.toString() })
+
+        return ArtifactMetadata(artifact.groupId,
+                artifact.artifactId,
+                artifact.classifier,
+                artifact.extension,
+                versionRangeResult.versions.map { VersionMetadata(it.toString(), versionRangeResult.getRepository(it) is LocalRepository) })
     }
 
     fun downloadVersionRange(rangeRequest : String,
                              configProps : Map<String, Any> = mapOf()) : ArtifactMetadata {
         val artifactMetadata = resolveVersionRange(rangeRequest, configProps)
+
         val aetherArtifact = DefaultArtifact(rangeRequest)
 
         // downloading the most recent version first
-        artifactMetadata.versions.asReversed().forEach {
-            val artifactVersion = aetherArtifact.setVersion(it)!!
-            downloadVersion(artifactVersion.toString(), configProps)
-        }
-        return artifactMetadata
+        val versions = artifactMetadata.versions.asReversed().map {
+            val artifactVersion = aetherArtifact.setVersion(it.version)!!
+            downloadVersion(artifactVersion.toString(), configProps).versions.single()
+        }.asReversed()
+        return artifactMetadata.copy(versions = versions)
     }
 
     fun downloadVersion(mavenCoords : String,
@@ -132,8 +153,21 @@ class CordaMavenResolver private constructor(private val remoteRepoUrl : String,
         val session = createRepositorySession(configProps)
         val aetherArtifact = DefaultArtifact(mavenCoords)
         val artifactRequest = ArtifactRequest(aetherArtifact, listOf(remoteRepository), null)
-        repositorySystem.resolveArtifact(session, artifactRequest)!!
-        return ArtifactMetadata(aetherArtifact.groupId, aetherArtifact.artifactId, aetherArtifact.classifier, aetherArtifact.extension, listOf(aetherArtifact.version))
+        val resolutionResult : ArtifactResult
+        try {
+            resolutionResult = repositorySystem.resolveArtifact(session, artifactRequest)!!
+        } catch (ex : RepositoryException) {
+            when (ex.cause) {
+                is ArtifactNotFoundException -> throw ResourceNotFoundException(mavenCoords, ex)
+                is ArtifactTransferException -> throw ResourceTransferException(mavenCoords, ex)
+                else -> throw CordaMavenResolverException("Error while resolving the artifact $mavenCoords", ex)
+            }
+        }
+        return ArtifactMetadata(aetherArtifact.groupId,
+                aetherArtifact.artifactId,
+                aetherArtifact.classifier,
+                aetherArtifact.extension,
+                listOf(VersionMetadata(aetherArtifact.version, resolutionResult.repository is LocalRepository)))
     }
 
     private fun createRepositorySession(additionalConfigProperties : Map<String, Any>) : DefaultRepositorySystemSession {
@@ -148,6 +182,12 @@ class CordaMavenResolver private constructor(private val remoteRepoUrl : String,
     }
 }
 
-data class ArtifactMetadata(val group : String, val name : String, val classifier : String = "", val extension : String = "jar", val versions : List<String> = listOf()) {
-    fun toMavenArtifacts() = versions.map { DefaultArtifact(group, name, classifier, extension, it) }
+data class ArtifactMetadata(val group : String, val name : String, val classifier : String = "", val extension : String = "jar", val versions : List<VersionMetadata> = listOf()) {
+    fun toMavenArtifacts() = versions.map { DefaultArtifact(group, name, classifier, extension, it.version) }
 }
+
+data class VersionMetadata(val version : String, val isFromLocal : Boolean)
+
+open class CordaMavenResolverException(message : String, cause : Throwable) : Exception(message, cause)
+class ResourceNotFoundException(val resource : String, cause : Throwable) : CordaMavenResolverException("Resource $resource has not been found", cause)
+class ResourceTransferException(val resource : String, cause : Throwable) : CordaMavenResolverException("Resource $resource has not been found", cause)

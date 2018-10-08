@@ -5,12 +5,20 @@ import org.eclipse.aether.transfer.MetadataNotFoundException
 import org.eclipse.aether.transfer.TransferEvent
 import org.eclipse.aether.transfer.TransferResource
 import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
-class ConsoleTransferListener @JvmOverloads constructor(val logger : Logger) : AbstractTransferListener() {
+/**
+ * Simple maven resolver transfer listener that logs everything into the console
+ * The implementation is kindly borrowed from https://github.com/eclipse/aether-demo/blob/master/aether-demo-snippets/src/main/java/org/eclipse/aether/examples/util/ConsoleTransferListener.java
+ */
+class ConsoleTransferListener : AbstractTransferListener() {
+    companion object {
+        val logger : Logger by lazy { LoggerFactory.getLogger("corda-updates") }
+    }
     private val downloads = ConcurrentHashMap<TransferResource, Long>()
     private var lastLength : Int = 0
 

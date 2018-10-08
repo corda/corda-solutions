@@ -3,6 +3,7 @@ package net.corda.cordaupdates.app
 import net.corda.businessnetworks.cordaupdates.core.ArtifactMetadata
 import net.corda.businessnetworks.cordaupdates.core.SyncerConfiguration
 import net.corda.businessnetworks.cordaupdates.core.CordappSource
+import net.corda.businessnetworks.cordaupdates.core.VersionMetadata
 import net.corda.cordaupdates.app.member.GetAvailableVersionsFlow
 import net.corda.core.identity.CordaX500Name
 import net.corda.core.utilities.getOrThrow
@@ -51,8 +52,8 @@ class GetAvailableVersionsFlowTest {
 
         // verify returned metadata
         assertEquals(
-                setOf(ArtifactMetadata("net.example", "test-artifact", versions = listOf("0.1", "0.5", "1.0", "1.5", "2.0")),
-                        ArtifactMetadata("net.example", "test-artifact-2", versions = listOf("1.0", "2.0"))),
+                setOf(ArtifactMetadata("net.example", "test-artifact", versions = listOf("0.1", "0.5", "1.0", "1.5", "2.0").map { VersionMetadata(it, false) }),
+                        ArtifactMetadata("net.example", "test-artifact-2", versions = listOf("1.0", "2.0").map { VersionMetadata(it, false) })),
                 artifacts.toSet()
         )
 

@@ -1,6 +1,6 @@
 localRepoPath: /var/temp
 httpProxyType: HTTP
-httpProxyUrl: 10.0.0.1
+httpProxyHost: 10.0.0.1
 httpProxyPort: 187
 httpProxyUsername: ProxyUsername
 httpProxyPassword: ProxyPassword
