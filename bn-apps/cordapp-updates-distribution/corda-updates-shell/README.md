@@ -1,11 +1,11 @@
 corda-updates-shell
 ==================================
 
-This repository contains an implementation of a Command Line Interface for `corda-updates` utility. The utility is build with [CordaCLIWrapper](https://docs.corda.net/head/cli-ux-guidelines.html) and hence supports all of its features.
+This repository contains an implementation of a Command Line Interface for `corda-updates` utility. The utility is build with [CordaCLIWrapper](https://docs.corda.net/head/cli-ux-guidelines.html) and supports all of its features.
 
 TODO: Add references to docs about transports and etc.
 
-#Usage
+# Usage
 
 *corda-updates-shell* supports in 3 different modes:
 
@@ -18,7 +18,7 @@ java -jar corda-updates-shell-xxx.jar --mode=INIT
 java -jar corda-updates-shell-xxx.jar --mode=INIT --configPath="path_to_some_folder"
 
 ```  
-* **SYNC**. Synchronises the contents of a local repository with the remote repositories, configured in *settings.yaml*. All versions missing from the local repository will be downloaded during the synchronisation.
+* **SYNC**. Synchronises the contents of the local repository with the remote repositories, configured in `settings.yaml`. All versions missing from the local repository will be downloaded during the synchronisation.
 ```bash
 # Will pull down locally missing versions for all CorDapps configured in settings.yaml file. 
 java -jar corda-updates-shell-xxx.jar --mode=SYNC
@@ -91,8 +91,8 @@ cordappSources:
 
 Resolution of configuration file is done in the following order: 
 1. An explicit path if one has been provided via command line parameters, 
-2. *settings.yaml* under the current working folder
-3. *settings.yaml* under *USER.HOME/.corda-updates*
+2. `settings.yaml` under the current working folder
+3. `settings.yaml` under `USER.HOME/.corda-updates`
 
 
 # How to start
