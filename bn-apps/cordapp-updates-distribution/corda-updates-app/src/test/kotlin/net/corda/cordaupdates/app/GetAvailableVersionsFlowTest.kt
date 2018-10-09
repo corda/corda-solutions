@@ -46,14 +46,13 @@ class GetAvailableVersionsFlowTest {
 
     @Test
     fun testHappyPath() {
-        val future = node.startFlow(GetAvailableVersionsFlow(syncerConfig, false))
+        val future = node.startFlow(GetAvailableVersionsFlow("net.example:test-artifact", syncerConfig, false))
         mockNetwork.runNetwork()
         val artifacts = future.getOrThrow()!!
 
         // verify returned metadata
         assertEquals(
-                setOf(ArtifactMetadata("net.example", "test-artifact", versions = listOf("0.1", "0.5", "1.0", "1.5", "2.0").map { VersionMetadata(it, false) }),
-                        ArtifactMetadata("net.example", "test-artifact-2", versions = listOf("1.0", "2.0").map { VersionMetadata(it, false) })),
+                setOf(ArtifactMetadata("net.example", "test-artifact", versions = listOf("0.1", "0.5", "1.0", "1.5", "2.0").map { VersionMetadata(it, false) })),
                 artifacts.toSet()
         )
 

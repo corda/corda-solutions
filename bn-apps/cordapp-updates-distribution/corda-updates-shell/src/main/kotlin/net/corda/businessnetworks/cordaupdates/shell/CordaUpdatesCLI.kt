@@ -26,8 +26,8 @@ private enum class CLICommands {
  * Class that handles CLI interactions. Supports the following modes via --mode flag:
  * - INIT. Initializes an empty local repository and creates a template configuration file.
  *      Uses USER.HOME/.corda-updates folder by default unless a custom location has been specified via --configPath
- * - SYNC. Synchronizes local repository with the remote repositories. Downloads all versions of all CorDapps from all remote repositories,
- *      that are configured in the settings.yaml file. If a custom CorDapp / version range has been passed via --cordapp flag, the tool will attempt to
+ * - SYNC. Pulls down missing CorDapps from configured remote repositories. Downloads all versions of all CorDapps from all remote repositories,
+ *      that are configured in the settings.yaml file. If a custom CorDapp / version range has been specified via --cordapp flag, the tool will attempt to
  *      find a configuration for it in the settings.yaml and will fail if one doesn't exist.
  * - PRINT_VERSIONS. Prints available versions of a specified CorDapp. Will fail if no CorDapp has been specified.
  */
@@ -95,7 +95,7 @@ class CordaUpdatesCLI : CordaCliWrapper("corda-updates", "CLI for corda-updates 
         logger.info("Launching in ${CLICommands.SYNC} mode")
         val syncer = createSyncer() ?: return ExitCodes.FAILURE
         try {
-            syncer.syncCordapps(cordappToSync = cordapp).let {
+            syncer.syncCordapps(coordinatesWithoutVersion = cordapp).let {
                 // We don't need versions that already existed in the local repo. Filtering them out
                 val resultsNotFromLocal = it.asSequence().filter { artifact -> artifact.versions.any { version -> !version.isFromLocal } }
                         .map { artifact -> artifact.copy(versions = artifact.versions.filter { version -> !version.isFromLocal }) }.toList()
@@ -143,7 +143,7 @@ class CordaUpdatesCLI : CordaCliWrapper("corda-updates", "CLI for corda-updates 
         }
         logger.info("Launching in ${CLICommands.PRINT_VERSIONS} mode")
         val syncer = createSyncer() ?: return ExitCodes.FAILURE
-        syncer.getAvailableVersions(cordapp = cordapp).let {
+        syncer.getAvailableVersions(cordapp!!).let {
             if (it.isEmpty()) {
                 println("No cordapp versions are available")
             } else {

@@ -46,15 +46,15 @@ internal class SyncerService(private val appServiceHub : AppServiceHub) : Single
 
     fun syncArtifacts(syncerConfiguration : SyncerConfiguration? = null) : List<ArtifactMetadata> {
         val syncer = syncer(syncerConfiguration)
-        val artifacts = syncer.syncCordapps(additionalConfigurationProperties())
+        val artifacts = syncer.syncCordapps(additionalConfigurationProperties = additionalConfigurationProperties())
         val artifactsMetadataCache = appServiceHub.cordaService(ArtifactsMetadataCache::class.java)
         artifactsMetadataCache.artifactsCache = artifacts
         return artifacts
     }
 
-    fun getArtifactsMetadata(syncerConfiguration : SyncerConfiguration? = null) : List<ArtifactMetadata>  {
+    fun getArtifactsMetadata(cordapp : String, syncerConfiguration : SyncerConfiguration? = null) : List<ArtifactMetadata>  {
         val syncer = syncer(syncerConfiguration)
-        val artifacts = syncer.getAvailableVersions(additionalConfigurationProperties())
+        val artifacts = syncer.getAvailableVersions(cordapp, additionalConfigurationProperties())
         val artifactsMetadataCache = appServiceHub.cordaService(ArtifactsMetadataCache::class.java)
         artifactsMetadataCache.artifactsCache = artifacts
         return artifacts
@@ -64,8 +64,8 @@ internal class SyncerService(private val appServiceHub : AppServiceHub) : Single
         executor.submit(Callable { syncArtifacts(syncerConfiguration) })
     }
 
-    fun getArtifactsMetadataAsync(syncerConfiguration : SyncerConfiguration? = null) {
-        executor.submit(Callable { getArtifactsMetadata(syncerConfiguration) })
+    fun getArtifactsMetadataAsync(cordapp : String, syncerConfiguration : SyncerConfiguration? = null) {
+        executor.submit(Callable { getArtifactsMetadata(cordapp, syncerConfiguration) })
     }
 }
 
