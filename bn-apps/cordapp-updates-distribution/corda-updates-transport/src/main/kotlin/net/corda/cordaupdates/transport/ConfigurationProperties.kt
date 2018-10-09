@@ -1,5 +1,8 @@
 package net.corda.cordaupdates.transport
 
+/**
+ * Custom properties that are recognised by corda-flows and corda-rpc transports
+  */
 object ConfigurationProperties {
     const val APP_SERVICE_HUB = "corda-updates.appServiceHub"
     const val RPC_HOST = "corda-updates.rpcHost"

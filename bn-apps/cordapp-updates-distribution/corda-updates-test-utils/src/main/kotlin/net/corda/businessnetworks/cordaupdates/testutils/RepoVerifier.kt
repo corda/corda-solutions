@@ -6,7 +6,7 @@ import kotlin.test.assertEquals
 class RepoVerifier(private val repoPath : String, private val fileExtensions : Set<String> = setOf("jar")) {
     private val tasks = mutableListOf<RepoVerifierTask>()
 
-    // TODO; add support for classifiers
+    // TODO: add support for classifiers
     fun shouldContain(group : String, artifact : String, versions : Set<String>) : RepoVerifier {
         tasks.add(RepoVerifierTask(group, artifact, versions))
         return this

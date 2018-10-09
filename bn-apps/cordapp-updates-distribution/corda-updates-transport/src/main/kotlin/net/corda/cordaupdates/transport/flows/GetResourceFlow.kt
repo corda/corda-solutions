@@ -18,21 +18,24 @@ import org.eclipse.aether.spi.connector.transport.Transporter
 import java.net.URI
 import java.util.*
 
+/**
+ * Flows to download a resource from a remote repository. Large payloads will be split into chunks of [serviceHub.networkParameters.maxMessageSize] / 2 size
+ */
 @StartableByService
 @StartableByRPC
 @InitiatingFlow
-class GetResourceFlow(private val resourceLocation : String, private val bnoName : String) : FlowLogic<ByteArray>() {
+class GetResourceFlow(private val resourceLocation : String, private val repositoryHosterName : String) : FlowLogic<ByteArray>() {
     @Suspendable
     override fun call() : ByteArray {
-        val bnoParty = serviceHub.identityService.wellKnownPartyFromX500Name(CordaX500Name.parse(bnoName))!!
-        val bnoSession = initiateFlow(bnoParty)
+        val repoHosterParty = serviceHub.identityService.wellKnownPartyFromX500Name(CordaX500Name.parse(repositoryHosterName))!!
+        val repoHosterSession = initiateFlow(repoHosterParty)
 
-        val payloadLength = bnoSession.sendAndReceive<Int>(resourceLocation).unwrap { it }
+        val payloadLength = repoHosterSession.sendAndReceive<Int>(resourceLocation).unwrap { it }
 
         val byteArray = ByteArray(payloadLength)
         var position = 0
         while (position < payloadLength) {
-            val receivedBytes = bnoSession.receive<ByteArray>().unwrap { it }
+            val receivedBytes = repoHosterSession.receive<ByteArray>().unwrap { it }
             System.arraycopy(receivedBytes, 0, byteArray, position, receivedBytes.size)
             position += receivedBytes.size
         }
@@ -40,15 +43,17 @@ class GetResourceFlow(private val resourceLocation : String, private val bnoName
     }
 }
 
+/**
+ * Repository hoster can serve artifacts from a plain file- or http(s)- based repository
+ */
 @InitiatedBy(GetResourceFlow::class)
-class GetResourceFlowResponder(private val session : FlowSession) : FlowLogic<Unit>() {
-
+class GetResourceFlowResponder(session : FlowSession) : AbstractRepositoryHosterResponder<Unit>(session) {
     @Suspendable
-    override fun call() {
+    override fun doCall() {
         val location = session.receive<String>().unwrap { it }
         val bytes = getArtifactBytes(location)
 
-        val maxMessageSizeBytes = serviceHub.networkParameters.maxMessageSize
+        val maxMessageSizeBytes = serviceHub.networkParameters.maxMessageSize / 2
 
         session.send(bytes.size)
         for (i in 0..bytes.size step maxMessageSizeBytes) {
@@ -69,7 +74,7 @@ class GetResourceFlowResponder(private val session : FlowSession) : FlowLogic<Un
     }
 
     private fun createTransporter() : Transporter {
-        val configuration = serviceHub.cordaService(BNOConfigurationService::class.java)
+        val configuration = serviceHub.cordaService(RepositoryHosterConfigurationService::class.java)
         val repository = RemoteRepository.Builder("remote", "default", configuration.remoteRepoUrl()).build()
         val transporterFactory = transporterFactory(repository.protocol)
         val repositorySession = newSession()
