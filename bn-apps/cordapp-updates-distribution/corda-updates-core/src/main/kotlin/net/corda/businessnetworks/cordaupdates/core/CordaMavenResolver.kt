@@ -27,6 +27,25 @@ import org.eclipse.aether.transport.file.FileTransporterFactory
 import org.eclipse.aether.transport.http.HttpTransporterFactory
 import org.eclipse.aether.util.repository.AuthenticationBuilder
 
+/**
+ * Wrapper around Maven Resolver. Allows to:
+ *  - download a single version / version range of a CorDapp
+ *  - get available versions of a CorDapp that are within the specified version range
+ *
+ * Downloading a version range is effectively a combination of getting available versions + downloading each missing version separately.
+ * Version ranges can be specified using mathematical range notation, i.e. "(1,2.5]".
+ *
+ * CordaMavenResolver utilises Maven's local and remote repositories concepts, as well as other standard Maven mechanics.
+ * For example it will not attempt to re-download an artifact if it already exists in the local repo.
+ *
+ * CordaMavenResolver supports basic authentication for HTTP(s) proxies and remote repositories.
+ *
+ * CordaMavenResolver supports the following transports: file, http(s), corda-rpc, corda-flows, corda-auto.
+ * "file" and "http" transports are a part of standard Maven resolver distribution.
+ * "corda-rpc", "corda-flows" and "corda-auto" allow to transfer artifacts over Corda flows.
+ * For more details @see [CordaTransporterFactory].
+ */
+
 class CordaMavenResolver private constructor(private val remoteRepoUrl : String,
                                              private val localRepoPath : String,
                                              private val repoAuthentication : Authentication? = null,
@@ -73,6 +92,7 @@ class CordaMavenResolver private constructor(private val remoteRepoUrl : String,
             rpcUsername?.let { configurationProperties[ConfigurationProperties.RPC_USERNAME] = it }
             rpcPassword?.let { configurationProperties[ConfigurationProperties.RPC_PASSWORD] = it }
 
+            // listeners can be used to report Maven Resolver progress
             val resolver = CordaMavenResolver(remoteRepoUrl!!, localRepoPath!!, authentication, proxy, configurationProperties)
             resolver.repositoryListener = repositoryListener
             resolver.transferListener = transferListener
@@ -120,9 +140,17 @@ class CordaMavenResolver private constructor(private val remoteRepoUrl : String,
                 .build()
     }
 
-    fun resolveVersionRange(rangeRequest : String,
+    /**
+     * Returns available versions of the artifact within the specified version range.
+     * For version range requests, isFromLocal is always false, even if the version exists in the local repository.
+     *
+     * @coordinatesWithRange maven coordinates with range in standard Maven notation, i.e. "net.cord:corda-finance:(1,2.5]".
+     * @configProps custom properties that will be passed to Maven Resolver internals
+     * @return metadata for the available versions. If no versions have been found [ArtifactMetadata.versions] will be empty
+     */
+    fun resolveVersionRange(coordinatesWithRange : String,
                             configProps : Map<String, Any> = mapOf()) : ArtifactMetadata {
-        val artifact = DefaultArtifact(rangeRequest)
+        val artifact = DefaultArtifact(coordinatesWithRange)
         val versionRangeRequest = VersionRangeRequest(artifact, listOf(remoteRepository), null)
         val session = createRepositorySession(configProps)
         val versionRangeResult = repositorySystem.resolveVersionRange(session, versionRangeRequest)!!
@@ -134,6 +162,13 @@ class CordaMavenResolver private constructor(private val remoteRepoUrl : String,
                 versionRangeResult.versions.map { VersionMetadata(it.toString(), versionRangeResult.getRepository(it) is LocalRepository) })
     }
 
+    /**
+     * Downloads missing versions to the local repo. If some version already existed in the local repository, its isFromLocal flag will be true.
+     * This method is effectively a combination of resolveVersionRange + downloadVersion.
+     *
+     * @rangeRequest should be specified in standard Maven notation, i.e. "net.cord:corda-finance:(1,2.5]". Also supports package types and classifiers.
+     * @configProps custom properties that will be passed to Maven Resolver internals
+     */
     fun downloadVersionRange(rangeRequest : String,
                              configProps : Map<String, Any> = mapOf()) : ArtifactMetadata {
         val artifactMetadata = resolveVersionRange(rangeRequest, configProps)
@@ -148,19 +183,28 @@ class CordaMavenResolver private constructor(private val remoteRepoUrl : String,
         return artifactMetadata.copy(versions = versions)
     }
 
-    fun downloadVersion(mavenCoords : String,
+    /**
+     * Downloads a single version of artifact if it's missing in the local repo.
+     *
+     * @coordinates standard maven coordinates, i.e. "net.corda:corda-finance:3.2".
+     * @configProps custom properties that will be passed to Maven Resolver internals
+     *
+     * @throws [ResourceNotFoundException] if specified artifact has not been found in the remote repository
+     * @throws [ResourceTransferException] if a remote repository is unreachable
+     */
+    fun downloadVersion(coordinates : String,
                         configProps : Map<String, Any> = mapOf()) : ArtifactMetadata {
         val session = createRepositorySession(configProps)
-        val aetherArtifact = DefaultArtifact(mavenCoords)
+        val aetherArtifact = DefaultArtifact(coordinates)
         val artifactRequest = ArtifactRequest(aetherArtifact, listOf(remoteRepository), null)
         val resolutionResult : ArtifactResult
         try {
             resolutionResult = repositorySystem.resolveArtifact(session, artifactRequest)!!
         } catch (ex : RepositoryException) {
             when (ex.cause) {
-                is ArtifactNotFoundException -> throw ResourceNotFoundException(mavenCoords, ex)
-                is ArtifactTransferException -> throw ResourceTransferException(mavenCoords, ex)
-                else -> throw CordaMavenResolverException("Error while resolving the artifact $mavenCoords", ex)
+                is ArtifactNotFoundException -> throw ResourceNotFoundException(coordinates, ex)
+                is ArtifactTransferException -> throw ResourceTransferException(coordinates, ex)
+                else -> throw CordaMavenResolverException("Error while resolving the artifact $coordinates", ex)
             }
         }
         return ArtifactMetadata(aetherArtifact.groupId,
@@ -182,10 +226,16 @@ class CordaMavenResolver private constructor(private val remoteRepoUrl : String,
     }
 }
 
+/**
+ * Representation of an artifact and its versions
+ */
 data class ArtifactMetadata(val group : String, val name : String, val classifier : String = "", val extension : String = "jar", val versions : List<VersionMetadata> = listOf()) {
     fun toMavenArtifacts() = versions.map { DefaultArtifact(group, name, classifier, extension, it.version) }
 }
 
+/**
+ * Representation of an artifact version. isFromLocal indicates whether the version was resolver from the local repository.
+ */
 data class VersionMetadata(val version : String, val isFromLocal : Boolean)
 
 open class CordaMavenResolverException(message : String, cause : Throwable) : Exception(message, cause)
