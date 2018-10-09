@@ -17,24 +17,27 @@ import org.eclipse.aether.spi.connector.transport.PeekTask
 import java.lang.Exception
 import java.net.URI
 
+/**
+ * Flows to peek a resource
+ */
 @InitiatingFlow
 @StartableByRPC
 @StartableByService
-class PeekResourceFlow(private val resourceLocation : String, private val bnoName : String) : FlowLogic<Unit>() {
+class PeekResourceFlow(private val resourceLocation : String, private val repoHosterName : String) : FlowLogic<Unit>() {
     @Suspendable
     override fun call() {
-        val bnoParty = serviceHub.identityService.wellKnownPartyFromX500Name(CordaX500Name.parse(bnoName))!!
-        val bnoSession = initiateFlow(bnoParty)
-        bnoSession.sendAndReceive<Boolean>(resourceLocation).unwrap { it }
+        val repoHosterParty = serviceHub.identityService.wellKnownPartyFromX500Name(CordaX500Name.parse(repoHosterName))!!
+        val repoHosterSession = initiateFlow(repoHosterParty)
+        repoHosterSession.sendAndReceive<Boolean>(resourceLocation).unwrap { it }
     }
 }
 
 @InitiatedBy(PeekResourceFlow::class)
-class PeekResourceFlowResponder(val session : FlowSession) : FlowLogic<Unit>() {
+class PeekResourceFlowResponder(session : FlowSession) : AbstractRepositoryHosterResponder<Unit>(session) {
     @Suspendable
-    override fun call() {
+    override fun doCall() {
         val location = session.receive<String>().unwrap { it }
-        val configuration = serviceHub.cordaService(BNOConfigurationService::class.java)
+        val configuration = serviceHub.cordaService(RepositoryHosterConfigurationService::class.java)
         val repository = RemoteRepository.Builder("remote", "default", configuration.remoteRepoUrl()).build()
 
         val transporterFactory = transporterFactory(repository.protocol)

@@ -20,10 +20,40 @@ import org.eclipse.aether.spi.connector.transport.Transporter
 import org.eclipse.aether.transfer.NoTransporterException
 import org.eclipse.aether.util.ConfigUtils
 
+/**
+ * Transport over Corda flows. Should be used only within a Corda node. This transporter expects an instance of [AppServiceHub]
+ * to be passed via custom session properties. An instance of [AppServiceHub] is required to delegate the data transfer to a separate execution context,
+ * to avoid checkpointing of Maven Resolver contents (as the they are not [@Suspendable]).
+ *
+ * When this transport is used from Corda OS, [CordaMavenResolver] should be invoked asynchronously, to prevent the invoking flow from
+ * blocking the only thread available for the flows executor. For example.
+ *
+ * @CordaService
+ * class ResolverExecutor(val appServiceHub : AppServiceHub) : SingletonSerializeAsToken() {
+ *     companion object {
+ *         val EXECUTOR = Executors.newSingleThreadExecutor()
+ *     }
+ *
+ *     fun invoke(resolver : CordaMavenResolver) {
+ *         EXECUTOR.submit {
+ *             val additionalProperties = mapOf(Pair(ConfigurationProperties.APP_SERVICE_HUB, appServiceHub))
+ *             resolver.downloadVersion("net.corda:corda-finance", additionalProperties)
+ *         }
+ *     }
+ * }
+ *
+ * class MyFlow(val resolver : CordaMavenResolver) : FlowLogic<Unit>() {
+ *     @Suspendable
+ *     override fun call() {
+ *         val executor = serviceHub.cordaService(ResolverExecutor::class.java)
+ *         executor.invoke(resolver)
+ *     }
+ * }
+ */
 class FlowsTransporter(private val session : RepositorySystemSession,
                        private val repository : RemoteRepository) : AbstractTransporter() {
 
-    private val bnoName = repository.url.substring(repository.protocol!!.length + 1, repository.url.length)
+    private val repoHosterName = repository.url.substring(repository.protocol!!.length + 1, repository.url.length)
 
     init {
         session.configProperties
@@ -34,12 +64,12 @@ class FlowsTransporter(private val session : RepositorySystemSession,
 
     override fun implPeek(task : PeekTask?) {
         val appServiceHub = ConfigUtils.getObject(session, null, ConfigurationProperties.APP_SERVICE_HUB) as AppServiceHub
-        appServiceHub.startFlow(PeekResourceFlow(task!!.location.toString(), bnoName)).returnValue.getOrThrow()
+        appServiceHub.startFlow(PeekResourceFlow(task!!.location.toString(), repoHosterName)).returnValue.getOrThrow()
     }
 
     override fun implGet(task : GetTask?) {
         val appServiceHub = ConfigUtils.getObject(session, null, ConfigurationProperties.APP_SERVICE_HUB) as AppServiceHub
-        val bytes = appServiceHub.startFlow(GetResourceFlow(task!!.location.toString(), bnoName)).returnValue.getOrThrow()
+        val bytes = appServiceHub.startFlow(GetResourceFlow(task!!.location.toString(), repoHosterName)).returnValue.getOrThrow()
         utilGet(task, ByteInputStream(bytes, bytes.size), true, bytes.size.toLong(), false)
     }
 
@@ -55,10 +85,13 @@ class FlowsTransporter(private val session : RepositorySystemSession,
     }
 }
 
+/**
+ * Transport over Corda RPC. Should be used outside of a Corda node. Expects RPC credentials to be provided via custom session properties.
+ */
 class RPCTransporter(private val session : RepositorySystemSession,
                      private val repository : RemoteRepository) : AbstractTransporter() {
 
-    private val bnoName = repository.url.substring(repository.protocol!!.length + 1, repository.url.length)
+    private val repoHosterName = repository.url.substring(repository.protocol!!.length + 1, repository.url.length)
 
     init {
         if (repository.protocol.toLowerCase() !in setOf(Transports.CORDA_AUTO, Transports.CORDA_RPC)) {
@@ -67,11 +100,11 @@ class RPCTransporter(private val session : RepositorySystemSession,
     }
 
     override fun implPeek(task : PeekTask?) {
-        rpcOps().startFlowDynamic(PeekResourceFlow::class.java, task!!.location.toString(), bnoName).returnValue.getOrThrow()
+        rpcOps().startFlowDynamic(PeekResourceFlow::class.java, task!!.location.toString(), repoHosterName).returnValue.getOrThrow()
     }
 
     override fun implGet(task : GetTask?) {
-        val bytes = rpcOps().startFlowDynamic(GetResourceFlow::class.java, task!!.location.toString(), bnoName).returnValue.getOrThrow()
+        val bytes = rpcOps().startFlowDynamic(GetResourceFlow::class.java, task!!.location.toString(), repoHosterName).returnValue.getOrThrow()
         utilGet(task, ByteInputStream(bytes, bytes.size), true, bytes.size.toLong(), false)
     }
 
