@@ -29,8 +29,8 @@ import org.eclipse.aether.util.repository.AuthenticationBuilder
 
 /**
  * Wrapper around Maven Resolver. Allows to:
- *  - download a single version / version range of a CorDapp
- *  - get available versions of a CorDapp that are within the specified version range
+ *  - download a single version / version range of a CorDapp from a remote repository
+ *  - get a list of CorDapp versions available in a remote repository
  *
  * Downloading a version range is effectively a combination of getting available versions + downloading each missing version separately.
  * Version ranges can be specified using mathematical range notation, i.e. "(1,2.5]".
@@ -40,9 +40,7 @@ import org.eclipse.aether.util.repository.AuthenticationBuilder
  *
  * CordaMavenResolver supports basic authentication for HTTP(s) proxies and remote repositories.
  *
- * CordaMavenResolver supports the following transports: file, http(s), corda-rpc, corda-flows, corda-auto.
- * "file" and "http" transports are a part of standard Maven resolver distribution.
- * "corda-rpc", "corda-flows" and "corda-auto" allow to transfer artifacts over Corda flows.
+ * CordaMavenResolver supports standard file, http(s) transports as well as bespoke transports corda-rpc, corda-flows over Corda flows.
  * For more details @see [CordaTransporterFactory].
  */
 
@@ -141,10 +139,11 @@ class CordaMavenResolver private constructor(private val remoteRepoUrl : String,
     }
 
     /**
-     * Returns available versions of the artifact within the specified version range.
-     * For version range requests, isFromLocal is always false, even if the version exists in the local repository.
+     * Resolves a list of CorDapp versions available in the remote repository.
      *
-     * @coordinatesWithRange maven coordinates with range in standard Maven notation, i.e. "net.cord:corda-finance:(1,2.5]".
+     * For version range requests, isFromLocal is always false, even if the version existed in the local repository.
+     *
+     * @coordinatesWithRange full maven coordinates with range in standard Maven notation, i.e. "net.cord:corda-finance:(1,2.5]".
      * @configProps custom properties that will be passed to Maven Resolver internals
      * @return metadata for the available versions. If no versions have been found [ArtifactMetadata.versions] will be empty
      */
@@ -163,17 +162,18 @@ class CordaMavenResolver private constructor(private val remoteRepoUrl : String,
     }
 
     /**
-     * Downloads missing versions to the local repo. If some version already existed in the local repository, its isFromLocal flag will be true.
+     * Downloads locally missing CorDapp versions from the remote repository. For existing versions isFromLocal flag will be true.
      * This method is effectively a combination of resolveVersionRange + downloadVersion.
      *
-     * @rangeRequest should be specified in standard Maven notation, i.e. "net.cord:corda-finance:(1,2.5]". Also supports package types and classifiers.
+     * @coordinatesWithRange full maven coordinates with range in standard Maven notation, i.e. "net.cord:corda-finance:(1,2.5]".
      * @configProps custom properties that will be passed to Maven Resolver internals
+     * @return artifact metadata with a list of resolved versions
      */
-    fun downloadVersionRange(rangeRequest : String,
+    fun downloadVersionRange(coordinatesWithRange : String,
                              configProps : Map<String, Any> = mapOf()) : ArtifactMetadata {
-        val artifactMetadata = resolveVersionRange(rangeRequest, configProps)
+        val artifactMetadata = resolveVersionRange(coordinatesWithRange, configProps)
 
-        val aetherArtifact = DefaultArtifact(rangeRequest)
+        val aetherArtifact = DefaultArtifact(coordinatesWithRange)
 
         // downloading the most recent version first
         val versions = artifactMetadata.versions.asReversed().map {
@@ -184,13 +184,14 @@ class CordaMavenResolver private constructor(private val remoteRepoUrl : String,
     }
 
     /**
-     * Downloads a single version of artifact if it's missing in the local repo.
+     * Downloads a specified version of CorDapp if it's missing in the local repo.
      *
-     * @coordinates standard maven coordinates, i.e. "net.corda:corda-finance:3.2".
+     * @coordinates full maven coordinates, i.e. "net.corda:corda-finance:3.2".
      * @configProps custom properties that will be passed to Maven Resolver internals
+     * @return artifact metadata with a single version
      *
-     * @throws [ResourceNotFoundException] if specified artifact has not been found in the remote repository
-     * @throws [ResourceTransferException] if a remote repository is unreachable
+     * @throws [ResourceNotFoundException] if the specified artifact has not been found in the remote repository
+     * @throws [ResourceTransferException] if the remote repository is unreachable
      */
     fun downloadVersion(coordinates : String,
                         configProps : Map<String, Any> = mapOf()) : ArtifactMetadata {
@@ -234,7 +235,7 @@ data class ArtifactMetadata(val group : String, val name : String, val classifie
 }
 
 /**
- * Representation of an artifact version. isFromLocal indicates whether the version was resolver from the local repository.
+ * Representation of an artifact version. isFromLocal indicates whether the version was resolved from the local repository.
  */
 data class VersionMetadata(val version : String, val isFromLocal : Boolean)
 
