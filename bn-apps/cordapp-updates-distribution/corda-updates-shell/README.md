@@ -1,9 +1,9 @@
 corda-updates-shell
 ==================================
 
-This repository contains an implementation of a Command Line Interface for `corda-updates` utility. The utility is build with [CordaCLIWrapper](https://docs.corda.net/head/cli-ux-guidelines.html) and supports all of its features.
+This repository contains an implementation of a Command Line Interface for `corda-updates` utility. The CLI is build with [CordaCLIWrapper](https://docs.corda.net/head/cli-ux-guidelines.html) and supports all of its features.
 
-TODO: Add references to docs about transports and etc.
+TODO: Add references about transports and etc.
 
 # Usage
 
@@ -40,7 +40,7 @@ java -jar corda-updates-shell-xxx.jar --mode=PRINT_VERSIONS --cordapp="net.corda
 ## YAML structure
 
 ```yaml
-#Path to local repository
+#Path to the local repository
 localRepoPath: ~/.corda-updates/repo
 
 # HTTP or HTTPS. Should be specified only if HTTP(S) proxy is used.
@@ -58,23 +58,23 @@ httpProxyUsername: proxy_user
 # Password for proxy authentication. Should be specified only if HTTP(S) proxy is used.
 httpProxyPassword: P@$$w0rD
 
-# RPC host of a corda node to connect to. Should be specified only if corda-rpc or corda-auto transport is used.
+# RPC host of a Corda node to connect to. Should be specified only if corda-rpc or corda-auto transport is used.
 rpcHost: localhost
 
-# RPC port of a corda node to connect to. Should be specified only if corda-rpc or corda-auto transport is used.
+# RPC port of a Corda node to connect to. Should be specified only if corda-rpc or corda-auto transport is used.
 rpcPort: 8003
 
-# RPC username of a corda node to connect to. Should be specified only if corda-rpc or corda-auto transport is used.
+# RPC username of a Corda node to connect to. Should be specified only if corda-rpc or corda-auto transport is used.
 rpcUsername: johndoe
 
-# RPC password of a corda node to connect to. Should be specified only if corda-rpc or corda-auto transport is used.
+# RPC password of a Corda node to connect to. Should be specified only if corda-rpc or corda-auto transport is used.
 rpcPassword: 10004
 
-# List of cordapps to sync from remote repos. Can sync multiple CorDapps from multiple repositories
+# List of CorDapps to sync from remote repos. Can sync multiple CorDapps from multiple repositories
 cordappSources:
 - remoteRepoUrl: https://repo.maven.apache.org/maven2/
 
-  # list of cordapps to sync from this repo. Can be many. Should be specified in the form of "artifactGroup:artifactName"
+  # list of CorDapps to sync from this repo. Can be many. Should be specified in the form of "artifactGroup:artifactName"
   cordapps:
   - net.corda:corda-finance
 
@@ -87,19 +87,19 @@ cordappSources:
 ```
 
 
-## Resolution
+## Configuration resolution
 
-Resolution of configuration file is done in the following order: 
-1. An explicit path if one has been provided via command line parameters, 
-2. `settings.yaml` under the current working folder
-3. `settings.yaml` under `USER.HOME/.corda-updates`
+Configuration file is looked up in the following order: 
+1. An explicit path if one has been provided via command line `--configPath` parameter
+2. `settings.yaml` in the current working folder
+3. `settings.yaml` in `USER.HOME/.corda-updates`
 
 
 # How to start
 
-1. Download *corda-updates-shell* jar file or build it by yourself
+1. Download *corda-updates-shell* jar or build it by yourself
 2. Initialise a local repository via `java -jar corda-updates-shell-xxx.jar --mode=INIT`
-3. Amend `settings.yaml`, add required CorDapps
+3. Add CorDapps that you would like to sync to `settings.yaml`
 4. Start using the utility by invoking `SYNC` or `PRINT_VERSIONS` commands
 
  
