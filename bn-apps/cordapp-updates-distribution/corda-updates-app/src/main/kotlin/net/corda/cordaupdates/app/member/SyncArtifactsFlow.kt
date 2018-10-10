@@ -6,18 +6,35 @@ import net.corda.businessnetworks.cordaupdates.core.SyncerConfiguration
 import net.corda.cordaupdates.app.states.ScheduledSyncContract
 import net.corda.cordaupdates.app.states.ScheduledSyncState
 import net.corda.core.contracts.StateAndRef
+import net.corda.core.contracts.StateRef
 import net.corda.core.flows.FinalityFlow
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.SchedulableFlow
 import net.corda.core.flows.StartableByRPC
+import net.corda.core.identity.Party
 import net.corda.core.node.services.queryBy
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
+import net.corda.core.utilities.ProgressTracker
 
 @SchedulableFlow
 @StartableByRPC
-class SyncArtifactsFlow (private val syncerConfig : SyncerConfiguration? = null, private val launchAsync : Boolean = true) : FlowLogic<List<ArtifactMetadata>?>() {
-    constructor() : this(null, true)
+class SyncArtifactsFlow private constructor (private val scheduledStateRef : StateRef? = null,
+                         private val syncerConfig : SyncerConfiguration? = null,
+                         private val launchAsync : Boolean = true) : FlowLogic<List<ArtifactMetadata>?>() {
+    constructor(scheduledStateRef : StateRef) : this(scheduledStateRef, null, true)
+    constructor(syncerConfig : SyncerConfiguration? = null,
+                launchAsync : Boolean = true) : this(null, syncerConfig, launchAsync)
+
+    companion object {
+        object LAUNCHING_SYNCHRONISATION : ProgressTracker.Step("Invoking initial synchronisation")
+
+        fun tracker() = ProgressTracker(
+                LAUNCHING_SYNCHRONISATION
+        )
+    }
+
+    override val progressTracker = tracker()
 
     @Suspendable
     override fun call() : List<ArtifactMetadata>? {
@@ -32,39 +49,42 @@ class SyncArtifactsFlow (private val syncerConfig : SyncerConfiguration? = null,
 }
 
 @StartableByRPC
-class ScheduleSyncFlow @JvmOverloads constructor(private val syncerConfig : SyncerConfiguration? = null, private val launchAsync : Boolean = true) : FlowLogic<List<ArtifactMetadata>?>() {
+class ScheduleSyncFlow @JvmOverloads constructor(private val syncerConfig : SyncerConfiguration? = null,
+                                                 private val launchAsync : Boolean = true) : FlowLogic<List<ArtifactMetadata>?>() {
 
-    @Suspendable
-    override fun call() : List<ArtifactMetadata>?? {
-        val scheduledStates = serviceHub.vaultService.queryBy<ScheduledSyncState>().states
-
-        // There should never be more than one sync schedule state stored in the vault
-        // If there is more than one state exist in the vault - we spend all the states and issues a new one
-        if (scheduledStates.size > 1) {
-            scheduledStates.forEach { spendScheduledState(it) }
-            // issuing a new state
-            issueScheduledState()
-        } else if (scheduledStates.isEmpty()) {
-            issueScheduledState()
-        } else {
-            val scheduledStateAndRef = scheduledStates.single()
-            val scheduledState = scheduledStateAndRef.state.data
-            val configuration = serviceHub.cordaService(MemberConfiguration::class.java)
-            // reissue state if the sync interval has changed
-            if (configuration.syncInterval() != scheduledState.syncInterval) {
-                spendScheduledState(scheduledStateAndRef)
-                issueScheduledState()
-            }
+    companion object {
+        object SCHEDULING_STATE : ProgressTracker.Step("Scheduling state")
+        object INVOKING_INITIAL_SYNCRONISATION : ProgressTracker.Step("Invoking initial synchronisation") {
+            override fun childProgressTracker() = SyncArtifactsFlow.tracker()
         }
 
-        // syncCordapps sync flow
+        fun tracker() = ProgressTracker(
+                SCHEDULING_STATE,
+                INVOKING_INITIAL_SYNCRONISATION
+        )
+    }
+
+    override val progressTracker = tracker()
+
+    @Suspendable
+    override fun call() : List<ArtifactMetadata>? {
+
+        val configuration = serviceHub.cordaService(MemberConfiguration::class.java)
+
+        val scheduledStates = serviceHub.vaultService.queryBy<ScheduledSyncState>().states
+
+        // spending all existing scheduled states
+        scheduledStates.forEach { spendScheduledState(it, configuration.notaryParty()) }
+
+        // issuing a new scheduled state
+        issueScheduledState(configuration.syncInterval(), configuration.notaryParty())
+
+        // triggering first sync
         return subFlow(SyncArtifactsFlow(syncerConfig, launchAsync))
     }
 
     @Suspendable
-    private fun spendScheduledState(state : StateAndRef<ScheduledSyncState>) {
-        val configuration = serviceHub.cordaService(MemberConfiguration::class.java)
-        val notary = configuration.notaryParty()
+    private fun spendScheduledState(state : StateAndRef<ScheduledSyncState>, notary : Party) {
         val builder = TransactionBuilder(notary)
                 .addInputState(state)
                 .addCommand(ScheduledSyncContract.Commands.Stop(), ourIdentity.owningKey)
@@ -74,11 +94,9 @@ class ScheduleSyncFlow @JvmOverloads constructor(private val syncerConfig : Sync
     }
 
     @Suspendable
-    private fun issueScheduledState() : SignedTransaction {
-        val configuration = serviceHub.cordaService(MemberConfiguration::class.java)
-        val notary = configuration.notaryParty()
+    private fun issueScheduledState(syncInterval : Long, notary : Party) : SignedTransaction {
         val builder = TransactionBuilder(notary)
-                .addOutputState(ScheduledSyncState(configuration.syncInterval(), ourIdentity), ScheduledSyncContract.CONTRACT_NAME)
+                .addOutputState(ScheduledSyncState(syncInterval, ourIdentity), ScheduledSyncContract.CONTRACT_NAME)
                 .addCommand(ScheduledSyncContract.Commands.Start(), ourIdentity.owningKey)
 
         builder.verify(serviceHub)

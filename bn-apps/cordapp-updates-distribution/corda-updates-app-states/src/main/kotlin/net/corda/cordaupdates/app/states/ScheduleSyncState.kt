@@ -41,12 +41,12 @@ class ScheduledSyncContract : Contract {
             else -> throw IllegalArgumentException("Unsupported command ${command.value}")
         }
     }
-
 }
 
-data class ScheduledSyncState(val syncInterval : Long, val owner : Party) : SchedulableState {
+data class ScheduledSyncState(val syncInterval : Long,
+                              val owner : Party) : SchedulableState {
     override val participants = listOf(owner)
 
     override fun nextScheduledActivity(thisStateRef : StateRef, flowLogicRefFactory : FlowLogicRefFactory)
-            = ScheduledActivity(flowLogicRefFactory.create("net.corda.cordaupdates.app.member.SyncArtifactsFlow"), Instant.now().plusMillis(syncInterval))
+            = ScheduledActivity(flowLogicRefFactory.create("net.corda.cordaupdates.app.member.SyncArtifactsFlow", thisStateRef), Instant.now().plusMillis(syncInterval))
 }

@@ -62,7 +62,7 @@ class MavenOverFlowsTests {
 
     @Test
     fun testFlows() {
-        genericTest("corda-updates.conf") {
+        genericTest("corda-updates-app.conf") {
             participantNode.rpc.startFlowDynamic(TestFlow::class.java,
                     "corda-flows:O=Repo Hoster,L=New York,C=US",
                     nodeLocalRepoPath.toAbsolutePath().toString(),

@@ -13,10 +13,10 @@ import java.util.concurrent.Executors
 
 @CordaService
 class ArtifactsMetadataCache(private val appServiceHub : AppServiceHub) : SingletonSerializeAsToken() {
-    private var _artifactsCache : List<ArtifactMetadata> = listOf()
-    var artifactsCache : List<ArtifactMetadata>
-        internal set(value) { _artifactsCache = value }
-        get() = _artifactsCache
+    private var _cache : List<ArtifactMetadata> = listOf()
+    var cache : List<ArtifactMetadata>
+        internal set(value) { _cache = value }
+        get() = _cache
 }
 
 @CordaService
@@ -48,7 +48,7 @@ internal class SyncerService(private val appServiceHub : AppServiceHub) : Single
         val syncer = syncer(syncerConfiguration)
         val artifacts = syncer.syncCordapps(additionalConfigurationProperties = additionalConfigurationProperties())
         val artifactsMetadataCache = appServiceHub.cordaService(ArtifactsMetadataCache::class.java)
-        artifactsMetadataCache.artifactsCache = artifacts
+        artifactsMetadataCache.cache = artifacts
         return artifacts
     }
 
@@ -56,7 +56,7 @@ internal class SyncerService(private val appServiceHub : AppServiceHub) : Single
         val syncer = syncer(syncerConfiguration)
         val artifacts = syncer.getAvailableVersions(cordapp, additionalConfigurationProperties())
         val artifactsMetadataCache = appServiceHub.cordaService(ArtifactsMetadataCache::class.java)
-        artifactsMetadataCache.artifactsCache = artifacts
+        artifactsMetadataCache.cache = artifacts
         return artifacts
     }
 

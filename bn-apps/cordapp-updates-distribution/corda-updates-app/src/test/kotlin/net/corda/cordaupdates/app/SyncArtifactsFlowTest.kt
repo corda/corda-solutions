@@ -48,6 +48,8 @@ class SyncArtifactsFlowTest {
         mockNetwork = MockNetwork(cordappPackages = listOf("net.corda.cordaupdates.app", "net.corda.cordaupdates.states"),
                 notarySpecs = listOf(MockNetworkNotarySpec(notaryName)))
         node = mockNetwork.createPartyNode(participantName)
+
+        node.startFlow(ReloadConfigurationFlow("corda-updates-app.conf")).getOrThrow()
     }
 
     @After
@@ -82,7 +84,7 @@ class SyncArtifactsFlowTest {
     }
 
     @Test
-    fun `if multiple of ScheduleSyncStates exist on the ledger - spend them and issue a new one`() {
+    fun `if ScheduleSyncStates exist on the ledger - spend them and issue a new one`() {
         // issue some states onto the ledger
         val issueSomeStatesFuture = node.startFlow(IssueSomeScheduledStatesFlow(1000000L, 5))
         mockNetwork.runNetwork()
@@ -96,38 +98,6 @@ class SyncArtifactsFlowTest {
         verifyScheduledState()
     }
 
-    @Test
-    fun `should reissue ScheduleSyncState if sync interval has changed`() {
-        // issue some states onto the ledger
-        val issueSomeStatesFuture = node.startFlow(IssueSomeScheduledStatesFlow(1000000L, 1))
-        mockNetwork.runNetwork()
-        issueSomeStatesFuture.getOrThrow()
-
-        val scheduleSyncFuture = node.startFlow(ScheduleSyncFlow(syncerConfig, false))
-        mockNetwork.runNetwork()
-        scheduleSyncFuture.getOrThrow()
-
-        // should contain a single sync state on the ledger
-        verifyScheduledState()
-    }
-
-    @Test
-    fun `should not reissue state if sync interval is up to date`() {
-        // issue some states onto the ledger
-        val issueSomeStatesFuture = node.startFlow(IssueSomeScheduledStatesFlow(9999999L, 1))
-        mockNetwork.runNetwork()
-        issueSomeStatesFuture.getOrThrow()
-
-        val existingState = node.transaction { node.services.vaultService.queryBy<ScheduledSyncState>().states.single().state.data }
-
-        val scheduleSyncFuture = node.startFlow(ScheduleSyncFlow(syncerConfig, false))
-        mockNetwork.runNetwork()
-        scheduleSyncFuture.getOrThrow()
-
-        val newState = node.transaction { node.services.vaultService.queryBy<ScheduledSyncState>().states.single().state.data }
-
-        assertEquals(existingState, newState)
-    }
 
     private fun verifyScheduledState() {
         val vaultState = node.transaction { node.services.vaultService.queryBy<ScheduledSyncState>().states.single().state.data }
@@ -157,6 +127,6 @@ class GetDataFromSyncerServiceFlow : FlowLogic<List<ArtifactMetadata>>() {
     @Suspendable
     override fun call() : List<ArtifactMetadata> {
         val service = serviceHub.cordaService(ArtifactsMetadataCache::class.java)
-        return service.artifactsCache
+        return service.cache
     }
 }

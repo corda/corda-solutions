@@ -17,7 +17,7 @@ import java.nio.file.Paths
 @CordaService
 class RepositoryHosterConfigurationService(private val serviceHub : AppServiceHub) : SingletonSerializeAsToken() {
     companion object {
-        const val PROPERTIES_FILE_NAME = "corda-updates.properties"
+        const val PROPERTIES_FILE_NAME = "corda-updates-app.conf"
         const val REMOTE_REPO_URL = "remoteRepoUrl"
         const val SESSION_FILTER = "sessionFilter"
     }

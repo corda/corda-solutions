@@ -30,7 +30,7 @@ class GetCordappVersionsFlow : FlowLogic<Map<String, List<CordappVersionInfo>>>(
 }
 
 @StartableByRPC
-class GetCordappVersionsFlowForParty(private val partyName : String) : FlowLogic<List<CordappVersionInfo>>() {
+class GetCordappVersionsForPartyFlow(private val partyName : String) : FlowLogic<List<CordappVersionInfo>>() {
     @Suspendable
     override fun call() : List<CordappVersionInfo> {
         val dbService = serviceHub.cordaService(DatabaseService::class.java)
