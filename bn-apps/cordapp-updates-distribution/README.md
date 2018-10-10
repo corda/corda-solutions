@@ -29,11 +29,11 @@ CorDapp Distribution Service supports conventional HTTP(s) transport as well as 
 
 ## Why do we need it?
 
-Corda-based transports would allow repository hosters to enforce their custom rules onto incoming requests and to filter out any unauthorised download attempts. For example CorDapp Distribution Service can be easily integrated with [Business Networks Membership Service](https://github.com/corda/corda-solutions/tree/master/bn-apps/memberships-management), that would effectively allow it to filter out any non Business Network traffic. 
+Corda-based transports allow repository hosters to enforce their custom rules onto incoming requests and to filter out any unauthorised download attempts. For example CorDapp Distribution Service can be easily integrated with [Business Networks Membership Service](https://github.com/corda/corda-solutions/tree/master/bn-apps/memberships-management), that would effectively allow it to filter out any non Business Network traffic. 
 
 ## Session Filters
 
-Corda-based transports allow developers to implement their custom `SessionFilter`s that can be used to reject any unintended download requests. `SessionFilter` is a simple interface which, if implemented, is invoked against every incoming download request. `SessionFilter` returns a boolean that indicates whether a request should be let through or not.
+Corda-based transports allow developers to implement their custom `SessionFilter`s that can be used to reject any unintended download requests. `SessionFilter` is a simple interface which, if implemented, is invoked against every incoming download request. `SessionFilter` returns a boolean that indicates whether the request should be let through or not.
 
 ```kotlin
 interface SessionFilter {
@@ -41,7 +41,7 @@ interface SessionFilter {
     fun isSessionAllowed(session : FlowSession, flowLogic : FlowLogic<*>) : Boolean
 }
 ```
-For example a session filter that would allow only Business Network traffic in can be implemented as follows:
+For example a session filter that would allow only the Business Network traffic in can be implemented as follows:
 
 ```kotlin
 class BusinessNetworkSessionFilter : SessionFilter {
@@ -55,15 +55,15 @@ class BusinessNetworkSessionFilter : SessionFilter {
 The following transports are supported:
 * **corda-flows** allows to transfer data over Corda Flows. It can be used from *inside a Corda node* only. 
 * **corda-rpc** allows to transfer data over Corda RPC. It reuses the same flows as `corda-flows` transport, but invokes them via RPC instead.  
-* **corda-auto** is an automatic switch between `corda-rpc` and `corda-flows` transports. The underlying transport is chosen based on the value of `corda-updates.mode` custom session property, that can be set in the realtime based on the invocation context. The main purpose for this mode - is to allow Cordapp Distribution Service to reuse the same configuration file, regardless of whether it was invoked from inside or outside of a Corda node. 
+* **corda-auto** is an automatic switch between `corda-rpc` and `corda-flows` transports. The underlying transport is chosen based on the value of `corda-updates.mode` custom session property, that is set in the runtime based on the invocation context. The main purpose for this mode - is to allow Cordapp Distribution Service to reuse the same configuration file, regardless of whether it was invoked from inside or outside of a Corda node. 
 
-Corda-based transports expect a remote repository URL to be specified in the format of `transport-name:x500Name`. For example `corda-auto:O=BNO,L=New York,C=US` (just imagine that you specify Corda X500 name instead of HTTP host).
+Corda-based transports expect a remote repository URL to be specified in the format of `transport-name:x500Name`. For example `corda-auto:O=BNO,L=New York,C=US` (just imagine that you specify Corda X500 name instead of HTTP hostname).
 
 **corda-auto** is the recommended way of using Corda-based transports.
 
 ### Asynchronous invocations
 
-Maven Resolver over Corda-based transports should always be invoked from a non-flow thread when used inside Corda flows. This is because, under the hood Corda-based transports start a separate flow (which starts in a different from the calling thread) for data transfer to prevent Maven Resolver internals from being checkpointed as they are not `@Suspendable`. As Corda OS flows engine is single-threaded, invoking the transports synchronously would result into a deadlock, when the calling flow would be indefinitely waiting for the transport flow to finish while the transport flow would be indefinitely waiting for the calling flow to finish to be able to start.
+Maven Resolver over Corda-based transports should always be invoked from a *non-flow thread* when used *inside Corda flows*. This is because, under the hood Corda-based transports start a separate flow (which starts in a different from the calling thread) for data transfer to prevent Maven Resolver internals from being checkpointed as they are not `@Suspendable`. As Corda OS flows engine is single-threaded, invoking the transports synchronously would result into a deadlock, when the calling flow would be indefinitely waiting for the transport flow to finish while the transport flow would be indefinitely waiting for the calling flow to finish to be able to start.
 
 This behaviour is handled by CorDapp Distribution Service internally and is transparent to the end user.  
 
@@ -171,12 +171,6 @@ Configuration file is looked up in the following order:
 * Flows to schedule updates and retrieve available CorDapp versions
 * Flows to report CorDapp version information to the BNO
 
-## Asynchronous invocations
-
-The best way to use the CorDapp Distribution Service - is to schedule periodic updates via `ScheduleSyncFlow` (described below). Then contents of `ArtifactsMetadataCache` will always be up to date.
-
-Asynchronous mode doesn't have to be used when running on Corda Enterprise (CE) as CE's flows engine is multithreaded.    
-
 ## Scheduling synchronisation
 
 Updates can be scheduled via `ScheduleSyncFlow`. Synchronisation interval is driven by `syncInterval` configuration property and defaults to *5 hours*. `ScheduleSyncFlow` can be started from shell or RPC. 
@@ -221,6 +215,9 @@ Repository hoster configuration (required only if `corda-flows` transport is use
 ```
 # URL of the repository where the hoster would serve the artifacts from. Supports http(s) and file transports. Proxies and authentication are not supported 
 remoteRepoUrl=file:/path/to/local/repository
+
+# Class that implements the SessionFilter interface. Optional.
+sessionFilter=com.my.app.MySessionFilter
 ```
 ## Stopping CorDapp from working if a newer version is available
 
@@ -250,7 +247,7 @@ class MyFlow : FlowLogic<Unit>() {
 
 ## Reporting CorDapp versions
 
-Versions of installed CorDapps can be reported via `ReportCordappVersionFlow`. CorDapp Distribution Service doesn't collect information about installed CorDapps, but rather CorDapps should be reporting their versions by themselves. Version reporting can help BNO to understand if participants have an outdated versions of CorDapps installed and to contact them offline to ask to upgrade. 
+Versions of installed CorDapps can be reported via `ReportCordappVersionFlow`. CorDapp Distribution Service doesn't collect information about installed CorDapps. CorDapps are expected to report their versions by themselves. Version reporting can help BNOs to understand if participants have an outdated versions of CorDapps installed and to contact them offline to ask to upgrade. 
 
 BNOs can use `GetCordappVersionsFlow` and `GetCordappVersionsForPartyFlow` to query reported versions on their side.
 
