@@ -39,6 +39,7 @@ class SyncArtifactsFlow private constructor (private val scheduledStateRef : Sta
     @Suspendable
     override fun call() : List<ArtifactMetadata>? {
         val syncerService = serviceHub.cordaService(SyncerService::class.java)
+        progressTracker.currentStep = LAUNCHING_SYNCHRONISATION
         return if (launchAsync) {
             syncerService.syncArtifactsAsync(syncerConfig)
             null
@@ -68,7 +69,7 @@ class ScheduleSyncFlow @JvmOverloads constructor(private val syncerConfig : Sync
 
     @Suspendable
     override fun call() : List<ArtifactMetadata>? {
-
+        progressTracker.currentStep = SCHEDULING_STATE
         val configuration = serviceHub.cordaService(MemberConfiguration::class.java)
 
         val scheduledStates = serviceHub.vaultService.queryBy<ScheduledSyncState>().states
@@ -79,6 +80,7 @@ class ScheduleSyncFlow @JvmOverloads constructor(private val syncerConfig : Sync
         // issuing a new scheduled state
         issueScheduledState(configuration.syncInterval(), configuration.notaryParty())
 
+        progressTracker.currentStep = INVOKING_INITIAL_SYNCRONISATION
         // triggering first sync
         return subFlow(SyncArtifactsFlow(syncerConfig, launchAsync))
     }

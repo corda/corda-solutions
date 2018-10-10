@@ -1,15 +1,17 @@
 CorDapp Distribution Service
 ============================
 
-CorDapp Distribution Service allows Corda network operators to distribute CorDapps updates to their network members. Please see the [design doc](./design/design.md) for more information on the technical implementation.
+CorDapp Distribution Service allows Corda network operators to distribute CorDapp updates to the network members. Please see the [design doc](./design/design.md) for more information on the technical implementation.
 
-CorDapp Distribution Service utilises Maven repositories for artifact distribution (as CorDapps are effectively fat-jars). Corda network / business network operators can run Maven on their premises and distribute CorDapps over conventional HTTP(s) or bespoke Corda transports (which are described below). 
+CorDapp Distribution Service utilises Maven repositories for artifact distribution (as CorDapps are effectively fat-jars). Network members periodically query a remote repository for updates and download them locally. Installation of updates is not automated yet. Corda node administrators need to stop / update / restart their nodes manually.  
+
+CorDapp Distribution Service supports conventional HTTP(s) transport as well as bespoke Corda transports which are described in the further sections. 
 
 *CorDapp Distribution Service* consists of the following components:
-* **corda-updates-core** - core classes that provide a unified API over Maven Resolver
+* **corda-updates-core** - a generic API over Maven Resolver
 * **corda-updates-transport** - custom transport implementations for Maven Resolver over Corda Flows
-* **corda-updates-app** - CorDapp that provides Corda API over `corda-updates-core`, allows network participants to periodically check for updates and enables basic version-reporting functionality.
-* **corda-updates-shell** - command line interface over `corda-updates-core`
+* **corda-updates-app** - CorDapp that allows participants to schedule periodic updates and provides basic version reporting functionality.
+* **corda-updates-shell** - command line interface 
 
 # corda-updates-core
 
@@ -23,7 +25,7 @@ CorDapp Distribution Service utilises Maven repositories for artifact distributi
 
 # corda-updates-transport
 
-`corda-updates-transport` provides a bespoke Maven Resolver transport implementations over Corda Flows and Corda RPC.
+`corda-updates-transport` provides a bespoke Maven Resolver transports over Corda Flows and Corda RPC.
 
 ## Why do we need it?
 
@@ -31,7 +33,7 @@ Corda-based transports would allow repository hosters to enforce their custom ru
 
 ## Session Filters
 
-Corda-based transports allow developers to implement their custom `SessionFilter`s, which can be used to allow / disallow incoming download requests. `SessionFilter` is a simple interface which, if implemented, is invoked against every incoming download request. `SessionFilter` returns a boolean that indicates whether to request should be let through or not.
+Corda-based transports allow developers to implement their custom `SessionFilter`s that can be used to reject any unintended download requests. `SessionFilter` is a simple interface which, if implemented, is invoked against every incoming download request. `SessionFilter` returns a boolean that indicates whether a request should be let through or not.
 
 ```kotlin
 interface SessionFilter {
@@ -39,7 +41,7 @@ interface SessionFilter {
     fun isSessionAllowed(session : FlowSession, flowLogic : FlowLogic<*>) : Boolean
 }
 ```
-For example a session filter that would allow only Business Network traffic in can be implemented in the following way:
+For example a session filter that would allow only Business Network traffic in can be implemented as follows:
 
 ```kotlin
 class BusinessNetworkSessionFilter : SessionFilter {
@@ -51,11 +53,19 @@ class BusinessNetworkSessionFilter : SessionFilter {
 ## Transport modes
 
 The following transports are supported:
-* **corda-flows** allows to transfer data over Corda Flows. It can be used only when CorDapp Distribution Service is invoked from *inside a Corda node*.
-* **corda-rpc** allows to transfer data over Corda RPC. It reuses the same flows as `corda-flows` transport, but invokes them via RPC instead. `corda-rpc` can be used when CorDapp Distribution Service is invoked from *outside of a Corda node*, i.e. from a shell or a third-party application.
-* **corda-auto** is an automatic switch between `corda-rpc` and `corda-flows` transports. The underlying transport is chosen based on the value of `corda-updates.mode` custom session property, that can be set in the realtime based on the invocation context. The main purpose for this mode - is to allow Cordapp Distribution Service to reuse the same configuration file, regardless of where the transport was invoked from inside or outside of Corda. 
+* **corda-flows** allows to transfer data over Corda Flows. It can be used from *inside a Corda node* only. 
+* **corda-rpc** allows to transfer data over Corda RPC. It reuses the same flows as `corda-flows` transport, but invokes them via RPC instead.  
+* **corda-auto** is an automatic switch between `corda-rpc` and `corda-flows` transports. The underlying transport is chosen based on the value of `corda-updates.mode` custom session property, that can be set in the realtime based on the invocation context. The main purpose for this mode - is to allow Cordapp Distribution Service to reuse the same configuration file, regardless of whether it was invoked from inside or outside of a Corda node. 
 
-Corda-based transports expect a remote repository URL to be specified in the format of `transport-name:x500Name`. For example `corda-auto:O=BNO,L=New York,C=US` (just imagine that you specify Corda X500 name instead of HTTP host). 
+Corda-based transports expect a remote repository URL to be specified in the format of `transport-name:x500Name`. For example `corda-auto:O=BNO,L=New York,C=US` (just imagine that you specify Corda X500 name instead of HTTP host).
+
+**corda-auto** is the recommended way of using Corda-based transports.
+
+### Asynchronous invocations
+
+Maven Resolver over Corda-based transports should always be invoked from a non-flow thread when used inside Corda flows. This is because, under the hood Corda-based transports start a separate flow (which starts in a different from the calling thread) for data transfer to prevent Maven Resolver internals from being checkpointed as they are not `@Suspendable`. As Corda OS flows engine is single-threaded, invoking the transports synchronously would result into a deadlock, when the calling flow would be indefinitely waiting for the transport flow to finish while the transport flow would be indefinitely waiting for the calling flow to finish to be able to start.
+
+This behaviour is handled by CorDapp Distribution Service internally and is transparent to the end user.  
 
 # Configuration
 
@@ -92,13 +102,15 @@ rpcUsername: johndoe
 # RPC password of a Corda node to connect to. Should be specified only if corda-rpc or corda-auto transport is used.
 rpcPassword: 10004
 
-# List of CorDapps to sync from remote repos. Can sync multiple CorDapps from multiple repositories
+# List of CorDapps to sync from from remote repositories. 
+# CorDapp Distribution Service supports multiple remote repository sources and each remote repository can be associated with multiple CorDapps.
 cordappSources:
 - remoteRepoUrl: https://repo.maven.apache.org/maven2/
 
   # list of CorDapps to sync from this repo. Can be many. Should be specified in the form of "artifactGroup:artifactName"
   cordapps:
   - net.corda:corda-finance
+    my.app.group:my-app-name
 
   # Username, if the remote repo uses basic HTTP authentication
   httpUsername: repo_user
@@ -107,13 +119,6 @@ cordappSources:
   httpPassword: r3p0_P@$$
 
 ```
-
-Configuration file is looked up in the following order:
-* A custom path if one was provided by the calling site 
-* `settings.yaml` in the current working folder
-* `settings.yaml` in `USER.HOME/.corda-updates`
-
-Both `corda-updates-shell` and `corda-updates-app` support custom configuration path overrides, which are described below.
 
 # corda-updates-shell
 
@@ -147,7 +152,10 @@ java -jar corda-updates-shell-xxx.jar --mode=SYNC --cordapp="net.corda:corda-fin
 java -jar corda-updates-shell-xxx.jar --mode=PRINT_VERSIONS --cordapp="net.corda:corda-finance:[,)"
 ```
 
-> All `corda-updates-shell` commands support a configuration path override via `--configPath` parameter. For example `java -jar corda-updates-shell-xxx.jar --mode=SYNC --configPath="~/my-repo/settings.yaml"`
+Configuration file is looked up in the following order:
+* A custom path if one was provided via `--configPath` parameter 
+* `settings.yaml` in the current working folder
+* `settings.yaml` in `USER.HOME/.corda-updates`
 
 ## How to use
 
@@ -160,26 +168,10 @@ java -jar corda-updates-shell-xxx.jar --mode=PRINT_VERSIONS --cordapp="net.corda
 
 `corda-updates-app`is a CorDapp that provides the following functionality:
 * A scheduled state to periodically check for new updates
-* Corda APIs over CorDapp Distribution Service functionality
-* Flows to report installed information about installed CorDapps to the BNO
+* Flows to schedule updates and retrieve available CorDapp versions
+* Flows to report CorDapp version information to the BNO
 
-## Asynchronous mode
-
-`cora-updates-app` flows should be started in *asynchronous* mode when `corda-flows` or `corda-auto` transport is used. This is because `corda-flows` transport starts a separate flow (in a separate thread) for data transfer to prevent Maven Resolver internals from getting checkpointed (as they are not `@Suspendable`). As Corda OS flows engine is single-threaded, invoking any of Maven Resolver methods synchrnously would result into a deadlock.
-
-All flows that use Maven Resolver under the hood support `laynchAsync` flag which is `true` by default. When a flow is started in async mode, it would use a separate thread pool to trigger Maven Resolver operation and would return immediately without waiting for the operation to complete. Results of operation invocation would be published to `ArtifactsMetadataCache` once the invocation is finished.
-
-The following code snippet shows how to get the results
-
-```kotlin
-class MyFlow : FlowLogic<Unit>() {
-    @Suspendable
-    override fun call() {
-        val artifactsCache = serviceHub.cordaService(ArtifactsMetadataCache::class)
-        asrtifactCache.cache // <- results will appear populated here
-    }
-}
-```
+## Asynchronous invocations
 
 The best way to use the CorDapp Distribution Service - is to schedule periodic updates via `ScheduleSyncFlow` (described below). Then contents of `ArtifactsMetadataCache` will always be up to date.
 
@@ -193,6 +185,9 @@ Updates can be scheduled via `ScheduleSyncFlow`. Synchronisation interval is dri
 // synchronisation should be launched asynchronously if corda-flows transport is used 
 subFlow(ScheduleSyncFlow(launchAsync = true))
 ```
+
+> It is better to avoid launching ScheduleSyncFlow in synchronous mode, as it might result to a deadlock, as described in one of the previous sections
+
 ## Getting available versions
 
 Available versions can be fetched via `GetAvailableVersionsFlow`. 
@@ -201,7 +196,7 @@ Available versions can be fetched via `GetAvailableVersionsFlow`.
 subFLow(GetAvailableVersionsFlow("net.corda:corda-finance"))
 ```
 
-> Available versions are taken from the `ArtifactsMetadataCache` and hence can be fetched synchronously. At least on synchronisation has to be done for the contents of the cache to be populated. 
+> GetAvailableVersionsFlow doesn't make any requests to the remote repository, but reuses a cache populated by ScheduleSyncFlow instead. At least one synchronisation should pass in order for GetAvailableVersionsFlow to return any results. 
 
 ## Configuration
 
@@ -212,8 +207,8 @@ Participant configuration:
 # path to the yaml configuration file (described in the previous sections) 
 configPath=./config.yaml
 
-# synchronisation interval in milliseconds
-syncInterval=9999999
+# synchronisation interval in milliseconds defaults to 5 hours if not specified
+syncInterval=18000000
 
 # identity of the notary to use
 notary="O=Notary,L=London,C=GB"
@@ -224,7 +219,7 @@ bno="O=BNO,L=London,C=GB"
 
 Repository hoster configuration (required only if `corda-flows` transport is used):
 ```
-# URL of the repository where the hoster would serve the artifacts from. Supports http(s) and file transports. Proxies and authentication is not supported 
+# URL of the repository where the hoster would serve the artifacts from. Supports http(s) and file transports. Proxies and authentication are not supported 
 remoteRepoUrl=file:/path/to/local/repository
 ```
 ## Stopping CorDapp from working if a newer version is available
@@ -252,6 +247,12 @@ class MyFlow : FlowLogic<Unit>() {
     }
 }
 ```
+
+## Reporting CorDapp versions
+
+Versions of installed CorDapps can be reported via `ReportCordappVersionFlow`. CorDapp Distribution Service doesn't collect information about installed CorDapps, but rather CorDapps should be reporting their versions by themselves. Version reporting can help BNO to understand if participants have an outdated versions of CorDapps installed and to contact them offline to ask to upgrade. 
+
+BNOs can use `GetCordappVersionsFlow` and `GetCordappVersionsForPartyFlow` to query reported versions on their side.
 
 ## How to use
 
