@@ -55,15 +55,11 @@ class MavenOverRPCTests {
 
     @Test
     fun testRpc() {
-        genericTest("corda-updates.conf") {
-            // reloading config first
-            repoHosterNode.rpc.startFlowDynamic(ReloadConfigurationFlow::class.java, "corda-updates.properties")
-                    .returnValue.getOrThrow()
-
+        genericTest("corda-updates-app.conf") {
             val resolver = CordaMavenResolver.create(
                     remoteRepoUrl = "corda-rpc:O=Repo Hoster,L=New York,C=US",
                     localRepoPath = nodeLocalRepoPath.toAbsolutePath().toString())
-            val result = resolver.downloadVersion("net.example:test-artifact:1.5", configProps = mapOf(
+            resolver.downloadVersion("net.example:test-artifact:1.5", configProps = mapOf(
                     Pair(ConfigurationProperties.RPC_HOST, participantNode.rpcAddress.host),
                     Pair(ConfigurationProperties.RPC_PORT, participantNode.rpcAddress.port),
                     Pair(ConfigurationProperties.RPC_USERNAME, "test"),

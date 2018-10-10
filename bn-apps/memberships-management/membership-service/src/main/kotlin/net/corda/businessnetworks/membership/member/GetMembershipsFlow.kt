@@ -47,7 +47,6 @@ class GetMembershipsFlow(private val forceRefresh: Boolean = false) : FlowLogic<
         val membershipService = serviceHub.cordaService(MembershipsCacheHolder::class.java)
         val cache = membershipService.cache
         val now = serviceHub.clock.instant()
-
         return if (forceRefresh || cache == null || if (cache.expires == null) false else cache.expires < (now)) {
             val configuration = serviceHub.cordaService(MemberConfigurationService::class.java)
             val bno = configuration.bnoParty()

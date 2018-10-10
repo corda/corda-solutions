@@ -1,35 +1,41 @@
 package net.corda.cordaupdates.app.member
 
+import com.typesafe.config.Config
+import com.typesafe.config.ConfigFactory
 import net.corda.core.identity.CordaX500Name
+import net.corda.core.internal.div
 import net.corda.core.node.AppServiceHub
 import net.corda.core.node.services.CordaService
 import net.corda.core.serialization.SingletonSerializeAsToken
-import java.util.*
+import java.io.File
+import java.nio.file.Paths
 
 @CordaService
 class MemberConfiguration(private val serviceHub : AppServiceHub) : SingletonSerializeAsToken() {
     companion object {
-        const val PROPERTIES_FILE_NAME = "corda-updates.properties"
-        const val SYNCER_CONFIGURATION_PATH = "corda-updates.syncerConfig"
-        const val SYNC_INTERVAL = "corda-updates.syncInterval"
-        const val NOTARY_NAME = "corda-updates.notary"
-        const val BNO_NAME = "corda-updates.bno"
+        const val PROPERTIES_FILE_NAME = "corda-updates-app.conf"
+        const val SYNCER_CONFIGURATION_PATH = "configPath"
+        const val SYNC_INTERVAL = "syncInterval"
+        const val NOTARY_NAME = "notary"
+        const val BNO_NAME = "bno"
+        const val DEFAULT_SYNC_INTERVAL = 18000000L
     }
-    private val config = readProps(PROPERTIES_FILE_NAME).toMap()
+    private var _config = readProps((Paths.get("cordapps") / "config" / PROPERTIES_FILE_NAME).toFile())
 
-    fun syncerConfig() = config[SYNCER_CONFIGURATION_PATH]
-    fun syncInterval() = config[SYNC_INTERVAL]?.toLong() ?: 18000L
+    fun reloadConfigurationFromFile(file : File) {
+        _config = readProps(file)
+    }
+
+    fun syncerConfig() = getValue(SYNCER_CONFIGURATION_PATH)
+    fun syncInterval() = getValue(SYNC_INTERVAL)?.toLong() ?: DEFAULT_SYNC_INTERVAL
     fun notaryParty() = serviceHub.networkMapCache.getNotary(notaryName())!!
     fun bnoParty() = serviceHub.identityService.wellKnownPartyFromX500Name(bnoName())!!
 
-    private fun bnoName() = CordaX500Name.parse(config[BNO_NAME]!!)
-    private fun notaryName() = CordaX500Name.parse(config[NOTARY_NAME]!!)
+    private fun bnoName() = CordaX500Name.parse(getValue(BNO_NAME)!!)
+    private fun notaryName() = CordaX500Name.parse(getValue(NOTARY_NAME)!!)
 
-    private fun readProps(fileName : String) : Map<String, String> {
-        val input = MemberConfiguration::class.java.classLoader.getResourceAsStream(fileName)
-        val props = Properties()
-        props.load(input)
-        return props.propertyNames().toList().map { it as String }.map { it to props.getProperty(it)!!}.toMap()
-    }
+    private fun readProps(file : File) : Config = ConfigFactory.parseFile(file)
+
+    private fun getValue(key : String)= if (_config.hasPath(key)) _config.getString(key) else null
 }
 

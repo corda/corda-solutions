@@ -10,7 +10,7 @@ abstract class AbstractRepositoryHosterResponder<T>(val session : FlowSession) :
     override fun call() : T {
         val configuration = serviceHub.cordaService(RepositoryHosterConfigurationService::class.java)
         val sessionFilter = configuration.getSessionFilter()
-        if (sessionFilter != null && !sessionFilter.isSessionAllowed(session, serviceHub)) {
+        if (sessionFilter != null && !sessionFilter.isSessionAllowed(session, this)) {
             throw FlowException("Counterparty ${session.counterparty} is not allowed to access repository")
         }
         return doCall()

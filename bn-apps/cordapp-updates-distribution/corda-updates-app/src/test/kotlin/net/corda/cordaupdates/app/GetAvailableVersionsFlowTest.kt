@@ -5,6 +5,7 @@ import net.corda.businessnetworks.cordaupdates.core.SyncerConfiguration
 import net.corda.businessnetworks.cordaupdates.core.CordappSource
 import net.corda.businessnetworks.cordaupdates.core.VersionMetadata
 import net.corda.cordaupdates.app.member.GetAvailableVersionsFlow
+import net.corda.cordaupdates.app.member.SyncArtifactsFlow
 import net.corda.core.identity.CordaX500Name
 import net.corda.core.utilities.getOrThrow
 import net.corda.testing.node.MockNetwork
@@ -16,6 +17,7 @@ import org.junit.Test
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 class GetAvailableVersionsFlowTest {
     private lateinit var mockNetwork : MockNetwork
@@ -44,22 +46,32 @@ class GetAvailableVersionsFlowTest {
         mockNetwork.stopNodes()
     }
 
+    private fun syncArtifacts() {
+        // syncing artifacts
+        val future = node.startFlow(SyncArtifactsFlow(syncerConfig, false))
+        mockNetwork.runNetwork()
+        future.getOrThrow()!!
+    }
+
+    private fun getAvailableVersions() : ArtifactMetadata? {
+        val future = node.startFlow(GetAvailableVersionsFlow("net.example:test-artifact"))
+        mockNetwork.runNetwork()
+        return future.getOrThrow()
+    }
+
     @Test
     fun testHappyPath() {
-        val future = node.startFlow(GetAvailableVersionsFlow("net.example:test-artifact", syncerConfig, false))
-        mockNetwork.runNetwork()
-        val artifacts = future.getOrThrow()!!
+        // no versions should exist before synchronization was done
+        assertNull(getAvailableVersions())
+
+        syncArtifacts()
+
+        val artifact = getAvailableVersions()!!
 
         // verify returned metadata
         assertEquals(
-                setOf(ArtifactMetadata("net.example", "test-artifact", versions = listOf("0.1", "0.5", "1.0", "1.5", "2.0").map { VersionMetadata(it, false) })),
-                artifacts.toSet()
+                ArtifactMetadata("net.example", "test-artifact", versions = listOf("0.1", "0.5", "1.0", "1.5", "2.0").map { VersionMetadata(it, false) }),
+                artifact
         )
-
-        // make sure that metadata holder service has been updated
-        val dataFromServiceFuture = node.startFlow(GetDataFromSyncerServiceFlow())
-        mockNetwork.runNetwork()
-        val dataFromService = dataFromServiceFuture.getOrThrow()
-        assertEquals(artifacts.toSet(), dataFromService.toSet())
     }
 }
