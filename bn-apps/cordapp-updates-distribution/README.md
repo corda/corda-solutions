@@ -7,6 +7,22 @@ CorDapp Distribution Service utilises Maven repositories for artifact distributi
 
 CorDapp Distribution Service supports conventional HTTP(s) transport as well as bespoke Corda transports which are described in the further sections. 
 
+# Quickstart
+
+To start using CorDapp Distribution Service please follow the steps below:
+
+1. Download `corda-updates-shell` jar or build it by yourself. TODO: download link here
+2. Initialise a local repository via `java -jar corda-updates-shell-xxx.jar --mode=INIT`. All CorDapps will be downloaded to this location.
+3. Add CorDapps that you would like to watch to `settings.yaml`. Please see [this](#yaml-configuration) section for more details on the file format.
+4. Download `corda-updates-app` jar or build it by yourself. TODO: download link here
+5. Install the CorDapp to network participant's nodes and configure it as described [here](#participant-cordapp-configuration). `configPath` should point to the `settings.yaml` created during the step #2.
+6. If you are going to use [Corda-based transports](#corda-updates-transport) then install the CorDapp to the repository hoster's node and configure it as described [here](#repository-hoster-cordapp-configuration).   
+7. Schedule periodic synchronization by invoking [ScheduleSyncFlow](#scheduling-synchronisation) from Corda shell
+8. Updates will periodically be downloaded to the local repository.
+9. Done. Please read the rest of the page for more technical details and available configuration options.  
+
+# Structure
+
 *CorDapp Distribution Service* consists of the following components:
 * **corda-updates-core** - a generic API over Maven Resolver
 * **corda-updates-transport** - custom transport implementations for Maven Resolver over Corda Flows
@@ -67,7 +83,7 @@ Maven Resolver over Corda-based transports should always be invoked from a *non-
 
 This behaviour is handled by CorDapp Distribution Service internally and is transparent to the end user.  
 
-# Configuration
+# YAML Configuration
 
 CorDapp distribution service is configurable from a `yaml` file, of the following structure
 
@@ -157,7 +173,7 @@ Configuration file is looked up in the following order:
 * `settings.yaml` in the current working folder
 * `settings.yaml` in `USER.HOME/.corda-updates`
 
-## How to use
+## How to use the shell
 
 1. Download `corda-updates-shell` jar or build it by yourself. TODO: download link here
 2. Initialise a local repository via `java -jar corda-updates-shell-xxx.jar --mode=INIT`
@@ -192,11 +208,10 @@ subFLow(GetAvailableVersionsFlow("net.corda:corda-finance"))
 
 > GetAvailableVersionsFlow doesn't make any requests to the remote repository, but reuses a cache populated by ScheduleSyncFlow instead. At least one synchronisation should pass in order for GetAvailableVersionsFlow to return any results. 
 
-## Configuration
+## Participant CorDapp Configuration
 
-`corda-updates-app`loads its configuration file from `cordapps/config/corda-updates-app.conf` file. Configuration is different for participants and repository hosters.  
+Configuration is loaded from `cordapps/config/corda-updates-app.conf`.   
 
-Participant configuration:
 ```
 # path to the yaml configuration file (described in the previous sections) 
 configPath=./config.yaml
@@ -211,7 +226,9 @@ notary="O=Notary,L=London,C=GB"
 bno="O=BNO,L=London,C=GB"
 ```
 
-Repository hoster configuration (required only if `corda-flows` transport is used):
+## Repository Hoster CorDapp Configuration
+
+Configuration is loaded from `cordapps/config/corda-updates-app.conf`. Repository hoster node is required only if `corda-flows` transport is used.
 ```
 # URL of the repository where the hoster would serve the artifacts from. Supports http(s) and file transports. Proxies and authentication are not supported 
 remoteRepoUrl=file:/path/to/local/repository
@@ -250,14 +267,3 @@ class MyFlow : FlowLogic<Unit>() {
 Versions of installed CorDapps can be reported via `ReportCordappVersionFlow`. CorDapp Distribution Service doesn't collect information about installed CorDapps. CorDapps are expected to report their versions by themselves. Version reporting can help BNOs to understand if participants have an outdated versions of CorDapps installed and to contact them offline to ask to upgrade. 
 
 BNOs can use `GetCordappVersionsFlow` and `GetCordappVersionsForPartyFlow` to query reported versions on their side.
-
-## How to use
-
-1. Download `corda-updates-shell` jar or build it by yourself. TODO: download link here
-2. Initialise a local repository via `java -jar corda-updates-shell-xxx.jar --mode=INIT`
-3. Add CorDapps that you would like to watch to `settings.yaml`
-4. Download `corda-updates-app` jar or build it by yourself. TODO: download link here
-5. Install the CorDapp to participant's nodes. Configure the CorDapp with `corda-updates-app.conf` (as described in the previous sections) and point it to the `settings.yaml` file created at the step #2.
-6. If Corda-based transports are used then install the CorDapp to the repository hoster's node and point it to Maven repo via `corda-updates-app.conf` as described in the previous sections.   
-7. Schedule periodic sync by invoking `ScheduleSyncFlow` from Corda shell
-8. Updates will periodically be downloaded to the local repository.
