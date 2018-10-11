@@ -13,7 +13,7 @@ To start using CorDapp Distribution Service please follow the steps below:
 
 1. Download `corda-updates-shell` jar or build it by yourself. TODO: download link here
 2. Initialise a local repository via `java -jar corda-updates-shell-xxx.jar --mode=INIT`. Please see [usage](#usage) section for more information about supported parameters. By default, the repository will be created under `~/.corda-updates` folder. 
-3. Add CorDapps that you would like to watch to `settings.yaml`, which is located in the root of the repository created on the previous step. Please see [this](#yaml-configuration) section for more details on the configuration file format.
+3. Add CorDapps that you would like to watch to `settings.yaml`, which is located in the root of the repository created on the previous step - `~/.corda-updates/settings.yaml` by default. Please see [this](#yaml-configuration) section for more details on the configuration file format.
 4. Download `corda-updates-app` jar or build it by yourself. TODO: download link here
 5. Install the CorDapp to network participant's nodes and configure it as described [here](#participant-cordapp-configuration). `configPath` should point to the `settings.yaml` created on the step #2.
 6. If you are going to use [Corda-based transports](#corda-updates-transport) then install the CorDapp to the repository hoster's node and configure it as described [here](#repository-hoster-cordapp-configuration).   
@@ -50,7 +50,7 @@ Corda-based transports allow repository hosters to enforce their custom rules on
 
 ## Session Filters
 
-Corda-based transports allow developers to implement their custom `SessionFilter`s that can be used to reject any unintended download requests. `SessionFilter` is a simple interface which, if implemented, is invoked against every incoming download request. `SessionFilter` returns a boolean that indicates whether the request should be let through or not.
+Corda-based transports allow developers to implement their custom `SessionFilter`s that can be used to reject any unintended download requests. `SessionFilter` is a simple interface that, if implemented, is invoked against every incoming download request. `SessionFilter` returns a boolean that indicates whether the request should be let through or not.
 
 ```kotlin
 interface SessionFilter {
@@ -58,7 +58,7 @@ interface SessionFilter {
     fun isSessionAllowed(session : FlowSession, flowLogic : FlowLogic<*>) : Boolean
 }
 ```
-For example a session filter that would allow only the Business Network traffic in can be implemented as follows:
+For example a session filter that would allow only the Business Network traffic through can be implemented as follows:
 
 ```kotlin
 class BusinessNetworkSessionFilter : SessionFilter {

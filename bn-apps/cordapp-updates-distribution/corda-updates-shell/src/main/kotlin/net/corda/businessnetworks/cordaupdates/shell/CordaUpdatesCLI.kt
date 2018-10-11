@@ -24,12 +24,12 @@ private enum class CLICommands {
 
 /**
  * Class that handles CLI interactions. Supports the following modes via --mode flag:
- * - INIT. Initializes an empty local repository and creates a template configuration file.
- *      Uses USER.HOME/.corda-updates folder by default unless a custom location has been specified via --configPath
+ * - INIT. Initializes an empty local repository and creates a template configuration file under USER.HOME/.corda-updates
+ * folder by default unless a custom location has been provided via --configPath flag
  * - SYNC. Pulls down missing CorDapps from configured remote repositories. Downloads all versions of all CorDapps from all remote repositories,
- *      that are configured in the settings.yaml file. If a custom CorDapp / version range has been specified via --cordapp flag, the tool will attempt to
- *      find a configuration for it in the settings.yaml and will fail if one doesn't exist.
- * - PRINT_VERSIONS. Prints available versions of a specified CorDapp. Will fail if no CorDapp has been specified.
+ * that are configured in the settings.yaml file. If a custom CorDapp / version range has been specified via --cordapp flag, the tool will attempt to
+ * find a respective cordapp source in the settings.yaml and will fail if one doesn't exist.
+ * - PRINT_VERSIONS. Prints available versions of a specified CorDapp to the console. Will fail if no CorDapp name has been provided.
  */
 class CordaUpdatesCLI : CordaCliWrapper("corda-updates", "CLI for corda-updates utility.") {
     companion object {

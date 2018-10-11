@@ -11,6 +11,9 @@ import java.io.File
 import java.util.concurrent.Callable
 import java.util.concurrent.Executors
 
+/**
+ * [ArtifactMetadata] cache that is populated by [SyncArtifactsFlow] for consumption by other flows
+ */
 @CordaService
 class ArtifactsMetadataCache(private val appServiceHub : AppServiceHub) : SingletonSerializeAsToken() {
     private var _cache : List<ArtifactMetadata> = listOf()
@@ -19,6 +22,9 @@ class ArtifactsMetadataCache(private val appServiceHub : AppServiceHub) : Single
         get() = _cache
 }
 
+/**
+ * Service that allows to launch synchronization asynchronously
+ */
 @CordaService
 internal class SyncerService(private val appServiceHub : AppServiceHub) : SingletonSerializeAsToken() {
     companion object {

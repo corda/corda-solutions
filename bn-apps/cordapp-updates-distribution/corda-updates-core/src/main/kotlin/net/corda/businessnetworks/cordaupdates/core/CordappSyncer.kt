@@ -11,7 +11,7 @@ import java.lang.IllegalArgumentException
 import java.nio.file.Files
 
 /**
- * A wrapper around [CordaMavenResolver] that can be configured to associate multiple CorDapps with different remote repository sources.
+ * A wrapper around [CordaMavenResolver] that can be sync different CorDapps from different remote repositories via single method invocation
  *
  * @syncerCong syncer configuration
  * @repositoryListener repository listener that will be passed to an underlying [CordaMavenResolver] instance
@@ -25,10 +25,10 @@ class CordappSyncer(private val syncerConf : SyncerConfiguration,
      * Downloads locally missing CorDapps versions from the remote repositories.
      *
      * @coordinatesWithoutVersion optional maven coordinates of a CorDapp, without a version i.e. "net.corda:corda-finance".
-     *              If not provided, then all versions of all CorDapps defined in the [syncerConf] will be synchronized with the remote repositories.
+     *              If not provided, then all missing versions of all CorDapps defined in the [syncerConf] will be downloaded.
      *              If provided, then [syncerConf] is expected to contain a configured [CordappSource] for the CorDapp coordinates.
      * @additionalConfigurationProperties additional parameters to be passed to [CordaMavenResolver]
-     * @return a list of CorDapp metadata and their versions that have been resolved from local / remote repositories
+     * @return a list of CorDapp metadatas that have been resolved from local / remote repositories
      *
      * @throws [CordappSourceNotFoundException] if CorDapp source has not been found
      */
@@ -48,9 +48,9 @@ class CordappSyncer(private val syncerConf : SyncerConfiguration,
     }
 
     /**
-     * Resolves a list of CorDapp versions available in the remote repository. syncerConf is expected to contain a configured [CordappSource] for the requested CorDapp.
+     * Returns a list of CorDapp versions available in the remote repository. syncerConf is expected to contain a configured [CordappSource] for the requested CorDapp.
      *
-     * @coordinatesWithRange full maven coordinates of a CorDapp with a version range, i.e. [0,2.5)
+     * @coordinatesWithRange full maven coordinates of a CorDapp with a version range, i.e. "net.corda:corda-finance:[0,2.5)".
      * @additionalConfigurationProperties additional parameters to be passed to [CordaMavenResolver]
      */
     fun getAvailableVersions(coordinatesWithRange : String, additionalConfigurationProperties : Map<String, Any> = mapOf()) : List<ArtifactMetadata> {
@@ -61,7 +61,7 @@ class CordappSyncer(private val syncerConf : SyncerConfiguration,
 }
 
 /**
- * [CordappSource] allows to associate multiple CorDapps with a remote repository
+ * [CordappSource] allows, that allows to associate multiple CorDapps with a remote repository
  */
 data class CordappSource(
         val remoteRepoUrl : String,
@@ -70,7 +70,7 @@ data class CordappSource(
         val httpPassword : String? = null)
 
 /**
- * Configuration for [CordappSyncer] that is usually red from a file
+ * Configuration for [CordappSyncer]. Usually is red from settings.yaml
  */
 data class SyncerConfiguration(
         val localRepoPath : String,

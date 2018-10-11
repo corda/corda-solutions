@@ -10,6 +10,11 @@ import net.corda.core.serialization.SingletonSerializeAsToken
 import java.io.File
 import java.nio.file.Paths
 
+/**
+ * Configuration for the member-side CorDapp.
+ *
+ * TODO: update to use serviceHub.getAppContext().config once available
+ */
 @CordaService
 class MemberConfiguration(private val serviceHub : AppServiceHub) : SingletonSerializeAsToken() {
     companion object {

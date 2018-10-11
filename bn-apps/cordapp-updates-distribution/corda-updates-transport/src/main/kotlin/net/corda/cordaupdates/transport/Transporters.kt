@@ -22,11 +22,11 @@ import org.eclipse.aether.util.ConfigUtils
 
 /**
  * Transport over Corda flows. Should be used only within a Corda node. This transporter expects an instance of [AppServiceHub]
- * to be passed via custom session properties. An instance of [AppServiceHub] is required to delegate the data transfer to a separate execution context,
- * to avoid checkpointing of Maven Resolver contents (as the they are not [@Suspendable]).
+ * to be passed via custom session properties. An instance of [AppServiceHub] is required to delegate the data transfer to a separate flow,
+ * to avoid checkpointing of Maven Resolver contents as the they are not @Suspendable.
  *
- * When this transport is used from Corda OS, [CordaMavenResolver] should be invoked asynchronously, to prevent the invoking flow from
- * blocking the only thread available for the flows executor. For example.
+ * When this transport is used from Corda OS, [CordaMavenResolver] should be invoked from a non-flow thread, to prevent the invoking flow from
+ * blocking the only thread available to the flows executor. For example.
  *
  * @CordaService
  * class ResolverExecutor(val appServiceHub : AppServiceHub) : SingletonSerializeAsToken() {
@@ -86,7 +86,7 @@ class FlowsTransporter(private val session : RepositorySystemSession,
 }
 
 /**
- * Transport over Corda RPC. Should be used outside of a Corda node. Expects RPC credentials to be provided via custom session properties.
+ * Transport over Corda RPC. RPC credentials should be provided via custom session properties.
  */
 class RPCTransporter(private val session : RepositorySystemSession,
                      private val repository : RemoteRepository) : AbstractTransporter() {

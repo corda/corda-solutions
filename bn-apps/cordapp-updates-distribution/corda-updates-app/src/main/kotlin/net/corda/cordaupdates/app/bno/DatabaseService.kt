@@ -6,6 +6,9 @@ import net.corda.core.node.AppServiceHub
 import net.corda.core.node.services.CordaService
 import net.corda.core.serialization.SingletonSerializeAsToken
 
+/**
+ * Allows BNO to store reported CorDapp versions in the database
+ */
 @CordaService
 class DatabaseService(private val serviceHub : AppServiceHub) : SingletonSerializeAsToken() {
     companion object {

@@ -17,6 +17,14 @@ import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.ProgressTracker
 
+/**
+ * Downloads missing versions of artifacts from remote repositories.
+ *
+ * @scheduledStateRef reference to the schedule state. Automatically provided if the flow is started by Corda scheduler.
+ * @syncerConfig configuration for [CordappSyncer]. If not provided - then will be red from a file
+ * @launchAsync flag that indicates whether synchronisation should be started asynchrnously. Was added mostly for testing purposes.
+ *  Changing the default behaviour might result to a deadlock if corda-flows transport is used.
+ */
 @SchedulableFlow
 @StartableByRPC
 class SyncArtifactsFlow private constructor (private val scheduledStateRef : StateRef? = null,
@@ -49,6 +57,10 @@ class SyncArtifactsFlow private constructor (private val scheduledStateRef : Sta
     }
 }
 
+/**
+ * Issues [ScheduledSyncState] onto the ledger (all existing [ScheduledSyncState]s will be spent first) and then triggers
+ * a synchronisation explicitly.
+ */
 @StartableByRPC
 class ScheduleSyncFlow @JvmOverloads constructor(private val syncerConfig : SyncerConfiguration? = null,
                                                  private val launchAsync : Boolean = true) : FlowLogic<List<ArtifactMetadata>?>() {
