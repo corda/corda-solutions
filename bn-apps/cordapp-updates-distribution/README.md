@@ -1,7 +1,7 @@
 CorDapp Distribution Service
 ============================
 
-CorDapp Distribution Service allows Corda network operators to distribute CorDapp updates to the network members. Please see the [design doc](./design/design.md) for more information on the technical implementation.
+CorDapp Distribution Service allows Corda network operators to distribute CorDapp updates to the network members. Please see [this](./design/design.md) design doc for more details on the technical implementation.
 
 CorDapp Distribution Service utilises Maven repositories for artifact distribution (as CorDapps are effectively fat-jars). Network members periodically query a remote repository for updates and download them locally. Installation of updates is not automated yet. Corda node administrators need to stop / update / restart their nodes manually.  
 
@@ -12,13 +12,13 @@ CorDapp Distribution Service supports conventional HTTP(s) transport as well as 
 To start using CorDapp Distribution Service please follow the steps below:
 
 1. Download `corda-updates-shell` jar or build it by yourself. TODO: download link here
-2. Initialise a local repository via `java -jar corda-updates-shell-xxx.jar --mode=INIT`. All CorDapps will be downloaded to this location.
-3. Add CorDapps that you would like to watch to `settings.yaml`. Please see [this](#yaml-configuration) section for more details on the file format.
+2. Initialise a local repository via `java -jar corda-updates-shell-xxx.jar --mode=INIT`. Please see [usage](#usage) section for more information about supported parameters. By default, the repository will be created under `~/.corda-updates` folder. 
+3. Add CorDapps that you would like to watch to `settings.yaml`, which is located in the root of the repository created on the previous step. Please see [this](#yaml-configuration) section for more details on the configuration file format.
 4. Download `corda-updates-app` jar or build it by yourself. TODO: download link here
-5. Install the CorDapp to network participant's nodes and configure it as described [here](#participant-cordapp-configuration). `configPath` should point to the `settings.yaml` created during the step #2.
+5. Install the CorDapp to network participant's nodes and configure it as described [here](#participant-cordapp-configuration). `configPath` should point to the `settings.yaml` created on the step #2.
 6. If you are going to use [Corda-based transports](#corda-updates-transport) then install the CorDapp to the repository hoster's node and configure it as described [here](#repository-hoster-cordapp-configuration).   
-7. Schedule periodic synchronization by invoking [ScheduleSyncFlow](#scheduling-synchronisation) from Corda shell on participant nodes
-8. Done. Once published, updates will appear in the local repositories of participants. Please bear in mind that node administrators will still have to [install updates manually](https://docs.corda.net/releases/release-M8.2/creating-a-cordapp.html#installing-apps).
+7. Schedule periodic synchronization by invoking [ScheduleSyncFlow](#scheduling-synchronisation) from Corda shell on the nodes of participants.
+8. Done. When published, updates will appear in the local repositories of participants. Please bear in mind that node administrators will still have to [install updates manually](https://docs.corda.net/releases/release-M8.2/creating-a-cordapp.html#installing-apps).
 
 Please read through the rest of the document for more information about operational considerations and available configuration options.
  
