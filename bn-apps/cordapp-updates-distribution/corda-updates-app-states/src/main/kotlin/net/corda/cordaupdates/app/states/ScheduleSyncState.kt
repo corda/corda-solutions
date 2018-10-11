@@ -14,6 +14,9 @@ import net.corda.core.transactions.LedgerTransaction
 import java.lang.IllegalArgumentException
 import java.time.Instant
 
+/**
+ * Simple state and contract to schedule periodic CorDapp synchronisation
+ */
 class ScheduledSyncContract : Contract {
     companion object {
         const val CONTRACT_NAME = "net.corda.cordaupdates.app.states.ScheduledSyncContract"
