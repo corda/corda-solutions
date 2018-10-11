@@ -17,9 +17,7 @@ To start using CorDapp Distribution Service please follow the steps below:
 4. Download `corda-updates-app` jar or build it by yourself. TODO: download link here
 5. Install the CorDapp to network participant's nodes and configure it as described [here](#participant-cordapp-configuration). `configPath` should point to the `settings.yaml` created during the step #2.
 6. If you are going to use [Corda-based transports](#corda-updates-transport) then install the CorDapp to the repository hoster's node and configure it as described [here](#repository-hoster-cordapp-configuration).   
-7. Schedule periodic synchronization by invoking [ScheduleSyncFlow](#scheduling-synchronisation) from Corda shell
-8. Updates will periodically be downloaded to the local repository.
-9. Done. Please read the rest of the page for more technical details and available configuration options.  
+7. Schedule periodic synchronization by invoking [ScheduleSyncFlow](#scheduling-synchronisation) from Corda shell on participant nodes
 
 # Structure
 
