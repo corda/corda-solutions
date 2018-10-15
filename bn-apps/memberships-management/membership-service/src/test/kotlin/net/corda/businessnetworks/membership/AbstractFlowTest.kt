@@ -98,8 +98,8 @@ abstract class AbstractFlowTest(
         return future.getOrThrow()
     }
 
-    fun runGetMembershipsListFlow(nodeToRunTheFlow : StartedMockNode, force : Boolean) : Map<Party, StateAndRef<Membership.State>> {
-        val future = nodeToRunTheFlow.startFlow(GetMembershipsFlow(force))
+    fun runGetMembershipsListFlow(nodeToRunTheFlow : StartedMockNode, force : Boolean, filterOutNotExisting : Boolean = true) : Map<Party, StateAndRef<Membership.State>> {
+        val future = nodeToRunTheFlow.startFlow(GetMembershipsFlow(force, filterOutNotExisting))
         mockNetwork.runNetwork()
         return future.getOrThrow()
     }
