@@ -188,7 +188,7 @@ In this example, we are stating that in a transaction there must be one and only
 With fungible assets such as Cash you can have many cash input states and many cash outputs as long as the cash amounts balance across the transaction. This would be expressed as 1..n going to 1 ..m on the pay transition:
 
 .. image:: resources/CMN_Cash_example.png
-  :width: 80%
+  :width: 70%
   :align: center
 
 -------------------

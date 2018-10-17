@@ -7,7 +7,7 @@ The States Instance View is a snap shot in time of a set of States in a particul
 An instance diagram for our example might look like this:
 
 .. image:: resources/CMN_Instance_view_arrows.png
-  :width: 100%
+  :width: 90%
   :align: center
 
 
