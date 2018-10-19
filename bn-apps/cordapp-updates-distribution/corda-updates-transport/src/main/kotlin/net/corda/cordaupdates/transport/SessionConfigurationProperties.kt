@@ -4,7 +4,7 @@ package net.corda.cordaupdates.transport
  * Configuration properties that can be passed via custom Maven Resolver session properties
  */
 object SessionConfigurationProperties {
-    // reference to an instance of a service hub
+    // reference to an instance of [AppServiceHub]
     const val APP_SERVICE_HUB = "corda-updates.appServiceHub"
     const val RPC_HOST = "corda-updates.rpcHost"
     const val RPC_PORT = "corda-updates.rpcPort"

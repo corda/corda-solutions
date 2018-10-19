@@ -13,12 +13,13 @@ import java.lang.IllegalArgumentException
 import java.nio.file.Paths
 
 /**
- * Member-side configuration.
+ * Member-side cordapp configuration. Configuration is red from "cordapps/config/corda-updates-app.conf" file in the node's folder.
  *
- * TODO: update to use serviceHub.getAppContext().config once available
+ * TODO: update to use serviceHub.getAppContext().config once it is available
  */
 @CordaService
 class MemberConfiguration(private val serviceHub : AppServiceHub) : SingletonSerializeAsToken() {
+
     companion object {
         const val PROPERTIES_FILE_NAME = "corda-updates-app.conf"
         const val SYNCER_CONFIGURATION_PATH = "configPath"
@@ -27,6 +28,7 @@ class MemberConfiguration(private val serviceHub : AppServiceHub) : SingletonSer
         const val BNO_NAME = "bno"
         const val DEFAULT_SYNC_INTERVAL = 18000000L
     }
+
     private var _config = readProps((Paths.get("cordapps") / "config" / PROPERTIES_FILE_NAME).toFile())
 
     fun reloadConfigurationFromFile(file : File) {

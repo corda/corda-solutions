@@ -8,7 +8,7 @@ import org.eclipse.aether.transfer.TransferListener
 import java.io.File
 
 /**
- * A wrapper around [CordaMavenResolver] that can be sync different CorDapps from different remote repositories via single method invocation
+ * A wrapper around [CordaMavenResolver] that can sync different CorDapps from different remote repositories via single method invocation
  *
  * @syncerCong syncer configuration
  * @repositoryListener repository listener that will be passed to an underlying [CordaMavenResolver] instance

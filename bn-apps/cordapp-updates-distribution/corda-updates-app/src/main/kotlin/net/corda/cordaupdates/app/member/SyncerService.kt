@@ -12,7 +12,10 @@ import java.util.concurrent.Callable
 import java.util.concurrent.Executors
 
 /**
- * [ArtifactMetadata] cache that is populated by [SyncArtifactsFlow] for consumption by other flows
+ * The cache that is populated by [SyncArtifactsFlow]. This cache is required to handle asynchronous invocations, when the results of the
+ * flow execution are not available immediately and are populated to the cache in the future instead.
+ *
+ * The contents of the cache are updated regardless of whether [SyncArtifactsFlow] was invoked asynchronously or not.
  */
 @CordaService
 class ArtifactsMetadataCache(private val appServiceHub : AppServiceHub) : SingletonSerializeAsToken() {
@@ -23,8 +26,7 @@ class ArtifactsMetadataCache(private val appServiceHub : AppServiceHub) : Single
 }
 
 /**
- * Wrapper around [CordappSyncer]. Supports both synchronous and asynchronous invocations.
- * Results of both synchronous and asynchronous invocations are cached to [ArtifactsMetadataCache]
+ * A service that wraps [CordappSyncer] to provide a support for asynchronous invocations.
  */
 @CordaService
 internal class SyncerService(private val appServiceHub : AppServiceHub) : SingletonSerializeAsToken() {
@@ -38,8 +40,8 @@ internal class SyncerService(private val appServiceHub : AppServiceHub) : Single
     }
 
     /**
-     * Configures [CordappSyncer]. [CordappSyncer] configuration is red from the path provided in the cordapp settings file and defaults
-     * to ~/.corda-updates/settings.conf if not specified.
+     * Configures [CordappSyncer]. [CordappSyncer] configuration is red from the path specified in the cordapp settings file and defaults
+     * to ~/.corda-updates/settings.conf otherwise.
      */
     private fun syncer(syncerConfiguration : SyncerConfiguration? = null) =
         if (syncerConfiguration == null) {
@@ -64,9 +66,9 @@ internal class SyncerService(private val appServiceHub : AppServiceHub) : Single
     }
 
     /**
-     * Synchronously gets artifacts metadata.
+     * Synchronously retrieves artifacts metadata.
      *
-     * @param cordappCoordinatesWithRange coordinates of cordapp with range, i.e. "net.corda:corda-finance:[0,2.0)"
+     * @param cordappCoordinatesWithRange coordinates of a cordapp with range, i.e. "net.corda:corda-finance:[0,2.0)"
      */
     fun getArtifactsMetadata(cordappCoordinatesWithRange : String, syncerConfiguration : SyncerConfiguration? = null) : List<ArtifactMetadata>  {
         val syncer = syncer(syncerConfiguration)

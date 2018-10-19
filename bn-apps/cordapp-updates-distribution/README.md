@@ -12,30 +12,30 @@ CorDapp Distribution Service supports conventional HTTP(s) transport as well as 
 To start using CorDapp Distribution Service please follow the steps below:
 
 1. Download `corda-updates-shell` jar or build it by yourself. TODO: download link here
-2. Initialise a local repository via `java -jar corda-updates-shell-xxx.jar --mode=INIT`. Please see the [usage](#usage) section for more information about supported parameters. By default, the repository will be created under `~/.corda-updates` folder. 
-3. Add CorDapps that you would like to synchronize to `settings.conf`, which is located in the root of the repository created on the previous step - `~/.corda-updates/settings.conf` by default. Please see [this](#hocon-configuration) section for more details on the configuration file format.
+2. Initialise a local repository via `java -jar corda-updates-shell-xxx.jar --mode=INIT`. Please see the [usage](#usage) section for more information about the supported parameters. By default, the local repository will be created under `~/.corda-updates` folder. 
+3. Add CorDapps that you would like to synchronize to `settings.conf`, which is located in the root of the local repository created on the previous step (`~/.corda-updates/settings.conf` by default). Please refer to [this](#hocon-configuration) section for more details about the configuration file format.
 4. Download `corda-updates-app` jar or build it by yourself. TODO: download link here
-5. Install the CorDapp to network participant's nodes and configure it as described [here](#participant-cordapp-configuration). `configPath` should point to the `settings.conf` created on the step #2.
-6. If you are going to use [Corda-based transports](#corda-updates-transport) then install the CorDapp to the repository hoster's node and configure it as described [here](#repository-hoster-cordapp-configuration).   
-7. Schedule periodic synchronization by invoking [ScheduleSyncFlow](#scheduling-synchronisation) from Corda shell on the nodes of participants.
-8. Done. When published, updates will appear in the local repositories of participants. Please bear in mind that node administrators will still have to [install updates manually](https://docs.corda.net/releases/release-M8.2/creating-a-cordapp.html#installing-apps).
+5. Install the CorDapp to the network participant's nodes and configure it as described [here](#participant-cordapp-configuration). `configPath` should point to the `settings.conf` created on the step #2.
+6. If you are going to use [Corda-based transports](#corda-updates-transport) - then install the CorDapp to the repository hoster's node and configure it as described [here](#repository-hoster-cordapp-configuration).   
+7. Schedule periodic synchronization by invoking [ScheduleSyncFlow](#scheduling-synchronisation) from the Corda shell of every participant node.
+8. Done. When published, all updates will appear in the local repositories of participants. Please bear in mind that node administrators will still have to [install updates manually](https://docs.corda.net/releases/release-M8.2/creating-a-cordapp.html#installing-apps).
 
-Please read through the rest of the document for more information about operational considerations and available configuration options.
+Please read through the rest of the document for more information about the operational considerations and the available configuration options.
  
 # Structure
 
 *CorDapp Distribution Service* consists of the following components:
-* **corda-updates-core** - API over Maven Resolver
-* **corda-updates-transport** - custom transport implementations for Maven Resolver over Corda Flows
-* **corda-updates-app** - CorDapp that allows participants to schedule periodic updates and provides basic version reporting functionality.
-* **corda-updates-shell** - command line interface 
+* **corda-updates-core** - API over Maven Resolver.
+* **corda-updates-transport** - custom transport implementations for Maven Resolver over Corda Flows.
+* **corda-updates-app** - CorDapp that allows participants to schedule periodic synchronization and provides a basic functionality for version reporting.
+* **corda-updates-shell** - command line interface.
 
 # corda-updates-core
 
 `corda-updates-core` sits in the heart of CorDapp Distribution Service and provides APIs on top of Maven Resolver to download CorDapps from remote Maven repositories over `file`, `http(s)`, `corda-flows` and `corda-rpc` transports. `corda-updates-core` is used internally only and is not visible to the end users. It effectively allows to:
-* Get a list of artifact versions available in a remote repository
+* Get a list of available artifact versions from a remote repository
 * Download a single version of an artifact from a remote repository
-* Download a version range from a remote repository, which is effectively combination of the two previous steps.
+* Download an artifact version range from a remote repository, which is effectively a combination of the two previous steps.
 * Associate different CorDapps with different remote repositories and to sync them down via a single method invocation. 
 
 `corda-updates-core` also supports basic authentication for HTTP proxies and remote repositories. 
@@ -63,22 +63,20 @@ For example a session filter that would allow only the Business Network traffic 
 ```kotlin
 class BusinessNetworkSessionFilter : SessionFilter {
 
-    // GetMembershipsFlow is a part of Business Network Membership Service implementation
+    // GetMembershipsFlow is provided as a part of Business Network Membership Service implementation
     @Suspendable
     override fun isSessionAllowed(session : FlowSession, flowLogic : FlowLogic<*>) = flowLogic.subFlow(GetMembershipsFlow())[session.counterparty] != null
 }
 ```
 
-
-
 ## Transport modes
 
 The following transports are supported:
-* **corda-flows** allows to transfer data over Corda Flows. It can be used from *inside a Corda node* only. 
+* **corda-flows** allows to transfer data over Corda Flows. It can be invoked from *inside a Corda node* only. 
 * **corda-rpc** allows to transfer data over Corda RPC. It reuses the same flows as `corda-flows` transport, but invokes them via RPC instead.  
-* **corda-auto** is an automatic switch between `corda-rpc` and `corda-flows` transports. The underlying transport is chosen based on the value of `corda-updates.mode` custom session property, that is set in the runtime based on the invocation context. The main purpose for this mode - is to allow Cordapp Distribution Service to reuse the same configuration file, regardless of whether it was invoked from inside or outside of a Corda node. 
+* **corda-auto** is an automatic switch between `corda-rpc` and `corda-flows` transports. The underlying transport is chosen based on the value of `corda-updates.mode` custom Maven Resolver session property, that is set in the runtime based on the invocation context. The main purpose for this mode - is to allow Cordapp Distribution Service to reuse the same configuration file, regardless of whether it was invoked from inside or outside of a Corda node. 
 
-Corda-based transports expect a remote repository URL to be specified in the format of `transport-name:x500Name`. For example `corda-auto:O=BNO,L=New York,C=US` (just imagine that you specify Corda X500 name instead of HTTP hostname).
+Corda-based transports expect a remote repository URL to be specified in the format of `transport-name:x500Name`. For example `corda-auto:O=BNO,L=New York,C=US` (just imagine that you specify a Corda X500 name instead of a HTTP hostname).
 
 **corda-auto** is the recommended way of using Corda-based transports.
 
@@ -86,64 +84,64 @@ Corda-based transports expect a remote repository URL to be specified in the for
 
 Maven Resolver over Corda-based transports should always be invoked from a *non-flow thread* when used *inside Corda Flows*. This is because, under the hood Corda-based transports start a separate flow (which starts in a different from the calling thread) for data transfer to prevent Maven Resolver internals from being checkpointed as they are not `@Suspendable`. As Corda OS flows engine is single-threaded, invoking the transports synchronously would result into a deadlock, where the calling flow would be indefinitely waiting for the transport flow to finish while the transport flow would be indefinitely waiting for the calling flow to finish to be able to start.
 
-This behaviour is handled by CorDapp Distribution Service internally and is transparent to the end user.  
+*This behaviour is handled by CorDapp Distribution Service internally and is transparent to the end user.*  
 
 # HOCON Configuration
 
 CorDapp distribution service is configurable from a `HOCON` file, of the following structure
 
 ```hocon
-#Path to the local repository
-localRepoPath: ~/.corda-updates/repo
+# Path to the local repository
+localRepoPath = "~/.corda-updates/repo"
 
 # HTTP or HTTPS. Should be specified only if HTTP(S) proxy is used.
-httpProxyType: HTTP
+httpProxyType = "HTTP"
 
 # Proxy host name. Should be specified only if HTTP(S) proxy is used.
-httpProxyHost: 10.0.0.1
+httpProxyHost = "10.0.0.1"
 
 # Proxy port. Should be specified only if HTTP(S) proxy is used.
-httpProxyPort: 10009
+httpProxyPort = "10009"
 
 # Username for proxy authentication. Should be specified only if HTTP(S) proxy is used.
-httpProxyUsername: proxy_user
+httpProxyUsername = "proxy_user"
 
 # Password for proxy authentication. Should be specified only if HTTP(S) proxy is used.
-httpProxyPassword: P@$$w0rD
+httpProxyPassword = "P@$$w0rD"
 
 # RPC host of a Corda node to connect to. Should be specified only if corda-rpc or corda-auto transport is used.
-rpcHost: localhost
+rpcHost = "localhost"
 
 # RPC port of a Corda node to connect to. Should be specified only if corda-rpc or corda-auto transport is used.
-rpcPort: 8003
+rpcPort = "8003"
 
 # RPC username of a Corda node to connect to. Should be specified only if corda-rpc or corda-auto transport is used.
-rpcUsername: johndoe
+rpcUsername = "johndoe"
 
 # RPC password of a Corda node to connect to. Should be specified only if corda-rpc or corda-auto transport is used.
-rpcPassword: 10004
+rpcPassword = "10004"
 
-# List of CorDapps to sync from from remote repositories. 
-# CorDapp Distribution Service supports multiple remote repository sources and each remote repository can be associated with multiple CorDapps.
-cordappSources:
-- remoteRepoUrl: https://repo.maven.apache.org/maven2/
+# List of CorDapps to sync from remote repos. Can sync multiple CorDapps from multiple remote repositories
+cordappSources = [
+    {
+        # URL of the remote repository to fetch the cordapps from
+        remoteRepoUrl = "https://repo.maven.apache.org/maven2/"
 
-  # list of CorDapps to sync from this repo. Can be many. Should be specified in the form of "artifactGroup:artifactName"
-  cordapps:
-  - net.corda:corda-finance
-    my.app.group:my-app-name
+        # List of the cordapps to sync from the remote repository. Should be specified in the form of "artifactGroup:artifactName"
+        cordapps = ["net.corda:corda-finance"]
 
-  # Username, if the remote repo uses basic HTTP authentication
-  httpUsername: repo_user
+        # Username, if the remote repo requires basic HTTP authentication
+        httpUsername = "repo_user"
 
-  # Password, if the remote repo uses basic HTTP authentication
-  httpPassword: r3p0_P@$$
-
+        # Password, if the remote repo requires basic HTTP authentication
+        httpPassword = "r3p0_P@$$"
+    }
+]
 ```
 
 # corda-updates-shell
 
-`corda-updates-shell` provides a Command Line Interface for CorDapp Distribution Service. The CLI is build with [CordaCLIWrapper](https://docs.corda.net/head/cli-ux-guidelines.html) and supports all of its features.
+`corda-updates-shell` provides a Command Line Interface for CorDapp Distribution Service. The CLI is build using the [CordaCLIWrapper](https://docs.corda.net/head/cli-ux-guidelines.html) and supports all of its features.
 
 ## Usage
 
@@ -151,16 +149,16 @@ cordappSources:
 
 * **INIT**. Initialises an empty local repository and creates a sample configuration file.
 ```bash
-# Will initialize an empty repository and create a settings.conf file under USER.HOME/.corda-updates folder
+# Will initialize an empty local repository and create a settings.conf file under USER.HOME/.corda-updates folder
 java -jar corda-updates-shell-xxx.jar --mode=INIT
 
-# Will initialize an empty repository and create a settings.conf file under ~/.my-repo
+# Will initialize an empty local repository and create a settings.conf file under ~/.my-repo
 java -jar corda-updates-shell-xxx.jar --mode=INIT --configPath="~/.my-repo"
 
 ```  
-* **SYNC**. Synchronises the contents of the local repository with the remote repositories, configured in the `settings.conf`. All versions missing from the local repository will be downloaded during the synchronisation. 
+* **SYNC**. Synchronises the contents of the local repository with the remote repositories, configured in the `settings.conf`. All versions that are missing in the local repository will be downloaded during the synchronisation. 
 ```bash
-# Will pull down locally missing versions for all CorDapps configured in the settings.conf file. 
+# Will pull down locally missing versions of all CorDapps that are configured in the settings.conf file. 
 java -jar corda-updates-shell-xxx.jar --mode=SYNC
 
 # Will pull down locally missing versions of "net.corda:corda-finance" CorDapp starting from the version 0 and up to the version 2.0 not inclusively.
@@ -182,26 +180,26 @@ Configuration file is looked up in the following order:
 
 1. Download `corda-updates-shell` jar or build it by yourself. TODO: download link here
 2. Initialise a local repository via `java -jar corda-updates-shell-xxx.jar --mode=INIT`
-3. Add CorDapps that you would like to watch to `settings.conf`
+3. Add CorDapps that you would like to watch to the `settings.conf`
 4. Start using the utility by invoking `SYNC` or `PRINT_VERSIONS` commands
 
 # corda-updates-app
 
 `corda-updates-app`is a CorDapp that provides the following functionality:
-* A scheduled state to periodically check for new updates
-* Flows to schedule updates and retrieve available CorDapp versions
-* Flows to report CorDapp version information to the BNO
+* A scheduled state to periodically check for new updates availability
+* Flows to schedule updates and to retrieve available CorDapp versions
+* Flows to report information about CorDapp versions to the BNO
 
 ## Scheduling synchronisation
 
-Updates can be scheduled via `ScheduleSyncFlow`. Synchronisation interval is driven by `syncInterval` configuration property and defaults to *5 hours*. `ScheduleSyncFlow` can be started from shell or RPC. 
+Updates can be scheduled via `ScheduleSyncFlow`. Synchronisation interval is driven by `syncInterval` configuration property and defaults to *once in 5 hours*. `ScheduleSyncFlow` can be started from the shell or via RPC. 
 
 ```kotlin
 // synchronisation should be launched asynchronously if corda-flows transport is used 
 subFlow(ScheduleSyncFlow(launchAsync = true))
 ```
 
-> If Corda-based transports are not used, then ScheduleSyncFlow can be run in synchronous mode (for example if all remote repositories are configured to use -http or -file transports). Synchronous invocations are more convenient from a developer's perspective as results are available right after the execution is finished. However, launching ScheduleSyncFlow in synchronous mode for Corda-based transports might result to a deadlock on a single-threaded flavours of Corda. Please refer to "Asynchronous invocations" for more information about that.
+> If Corda-based transports are not used, then ScheduleSyncFlow can be run in synchronous mode (for example if all remote repositories are configured to use -http or -file transports). Synchronous invocations are more convenient from a developer's perspective as results are available straight after the execution is finished. However, launching ScheduleSyncFlow in synchronous mode for Corda-based transports might result to a deadlock on a single-threaded flavours of Corda. Please refer to "Asynchronous invocations" section for more information about that.
 
 ## Getting available versions
 
@@ -216,7 +214,7 @@ artifactsMetadataCache.cache // <-- list of the available artifacts will be here
 
 ## Participant CorDapp Configuration
 
-Configuration is loaded from `cordapps/config/corda-updates-app.conf`.   
+Configuration is loaded from `cordapps/config/corda-updates-app.conf` file in the node's folder.   
 
 ```
 # path to the HOCON configuration file (described in the previous sections) 
@@ -234,7 +232,7 @@ bno="O=BNO,L=London,C=GB"
 
 ## Repository Hoster CorDapp Configuration
 
-Configuration is loaded from `cordapps/config/corda-updates-app.conf`. Repository hoster node is required only if `corda-flows` transport is used.
+Configuration is loaded from `cordapps/config/corda-updates-app.conf` file in the node's folder. Repository hoster node is required only if `corda-flows` transport is used.
 ```
 # URL of the repository where the hoster would serve the artifacts from. Supports http(s) and file transports. Proxies and authentication are not supported 
 remoteRepoUrl=file:/path/to/local/repository
@@ -245,6 +243,6 @@ sessionFilter=com.my.app.MySessionFilter
 
 ## Reporting CorDapp versions
 
-Versions of installed CorDapps can be reported via `ReportCordappVersionFlow`. CorDapp Distribution Service doesn't collect information about installed CorDapps. CorDapps are expected to report their versions by themselves. Version reporting can help BNOs to understand if participants have an outdated versions of CorDapps installed and to contact them offline to ask to upgrade. 
+Versions of installed CorDapps can be reported via `ReportCordappVersionFlow`. CorDapp Distribution Service doesn't collect information about installed CorDapps by itself. Instead, CorDapps are expected to report their versions by themselves. Version reporting can help BNOs to identify if any participants have an outdated versions of CorDapps installed and to contact them offline to ask to upgrade. 
 
 BNOs can use `GetCordappVersionsFlow` and `GetCordappVersionsForPartyFlow` to query reported versions on their side.

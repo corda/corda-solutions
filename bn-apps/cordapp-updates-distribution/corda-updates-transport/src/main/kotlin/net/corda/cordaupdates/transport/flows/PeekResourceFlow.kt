@@ -36,7 +36,7 @@ class PeekResourceFlow(private val resourceLocation : String, private val repoHo
 }
 
 /**
- * This flows should exist at repository hoster's node. The flow peeks an artifact in a configured file- or http(s)- based repository.
+ * This flows should exist at the repository hoster's node. The flow peeks an artifact in a configured file- or http(s)- based repository.
  *
  * The flow supports [SessionFilter]s to restrict unauthorised traffic.
  */

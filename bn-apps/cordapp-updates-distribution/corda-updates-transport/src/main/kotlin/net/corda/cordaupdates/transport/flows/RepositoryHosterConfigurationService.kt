@@ -28,12 +28,12 @@ class RepositoryHosterConfigurationService(private val serviceHub : AppServiceHu
     }
 
     /**
-     * URL of the remote repository to fetch an artifact from. Supports -http and -file based repositories
+     * URL of the remote repository to fetch an artifact from. Supports -http and -file based transports
      */
     fun remoteRepoUrl() : String = _config.getString(REMOTE_REPO_URL)
 
     /**
-     * Returns a session filter to filter out unauthorised traffic
+     * Returns a session filter to filter out an unauthorised traffic
      */
     fun getSessionFilter() : SessionFilter? {
         val className = if (_config.hasPath(SESSION_FILTER)) _config.getString(SESSION_FILTER) else null

@@ -14,8 +14,8 @@ import org.eclipse.aether.transfer.NoTransporterException
  * Supports corda-rpc, corda-flows and corda-auto transports.
  *
  * corda-auto is an automatic switch between corda-rpc and corda-flows transports. It returns a transport implementation based on the
- * value of "corda-updates.mode " from custom session properties. The main purpose of this mode is to allow corda-updates to reuse the same
- * configuration, regardless of whether the library is invoked from inside or outside of Corda.
+ * value of "corda-updates.mode " from Maven Resolver custom session properties. The main purpose of this mode is to allow corda-updates to reuse the same
+ * configuration, regardless of whether the library was invoked from inside or outside of Corda.
  *
  * Corda-based transports expect a repository URL to be specified in the format of "transport-name:x500Name", i.e. for example "corda-auto:O=BNO,L=New York,C=US"
  */
