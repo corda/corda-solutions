@@ -201,7 +201,7 @@ Updates can be scheduled via `ScheduleSyncFlow`. Synchronisation interval is dri
 subFlow(ScheduleSyncFlow(launchAsync = true))
 ```
 
-> If Corda-based transports are not used, then ScheduleSyncFlow can be run in synchronous mode. For example if all remote repositories are configured to use -http ot -file transports. Synchronous invocations are more convenient from developer's perspective as results are available right after the execution is finished. However, launching ScheduleSyncFlow in synchronous mode for Corda-based transports might result to a deadlock on a single-threaded flavours of Corda. Please refer to "Asynchronous invocations" for more information about that.
+> If Corda-based transports are not used, then ScheduleSyncFlow can be run in synchronous mode (for example if all remote repositories are configured to use -http or -file transports). Synchronous invocations are more convenient from a developer's perspective as results are available right after the execution is finished. However, launching ScheduleSyncFlow in synchronous mode for Corda-based transports might result to a deadlock on a single-threaded flavours of Corda. Please refer to "Asynchronous invocations" for more information about that.
 
 ## Getting available versions
 
