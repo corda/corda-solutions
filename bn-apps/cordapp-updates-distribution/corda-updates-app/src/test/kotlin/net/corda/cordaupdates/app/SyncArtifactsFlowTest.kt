@@ -49,7 +49,7 @@ class SyncArtifactsFlowTest {
                 notarySpecs = listOf(MockNetworkNotarySpec(notaryName)))
         node = mockNetwork.createPartyNode(participantName)
 
-        node.startFlow(ReloadConfigurationFlow("corda-updates-app.conf")).getOrThrow()
+        node.startFlow(ReloadMemberConfigurationFlow("corda-updates-app.conf")).getOrThrow()
     }
 
     @After

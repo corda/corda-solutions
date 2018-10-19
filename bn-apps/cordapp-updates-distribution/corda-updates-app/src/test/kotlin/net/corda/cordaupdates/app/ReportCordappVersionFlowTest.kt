@@ -3,7 +3,9 @@ package net.corda.cordaupdates.app
 import net.corda.cordaupdates.app.bno.GetCordappVersionsForPartyFlow
 import net.corda.cordaupdates.app.member.CordappVersionInfo
 import net.corda.cordaupdates.app.member.ReportCordappVersionFlow
+import net.corda.cordaupdates.transport.flows.SessionFilter
 import net.corda.core.flows.FlowLogic
+import net.corda.core.flows.FlowSession
 import net.corda.core.identity.CordaX500Name
 import net.corda.core.utilities.getOrThrow
 import net.corda.testing.node.MockNetwork
@@ -29,8 +31,9 @@ class ReportCordappVersionFlowTest {
         participantANode = mockNetwork.createPartyNode(CordaX500Name("ParticipantA", "New York", "US"))
         participantBNode = mockNetwork.createPartyNode(CordaX500Name("ParticipantB", "New York", "US"))
         bnoNode = mockNetwork.createPartyNode(CordaX500Name.parse("O=BNO,L=London,C=GB"))
-        participantANode.startFlow(ReloadConfigurationFlow("corda-updates-app.conf")).getOrThrow()
-        participantBNode.startFlow(ReloadConfigurationFlow("corda-updates-app.conf")).getOrThrow()
+
+        executeFlow(participantANode, ReloadMemberConfigurationFlow("corda-updates-app.conf"))
+        executeFlow(participantBNode, ReloadMemberConfigurationFlow("corda-updates-app.conf"))
     }
 
     @After
@@ -79,6 +82,15 @@ class ReportCordappVersionFlowTest {
         assertEquals (setOf("1.0-a", "2.0-a"), versions)
     }
 
+    @Test
+    fun testSessionFilters() {
+        executeFlow(bnoNode, ReloadBNOConfigurationFlow("corda-updates-app-with-filter.conf"))
+        executeFlow(participantANode, ReportCordappVersionFlow("com.example.a", "test-artifact-a", "1.0-a"))
+        // shouldn't contain any reported versions
+        val reportedVersions = executeFlow(bnoNode, GetCordappVersionsForPartyFlow(participantANode.party()))
+        assertTrue(reportedVersions.isEmpty())
+    }
+
     private fun StartedMockNode.party() = info.legalIdentities.single()
 
     private fun <T> executeFlow(node : StartedMockNode, flowLogic : FlowLogic<T>) : T {
@@ -86,4 +98,8 @@ class ReportCordappVersionFlowTest {
         mockNetwork.runNetwork()
         return future.getOrThrow()
     }
+}
+
+class DenyAllSessionFilter : SessionFilter {
+    override fun isSessionAllowed(session : FlowSession, flowLogic : FlowLogic<*>) = false
 }
