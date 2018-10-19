@@ -3,15 +3,17 @@ package net.corda.cordaupdates.app.member
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
 import net.corda.core.identity.CordaX500Name
+import net.corda.core.identity.Party
 import net.corda.core.internal.div
 import net.corda.core.node.AppServiceHub
 import net.corda.core.node.services.CordaService
 import net.corda.core.serialization.SingletonSerializeAsToken
 import java.io.File
+import java.lang.IllegalArgumentException
 import java.nio.file.Paths
 
 /**
- * Configuration for the member-side CorDapp.
+ * Member-side configuration.
  *
  * TODO: update to use serviceHub.getAppContext().config once available
  */
@@ -31,16 +33,26 @@ class MemberConfiguration(private val serviceHub : AppServiceHub) : SingletonSer
         _config = readProps(file)
     }
 
-    fun syncerConfig() = getValue(SYNCER_CONFIGURATION_PATH)
-    fun syncInterval() = getValue(SYNC_INTERVAL)?.toLong() ?: DEFAULT_SYNC_INTERVAL
-    fun notaryParty() = serviceHub.networkMapCache.getNotary(notaryName())!!
-    fun bnoParty() = serviceHub.identityService.wellKnownPartyFromX500Name(bnoName())!!
+    /**
+     * Path to the settings.conf file
+     */
+    fun syncerConfig() = if (_config.hasPath(SYNCER_CONFIGURATION_PATH)) _config.getString(SYNCER_CONFIGURATION_PATH) else null
 
-    private fun bnoName() = CordaX500Name.parse(getValue(BNO_NAME)!!)
-    private fun notaryName() = CordaX500Name.parse(getValue(NOTARY_NAME)!!)
+    /**
+     * Synchronisation interval. Defaults to [DEFAULT_SYNC_INTERVAL] if not specified
+     */
+    fun syncInterval() = if (_config.hasPath(SYNC_INTERVAL)) _config.getLong(SYNC_INTERVAL) else DEFAULT_SYNC_INTERVAL
+
+    fun notaryParty() =
+        serviceHub.networkMapCache.getNotary(notaryName()) ?: throw IllegalArgumentException("Notary ${notaryName()} can't be found on the network")
+
+    fun bnoParty() =
+        serviceHub.identityService.wellKnownPartyFromX500Name(bnoName()) ?: throw IllegalArgumentException("BNO ${bnoName()} can't be found on the network")
+
+    private fun bnoName() = CordaX500Name.parse(_config.getString(BNO_NAME))
+
+    private fun notaryName() = CordaX500Name.parse(_config.getString(NOTARY_NAME)!!)
 
     private fun readProps(file : File) : Config = ConfigFactory.parseFile(file)
-
-    private fun getValue(key : String)= if (_config.hasPath(key)) _config.getString(key) else null
 }
 

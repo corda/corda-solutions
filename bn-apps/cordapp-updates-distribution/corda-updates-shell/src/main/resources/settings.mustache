@@ -1,42 +1,44 @@
-localRepoPath: {{localRepoPath}}
+localRepoPath = "{{localRepoPath}}"
 
 # HTTP or HTTPS. Should be specified only if HTTP(S) proxy is used.
-# httpProxyType: HTTP
+# httpProxyType = "HTTP"
 
 # Proxy host name. Should be specified only if HTTP(S) proxy is used.
-# httpProxyHost: 10.0.0.1
+# httpProxyHost = "10.0.0.1"
 
 # Proxy port. Should be specified only if HTTP(S) proxy is used.
-# httpProxyPort: 10009
+# httpProxyPort = "10009"
 
 # Username for proxy authentication. Should be specified only if HTTP(S) proxy is used.
-# httpProxyUsername: proxy_user
+# httpProxyUsername = "proxy_user"
 
 # Password for proxy authentication. Should be specified only if HTTP(S) proxy is used.
-# httpProxyPassword: P@$$w0rD
+# httpProxyPassword = "P@$$w0rD"
 
 # RPC host of a Corda node to connect to. Should be specified only if corda-rpc or corda-auto transport is used.
-# rpcHost: localhost
+# rpcHost = "localhost"
 
 # RPC port of a Corda node to connect to. Should be specified only if corda-rpc or corda-auto transport is used.
-# rpcPort: 8003
+# rpcPort = "8003"
 
 # RPC username of a Corda node to connect to. Should be specified only if corda-rpc or corda-auto transport is used.
-# rpcUsername: johndoe
+# rpcUsername = "johndoe"
 
 # RPC password of a Corda node to connect to. Should be specified only if corda-rpc or corda-auto transport is used.
-# rpcPassword: 10004
+# rpcPassword = "10004"
 
 # List of CorDapps to sync from remote repos. Can sync multiple CorDapps from multiple repositories
-cordappSources:
-- remoteRepoUrl: https://repo.maven.apache.org/maven2/
+cordappSources = [
+    {
+        remoteRepoUrl = "https://repo.maven.apache.org/maven2/"
 
-  # list of CorDapps to sync from this repo. Can be many. Should be specified in the form of "artifactGroup:artifactName"
-  cordapps:
-  - net.corda:corda-finance
+        # list of CorDapps to sync from this repo. Can be many. Should be specified in the form of "artifactGroup:artifactName"
+        cordapps = ["net.corda:corda-finance"]
 
-  # Username, if the remote repo uses basic HTTP authentication
-  # httpUsername: repo_user
+        # Username, if the remote repo uses basic HTTP authentication
+        # httpUsername = "repo_user"
 
-  # Password, if the remote repo uses basic HTTP authentication
-  # httpPassword: r3p0_P@$$
+        # Password, if the remote repo uses basic HTTP authentication
+        # httpPassword = "r3p0_P@$$"
+    }
+]

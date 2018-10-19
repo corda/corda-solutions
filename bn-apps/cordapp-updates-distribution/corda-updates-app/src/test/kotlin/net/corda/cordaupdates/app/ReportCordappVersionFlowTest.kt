@@ -24,7 +24,7 @@ class ReportCordappVersionFlowTest {
 
     @Before
     fun setup() {
-        mockNetwork = MockNetwork(cordappPackages = listOf("net.corda.cordaupdates.app.member", "net.corda.cordaupdates.app.bno"),
+        mockNetwork = MockNetwork(cordappPackages = listOf("net.corda.cordaupdates.app.member", "net.corda.cordaupdates.app.bno", "net.corda.cordaupdates.transport.flows"),
                 notarySpecs = listOf(MockNetworkNotarySpec(CordaX500Name.parse("O=Notary,L=London,C=GB"))))
         participantANode = mockNetwork.createPartyNode(CordaX500Name("ParticipantA", "New York", "US"))
         participantBNode = mockNetwork.createPartyNode(CordaX500Name("ParticipantB", "New York", "US"))
@@ -43,8 +43,8 @@ class ReportCordappVersionFlowTest {
         // each participant reports cordapp version
         executeFlow(participantANode, ReportCordappVersionFlow("com.example.a", "test-artifact-a", "1.0-a"))
         executeFlow(participantBNode, ReportCordappVersionFlow("com.example.b", "test-artifact-b", "1.0-b"))
-        val participantAVersion = executeFlow(bnoNode, GetCordappVersionsForPartyFlow(participantANode.stringName())).single()
-        val participantBVersion = executeFlow(bnoNode, GetCordappVersionsForPartyFlow(participantBNode.stringName())).single()
+        val participantAVersion = executeFlow(bnoNode, GetCordappVersionsForPartyFlow(participantANode.party())).single()
+        val participantBVersion = executeFlow(bnoNode, GetCordappVersionsForPartyFlow(participantBNode.party())).single()
 
         assertEquals(CordappVersionInfo("com.example.a", "test-artifact-a", "1.0-a", participantAVersion.updated), participantAVersion)
         assertEquals(CordappVersionInfo("com.example.b", "test-artifact-b", "1.0-b", participantBVersion.updated), participantBVersion)
@@ -53,12 +53,12 @@ class ReportCordappVersionFlowTest {
     @Test
     fun `should update lastUpdated column value`() {
         executeFlow(participantANode, ReportCordappVersionFlow("com.example.a", "test-artifact-a", "1.0-a"))
-        val version1 = executeFlow(bnoNode, GetCordappVersionsForPartyFlow(participantANode.stringName())).single()
+        val version1 = executeFlow(bnoNode, GetCordappVersionsForPartyFlow(participantANode.party())).single()
 
         sleep(100)
 
         executeFlow(participantANode, ReportCordappVersionFlow("com.example.a", "test-artifact-a", "1.0-a"))
-        val version2 = executeFlow(bnoNode, GetCordappVersionsForPartyFlow(participantANode.stringName())).single()
+        val version2 = executeFlow(bnoNode, GetCordappVersionsForPartyFlow(participantANode.party())).single()
 
         assertTrue (version2.updated > version1.updated)
     }
@@ -67,7 +67,7 @@ class ReportCordappVersionFlowTest {
     fun `should update version number if the same cordapp exists`() {
         executeFlow(participantANode, ReportCordappVersionFlow("com.example.a", "test-artifact-a", "1.0-a"))
         executeFlow(participantANode, ReportCordappVersionFlow("com.example.a", "test-artifact-a", "2.0-a"))
-        val version2 = executeFlow(bnoNode, GetCordappVersionsForPartyFlow(participantANode.stringName())).single()
+        val version2 = executeFlow(bnoNode, GetCordappVersionsForPartyFlow(participantANode.party())).single()
         assertEquals ("2.0-a", version2.version)
     }
 
@@ -75,11 +75,11 @@ class ReportCordappVersionFlowTest {
     fun `test multiple cordapps`() {
         executeFlow(participantANode, ReportCordappVersionFlow("com.example.a", "test-artifact-a", "1.0-a"))
         executeFlow(participantANode, ReportCordappVersionFlow("com.example.a", "test-artifact-b", "2.0-a"))
-        val versions = executeFlow(bnoNode, GetCordappVersionsForPartyFlow(participantANode.stringName())).map { it.version }.toSet()
+        val versions = executeFlow(bnoNode, GetCordappVersionsForPartyFlow(participantANode.party())).map { it.version }.toSet()
         assertEquals (setOf("1.0-a", "2.0-a"), versions)
     }
 
-    private fun StartedMockNode.stringName() = info.legalIdentities.single().name.toString()
+    private fun StartedMockNode.party() = info.legalIdentities.single()
 
     private fun <T> executeFlow(node : StartedMockNode, flowLogic : FlowLogic<T>) : T {
         val future = node.startFlow(flowLogic)

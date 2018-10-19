@@ -19,7 +19,10 @@ import java.net.URI
 import java.util.*
 
 /**
- * Flows to download a resource from a remote repository. Large payloads will be split into chunks of [serviceHub.networkParameters.maxMessageSize] / 2 size
+ * Fetches a resource from a remote repository. Used internally by Maven Resolver.
+ *
+ * @param resourceLocation resource location provided by Maven Resolver
+ * @param repositoryHosterName x500Name of the repository hoster
  */
 @StartableByService
 @StartableByRPC
@@ -44,7 +47,10 @@ class GetResourceFlow(private val resourceLocation : String, private val reposit
 }
 
 /**
- * Repository hoster can serve artifacts from a plain file- or http(s)- based repository
+ * This flows should exist at repository hoster's node. The flow fetches an artifact from a configured file- or http(s)- based repository,
+ * splits it into chunks of [serviceHub.networkParameters.maxMessageSize] / 2 size and send back to the requester.
+ *
+ * The flow supports [SessionFilter]s to restrict unauthorised traffic.
  */
 @InitiatedBy(GetResourceFlow::class)
 class GetResourceFlowResponder(session : FlowSession) : AbstractRepositoryHosterResponder<Unit>(session) {

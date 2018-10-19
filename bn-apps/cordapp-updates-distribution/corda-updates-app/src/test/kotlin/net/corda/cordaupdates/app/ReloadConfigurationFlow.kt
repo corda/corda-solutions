@@ -7,7 +7,7 @@ import net.corda.core.flows.StartableByRPC
 import java.io.File
 
 @StartableByRPC
-class ReloadConfigurationFlow(val fileName : String) : FlowLogic<Unit>() {
+class ReloadConfigurationFlow(private val fileName : String) : FlowLogic<Unit>() {
     @Suspendable
     override fun call() {
         val config = File(ReloadConfigurationFlow::class.java.classLoader.getResource(fileName).toURI())

@@ -7,6 +7,7 @@ import org.junit.Test
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
+import kotlin.test.assertEquals
 
 class CordappSyncerTest {
     private lateinit var localRepoPath : Path
@@ -28,7 +29,7 @@ class CordappSyncerTest {
         val syncConfiguration = SyncerConfiguration(
                 localRepoPath = localRepoPath.toAbsolutePath().toString(),
                 cordappSources = listOf(CordappSource(remoteRepoUrl = "file:${File("../TestRepo").canonicalPath}",
-                    cordapps = listOf("net.example:test-artifact", "net.example:test-artifact-3"))))
+                        cordapps = listOf("net.example:test-artifact", "net.example:test-artifact-3"))))
         val syncer = CordappSyncer(syncConfiguration)
 
         syncer.syncCordapps()
@@ -41,6 +42,30 @@ class CordappSyncerTest {
 
     @Test
     fun testConfigurationFormat() {
-        SyncerConfiguration.readFromFile(File(CordappSyncerTest::class.java.classLoader.getResource("test-syncer-configuration.yaml").file))
+        val configuration = SyncerConfiguration.readFromFile(File(CordappSyncerTest::class.java.classLoader.getResource("test-syncer-configuration.conf").file))
+        assertEquals(SyncerConfiguration(
+                localRepoPath = "/var/temp",
+                httpProxyType = "HTTP",
+                httpProxyHost = "10.0.0.1",
+                httpProxyPort = 187,
+                httpProxyUsername = "ProxyUsername",
+                httpProxyPassword = "ProxyPassword",
+                rpcHost = "localhost",
+                rpcPort = 8007,
+                rpcUsername = "RpcUsername",
+                rpcPassword = "RpcPassword",
+                cordappSources = listOf(
+                        CordappSource(
+                                remoteRepoUrl = "http://search.maven.org",
+                                cordapps = listOf("com.test:test-1", "com.test:test-2")
+                        ),
+                        CordappSource(
+                                remoteRepoUrl = "http://search2.maven.org",
+                                cordapps = listOf("com.test:test-1", "com.test:test-2"),
+                                httpUsername = "User2",
+                                httpPassword = "Password2"
+                        )
+                )
+        ), configuration)
     }
 }

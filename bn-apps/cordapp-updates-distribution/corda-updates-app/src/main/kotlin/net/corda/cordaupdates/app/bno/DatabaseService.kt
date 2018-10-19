@@ -5,9 +5,10 @@ import net.corda.core.identity.Party
 import net.corda.core.node.AppServiceHub
 import net.corda.core.node.services.CordaService
 import net.corda.core.serialization.SingletonSerializeAsToken
+import java.sql.Connection
 
 /**
- * Allows BNO to store reported CorDapp versions in the database
+ * Allows BNO to store and retrieve reported CorDapp versions from the database
  */
 @CordaService
 class DatabaseService(private val serviceHub : AppServiceHub) : SingletonSerializeAsToken() {
@@ -19,7 +20,6 @@ class DatabaseService(private val serviceHub : AppServiceHub) : SingletonSeriali
         const val CORDAPP_NAME = "cordapp_name"
         const val CORDAPP_VERSION = "cordapp_version"
         const val LAST_UPDATED = "last_updated"
-
     }
 
     init {
@@ -38,25 +38,54 @@ class DatabaseService(private val serviceHub : AppServiceHub) : SingletonSeriali
         session.prepareStatement(nativeQuery).execute()
     }
 
+    /**
+     * Updates or inserts information about a cordapp version
+     */
     fun updateCordappVersionInfo(party : Party, cordappVersionInfo : CordappVersionInfo) {
-        val insertQuery = """
-        insert into $CORDAPP_VERSION_INFO_TABLE ($PARTY, $CORDAPP_GROUP, $CORDAPP_NAME, $CORDAPP_VERSION, $LAST_UPDATED)
-        values ('${party.name}', '${cordappVersionInfo.group}', '${cordappVersionInfo.name}', '${cordappVersionInfo.version}', ${System.currentTimeMillis()})
-        """
-        val updateQuery = """
-        update $CORDAPP_VERSION_INFO_TABLE
-        set $CORDAPP_VERSION = '${cordappVersionInfo.version}', $LAST_UPDATED = ${System.currentTimeMillis()}
-        where $PARTY = '${party.name}' AND $CORDAPP_GROUP = '${cordappVersionInfo.group}' AND $CORDAPP_NAME = '${cordappVersionInfo.name}'
-        """
-
         val session = serviceHub.jdbcSession()
 
         // trying update first
-        val updated = session.prepareStatement(updateQuery).use { it.executeUpdate() }
+        val updated = tryUpdateCordappVersionInfo(session, party, cordappVersionInfo)
+
         // if nothing has been updated then insert
-        if (updated == 0) session.prepareStatement(insertQuery).use { it.executeUpdate() }
+        if (updated == 0) insertCordappVersionInfo(session, party, cordappVersionInfo)
     }
 
+    private fun tryUpdateCordappVersionInfo(session : Connection, party : Party, cordappVersionInfo : CordappVersionInfo) : Int {
+        val updateQuery = """
+            update $CORDAPP_VERSION_INFO_TABLE
+            set $CORDAPP_VERSION = ?, $LAST_UPDATED = ?
+            where $PARTY = ? AND $CORDAPP_GROUP = ? AND $CORDAPP_NAME = ?
+            """
+
+        val updateStatement = session.prepareStatement(updateQuery)
+
+        updateStatement.setString(1, cordappVersionInfo.version)
+        updateStatement.setLong(2, System.currentTimeMillis())
+        updateStatement.setString(3, party.name.toString())
+        updateStatement.setString(4, cordappVersionInfo.group)
+        updateStatement.setString(5, cordappVersionInfo.name)
+
+        return updateStatement.executeUpdate()
+    }
+
+    private fun insertCordappVersionInfo(session : Connection, party : Party, cordappVersionInfo : CordappVersionInfo) {
+        val insertQuery = """
+                insert into $CORDAPP_VERSION_INFO_TABLE ($PARTY, $CORDAPP_GROUP, $CORDAPP_NAME, $CORDAPP_VERSION, $LAST_UPDATED)
+                values (?, ?, ?, ?, ?)
+                """
+        val insertStatement = session.prepareStatement(insertQuery)
+        insertStatement.setString(1, party.name.toString())
+        insertStatement.setString(2, cordappVersionInfo.group)
+        insertStatement.setString(3, cordappVersionInfo.name)
+        insertStatement.setString(4, cordappVersionInfo.version)
+        insertStatement.setLong(5, System.currentTimeMillis())
+        insertStatement.executeUpdate()
+    }
+
+    /**
+     * Get information about all reported cordapp versions
+     */
     fun getCordappVersionInfos() : Map<String, List<CordappVersionInfo>> {
         val nativeQuery = """
                 select * from $CORDAPP_VERSION_INFO_TABLE
@@ -76,6 +105,9 @@ class DatabaseService(private val serviceHub : AppServiceHub) : SingletonSeriali
         return results
     }
 
+    /**
+     * Get information about reported cordapp versions for the provided party
+     */
     fun getCordappVersionInfos(party : Party) : List<CordappVersionInfo> {
         val nativeQuery = """
                 select * from $CORDAPP_VERSION_INFO_TABLE where $PARTY='${party.name}'

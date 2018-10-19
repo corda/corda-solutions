@@ -1,6 +1,6 @@
 package net.corda.businessnetworks.cordaupdates.core
 
-import net.corda.cordaupdates.transport.ConfigurationProperties
+import net.corda.cordaupdates.transport.SessionConfigurationProperties
 import net.corda.cordaupdates.transport.CordaTransporterFactory
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils.newSession
@@ -61,7 +61,7 @@ class CordaMavenResolver private constructor(private val remoteRepoUrl : String,
                    httpProxyUsername : String? = null,
                    httpProxyPassword : String? = null,
                    rpcHost : String? = null,
-                   rpcPort : String? = null,
+                   rpcPort : Int? = null,
                    rpcUsername : String? = null,
                    rpcPassword : String? = null,
                    repositoryListener : RepositoryListener? = null,
@@ -85,10 +85,10 @@ class CordaMavenResolver private constructor(private val remoteRepoUrl : String,
             val configurationProperties = mutableMapOf<String, Any>()
 
             // RPC options
-            rpcHost?.let { configurationProperties[ConfigurationProperties.RPC_HOST] = it }
-            rpcPort?.let { configurationProperties[ConfigurationProperties.RPC_PORT] = it }
-            rpcUsername?.let { configurationProperties[ConfigurationProperties.RPC_USERNAME] = it }
-            rpcPassword?.let { configurationProperties[ConfigurationProperties.RPC_PASSWORD] = it }
+            rpcHost?.let { configurationProperties[SessionConfigurationProperties.RPC_HOST] = it }
+            rpcPort?.let { configurationProperties[SessionConfigurationProperties.RPC_PORT] = it }
+            rpcUsername?.let { configurationProperties[SessionConfigurationProperties.RPC_USERNAME] = it }
+            rpcPassword?.let { configurationProperties[SessionConfigurationProperties.RPC_PASSWORD] = it }
 
             // listeners can be used to report Maven Resolver progress
             val resolver = CordaMavenResolver(remoteRepoUrl!!, localRepoPath!!, authentication, proxy, configurationProperties)

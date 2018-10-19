@@ -28,7 +28,7 @@ class CordaTransporterFactory : TransporterFactory {
             CORDA_RPC == protocol -> RPCTransporter(session, repository)
             CORDA_FLOWS == protocol -> FlowsTransporter(session, repository)
             CORDA_AUTO == protocol -> {
-                val mode = System.getProperty(ConfigurationProperties.MODE) ?: throw CordaTransportException("${ConfigurationProperties.MODE} property has to be specified for ")
+                val mode = System.getProperty(SessionConfigurationProperties.MODE) ?: throw CordaTransportException("${SessionConfigurationProperties.MODE} property has to be specified for ")
                 when (mode) {
                     CORDA_RPC -> RPCTransporter(session, repository)
                     CORDA_FLOWS -> FlowsTransporter(session, repository)
