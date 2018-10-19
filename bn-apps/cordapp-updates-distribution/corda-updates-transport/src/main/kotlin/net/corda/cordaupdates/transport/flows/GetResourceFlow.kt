@@ -47,7 +47,7 @@ class GetResourceFlow(private val resourceLocation : String, private val reposit
 }
 
 /**
- * This flows should exist at repository hoster's node. The flow fetches an artifact from a configured file- or http(s)- based repository,
+ * This flows should exist at the repository hoster's node. The flow fetches an artifact from a configured file- or http(s)- based repository,
  * splits it into chunks of [serviceHub.networkParameters.maxMessageSize] / 2 size and send back to the requester.
  *
  * The flow supports [SessionFilter]s to restrict unauthorised traffic.

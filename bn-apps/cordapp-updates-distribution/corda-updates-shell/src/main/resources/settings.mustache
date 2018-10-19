@@ -1,3 +1,4 @@
+# Path to the local repository
 localRepoPath = "{{localRepoPath}}"
 
 # HTTP or HTTPS. Should be specified only if HTTP(S) proxy is used.
@@ -27,18 +28,19 @@ localRepoPath = "{{localRepoPath}}"
 # RPC password of a Corda node to connect to. Should be specified only if corda-rpc or corda-auto transport is used.
 # rpcPassword = "10004"
 
-# List of CorDapps to sync from remote repos. Can sync multiple CorDapps from multiple repositories
+# List of CorDapps to sync from remote repos. Can sync multiple CorDapps from multiple remote repositories
 cordappSources = [
     {
+        # URL of the remote repository to fetch the cordapps from
         remoteRepoUrl = "https://repo.maven.apache.org/maven2/"
 
-        # list of CorDapps to sync from this repo. Can be many. Should be specified in the form of "artifactGroup:artifactName"
+        # List of the cordapps to sync from the remote repository. Should be specified in the form of "artifactGroup:artifactName"
         cordapps = ["net.corda:corda-finance"]
 
-        # Username, if the remote repo uses basic HTTP authentication
+        # Username, if the remote repo requires basic HTTP authentication
         # httpUsername = "repo_user"
 
-        # Password, if the remote repo uses basic HTTP authentication
+        # Password, if the remote repo requires basic HTTP authentication
         # httpPassword = "r3p0_P@$$"
     }
 ]

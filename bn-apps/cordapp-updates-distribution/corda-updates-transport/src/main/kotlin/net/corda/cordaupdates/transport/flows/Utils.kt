@@ -20,7 +20,7 @@ object Utils {
         }
 
     /**
-     * Converts Maven Resolver exception to Corda exception. The main purpose for it - to let the calling side know if
+     * Converts Maven Resolver exception to Corda exception. The main purpose for that - is to let the initiating flow know whether
      * the resource has been found or not
      */
     fun toCordaException(mavenResolverException : Exception, transporter : Transporter) : FlowException {

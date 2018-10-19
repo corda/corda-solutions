@@ -10,6 +10,7 @@ import net.corda.core.flows.FlowSession
  * In the case if no [SessionFilter] has been specified - every request will be let through.
  *
  * @throws FlowException if the incoming request doesn't satisfy [SessionFilter] requirements
+ *
  * TODO: this logic should be moved to the flow overrides once the feature is available
  */
 abstract class AbstractRepositoryHosterResponder<T>(val session : FlowSession) : FlowLogic<T>() {

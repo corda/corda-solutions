@@ -17,7 +17,7 @@ import net.corda.core.serialization.CordaSerializable
 data class CordappVersionInfo(val group : String, val name : String, val version : String, val updated : Long = 0L)
 
 /**
- * Reports a version of cordapp to the BNO
+ * Reports a version of a cordapp to the BNO
  */
 @InitiatingFlow
 class ReportCordappVersionFlow(private val group : String, private val name : String, private val version : String) : FlowLogic<Unit>() {

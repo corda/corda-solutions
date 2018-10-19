@@ -8,12 +8,11 @@ import net.corda.core.serialization.SingletonSerializeAsToken
 import java.sql.Connection
 
 /**
- * Allows BNO to store and retrieve reported CorDapp versions from the database
+ * Allows BNO to store and to retrieve reported CorDapp versions from the database
  */
 @CordaService
 class DatabaseService(private val serviceHub : AppServiceHub) : SingletonSerializeAsToken() {
     companion object {
-        // the table with pending membership request. See RequestMembershipFlow for more details
         const val CORDAPP_VERSION_INFO_TABLE = "cordapp_version_info"
         const val PARTY = "party"
         const val CORDAPP_GROUP = "cordapp_group"
@@ -84,7 +83,7 @@ class DatabaseService(private val serviceHub : AppServiceHub) : SingletonSeriali
     }
 
     /**
-     * Get information about all reported cordapp versions
+     * Get information about all reported cordapps versions
      */
     fun getCordappVersionInfos() : Map<String, List<CordappVersionInfo>> {
         val nativeQuery = """
@@ -106,7 +105,7 @@ class DatabaseService(private val serviceHub : AppServiceHub) : SingletonSeriali
     }
 
     /**
-     * Get information about reported cordapp versions for the provided party
+     * Get information about reported cordapps versions for the provided party
      */
     fun getCordappVersionInfos(party : Party) : List<CordappVersionInfo> {
         val nativeQuery = """
