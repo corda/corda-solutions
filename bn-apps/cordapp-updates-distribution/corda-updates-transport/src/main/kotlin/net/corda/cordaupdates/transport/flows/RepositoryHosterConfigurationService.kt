@@ -10,7 +10,7 @@ import java.io.File
 import java.nio.file.Paths
 
 /**
- * Configuration for the party that hosts Maven repo.
+ * Configuration for the repository hoster.
  *
  * TODO: replace with serviceHub.getAppContext().config when released
  */
@@ -27,10 +27,16 @@ class RepositoryHosterConfigurationService(private val serviceHub : AppServiceHu
         _config = readProps(file)
     }
 
-    fun remoteRepoUrl() : String = getValue(REMOTE_REPO_URL)!!
+    /**
+     * URL of the remote repository to fetch an artifact from. Supports -http and -file based repositories
+     */
+    fun remoteRepoUrl() : String = _config.getString(REMOTE_REPO_URL)
 
+    /**
+     * Returns a session filter to filter out unauthorised traffic
+     */
     fun getSessionFilter() : SessionFilter? {
-        val className = getValue(SESSION_FILTER)
+        val className = if (_config.hasPath(SESSION_FILTER)) _config.getString(SESSION_FILTER) else null
         return if (className == null) {
             null
         } else {
@@ -40,7 +46,5 @@ class RepositoryHosterConfigurationService(private val serviceHub : AppServiceHu
     }
 
     private fun readProps(file : File) : Config = ConfigFactory.parseFile(file)
-
-    private fun getValue(key : String)= if (_config.hasPath(key)) _config.getString(key) else null
 }
 

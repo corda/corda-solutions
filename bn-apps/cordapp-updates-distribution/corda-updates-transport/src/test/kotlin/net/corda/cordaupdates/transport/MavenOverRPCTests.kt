@@ -60,10 +60,10 @@ class MavenOverRPCTests {
                     remoteRepoUrl = "corda-rpc:O=Repo Hoster,L=New York,C=US",
                     localRepoPath = nodeLocalRepoPath.toAbsolutePath().toString())
             resolver.downloadVersion("net.example:test-artifact:1.5", configProps = mapOf(
-                    Pair(ConfigurationProperties.RPC_HOST, participantNode.rpcAddress.host),
-                    Pair(ConfigurationProperties.RPC_PORT, participantNode.rpcAddress.port),
-                    Pair(ConfigurationProperties.RPC_USERNAME, "test"),
-                    Pair(ConfigurationProperties.RPC_PASSWORD, "test")
+                    Pair(SessionConfigurationProperties.RPC_HOST, participantNode.rpcAddress.host),
+                    Pair(SessionConfigurationProperties.RPC_PORT, participantNode.rpcAddress.port),
+                    Pair(SessionConfigurationProperties.RPC_USERNAME, "test"),
+                    Pair(SessionConfigurationProperties.RPC_PASSWORD, "test")
             ))
             repoVerifier.shouldContain("net:example", "test-artifact", setOf("1.5")).verify()
         }

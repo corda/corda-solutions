@@ -1,14 +1,11 @@
 package net.corda.businessnetworks.cordaupdates.core
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
-import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.typesafe.config.Config
+import com.typesafe.config.ConfigFactory
 import org.eclipse.aether.RepositoryListener
 import org.eclipse.aether.artifact.DefaultArtifact
 import org.eclipse.aether.transfer.TransferListener
 import java.io.File
-import java.lang.IllegalArgumentException
-import java.nio.file.Files
 
 /**
  * A wrapper around [CordaMavenResolver] that can be sync different CorDapps from different remote repositories via single method invocation
@@ -50,8 +47,8 @@ class CordappSyncer(private val syncerConf : SyncerConfiguration,
     /**
      * Returns a list of CorDapp versions available in the remote repository. syncerConf is expected to contain a configured [CordappSource] for the requested CorDapp.
      *
-     * @coordinatesWithRange full maven coordinates of a CorDapp with a version range, i.e. "net.corda:corda-finance:[0,2.5)".
-     * @additionalConfigurationProperties additional parameters to be passed to [CordaMavenResolver]
+     * @param coordinatesWithRange full maven coordinates of a CorDapp with a version range, i.e. "net.corda:corda-finance:[0,2.5)".
+     * @param additionalConfigurationProperties additional parameters to be passed to [CordaMavenResolver]
      */
     fun getAvailableVersions(coordinatesWithRange : String, additionalConfigurationProperties : Map<String, Any> = mapOf()) : List<ArtifactMetadata> {
         val syncTask = syncerConf.findSourceFor(coordinatesWithRange) ?: throw CordappSourceNotFoundException(coordinatesWithRange)
@@ -70,7 +67,7 @@ data class CordappSource(
         val httpPassword : String? = null)
 
 /**
- * Configuration for [CordappSyncer]. Usually is red from settings.yaml
+ * Configuration for [CordappSyncer]. Usually is red from settings.conf
  */
 data class SyncerConfiguration(
         val localRepoPath : String,
@@ -80,27 +77,45 @@ data class SyncerConfiguration(
         val httpProxyUsername : String? = null,
         val httpProxyPassword : String? = null,
         val rpcHost : String? = null,
-        val rpcPort : String? = null,
+        val rpcPort : Int? = null,
         val rpcUsername : String? = null,
         val rpcPassword : String? = null,
         val cordappSources : List<CordappSource>) {
     companion object {
         fun readFromFile(file : File) : SyncerConfiguration {
-            val mapper = when {
-                file.name.endsWith("yaml") -> ObjectMapper(YAMLFactory())
-                else -> throw IllegalArgumentException("Unsupported file format $file")
-            }
-            mapper.registerModule(KotlinModule())
-            return Files.newBufferedReader(file.toPath()).use {
-                mapper.readValue(it, SyncerConfiguration::class.java)
-            }
+
+            val conf = ConfigFactory.parseFile(file)!!
+            val cordapps = conf.getObjectList("cordappSources").asSequence().map { it.toConfig()!! }.map { CordappSource(
+                    it.getString("remoteRepoUrl"),
+                    it.getStringList("cordapps"),
+                    it.getStringOrNull("httpUsername"),
+                    it.getStringOrNull("httpPassword")
+            ) }.toList()
+
+            return SyncerConfiguration(
+                    conf.getString("localRepoPath"),
+                    conf.getStringOrNull("httpProxyHost"),
+                    conf.getStringOrNull("httpProxyType"),
+                    conf.getIntOrNull("httpProxyPort"),
+                    conf.getStringOrNull("httpProxyUsername"),
+                    conf.getStringOrNull("httpProxyPassword"),
+                    conf.getStringOrNull("rpcHost"),
+                    conf.getIntOrNull("rpcPort"),
+                    conf.getStringOrNull("rpcUsername"),
+                    conf.getStringOrNull("rpcPassword"),
+                    cordapps
+            )
         }
+
+        private fun Config.getStringOrNull(key : String) = if (hasPath(key)) getString(key) else null
+        private fun Config.getIntOrNull(key : String) = if (hasPath(key)) getInt(key) else null
     }
 
     fun findSourceFor(cordapp : String) : CordappSource? {
         val artifact = DefaultArtifact(cordapp)
         return cordappSources.firstOrNull { it.cordapps.contains("${artifact.groupId}:${artifact.artifactId}") }
     }
+
 }
 
 open class SyncerException(message : String? = null, cause : Throwable? = null) : Exception(message, cause)

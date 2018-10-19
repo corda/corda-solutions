@@ -18,7 +18,10 @@ import java.lang.Exception
 import java.net.URI
 
 /**
- * Flows to peek a resource
+ * Peeks resource in a remote repository. Used internally by Maven Resolver.
+ *
+ * @param resourceLocation location of the resource provided by Maven Resolver
+ * @param repoHosterName x500Name of the repository hoster
  */
 @InitiatingFlow
 @StartableByRPC
@@ -32,6 +35,11 @@ class PeekResourceFlow(private val resourceLocation : String, private val repoHo
     }
 }
 
+/**
+ * This flows should exist at repository hoster's node. The flow peeks an artifact in a configured file- or http(s)- based repository.
+ *
+ * The flow supports [SessionFilter]s to restrict unauthorised traffic.
+ */
 @InitiatedBy(PeekResourceFlow::class)
 class PeekResourceFlowResponder(session : FlowSession) : AbstractRepositoryHosterResponder<Unit>(session) {
     @Suspendable

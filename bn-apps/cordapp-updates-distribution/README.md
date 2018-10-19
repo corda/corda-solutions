@@ -13,9 +13,9 @@ To start using CorDapp Distribution Service please follow the steps below:
 
 1. Download `corda-updates-shell` jar or build it by yourself. TODO: download link here
 2. Initialise a local repository via `java -jar corda-updates-shell-xxx.jar --mode=INIT`. Please see the [usage](#usage) section for more information about supported parameters. By default, the repository will be created under `~/.corda-updates` folder. 
-3. Add CorDapps that you would like to synchronize to `settings.yaml`, which is located in the root of the repository created on the previous step - `~/.corda-updates/settings.yaml` by default. Please see [this](#yaml-configuration) section for more details on the configuration file format.
+3. Add CorDapps that you would like to synchronize to `settings.conf`, which is located in the root of the repository created on the previous step - `~/.corda-updates/settings.conf` by default. Please see [this](#hocon-configuration) section for more details on the configuration file format.
 4. Download `corda-updates-app` jar or build it by yourself. TODO: download link here
-5. Install the CorDapp to network participant's nodes and configure it as described [here](#participant-cordapp-configuration). `configPath` should point to the `settings.yaml` created on the step #2.
+5. Install the CorDapp to network participant's nodes and configure it as described [here](#participant-cordapp-configuration). `configPath` should point to the `settings.conf` created on the step #2.
 6. If you are going to use [Corda-based transports](#corda-updates-transport) then install the CorDapp to the repository hoster's node and configure it as described [here](#repository-hoster-cordapp-configuration).   
 7. Schedule periodic synchronization by invoking [ScheduleSyncFlow](#scheduling-synchronisation) from Corda shell on the nodes of participants.
 8. Done. When published, updates will appear in the local repositories of participants. Please bear in mind that node administrators will still have to [install updates manually](https://docs.corda.net/releases/release-M8.2/creating-a-cordapp.html#installing-apps).
@@ -58,14 +58,18 @@ interface SessionFilter {
     fun isSessionAllowed(session : FlowSession, flowLogic : FlowLogic<*>) : Boolean
 }
 ```
-For example a session filter that would allow only the Business Network traffic through can be implemented in the following way:
+For example a session filter that would allow only the Business Network traffic through can be implemented in the following way using [Business Network Membership Service](https://github.com/corda/corda-solutions/tree/master/bn-apps/memberships-management):
 
 ```kotlin
 class BusinessNetworkSessionFilter : SessionFilter {
+
+    // GetMembershipsFlow is a part of Business Network Membership Service implementation
     @Suspendable
     override fun isSessionAllowed(session : FlowSession, flowLogic : FlowLogic<*>) = flowLogic.subFlow(GetMembershipsFlow())[session.counterparty] != null
 }
-``` 
+```
+
+
 
 ## Transport modes
 
@@ -84,11 +88,11 @@ Maven Resolver over Corda-based transports should always be invoked from a *non-
 
 This behaviour is handled by CorDapp Distribution Service internally and is transparent to the end user.  
 
-# YAML Configuration
+# HOCON Configuration
 
-CorDapp distribution service is configurable from a `yaml` file, of the following structure
+CorDapp distribution service is configurable from a `HOCON` file, of the following structure
 
-```yaml
+```hocon
 #Path to the local repository
 localRepoPath: ~/.corda-updates/repo
 
@@ -147,16 +151,16 @@ cordappSources:
 
 * **INIT**. Initialises an empty local repository and creates a sample configuration file.
 ```bash
-# Will initialize an empty repository and create a settings.yaml file under USER.HOME/.corda-updates folder
+# Will initialize an empty repository and create a settings.conf file under USER.HOME/.corda-updates folder
 java -jar corda-updates-shell-xxx.jar --mode=INIT
 
-# Will initialize an empty repository and create a settings.yaml file under ~/.my-repo
+# Will initialize an empty repository and create a settings.conf file under ~/.my-repo
 java -jar corda-updates-shell-xxx.jar --mode=INIT --configPath="~/.my-repo"
 
 ```  
-* **SYNC**. Synchronises the contents of the local repository with the remote repositories, configured in the `settings.yaml`. All versions missing from the local repository will be downloaded during the synchronisation. 
+* **SYNC**. Synchronises the contents of the local repository with the remote repositories, configured in the `settings.conf`. All versions missing from the local repository will be downloaded during the synchronisation. 
 ```bash
-# Will pull down locally missing versions for all CorDapps configured in the settings.yaml file. 
+# Will pull down locally missing versions for all CorDapps configured in the settings.conf file. 
 java -jar corda-updates-shell-xxx.jar --mode=SYNC
 
 # Will pull down locally missing versions of "net.corda:corda-finance" CorDapp starting from the version 0 and up to the version 2.0 not inclusively.
@@ -171,14 +175,14 @@ java -jar corda-updates-shell-xxx.jar --mode=PRINT_VERSIONS --cordapp="net.corda
 
 Configuration file is looked up in the following order:
 * A custom path if one was provided via `--configPath` parameter 
-* `settings.yaml` in the current working folder
-* `settings.yaml` in `USER.HOME/.corda-updates`
+* `settings.conf` in the current working folder
+* `settings.conf` in `USER.HOME/.corda-updates`
 
 ## How to use the shell
 
 1. Download `corda-updates-shell` jar or build it by yourself. TODO: download link here
 2. Initialise a local repository via `java -jar corda-updates-shell-xxx.jar --mode=INIT`
-3. Add CorDapps that you would like to watch to `settings.yaml`
+3. Add CorDapps that you would like to watch to `settings.conf`
 4. Start using the utility by invoking `SYNC` or `PRINT_VERSIONS` commands
 
 # corda-updates-app
@@ -197,25 +201,26 @@ Updates can be scheduled via `ScheduleSyncFlow`. Synchronisation interval is dri
 subFlow(ScheduleSyncFlow(launchAsync = true))
 ```
 
-> It is better to avoid launching ScheduleSyncFlow in synchronous mode, as it might result to a deadlock, as described in one of the previous sections
+> If Corda-based transports are not used, then ScheduleSyncFlow can be run in synchronous mode. For example if all remote repositories are configured to use -http ot -file transports. Synchronous invocations are more convenient from developer's perspective as results are available right after the execution is finished. However, launching ScheduleSyncFlow in synchronous mode for Corda-based transports might result to a deadlock on a single-threaded flavours of Corda. Please refer to "Asynchronous invocations" for more information about that.
 
 ## Getting available versions
 
-Available versions can be fetched via `GetAvailableVersionsFlow`. 
+Available versions can be fetched from `ArtifactsMetadataCache`. 
 
 ```kotlin
-subFLow(GetAvailableVersionsFlow("net.corda:corda-finance"))
+val artifactCache = serviceHub.cordaService(ArtifactsMetadataCache::class)
+artifactsMetadataCache.cache // <-- list of the available artifacts will be here
 ```
 
-> GetAvailableVersionsFlow doesn't make any requests to the remote repository, but reuses a cache populated by ScheduleSyncFlow instead. At least one synchronisation should pass in order for GetAvailableVersionsFlow to return any results. 
+> ArtifactsMetadataCache is populated by ScheduleSyncFlow. At least one synchronisation should pass in order for ArtifactsMetadataCache to contain any data. 
 
 ## Participant CorDapp Configuration
 
 Configuration is loaded from `cordapps/config/corda-updates-app.conf`.   
 
 ```
-# path to the yaml configuration file (described in the previous sections) 
-configPath=./config.yaml
+# path to the HOCON configuration file (described in the previous sections) 
+configPath=./config.conf
 
 # synchronisation interval in milliseconds defaults to 5 hours if not specified
 syncInterval=18000000
@@ -236,31 +241,6 @@ remoteRepoUrl=file:/path/to/local/repository
 
 # Class that implements the SessionFilter interface. Optional.
 sessionFilter=com.my.app.MySessionFilter
-```
-## Stopping CorDapp from working if a newer version is available
-
-Such rules can be enforced in the following way:
-
-```kotlin
-class MyFlow : FlowLogic<Unit>() {
-    companion object {
-    // current version of CordDapp. Can be hardcoded as a constant or get received from serviceHub starting from Corda v4
-        val CURRENT_VERSION = "1.0"
-    }
-
-    @Suspendable
-    override fun call() {
-        val artifactMetadata = subFlow(GetAvailableVersionsFlow("my.cordapp.group:my-cordapp-id"))
-        if (artifactMetadata != null && artifactMetadata.versions.isNotEmpty()) {
-            // versions are sorted in ascending order
-            if (CURRENT_VERSION != artifactMetadata.versions.last()) {
-                throw FlowException("Please update your CorDapp") 
-            }
-        }
-        
-        // .....
-    }
-}
 ```
 
 ## Reporting CorDapp versions

@@ -10,12 +10,19 @@ import java.lang.Exception
 import java.lang.IllegalArgumentException
 
 object Utils {
+    /**
+     * Creates Maven Resolver transporter factory based on the provided transport name
+     */
     fun transporterFactory(transport : String) : TransporterFactory = when (transport) {
             "http" -> HttpTransporterFactory()
             "file" -> FileTransporterFactory()
             else -> throw IllegalArgumentException("Unsupported transport $transport")
         }
 
+    /**
+     * Converts Maven Resolver exception to Corda exception. The main purpose for it - to let the calling side know if
+     * the resource has been found or not
+     */
     fun toCordaException(mavenResolverException : Exception, transporter : Transporter) : FlowException {
         val exType = transporter.classify(mavenResolverException)
         return when (exType) {

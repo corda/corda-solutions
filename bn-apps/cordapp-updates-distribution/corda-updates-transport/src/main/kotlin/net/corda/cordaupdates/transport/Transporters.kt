@@ -36,7 +36,7 @@ import org.eclipse.aether.util.ConfigUtils
  *
  *     fun invoke(resolver : CordaMavenResolver) {
  *         EXECUTOR.submit {
- *             val additionalProperties = mapOf(Pair(ConfigurationProperties.APP_SERVICE_HUB, appServiceHub))
+ *             val additionalProperties = mapOf(Pair(SessionConfigurationProperties.APP_SERVICE_HUB, appServiceHub))
  *             resolver.downloadVersion("net.corda:corda-finance", additionalProperties)
  *         }
  *     }
@@ -63,12 +63,12 @@ class FlowsTransporter(private val session : RepositorySystemSession,
     }
 
     override fun implPeek(task : PeekTask?) {
-        val appServiceHub = ConfigUtils.getObject(session, null, ConfigurationProperties.APP_SERVICE_HUB) as AppServiceHub
+        val appServiceHub = ConfigUtils.getObject(session, null, SessionConfigurationProperties.APP_SERVICE_HUB) as AppServiceHub
         appServiceHub.startFlow(PeekResourceFlow(task!!.location.toString(), repoHosterName)).returnValue.getOrThrow()
     }
 
     override fun implGet(task : GetTask?) {
-        val appServiceHub = ConfigUtils.getObject(session, null, ConfigurationProperties.APP_SERVICE_HUB) as AppServiceHub
+        val appServiceHub = ConfigUtils.getObject(session, null, SessionConfigurationProperties.APP_SERVICE_HUB) as AppServiceHub
         val bytes = appServiceHub.startFlow(GetResourceFlow(task!!.location.toString(), repoHosterName)).returnValue.getOrThrow()
         utilGet(task, ByteInputStream(bytes, bytes.size), true, bytes.size.toLong(), false)
     }
@@ -120,10 +120,10 @@ class RPCTransporter(private val session : RepositorySystemSession,
     }
 
     private fun rpcOps() : CordaRPCOps {
-        val host = ConfigUtils.getString(session, null, ConfigurationProperties.RPC_HOST)!!
-        val port = ConfigUtils.getInteger(session, 0, ConfigurationProperties.RPC_PORT)
-        val username = ConfigUtils.getString(session, null, ConfigurationProperties.RPC_USERNAME)!!
-        val password = ConfigUtils.getString(session.configProperties, null, ConfigurationProperties.RPC_PASSWORD)!!
+        val host = ConfigUtils.getString(session, null, SessionConfigurationProperties.RPC_HOST)!!
+        val port = ConfigUtils.getInteger(session, 0, SessionConfigurationProperties.RPC_PORT)
+        val username = ConfigUtils.getString(session, null, SessionConfigurationProperties.RPC_USERNAME)!!
+        val password = ConfigUtils.getString(session.configProperties, null, SessionConfigurationProperties.RPC_PASSWORD)!!
 
         val rpcAddress = NetworkHostAndPort(host, port)
         val rpcClient = CordaRPCClient(rpcAddress)

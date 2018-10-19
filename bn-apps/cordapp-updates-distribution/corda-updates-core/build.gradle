@@ -1,8 +1,7 @@
 buildscript {
     ext.slf4j_version = '1.7.25'
     ext.tinylog_version = '1.3.5'
-    // later versions are not compatible with Corda
-    ext.jackson_version = '2.9.5'
+    ext.typesafe_version = '1.3.2'
 
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-noarg:$kotlin_version"
@@ -40,13 +39,11 @@ dependencies {
         exclude group: "org.apache.maven.resolver", module: "*"
     }
 
-    // jackson yaml
-    compile "com.fasterxml.jackson.core:jackson-databind:$jackson_version"
-    compile "com.fasterxml.jackson.module:jackson-module-kotlin:$jackson_version"
-    compile "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jackson_version"
-
     // transport over flows
     compile project(':bn-apps:cordapp-updates-distribution:corda-updates-transport')
+
+    // typesafe
+    compile "com.typesafe:config:$typesafe_version"
 
     // corda RPC
     compile "$corda_release_group:corda-rpc:$corda_release_version"

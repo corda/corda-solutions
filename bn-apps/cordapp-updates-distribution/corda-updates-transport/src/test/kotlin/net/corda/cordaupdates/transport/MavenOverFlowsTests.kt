@@ -117,7 +117,7 @@ class ExecutorService(private val appServiceHub : AppServiceHub) : SingletonSeri
     fun downloadVersionAsync(remoteRepoUrl : String, localRepoPath : String, mavenCoords : String) {
         executor.submit(Callable {
             val resolver = CordaMavenResolver.create(remoteRepoUrl = remoteRepoUrl, localRepoPath = localRepoPath)
-            resolver.downloadVersion(mavenCoords, configProps = mapOf(Pair(ConfigurationProperties.APP_SERVICE_HUB, appServiceHub)))
+            resolver.downloadVersion(mavenCoords, configProps = mapOf(Pair(SessionConfigurationProperties.APP_SERVICE_HUB, appServiceHub)))
         })
     }
 }

@@ -30,10 +30,12 @@ import net.corda.core.utilities.ProgressTracker
 class SyncArtifactsFlow private constructor (private val scheduledStateRef : StateRef? = null,
                          private val syncerConfig : SyncerConfiguration? = null,
                          private val launchAsync : Boolean = true) : FlowLogic<List<ArtifactMetadata>?>() {
+    // this constructor is needed when the flow is invoked by Corda scheduler
     constructor(scheduledStateRef : StateRef) : this(scheduledStateRef, null, true)
     constructor(syncerConfig : SyncerConfiguration? = null,
                 launchAsync : Boolean = true) : this(null, syncerConfig, launchAsync)
 
+    // TODO: remove the progress tracker once Corda v4 is released
     companion object {
         object LAUNCHING_SYNCHRONISATION : ProgressTracker.Step("Invoking initial synchronisation")
 
@@ -59,12 +61,13 @@ class SyncArtifactsFlow private constructor (private val scheduledStateRef : Sta
 
 /**
  * Issues [ScheduledSyncState] onto the ledger (all existing [ScheduledSyncState]s will be spent first) and then triggers
- * a synchronisation explicitly.
+ * a synchronisation via [SyncArtifactsFlow]
  */
 @StartableByRPC
 class ScheduleSyncFlow @JvmOverloads constructor(private val syncerConfig : SyncerConfiguration? = null,
                                                  private val launchAsync : Boolean = true) : FlowLogic<List<ArtifactMetadata>?>() {
 
+    // TODO: remove the progress tracker once Corda v4 is released
     companion object {
         object SCHEDULING_STATE : ProgressTracker.Step("Scheduling state")
         object INVOKING_INITIAL_SYNCRONISATION : ProgressTracker.Step("Invoking initial synchronisation") {
