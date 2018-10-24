@@ -44,21 +44,28 @@ class DatabaseService(val serviceHub : ServiceHub) : SingletonSerializeAsToken()
     fun getAllMemberships() = serviceHub.vaultService.queryBy<Membership.State>().states
     fun getActiveMemberships() = getAllMemberships().filter { it.state.data.isActive() }
 
+
     fun createPendingMembershipRequest(party : Party) {
         val nativeQuery = """
                 insert into $PENDING_MEMBERSHIP_REQUESTS_TABLE ($PENDING_MEMBER_COLUMN)
-                values ('${party.name}')
+                values (?)
             """
         val session = serviceHub.jdbcSession()
-        session.prepareStatement(nativeQuery).use { it.executeUpdate() }
+
+        val statement = session.prepareStatement(nativeQuery)
+        statement.setString(1, party.name.toString())
+        statement.executeUpdate()
     }
+
 
     fun deletePendingMembershipRequest(party : Party) {
         val nativeQuery = """
                 delete from $PENDING_MEMBERSHIP_REQUESTS_TABLE
-                where $PENDING_MEMBER_COLUMN = '${party.name}'
+                where $PENDING_MEMBER_COLUMN = ?
             """
         val session = serviceHub.jdbcSession()
-        session.prepareStatement(nativeQuery).use { it.executeUpdate() }
+        val statement = session.prepareStatement(nativeQuery)
+        statement.setString(1, party.name.toString())
+        statement.executeUpdate()
     }
 }
