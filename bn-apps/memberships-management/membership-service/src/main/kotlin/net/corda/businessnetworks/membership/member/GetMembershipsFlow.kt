@@ -27,7 +27,7 @@ data class MembershipsListResponse(val memberships: List<StateAndRef<MembershipS
  * GetMembershipsFlow can be used as follows:
  *
  * @param forceRefresh set to true to request memberships from BNO instead of the local cache
- * @param filterOutNotExisting if true then nodes that are not in the network map will be filtered out from the results list
+ * @param filterOutInactive if true then nodes that are not in the network map will be filtered out from the results list
  *
  * @InitiatedBy(SomeInitiatedFlow::class)
  * class MyAuthenticatedFlowResponder(val session : FlowSession) : FlowLogic<Unit>() {
@@ -43,14 +43,15 @@ data class MembershipsListResponse(val memberships: List<StateAndRef<MembershipS
  */
 @InitiatingFlow
 @StartableByRPC
-class GetMembershipsFlow<out T>(private val forceRefresh: Boolean = false, private val filterOutNotExisting : Boolean = true) : FlowLogic<Map<Party, StateAndRef<MembershipState<T>>>>() {
+class GetMembershipsFlow(private val forceRefresh: Boolean = false, private val filterOutInactive : Boolean = true) : FlowLogic<Map<Party, StateAndRef<MembershipState<Any>>>>() {
+
     @Suspendable
-    override fun call(): Map<Party, StateAndRef<MembershipState<T>>> {
+    override fun call(): Map<Party, StateAndRef<MembershipState<Any>>> {
         val membershipService = serviceHub.cordaService(MembershipsCacheHolder::class.java)
         val cache = membershipService.cache
         val now = serviceHub.clock.instant()
 
-        val membershipsToReturn : Map<Party, StateAndRef<MembershipState<T>>>
+        val membershipsToReturn : Map<Party, StateAndRef<MembershipState<Any>>>
         if (forceRefresh || cache == null || if (cache.expires == null) false else cache.expires < (now)) {
             val configuration = serviceHub.cordaService(MemberConfigurationService::class.java)
             val bno = configuration.bnoParty()
@@ -58,19 +59,19 @@ class GetMembershipsFlow<out T>(private val forceRefresh: Boolean = false, priva
             val response = bnoSession.sendAndReceive<MembershipsListResponse>(MembershipListRequest()).unwrap { it }
             val newCache = MembershipsCache.from(response)
             membershipService.cache = newCache
-            membershipsToReturn = newCache.membershipMap.mapValues{ it.value as StateAndRef<MembershipState<T>> }
+            membershipsToReturn = newCache.membershipMap.toMap()
         } else {
-            membershipsToReturn = cache.membershipMap.mapValues { it.value as StateAndRef<MembershipState<T>> }
+            membershipsToReturn = cache.membershipMap.toMap()
         }
 
-        return if (filterOutNotExisting) membershipsToReturn.filterOutInactive() else membershipsToReturn
+        return if (filterOutInactive) membershipsToReturn.filterOutInactive() else membershipsToReturn
     }
 
-    private fun Map<Party, StateAndRef<MembershipState<T>>>.filterOutInactive() = filter { serviceHub.networkMapCache.getNodeByLegalIdentity(it.key) != null }
+    private fun Map<Party, StateAndRef<MembershipState<Any>>>.filterOutInactive() = filter { serviceHub.networkMapCache.getNodeByLegalIdentity(it.key) != null }
 }
 
 @StartableByRPC
-class GetMembersFlow<out T>(private val forceRefresh : Boolean = false, private val filterOutNotExisting : Boolean = true) : FlowLogic<List<PartyAndMembershipMetadata<T>>>() {
+class GetMembersFlow(private val forceRefresh : Boolean = false, private val filterOutNotExisting : Boolean = true) : FlowLogic<List<PartyAndMembershipMetadata<Any>>>() {
 
     companion object {
         object GOING_TO_CACHE_OR_BNO : ProgressTracker.Step("Going to cache or BNO for membership data")
@@ -83,9 +84,9 @@ class GetMembersFlow<out T>(private val forceRefresh : Boolean = false, private 
     override val progressTracker = tracker()
 
     @Suspendable
-    override fun call(): List<PartyAndMembershipMetadata<T>> {
+    override fun call(): List<PartyAndMembershipMetadata<Any>> {
         progressTracker.currentStep = GOING_TO_CACHE_OR_BNO
-        return subFlow(GetMembershipsFlow<T>(forceRefresh, filterOutNotExisting)).map { PartyAndMembershipMetadata(it.key, it.value.state.data.membershipMetadata) }
+        return subFlow(GetMembershipsFlow(forceRefresh, filterOutNotExisting)).map { PartyAndMembershipMetadata(it.key, it.value.state.data.membershipMetadata) }
     }
 }
 

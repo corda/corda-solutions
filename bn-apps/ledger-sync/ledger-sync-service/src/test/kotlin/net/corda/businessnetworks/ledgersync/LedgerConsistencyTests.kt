@@ -205,7 +205,7 @@ class LedgerConsistencyTests {
     }
 
     private fun StartedNode<MockNode>.members(): List<Party> {
-        val future = services.startFlow(GetMembershipsFlow<Any>(true)).resultFuture
+        val future = services.startFlow(GetMembershipsFlow(true)).resultFuture
         mockNetwork.runNetwork()
         return future.getOrThrow().keys.toList()
     }

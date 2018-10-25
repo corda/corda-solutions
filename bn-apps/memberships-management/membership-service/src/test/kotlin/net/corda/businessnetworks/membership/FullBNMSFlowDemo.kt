@@ -12,6 +12,7 @@ import net.corda.core.identity.Party
 import net.corda.core.utilities.getOrThrow
 import org.junit.Test
 import kotlin.test.fail
+import net.corda.businessnetworks.membership.member.Utils.ofType
 
 /**
  * This is a demo of the Business Network Membership Service. The test demonstrates how a participant can request to join a Business Network
@@ -41,7 +42,7 @@ class FullBNMSFlowDemo : AbstractFlowTest(5) {
         // otherwise the BNO will notify the existing members about the new-joiner immediately after membership activation
 
         // now the new-joiner can request memberships from the BNO via GetMembershipsFlow. Memberships list contains just a single party
-        val memberships = runGetMembershipsListFlow(newJoiner, false)
+        val memberships = runGetMembershipsListFlow(newJoiner, false).ofType<SimpleMembershipMetadata>()
         assert(memberships.keys.single() == identity(newJoiner))
         assert(memberships[identity(newJoiner)]!!.state.data.membershipMetadata.role == "My new role")
 
@@ -93,7 +94,7 @@ class FullBNMSFlowDemo : AbstractFlowTest(5) {
     class MyInitiatedFlow(val flowSession : FlowSession) : FlowLogic<Unit>() {
         @Suspendable
         override fun call() {
-            val memberships = subFlow(GetMembershipsFlow<SimpleMembershipMetadata>())
+            val memberships = subFlow(GetMembershipsFlow())
             if (!memberships.containsKey(flowSession.counterparty)) {
                 throw FlowException("Counterparty is not a member")
             }

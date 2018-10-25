@@ -7,7 +7,6 @@ import net.corda.core.identity.Party
 import net.corda.core.node.AppServiceHub
 import net.corda.core.node.services.CordaService
 import net.corda.core.serialization.SingletonSerializeAsToken
-import java.lang.IllegalArgumentException
 import java.time.Instant
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
@@ -30,8 +29,7 @@ class MembershipsCache private constructor(val membershipMap : ConcurrentMap<Par
                 ConcurrentHashMap(membershipResponse.memberships.map { it.state.data.member to it }.toMap()),
                 membershipResponse.expires)
     }
-    inline fun <T> getMembership(party : Party) = membershipMap[party] as StateAndRef<MembershipState<T>>?
-
+    fun getMembership(party : Party) = membershipMap[party]
     fun revokeMembership(revokedMember : Party) { membershipMap.remove(revokedMember) }
     fun updateMembership(changedMembership : StateAndRef<MembershipState<Any>>) { membershipMap[changedMembership.state.data.member] = changedMembership }
 }

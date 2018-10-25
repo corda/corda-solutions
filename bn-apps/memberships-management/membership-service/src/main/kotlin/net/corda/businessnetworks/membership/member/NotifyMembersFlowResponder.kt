@@ -17,7 +17,7 @@ import net.corda.core.utilities.unwrap
  * Responder to the [NotifyMemberFlow]. The flow updates memberships cache according to a notification from BNO
  */
 @InitiatedBy(NotifyMemberFlow::class)
-class NotifyMembersFlowResponder(val session : FlowSession) : FlowLogic<Unit>(){
+class NotifyMembersFlowResponder(private val session : FlowSession) : FlowLogic<Unit>(){
 
     @Suspendable
     override fun call() {
@@ -48,7 +48,7 @@ class NotifyMembersFlowResponder(val session : FlowSession) : FlowLogic<Unit>(){
                 is OnMembershipActivated -> {
                     // refreshing membership list if its our identity or applying change to the cache otherwise
                     if (notification.changedMembership.state.data.member == ourIdentity) {
-                        subFlow(GetMembershipsFlow<Any>(forceRefresh = true))
+                        subFlow(GetMembershipsFlow(forceRefresh = true))
                     } else {
                         cache.updateMembership(notification.changedMembership)
                     }

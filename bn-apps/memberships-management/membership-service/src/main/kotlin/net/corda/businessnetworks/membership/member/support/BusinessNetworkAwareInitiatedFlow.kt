@@ -25,7 +25,7 @@ abstract class BusinessNetworkAwareInitiatedFlow<out T>(private val flowSession:
 
     @Suspendable
     private fun verifyMembership(initiator : Party) {
-        val memberships = subFlow(GetMembershipsFlow<Any>())
+        val memberships = subFlow(GetMembershipsFlow())
         if(memberships[initiator] == null) {
             throw NotAMemberException(initiator)
         }
