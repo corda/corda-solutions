@@ -2,8 +2,8 @@ package net.corda.businessnetworks.membership.member.service
 
 import net.corda.businessnetworks.membership.AbstractFlowTest
 import net.corda.businessnetworks.membership.member.MembershipsListResponse
-import net.corda.businessnetworks.membership.states.Membership
-import net.corda.businessnetworks.membership.states.MembershipMetadata
+import net.corda.businessnetworks.membership.states.MembershipState
+import net.corda.businessnetworks.membership.states.SimpleMembershipMetadata
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.node.services.queryBy
 import org.junit.Test
@@ -41,7 +41,7 @@ class MembershipsCacheTest : AbstractFlowTest(5) {
         val cache = MembershipsCache.from(MembershipsListResponse(memberships, Instant.now()))
         val node = participantsNodes.first()
         val party = identity(node)
-        runAmendMetadataFlow(node, MembershipMetadata(role="New metadata"))
+        runAmendMetadataFlow(node, SimpleMembershipMetadata(role="New metadata"))
 
         val newMembership = getMembership(node, party)
 
@@ -51,14 +51,14 @@ class MembershipsCacheTest : AbstractFlowTest(5) {
         assert(cache.membershipMap[party] == newMembership)
     }
 
-    private fun initialiseMemberships() : List<StateAndRef<Membership.State>> {
+    private fun initialiseMemberships() : List<StateAndRef<MembershipState<Any>>> {
         participantsNodes.forEach {
             runRequestMembershipFlow(it)
             runActivateMembershipFlow(bnoNode, identity(it))
         }
 
         return participantsNodes.map {
-            it.transaction { it.services.vaultService.queryBy<Membership.State>().states }.single()
+            it.transaction { it.services.vaultService.queryBy<MembershipState<Any>>().states }.single()
         }
     }
 }

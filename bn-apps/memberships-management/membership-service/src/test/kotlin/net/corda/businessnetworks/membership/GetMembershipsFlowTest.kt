@@ -3,9 +3,10 @@ package net.corda.businessnetworks.membership
 import co.paralleluniverse.fibers.Suspendable
 import net.corda.businessnetworks.membership.bno.GetMembershipListFlowResponder
 import net.corda.businessnetworks.membership.member.service.MembershipsCacheHolder
-import net.corda.businessnetworks.membership.states.Membership
-import net.corda.businessnetworks.membership.states.MembershipMetadata
+import net.corda.businessnetworks.membership.states.MembershipContract
+import net.corda.businessnetworks.membership.states.MembershipState
 import net.corda.businessnetworks.membership.states.MembershipStatus
+import net.corda.businessnetworks.membership.states.SimpleMembershipMetadata
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.contracts.StateRef
 import net.corda.core.contracts.TransactionState
@@ -105,7 +106,7 @@ class GetMembershipsFlowTest : AbstractFlowTest(5) {
 
         // adding not existing party to the cache
         val notExistingParty = TestIdentity(CordaX500Name.parse("O=Member,L=London,C=GB")).party
-        val future = participant.startFlow(AddNotExistingPartyToMembershipsCache(notExistingParty, Membership.State(notExistingParty, bnoParty, MembershipMetadata(), status = MembershipStatus.ACTIVE)))
+        val future = participant.startFlow(AddNotExistingPartyToMembershipsCache(notExistingParty, MembershipState(notExistingParty, bnoParty, SimpleMembershipMetadata("DEFAULT"), status = MembershipStatus.ACTIVE)))
         mockNetwork.runNetwork()
         future.getOrThrow()
 
@@ -119,11 +120,11 @@ class GetMembershipsFlowTest : AbstractFlowTest(5) {
     }
 }
 
-class AddNotExistingPartyToMembershipsCache(val party : Party, val membership : Membership.State) : FlowLogic<Unit>() {
+class AddNotExistingPartyToMembershipsCache(val party : Party, val membership : MembershipState<SimpleMembershipMetadata>) : FlowLogic<Unit>() {
     @Suspendable
     override fun call() {
         val cacheHolder = serviceHub.cordaService(MembershipsCacheHolder::class.java)
         cacheHolder.cache!!.membershipMap.put(party,
-                StateAndRef(TransactionState(membership, Membership.CONTRACT_NAME, serviceHub.networkMapCache.notaryIdentities.single()), StateRef(SecureHash.zeroHash, 0)))
+                StateAndRef(TransactionState(membership, MembershipContract.CONTRACT_NAME, serviceHub.networkMapCache.notaryIdentities.single()), StateRef(SecureHash.zeroHash, 0)))
     }
 }

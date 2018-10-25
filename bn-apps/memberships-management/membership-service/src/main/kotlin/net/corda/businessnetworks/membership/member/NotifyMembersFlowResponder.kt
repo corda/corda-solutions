@@ -48,7 +48,7 @@ class NotifyMembersFlowResponder(val session : FlowSession) : FlowLogic<Unit>(){
                 is OnMembershipActivated -> {
                     // refreshing membership list if its our identity or applying change to the cache otherwise
                     if (notification.changedMembership.state.data.member == ourIdentity) {
-                        subFlow(GetMembershipsFlow(true))
+                        subFlow(GetMembershipsFlow<Any>(forceRefresh = true))
                     } else {
                         cache.updateMembership(notification.changedMembership)
                     }

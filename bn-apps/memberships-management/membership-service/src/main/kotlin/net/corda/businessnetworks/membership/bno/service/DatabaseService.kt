@@ -1,6 +1,6 @@
 package net.corda.businessnetworks.membership.bno.service
 
-import net.corda.businessnetworks.membership.states.Membership
+import net.corda.businessnetworks.membership.states.MembershipState
 import net.corda.businessnetworks.membership.states.MembershipStateSchemaV1
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.identity.Party
@@ -32,18 +32,17 @@ class DatabaseService(val serviceHub : ServiceHub) : SingletonSerializeAsToken()
         session.prepareStatement(nativeQuery).execute()
     }
 
-    fun getMembership(member : Party) : StateAndRef<Membership.State>? {
+    fun getMembership(member : Party) : StateAndRef<MembershipState<Any>>? {
         val memberEqual
                 = builder { MembershipStateSchemaV1.PersistentMembershipState::member.equal(member) }
         val criteria = QueryCriteria.VaultQueryCriteria(Vault.StateStatus.UNCONSUMED)
                 .and(QueryCriteria.VaultCustomQueryCriteria(memberEqual))
-        val states = serviceHub.vaultService.queryBy<Membership.State>(criteria).states
+        val states = serviceHub.vaultService.queryBy<MembershipState<Any>>(criteria).states
         return if (states.isEmpty()) null else (states.sortedBy { it.state.data.modified }.last())
     }
 
-    fun getAllMemberships() = serviceHub.vaultService.queryBy<Membership.State>().states
+    fun getAllMemberships() = serviceHub.vaultService.queryBy<MembershipState<Any>>().states
     fun getActiveMemberships() = getAllMemberships().filter { it.state.data.isActive() }
-
 
     fun createPendingMembershipRequest(party : Party) {
         val nativeQuery = """

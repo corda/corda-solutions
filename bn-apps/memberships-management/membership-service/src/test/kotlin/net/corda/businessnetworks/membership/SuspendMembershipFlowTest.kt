@@ -2,13 +2,13 @@ package net.corda.businessnetworks.membership
 
 import net.corda.businessnetworks.membership.bno.OnMembershipRevoked
 import net.corda.businessnetworks.membership.bno.service.BNOConfigurationService
-import net.corda.businessnetworks.membership.states.Membership
+import net.corda.businessnetworks.membership.states.MembershipContract
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.fail
 
-class RevokeMembershipFlowTest : AbstractFlowTest(2) {
+class SuspendMembershipFlowTest : AbstractFlowTest(2) {
 
     override fun registerFlows() {
         participantsNodes.forEach {
@@ -40,8 +40,8 @@ class RevokeMembershipFlowTest : AbstractFlowTest(2) {
         val outputTxState = stx.tx.outputs.single()
         val command = stx.tx.commands.single()
 
-        assert(Membership.CONTRACT_NAME == outputTxState.contract)
-        assert(command.value is Membership.Commands.Revoke)
+        assert(MembershipContract.CONTRACT_NAME == outputTxState.contract)
+        assert(command.value is MembershipContract.Commands.Suspend)
         assert(stx.inputs.single() == inputMembership.ref)
 
         val notifiedParties = TestNotifyMembersFlowResponder.NOTIFICATIONS.filter { it.second is OnMembershipRevoked }.map { it.first }
@@ -65,8 +65,8 @@ class RevokeMembershipFlowTest : AbstractFlowTest(2) {
         val outputTxState = stx.tx.outputs.single()
         val command = stx.tx.commands.single()
 
-        assert(Membership.CONTRACT_NAME == outputTxState.contract)
-        assert(command.value is Membership.Commands.Revoke)
+        assert(MembershipContract.CONTRACT_NAME == outputTxState.contract)
+        assert(command.value is MembershipContract.Commands.Suspend)
         assert(stx.inputs.single() == inputMembership.ref)
 
         val notifiedParties = TestNotifyMembersFlowResponder.NOTIFICATIONS.filter { it.second is OnMembershipRevoked }.map { it.first }

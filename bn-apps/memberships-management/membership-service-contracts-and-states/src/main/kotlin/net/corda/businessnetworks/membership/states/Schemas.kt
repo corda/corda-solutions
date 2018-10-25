@@ -9,7 +9,7 @@ import javax.persistence.Entity
 import javax.persistence.Table
 
 @CordaSerializable
-object MembershipStateSchemaV1 : MappedSchema(schemaFamily = Membership.State::class.java, version = 1, mappedTypes = listOf(PersistentMembershipState::class.java)) {
+object MembershipStateSchemaV1 : MappedSchema(schemaFamily = MembershipState::class.java, version = 1, mappedTypes = listOf(PersistentMembershipState::class.java)) {
     @Entity
     @Table(name = "membership_states")
     class PersistentMembershipState (

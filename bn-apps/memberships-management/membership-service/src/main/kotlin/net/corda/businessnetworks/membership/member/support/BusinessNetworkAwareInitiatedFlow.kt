@@ -12,7 +12,7 @@ import net.corda.core.identity.Party
  * the initiating party is also a member. Your code (inside onOtherPartyMembershipVerified) will be called only after
  * that check is performed. If the initiating party is not a member an exception is thrown.
  */
-abstract class BusinessNetworkAwareInitiatedFlow<out T>(val flowSession: FlowSession) : FlowLogic<T>() {
+abstract class BusinessNetworkAwareInitiatedFlow<out T>(private val flowSession: FlowSession) : FlowLogic<T>() {
 
     @Suspendable
     override fun call(): T {
@@ -25,7 +25,7 @@ abstract class BusinessNetworkAwareInitiatedFlow<out T>(val flowSession: FlowSes
 
     @Suspendable
     private fun verifyMembership(initiator : Party) {
-        val memberships = subFlow(GetMembershipsFlow())
+        val memberships = subFlow(GetMembershipsFlow<Any>())
         if(memberships[initiator] == null) {
             throw NotAMemberException(initiator)
         }

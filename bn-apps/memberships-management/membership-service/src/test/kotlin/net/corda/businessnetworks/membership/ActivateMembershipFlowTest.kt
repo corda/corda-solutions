@@ -2,7 +2,7 @@ package net.corda.businessnetworks.membership
 
 import net.corda.businessnetworks.membership.bno.OnMembershipActivated
 import net.corda.businessnetworks.membership.bno.service.BNOConfigurationService
-import net.corda.businessnetworks.membership.states.Membership
+import net.corda.businessnetworks.membership.states.MembershipContract
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -45,8 +45,8 @@ class ActivateMembershipFlowTest : AbstractFlowTest(2) {
         val outputTxState = stx.tx.outputs.single()
         val command = stx.tx.commands.single()
 
-        assert(Membership.CONTRACT_NAME == outputTxState.contract)
-        assert(command.value is Membership.Commands.Activate)
+        assert(MembershipContract.CONTRACT_NAME == outputTxState.contract)
+        assert(command.value is MembershipContract.Commands.Activate)
         assert(stx.tx.inputs.single() == inputMembership.ref)
 
         val notification = TestNotifyMembersFlowResponder.NOTIFICATIONS.single()
@@ -70,8 +70,8 @@ class ActivateMembershipFlowTest : AbstractFlowTest(2) {
         val outputTxState = stx.tx.outputs.single()
         val command = stx.tx.commands.single()
 
-        assert(Membership.CONTRACT_NAME == outputTxState.contract)
-        assert(command.value is Membership.Commands.Activate)
+        assert(MembershipContract.CONTRACT_NAME == outputTxState.contract)
+        assert(command.value is MembershipContract.Commands.Activate)
         assert(stx.tx.inputs.single() == inputMembership.ref)
 
         val notification = TestNotifyMembersFlowResponder.NOTIFICATIONS.single()

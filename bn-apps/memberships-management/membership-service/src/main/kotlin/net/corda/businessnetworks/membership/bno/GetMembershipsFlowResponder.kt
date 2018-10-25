@@ -18,6 +18,7 @@ class GetMembershipListFlowResponder(flowSession : FlowSession) : BusinessNetwor
 
     @Suspendable
     override fun onOtherPartyMembershipVerified() {
+
         logger.info("Sending membership list to ${flowSession.counterparty}")
         //build memberships snapshot
         flowSession.receive<MembershipListRequest>()
@@ -27,9 +28,8 @@ class GetMembershipListFlowResponder(flowSession : FlowSession) : BusinessNetwor
         val cacheRefreshPeriod = configurationService.cacheRefreshPeriod()
 
         val nextRefreshTime = if (cacheRefreshPeriod == null) null
-            else serviceHub.clock.instant().plusSeconds(cacheRefreshPeriod.toLong() * 60 * 60)
+            else serviceHub.clock.instant().plusSeconds(cacheRefreshPeriod * 60 * 60)
 
         flowSession.send(MembershipsListResponse(memberships, nextRefreshTime))
     }
-
 }

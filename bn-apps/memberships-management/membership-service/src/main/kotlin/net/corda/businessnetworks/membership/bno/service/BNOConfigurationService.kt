@@ -12,7 +12,6 @@ import java.io.File
 @CordaService
 class BNOConfigurationService(private val serviceHub : ServiceHub) : SingletonSerializeAsToken() {
     companion object {
-        const val DEFAULT_CACHE_REFRESH_PERIOD = 18000000L
         const val NOTARY_NAME = "notaryName"
         // Specifies how often BN members should be refreshing their membership list caches. If this attribute is not set, then
         // the BN members will pull membership list only once, when their node starts, and then would rely on the BNO to notify them
@@ -30,7 +29,7 @@ class BNOConfigurationService(private val serviceHub : ServiceHub) : SingletonSe
     fun notaryParty() = serviceHub.networkMapCache.getNotary(notaryName())
             ?: throw IllegalArgumentException("Notary ${notaryName()} has not been found on the network")
 
-    fun cacheRefreshPeriod() = if (_config.hasPath(CACHE_REFRESH_PERIOD)) _config.getLong(CACHE_REFRESH_PERIOD) else DEFAULT_CACHE_REFRESH_PERIOD
+    fun cacheRefreshPeriod() = if (_config.hasPath(CACHE_REFRESH_PERIOD)) _config.getLong(CACHE_REFRESH_PERIOD) else null
     fun areNotificationEnabled() = if (_config.hasPath(NOTIFICATIONS_ENABLED)) _config.getBoolean(NOTIFICATIONS_ENABLED) else false
 
     fun getMembershipAutoAcceptor() : MembershipAutoAcceptor? {

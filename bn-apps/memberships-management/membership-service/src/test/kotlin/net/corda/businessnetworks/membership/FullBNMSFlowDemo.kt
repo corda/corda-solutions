@@ -2,7 +2,7 @@ package net.corda.businessnetworks.membership
 
 import co.paralleluniverse.fibers.Suspendable
 import net.corda.businessnetworks.membership.member.GetMembershipsFlow
-import net.corda.businessnetworks.membership.states.MembershipMetadata
+import net.corda.businessnetworks.membership.states.SimpleMembershipMetadata
 import net.corda.core.flows.FlowException
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.FlowSession
@@ -29,7 +29,7 @@ class FullBNMSFlowDemo : AbstractFlowTest(5) {
         val nonMember = participantsNodes[1]
 
         // participant submits a membership request to the BNO via RequestMembershipFlow
-        runRequestMembershipFlow(newJoiner, MembershipMetadata(role="My new role"))
+        runRequestMembershipFlow(newJoiner, SimpleMembershipMetadata(role="My new role"))
 
         // the flow issues MembershipState in PENDING status onto the ledger
         // After the state has been issued, the BNO needs to kick-off their internal KYC / on-boarding procedures, do all the paperwork and etc.
@@ -54,7 +54,7 @@ class FullBNMSFlowDemo : AbstractFlowTest(5) {
         }
 
         // Business Network members can amend their membership metadata via AmendMembershipMetadataFlow
-        runAmendMetadataFlow(newJoiner, MembershipMetadata(role="Some other role"))
+        runAmendMetadataFlow(newJoiner, SimpleMembershipMetadata(role="Some other role"))
 
         // BNO can revoke memberships via RevokeMembershipFlow
         runRevokeMembershipFlow(bnoNode, identity(newJoiner))
@@ -93,7 +93,7 @@ class FullBNMSFlowDemo : AbstractFlowTest(5) {
     class MyInitiatedFlow(val flowSession : FlowSession) : FlowLogic<Unit>() {
         @Suspendable
         override fun call() {
-            val memberships = subFlow(GetMembershipsFlow())
+            val memberships = subFlow(GetMembershipsFlow<SimpleMembershipMetadata>())
             if (!memberships.containsKey(flowSession.counterparty)) {
                 throw FlowException("Counterparty is not a member")
             }

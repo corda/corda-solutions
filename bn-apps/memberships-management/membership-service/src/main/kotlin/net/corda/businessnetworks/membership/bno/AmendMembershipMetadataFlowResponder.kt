@@ -6,7 +6,7 @@ import net.corda.businessnetworks.membership.bno.service.DatabaseService
 import net.corda.businessnetworks.membership.bno.support.BusinessNetworkOperatorInitiatedFlow
 import net.corda.businessnetworks.membership.member.AmendMembershipMetadataFlow
 import net.corda.businessnetworks.membership.member.AmendMembershipMetadataRequest
-import net.corda.businessnetworks.membership.states.Membership
+import net.corda.businessnetworks.membership.states.MembershipContract
 import net.corda.core.flows.CollectSignaturesFlow
 import net.corda.core.flows.FinalityFlow
 import net.corda.core.flows.FlowSession
@@ -35,8 +35,8 @@ class AmendMembershipMetadataFlowResponder(flowSession : FlowSession) : Business
         // changes to the metadata should be governed by the contract, not flows
         val builder = TransactionBuilder(notaryParty)
                 .addInputState(existingMembership)
-                .addOutputState(newMembership, Membership.CONTRACT_NAME)
-                .addCommand(Membership.Commands.Amend(), flowSession.counterparty.owningKey, ourIdentity.owningKey)
+                .addOutputState(newMembership, MembershipContract.CONTRACT_NAME)
+                .addCommand(MembershipContract.Commands.Amend(), flowSession.counterparty.owningKey, ourIdentity.owningKey)
 
         builder.verify(serviceHub)
 

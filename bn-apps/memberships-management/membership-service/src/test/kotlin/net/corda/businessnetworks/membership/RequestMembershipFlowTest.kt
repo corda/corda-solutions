@@ -2,7 +2,8 @@ package net.corda.businessnetworks.membership
 
 import net.corda.businessnetworks.membership.bno.RequestMembershipFlowResponder
 import net.corda.businessnetworks.membership.bno.service.DatabaseService
-import net.corda.businessnetworks.membership.states.Membership
+import net.corda.businessnetworks.membership.states.MembershipContract
+import net.corda.businessnetworks.membership.states.MembershipState
 import net.corda.core.flows.FlowException
 import org.junit.Test
 import kotlin.test.fail
@@ -23,11 +24,11 @@ class RequestMembershipFlowTest : AbstractFlowTest(2) {
         assert(stx.notary!!.name == notaryName)
 
         val outputWithContract = stx.tx.outputs.single()
-        val outputMembership = outputWithContract.data as Membership.State
+        val outputMembership = outputWithContract.data as MembershipState<*>
         val command = stx.tx.commands.single()
 
-        assert(command.value is Membership.Commands.Request)
-        assert(outputWithContract.contract == Membership.CONTRACT_NAME)
+        assert(command.value is MembershipContract.Commands.Request)
+        assert(outputWithContract.contract == MembershipContract.CONTRACT_NAME)
         assert(outputMembership.bno == bnoParty)
         assert(outputMembership.member == memberParty)
 

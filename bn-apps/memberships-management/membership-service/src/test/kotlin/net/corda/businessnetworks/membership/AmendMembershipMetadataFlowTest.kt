@@ -2,8 +2,9 @@ package net.corda.businessnetworks.membership
 
 import net.corda.businessnetworks.membership.bno.OnMembershipChanged
 import net.corda.businessnetworks.membership.bno.service.BNOConfigurationService
-import net.corda.businessnetworks.membership.states.Membership
-import net.corda.businessnetworks.membership.states.MembershipMetadata
+import net.corda.businessnetworks.membership.states.MembershipContract
+import net.corda.businessnetworks.membership.states.MembershipState
+import net.corda.businessnetworks.membership.states.SimpleMembershipMetadata
 import net.corda.core.flows.FlowException
 import org.junit.Test
 
@@ -31,11 +32,11 @@ class AmendMembershipMetadataFlowTest : AbstractFlowTest(2) {
         allSignedTx.verifyRequiredSignatures()
 
         val outputWithContract = allSignedTx.tx.outputs.single()
-        val outputMembership = outputWithContract.data as Membership.State
+        val outputMembership = outputWithContract.data as MembershipState<*>
         val command = allSignedTx.tx.commands.single()
 
-        assert(command.value is Membership.Commands.Amend)
-        assert(outputWithContract.contract == Membership.CONTRACT_NAME)
+        assert(command.value is MembershipContract.Commands.Amend)
+        assert(outputWithContract.contract == MembershipContract.CONTRACT_NAME)
         assert(outputMembership.membershipMetadata == newMetadata)
         assert(allSignedTx.inputs.single() == existingMembership.ref)
 
@@ -73,7 +74,7 @@ class AmendMembershipMetadataFlowTest : AbstractFlowTest(2) {
         runActivateMembershipFlow(bnoNode, memberParty)
 
         try {
-            runAmendMetadataFlow(memberNode, MembershipMetadata(role="Some role"))
+            runAmendMetadataFlow(memberNode, SimpleMembershipMetadata(role="Some role"))
         } catch (e : FlowException) {
             assert("$memberParty is not a member" == e.message)
         }

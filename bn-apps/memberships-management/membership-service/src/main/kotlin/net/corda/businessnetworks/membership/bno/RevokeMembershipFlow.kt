@@ -3,7 +3,8 @@ package net.corda.businessnetworks.membership.bno
 import co.paralleluniverse.fibers.Suspendable
 import net.corda.businessnetworks.membership.bno.service.BNOConfigurationService
 import net.corda.businessnetworks.membership.bno.support.BusinessNetworkOperatorFlowLogic
-import net.corda.businessnetworks.membership.states.Membership
+import net.corda.businessnetworks.membership.states.MembershipContract
+import net.corda.businessnetworks.membership.states.MembershipState
 import net.corda.businessnetworks.membership.states.MembershipStatus
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.flows.*
@@ -14,7 +15,7 @@ import net.corda.core.utilities.ProgressTracker
 
 @InitiatingFlow
 @StartableByRPC
-class RevokeMembershipFlow(val membership : StateAndRef<Membership.State>) : BusinessNetworkOperatorFlowLogic<SignedTransaction>() {
+class RevokeMembershipFlow(val membership : StateAndRef<MembershipState<Any>>) : BusinessNetworkOperatorFlowLogic<SignedTransaction>() {
 
     @Suspendable
     override fun call() : SignedTransaction {
@@ -25,8 +26,8 @@ class RevokeMembershipFlow(val membership : StateAndRef<Membership.State>) : Bus
         // build revocation transaction
         val builder = TransactionBuilder(notary)
                 .addInputState(membership)
-                .addOutputState(membership.state.data.copy(status = MembershipStatus.REVOKED, modified = serviceHub.clock.instant()), Membership.CONTRACT_NAME)
-                .addCommand(Membership.Commands.Revoke(), ourIdentity.owningKey)
+                .addOutputState(membership.state.data.copy(status = MembershipStatus.SUSPENDED, modified = serviceHub.clock.instant()), MembershipContract.CONTRACT_NAME)
+                .addCommand(MembershipContract.Commands.Suspend(), ourIdentity.owningKey)
         builder.verify(serviceHub)
         val selfSignedTx = serviceHub.signInitialTransaction(builder)
         val finalisedTx = subFlow(FinalityFlow(selfSignedTx))
