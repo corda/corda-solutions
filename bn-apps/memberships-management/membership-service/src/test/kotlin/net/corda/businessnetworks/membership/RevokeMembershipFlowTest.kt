@@ -91,7 +91,7 @@ class RevokeMembershipFlowTest : AbstractFlowTest(2) {
     @Test
     fun `no message should be sent if notifications are disabled`() {
         val bnoConfiguration = bnoNode.services.cordaService(BNOConfigurationService::class.java)
-        bnoConfiguration.reloadPropertiesFromFile("membership-service-notifications-disabled.properties")
+        bnoConfiguration.reloadPropertiesFromFile(fileFromClasspath("membership-service-notifications-disabled.conf"))
 
         val memberNode = participantsNodes.first()
         val memberParty = identity(memberNode)

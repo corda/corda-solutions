@@ -22,6 +22,7 @@ import net.corda.testing.node.MockNodeParameters
 import net.corda.testing.node.StartedMockNode
 import org.junit.After
 import org.junit.Before
+import java.io.File
 
 abstract class AbstractFlowTest(
         val numberOfIdentities : Int
@@ -114,4 +115,6 @@ abstract class AbstractFlowTest(
     }
 
     fun identity(node : StartedMockNode) = node.info.legalIdentities.single()
+
+    fun fileFromClasspath(fileName : String) = File(AbstractFlowTest::class.java.classLoader.getResource(fileName).toURI())
 }
