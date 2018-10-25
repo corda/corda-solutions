@@ -12,7 +12,7 @@ BNMS consists of 2 CorDapps:
 
 Both of the CorDapps are required to be installed to the nodes of all Business Network participants as well as to the BNO's node.
 
-CorDapp configuration is red from the `membership-service.properties` file on the CorDapp's classpath.
+CorDapp configuration is red from `cordapps/config/membership-service.conf` file with a fallback to `membership-service.conf` on the CorDapp's classpath.
 
 Please see [FullBNMSFlowDemo](./membership-service/src/test/kotlin/net/corda/businessnetworks/membership/FullBNMSFlowDemo.kt) for how-to-use example.
 
@@ -28,15 +28,15 @@ Look at their respective class annotations for details.
 
 | Property        | Description         |
 | ------------- |:-------------:|
-| `net.corda.businessnetworks.membership.bnoName` | Fully qualified X500 name of the BNO |
+| `bnoName` | Fully qualified X500 name of the BNO |
 
 ## BNO configuration 
 
 | Property        | Description         |
 | ------------- |:-------------:|
-| `net.corda.businessnetworks.membership.notaryName` | Fully qualified X500 name of the Notary to be used for membership states notarisation|
-| `net.corda.businessnetworks.membership.cacheRefreshPeriod` | Specifies how often (in seconds) BN members should be refreshing their membership list caches. If this attribute is not set, then the BN members will pull membership list only once, when their node starts, and then will rely on the BNO to notify them about all memberships changes.|
-| `net.corda.businessnetworks.membership.notificationsEnabled` | If `true`, then the BNO will notify all members about any change to the memberships |
+| `notaryName` | Fully qualified X500 name of the Notary to be used for membership states notarisation|
+| `cacheRefreshPeriod` | Specifies how often (in milliseconds) BN members should be refreshing their membership list caches. If this attribute is not set, then the BN members will pull membership list only once, when their node starts, and then will rely on the BNO to notify them about all memberships changes.|
+| `notificationsEnabled` | If `true`, then the BNO will notify all members about any change to the memberships |
 
 ## Behaviour customization
 
@@ -44,4 +44,4 @@ If you don't want to manually activate every membership request and would like t
 
 | Property        | Description         |
 | ------------- |:-------------:|
-| `net.corda.businessnetworks.membership.membershipAutoAcceptor` | Class implementing the MembershipAutoAcceptor interface, including package name |
+| `membershipAutoAcceptor` | Class implementing the MembershipAutoAcceptor interface, including package name |

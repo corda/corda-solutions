@@ -98,7 +98,9 @@ class ActivateMembershipFlowTest : AbstractFlowTest(2) {
     @Test
     fun `no message should be sent if notifications are disabled`() {
         val bnoConfiguration = bnoNode.services.cordaService(BNOConfigurationService::class.java)
-        bnoConfiguration.reloadPropertiesFromFile("membership-service-notifications-disabled.properties")
+
+
+        bnoConfiguration.reloadPropertiesFromFile(fileFromClasspath("membership-service-notifications-disabled.conf"))
 
         val memberNode = participantsNodes.first()
         val memberParty = identity(memberNode)
@@ -112,7 +114,7 @@ class ActivateMembershipFlowTest : AbstractFlowTest(2) {
     @Test
     fun `membership can be auto activated`() {
         val bnoConfiguration = bnoNode.services.cordaService(BNOConfigurationService::class.java)
-        bnoConfiguration.reloadPropertiesFromFile("membership-service-with-auto-approver.properties")
+        bnoConfiguration.reloadPropertiesFromFile(fileFromClasspath("membership-service-with-auto-approver.conf"))
         val memberNode = participantsNodes.first()
         val memberParty = identity(memberNode)
 
