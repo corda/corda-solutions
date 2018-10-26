@@ -2,14 +2,14 @@ package net.corda.businessnetworks.membership
 
 import net.corda.businessnetworks.membership.bno.ActivateMembershipFlow
 import net.corda.businessnetworks.membership.bno.ActivateMembershipForPartyFlow
-import net.corda.businessnetworks.membership.bno.RevokeMembershipFlow
-import net.corda.businessnetworks.membership.bno.RevokeMembershipForPartyFlow
+import net.corda.businessnetworks.membership.bno.SuspendMembershipFlow
+import net.corda.businessnetworks.membership.bno.SuspendMembershipForPartyFlow
 import net.corda.businessnetworks.membership.member.AmendMembershipMetadataFlow
 import net.corda.businessnetworks.membership.member.GetMembershipsFlow
 import net.corda.businessnetworks.membership.member.RequestMembershipFlow
 import net.corda.businessnetworks.membership.bno.service.DatabaseService
-import net.corda.businessnetworks.membership.states.Membership
-import net.corda.businessnetworks.membership.states.MembershipMetadata
+import net.corda.businessnetworks.membership.states.MembershipState
+import net.corda.businessnetworks.membership.states.SimpleMembershipMetadata
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.identity.CordaX500Name
 import net.corda.core.identity.Party
@@ -61,21 +61,21 @@ abstract class AbstractFlowTest(
         mockNetwork.stopNodes()
     }
 
-    fun runRequestMembershipFlow(nodeToRunTheFlow : StartedMockNode, membershipMetadata : MembershipMetadata = MembershipMetadata(role="DEFAULT")) : SignedTransaction {
+    fun runRequestMembershipFlow(nodeToRunTheFlow : StartedMockNode, membershipMetadata : SimpleMembershipMetadata = SimpleMembershipMetadata(role="DEFAULT")) : SignedTransaction {
         val future = nodeToRunTheFlow.startFlow(RequestMembershipFlow(membershipMetadata))
         mockNetwork.runNetwork()
         return future.getOrThrow()
     }
 
-    fun runRevokeMembershipFlow(nodeToRunTheFlow : StartedMockNode, party : Party) : SignedTransaction {
+    fun runSuspendMembershipFlow(nodeToRunTheFlow : StartedMockNode, party : Party) : SignedTransaction {
         val membership = getMembership(nodeToRunTheFlow, party)
-        val future = nodeToRunTheFlow.startFlow(RevokeMembershipFlow(membership))
+        val future = nodeToRunTheFlow.startFlow(SuspendMembershipFlow(membership))
         mockNetwork.runNetwork()
         return future.getOrThrow()
     }
 
-    fun runRevokeMembershipForPartyFlow(nodeToRunTheFlow : StartedMockNode, party: Party) : SignedTransaction {
-        val future = nodeToRunTheFlow.startFlow(RevokeMembershipForPartyFlow(party))
+    fun runSuspendMembershipForPartyFlow(nodeToRunTheFlow : StartedMockNode, party: Party) : SignedTransaction {
+        val future = nodeToRunTheFlow.startFlow(SuspendMembershipForPartyFlow(party))
         mockNetwork.runNetwork()
         return future.getOrThrow()
     }
@@ -93,13 +93,13 @@ abstract class AbstractFlowTest(
         return future.getOrThrow()
     }
 
-    fun runAmendMetadataFlow(nodeToRunTheFlow : StartedMockNode, newMetadata : MembershipMetadata) : SignedTransaction {
+    fun runAmendMetadataFlow(nodeToRunTheFlow : StartedMockNode, newMetadata : SimpleMembershipMetadata) : SignedTransaction {
         val future = nodeToRunTheFlow.startFlow(AmendMembershipMetadataFlow(newMetadata))
         mockNetwork.runNetwork()
         return future.getOrThrow()
     }
 
-    fun runGetMembershipsListFlow(nodeToRunTheFlow : StartedMockNode, force : Boolean, filterOutNotExisting : Boolean = true) : Map<Party, StateAndRef<Membership.State>> {
+    fun runGetMembershipsListFlow(nodeToRunTheFlow : StartedMockNode, force : Boolean, filterOutNotExisting : Boolean = true) : Map<Party, StateAndRef<MembershipState<Any>>> {
         val future = nodeToRunTheFlow.startFlow(GetMembershipsFlow(force, filterOutNotExisting))
         mockNetwork.runNetwork()
         return future.getOrThrow()
@@ -107,7 +107,7 @@ abstract class AbstractFlowTest(
 
     fun getMembership (node : StartedMockNode, party : Party) = node.transaction {
             val dbService = node.services.cordaService(DatabaseService::class.java)
-            dbService.getMembership(party)!!
+            dbService.getMembership(party)!! as StateAndRef<MembershipState<SimpleMembershipMetadata>>
         }
 
     fun allTransactions(node : StartedMockNode) = node.transaction {

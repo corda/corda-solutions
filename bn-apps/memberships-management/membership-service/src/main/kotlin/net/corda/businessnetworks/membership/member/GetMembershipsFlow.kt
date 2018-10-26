@@ -4,8 +4,7 @@ import co.paralleluniverse.fibers.Suspendable
 import net.corda.businessnetworks.membership.member.service.MemberConfigurationService
 import net.corda.businessnetworks.membership.member.service.MembershipsCache
 import net.corda.businessnetworks.membership.member.service.MembershipsCacheHolder
-import net.corda.businessnetworks.membership.states.Membership
-import net.corda.businessnetworks.membership.states.MembershipMetadata
+import net.corda.businessnetworks.membership.states.MembershipState
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.InitiatingFlow
@@ -14,13 +13,12 @@ import net.corda.core.identity.Party
 import net.corda.core.serialization.CordaSerializable
 import net.corda.core.utilities.ProgressTracker
 import net.corda.core.utilities.unwrap
-import java.time.Instant
 
 @CordaSerializable
 class MembershipListRequest
 
 @CordaSerializable
-data class MembershipsListResponse(val memberships: List<StateAndRef<Membership.State>>, val expires: Instant? = null)
+data class MembershipsListResponse(val memberships: List<StateAndRef<MembershipState<Any>>>)
 
 /**
  * The flow pulls down a list of active members from the BNO. The list is cached via the [MembershipService].
@@ -28,7 +26,7 @@ data class MembershipsListResponse(val memberships: List<StateAndRef<Membership.
  * GetMembershipsFlow can be used as follows:
  *
  * @param forceRefresh set to true to request memberships from BNO instead of the local cache
- * @param filterOutNotExisting if true then nodes that are not in the network map will be filtered out from the results list
+ * @param filterOutInactive if true then nodes that are not in the network map will be filtered out from the results list
  *
  * @InitiatedBy(SomeInitiatedFlow::class)
  * class MyAuthenticatedFlowResponder(val session : FlowSession) : FlowLogic<Unit>() {
@@ -44,15 +42,15 @@ data class MembershipsListResponse(val memberships: List<StateAndRef<Membership.
  */
 @InitiatingFlow
 @StartableByRPC
-class GetMembershipsFlow(private val forceRefresh: Boolean = false, private val filterOutNotExisting : Boolean = true) : FlowLogic<Map<Party, StateAndRef<Membership.State>>>() {
+class GetMembershipsFlow(private val forceRefresh: Boolean = false, private val filterOutInactive : Boolean = true) : FlowLogic<Map<Party, StateAndRef<MembershipState<Any>>>>() {
+
     @Suspendable
-    override fun call(): Map<Party, StateAndRef<Membership.State>> {
+    override fun call(): Map<Party, StateAndRef<MembershipState<Any>>> {
         val membershipService = serviceHub.cordaService(MembershipsCacheHolder::class.java)
         val cache = membershipService.cache
-        val now = serviceHub.clock.instant()
 
-        val membershipsToReturn : Map<Party, StateAndRef<Membership.State>>
-        if (forceRefresh || cache == null || if (cache.expires == null) false else cache.expires < (now)) {
+        val membershipsToReturn : Map<Party, StateAndRef<MembershipState<Any>>>
+        if (forceRefresh || cache == null) {
             val configuration = serviceHub.cordaService(MemberConfigurationService::class.java)
             val bno = configuration.bnoParty()
             val bnoSession = initiateFlow(bno)
@@ -64,31 +62,31 @@ class GetMembershipsFlow(private val forceRefresh: Boolean = false, private val 
             membershipsToReturn = cache.membershipMap.toMap()
         }
 
-        return if (filterOutNotExisting) membershipsToReturn.filterOutInactive() else membershipsToReturn
+        return if (filterOutInactive) membershipsToReturn.filterOutInactive() else membershipsToReturn
     }
 
-    private fun Map<Party, StateAndRef<Membership.State>>.filterOutInactive() = filter { serviceHub.networkMapCache.getNodeByLegalIdentity(it.key) != null }
+    private fun Map<Party, StateAndRef<MembershipState<Any>>>.filterOutInactive() = filter { serviceHub.networkMapCache.getNodeByLegalIdentity(it.key) != null }
 }
 
 @StartableByRPC
-class GetMembersFlow(private val forceRefresh : Boolean = false, private val filterOutNotExisting : Boolean = true) : FlowLogic<List<PartyAndMembershipMetadata>>() {
+class GetMembersFlow(private val forceRefresh : Boolean = false, private val filterOutNotExisting : Boolean = true) : FlowLogic<List<PartyAndMembershipMetadata<Any>>>() {
 
     companion object {
         object GOING_TO_CACHE_OR_BNO : ProgressTracker.Step("Going to cache or BNO for membership data")
 
         fun tracker() = ProgressTracker(
-                GOING_TO_CACHE_OR_BNO
+            GOING_TO_CACHE_OR_BNO
         )
     }
 
     override val progressTracker = tracker()
 
     @Suspendable
-    override fun call(): List<PartyAndMembershipMetadata> {
+    override fun call(): List<PartyAndMembershipMetadata<Any>> {
         progressTracker.currentStep = GOING_TO_CACHE_OR_BNO
         return subFlow(GetMembershipsFlow(forceRefresh, filterOutNotExisting)).map { PartyAndMembershipMetadata(it.key, it.value.state.data.membershipMetadata) }
     }
 }
 
 @CordaSerializable
-data class PartyAndMembershipMetadata(val party : Party, val membershipMetadata: MembershipMetadata)
+data class PartyAndMembershipMetadata<out T>(val party : Party, val membershipMetadata: T)

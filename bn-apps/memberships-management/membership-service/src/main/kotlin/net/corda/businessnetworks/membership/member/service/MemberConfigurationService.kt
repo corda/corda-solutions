@@ -6,9 +6,15 @@ import net.corda.core.node.ServiceHub
 import net.corda.core.node.services.CordaService
 import net.corda.core.serialization.SingletonSerializeAsToken
 
+/**
+ * Configuration that is used by member app.
+ *
+ * TODO: remove this class when multiple business networks are supported
+ */
 @CordaService
 class MemberConfigurationService(private val serviceHub : ServiceHub) : SingletonSerializeAsToken() {
     companion object {
+        // X500 name of the BNO
         const val BNO_NAME = "bnoName"
     }
     private val _config = loadConfig()

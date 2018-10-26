@@ -9,10 +9,10 @@ import net.corda.core.identity.Party
 
 /**
  * Extend from this class if you are a business network member and you don't want to be checking yourself whether
- * the initiating party is also a member. Your code (inside onOtherPartyMembershipVerified) will be called only after
+ * the initiating party is also a member. Your code (inside onCounterpartyMembershipVerified) will be called only after
  * that check is performed. If the initiating party is not a member an exception is thrown.
  */
-abstract class BusinessNetworkAwareInitiatedFlow<out T>(val flowSession: FlowSession) : FlowLogic<T>() {
+abstract class BusinessNetworkAwareInitiatedFlow<out T>(private val flowSession: FlowSession) : FlowLogic<T>() {
 
     @Suspendable
     override fun call(): T {

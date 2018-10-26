@@ -4,7 +4,7 @@ import co.paralleluniverse.fibers.Suspendable
 import net.corda.businessnetworks.membership.bno.NotifyMemberFlow
 import net.corda.businessnetworks.membership.bno.OnMembershipActivated
 import net.corda.businessnetworks.membership.bno.OnMembershipChanged
-import net.corda.businessnetworks.membership.bno.OnMembershipRevoked
+import net.corda.businessnetworks.membership.bno.OnMembershipSuspended
 import net.corda.businessnetworks.membership.member.service.MemberConfigurationService
 import net.corda.businessnetworks.membership.member.service.MembershipsCacheHolder
 import net.corda.core.flows.FlowException
@@ -14,10 +14,10 @@ import net.corda.core.flows.InitiatedBy
 import net.corda.core.utilities.unwrap
 
 /**
- * Responder to the [NotifyMemberFlow]. The flow updates memberships cache according to a notification from BNO
+ * Responder to the [NotifyMemberFlow]. The flow updates memberships cache with notifications from BNO
  */
 @InitiatedBy(NotifyMemberFlow::class)
-class NotifyMembersFlowResponder(val session : FlowSession) : FlowLogic<Unit>(){
+class NotifyMembersFlowResponder(private val session : FlowSession) : FlowLogic<Unit>(){
 
     @Suspendable
     override fun call() {
@@ -31,15 +31,15 @@ class NotifyMembersFlowResponder(val session : FlowSession) : FlowLogic<Unit>(){
         val cache = membershipService.cache
         if (cache != null) {
             when (notification) {
-            // removes revoked memberships from the cache
-                is OnMembershipRevoked -> {
-                    if (notification.revokedMember != ourIdentity) {
-                        cache.revokeMembership(notification.revokedMember)
+                // removes suspended memberships from the cache
+                is OnMembershipSuspended -> {
+                    if (notification.suspendedMember != ourIdentity) {
+                        cache.suspendMembership(notification.suspendedMember)
                     } else {
                         membershipService.resetCache()
                     }
                 }
-            // updates membership in the cache
+                // updates membership in the cache
                 is OnMembershipChanged -> {
                     if (notification.changedMembership.state.data.member != ourIdentity) {
                         cache.updateMembership(notification.changedMembership)
@@ -48,7 +48,7 @@ class NotifyMembersFlowResponder(val session : FlowSession) : FlowLogic<Unit>(){
                 is OnMembershipActivated -> {
                     // refreshing membership list if its our identity or applying change to the cache otherwise
                     if (notification.changedMembership.state.data.member == ourIdentity) {
-                        subFlow(GetMembershipsFlow(true))
+                        subFlow(GetMembershipsFlow(forceRefresh = true))
                     } else {
                         cache.updateMembership(notification.changedMembership)
                     }

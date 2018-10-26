@@ -3,8 +3,8 @@ package net.corda.businessnetworks.ledgersync
 import net.corda.businessnetworks.membership.bno.ActivateMembershipFlow
 import net.corda.businessnetworks.membership.member.GetMembershipsFlow
 import net.corda.businessnetworks.membership.member.RequestMembershipFlow
-import net.corda.businessnetworks.membership.states.Membership
-import net.corda.businessnetworks.membership.states.MembershipMetadata
+import net.corda.businessnetworks.membership.states.MembershipState
+import net.corda.businessnetworks.membership.states.SimpleMembershipMetadata
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.identity.CordaX500Name
 import net.corda.core.identity.Party
@@ -170,17 +170,17 @@ class LedgerConsistencyTests {
     }
 
     private fun StartedNode<MockNode>.elevateToMember() {
-        val membershipRequest = runRequestMembershipFlow().coreTransaction.outRef<Membership.State>(0)
+        val membershipRequest = runRequestMembershipFlow().coreTransaction.outRef<MembershipState<Any>>(0)
         bno.fromNetwork().runActivateMembershipFlow(membershipRequest)
     }
 
     private fun StartedNode<MockNode>.runRequestMembershipFlow(): SignedTransaction {
-        val future = services.startFlow(RequestMembershipFlow(MembershipMetadata("DEFAULT"))).resultFuture
+        val future = services.startFlow(RequestMembershipFlow(SimpleMembershipMetadata("DEFAULT"))).resultFuture
         mockNetwork.runNetwork()
         return future.getOrThrow()
     }
 
-    private fun StartedNode<MockNode>.runActivateMembershipFlow(membership: StateAndRef<Membership.State>): SignedTransaction {
+    private fun StartedNode<MockNode>.runActivateMembershipFlow(membership: StateAndRef<MembershipState<Any>>): SignedTransaction {
         val future = services.startFlow(ActivateMembershipFlow(membership)).resultFuture
         mockNetwork.runNetwork()
         return future.getOrThrow()

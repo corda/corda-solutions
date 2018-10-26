@@ -1,6 +1,6 @@
 package net.corda.businessnetworks.membership.bno.service
 
-import net.corda.businessnetworks.membership.states.Membership
+import net.corda.businessnetworks.membership.states.MembershipState
 import net.corda.businessnetworks.membership.states.MembershipStateSchemaV1
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.identity.Party
@@ -12,6 +12,9 @@ import net.corda.core.node.services.vault.QueryCriteria
 import net.corda.core.node.services.vault.builder
 import net.corda.core.serialization.SingletonSerializeAsToken
 
+/**
+ * Used by BNO to interact with the underlying database.
+ */
 @CordaService
 class DatabaseService(val serviceHub : ServiceHub) : SingletonSerializeAsToken() {
     companion object {
@@ -32,19 +35,23 @@ class DatabaseService(val serviceHub : ServiceHub) : SingletonSerializeAsToken()
         session.prepareStatement(nativeQuery).execute()
     }
 
-    fun getMembership(member : Party) : StateAndRef<Membership.State>? {
+    fun getMembership(member : Party) : StateAndRef<MembershipState<Any>>? {
         val memberEqual
                 = builder { MembershipStateSchemaV1.PersistentMembershipState::member.equal(member) }
         val criteria = QueryCriteria.VaultQueryCriteria(Vault.StateStatus.UNCONSUMED)
                 .and(QueryCriteria.VaultCustomQueryCriteria(memberEqual))
-        val states = serviceHub.vaultService.queryBy<Membership.State>(criteria).states
+        val states = serviceHub.vaultService.queryBy<MembershipState<Any>>(criteria).states
         return if (states.isEmpty()) null else (states.sortedBy { it.state.data.modified }.last())
     }
 
-    fun getAllMemberships() = serviceHub.vaultService.queryBy<Membership.State>().states
+    fun getAllMemberships() = serviceHub.vaultService.queryBy<MembershipState<Any>>().states
     fun getActiveMemberships() = getAllMemberships().filter { it.state.data.isActive() }
 
-
+    /**
+     * This method exists to prevent the same member from being able to request a membership multiple times, while their first membership transaction is being processed.
+     * Pending membership request is created when a membership request arrives and is deleted when the membership transaction is finalised.
+     * Any attempt to create a duplicate pending membership request would violate the DB constraint.
+     */
     fun createPendingMembershipRequest(party : Party) {
         val nativeQuery = """
                 insert into $PENDING_MEMBERSHIP_REQUESTS_TABLE ($PENDING_MEMBER_COLUMN)

@@ -2,7 +2,7 @@ package net.corda.businessnetworks.membership
 
 import net.corda.businessnetworks.membership.bno.OnMembershipActivated
 import net.corda.businessnetworks.membership.bno.service.BNOConfigurationService
-import net.corda.businessnetworks.membership.states.Membership
+import net.corda.businessnetworks.membership.states.MembershipContract
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -45,8 +45,8 @@ class ActivateMembershipFlowTest : AbstractFlowTest(2) {
         val outputTxState = stx.tx.outputs.single()
         val command = stx.tx.commands.single()
 
-        assert(Membership.CONTRACT_NAME == outputTxState.contract)
-        assert(command.value is Membership.Commands.Activate)
+        assert(MembershipContract.CONTRACT_NAME == outputTxState.contract)
+        assert(command.value is MembershipContract.Commands.Activate)
         assert(stx.tx.inputs.single() == inputMembership.ref)
 
         val notification = TestNotifyMembersFlowResponder.NOTIFICATIONS.single()
@@ -70,8 +70,8 @@ class ActivateMembershipFlowTest : AbstractFlowTest(2) {
         val outputTxState = stx.tx.outputs.single()
         val command = stx.tx.commands.single()
 
-        assert(Membership.CONTRACT_NAME == outputTxState.contract)
-        assert(command.value is Membership.Commands.Activate)
+        assert(MembershipContract.CONTRACT_NAME == outputTxState.contract)
+        assert(command.value is MembershipContract.Commands.Activate)
         assert(stx.tx.inputs.single() == inputMembership.ref)
 
         val notification = TestNotifyMembersFlowResponder.NOTIFICATIONS.single()
@@ -92,23 +92,6 @@ class ActivateMembershipFlowTest : AbstractFlowTest(2) {
         } catch (e : NotBNOException) {
             assertEquals("This node is not the business network operator of this membership", e.message)
         }
-    }
-
-
-    @Test
-    fun `no message should be sent if notifications are disabled`() {
-        val bnoConfiguration = bnoNode.services.cordaService(BNOConfigurationService::class.java)
-
-
-        bnoConfiguration.reloadPropertiesFromFile(fileFromClasspath("membership-service-notifications-disabled.conf"))
-
-        val memberNode = participantsNodes.first()
-        val memberParty = identity(memberNode)
-
-        runRequestMembershipFlow(memberNode)
-        runActivateMembershipFlow(bnoNode, memberParty)
-
-        assert(TestNotifyMembersFlowResponder.NOTIFICATIONS.isEmpty())
     }
 
     @Test

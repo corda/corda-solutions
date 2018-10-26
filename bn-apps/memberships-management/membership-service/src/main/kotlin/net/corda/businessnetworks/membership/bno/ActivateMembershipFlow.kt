@@ -3,7 +3,8 @@ package net.corda.businessnetworks.membership.bno
 import co.paralleluniverse.fibers.Suspendable
 import net.corda.businessnetworks.membership.bno.service.BNOConfigurationService
 import net.corda.businessnetworks.membership.bno.support.BusinessNetworkOperatorFlowLogic
-import net.corda.businessnetworks.membership.states.Membership
+import net.corda.businessnetworks.membership.states.MembershipContract
+import net.corda.businessnetworks.membership.states.MembershipState
 import net.corda.businessnetworks.membership.states.MembershipStatus
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.flows.*
@@ -13,15 +14,15 @@ import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.ProgressTracker
 
 /**
- * The flow changes status of a PENDING or REVOKED membership to ACTIVE. The flow can be started only by BNO. BNO can unilaterally
- * activate membershipMap and no member's signature is required. After the membership is activated, the flow
- * fires-and-forgets [OnMembershipChanged] notification to the business network members.
+ * The flow changes status of a PENDING or SUSPENDED membership to ACTIVE. The flow can be started only by BNO. BNO can unilaterally
+ * activate memberships and no member's signature is required. After a membership is activated, the flow
+ * fires-and-forgets [OnMembershipChanged] notification to all business network members.
  *
  * @param membership membership state to be activated
  */
 @InitiatingFlow
 @StartableByRPC
-class ActivateMembershipFlow(val membership : StateAndRef<Membership.State>) : BusinessNetworkOperatorFlowLogic<SignedTransaction>() {
+class ActivateMembershipFlow(val membership : StateAndRef<MembershipState<Any>>) : BusinessNetworkOperatorFlowLogic<SignedTransaction>() {
 
     @Suspendable
     override fun call() : SignedTransaction {
@@ -33,23 +34,21 @@ class ActivateMembershipFlow(val membership : StateAndRef<Membership.State>) : B
         val notary = configuration.notaryParty()
         val builder = TransactionBuilder(notary)
                 .addInputState(membership)
-                .addOutputState(membership.state.data.copy(status = MembershipStatus.ACTIVE, modified = serviceHub.clock.instant()), Membership.CONTRACT_NAME)
-                .addCommand(Membership.Commands.Activate(), ourIdentity.owningKey)
+                .addOutputState(membership.state.data.copy(status = MembershipStatus.ACTIVE, modified = serviceHub.clock.instant()), configuration.membershipContractName())
+                .addCommand(MembershipContract.Commands.Activate(), ourIdentity.owningKey)
         builder.verify(serviceHub)
         val selfSignedTx = serviceHub.signInitialTransaction(builder)
         val stx = subFlow(FinalityFlow(selfSignedTx))
 
-        // if notifications are enabled - notify BN about the new joiner
-        if (configuration.areNotificationEnabled()) {
-            subFlow(NotifyActiveMembersFlow(OnMembershipActivated(membership)))
-        }
+        // notify members about changes
+        subFlow(NotifyActiveMembersFlow(OnMembershipActivated(membership)))
 
         return stx
     }
 }
 
 /**
- * This is a convenience flow that can be easily used from command line
+ * This is a convenience flow that can be easily used from a command line
  *
  * @param party whose membership state to be activated
  */

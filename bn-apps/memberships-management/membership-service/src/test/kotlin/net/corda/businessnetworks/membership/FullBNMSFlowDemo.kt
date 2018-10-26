@@ -2,7 +2,7 @@ package net.corda.businessnetworks.membership
 
 import co.paralleluniverse.fibers.Suspendable
 import net.corda.businessnetworks.membership.member.GetMembershipsFlow
-import net.corda.businessnetworks.membership.states.MembershipMetadata
+import net.corda.businessnetworks.membership.states.SimpleMembershipMetadata
 import net.corda.core.flows.FlowException
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.FlowSession
@@ -12,10 +12,11 @@ import net.corda.core.identity.Party
 import net.corda.core.utilities.getOrThrow
 import org.junit.Test
 import kotlin.test.fail
+import net.corda.businessnetworks.membership.member.Utils.ofType
 
 /**
  * This is a demo of the Business Network Membership Service. The test demonstrates how a participant can request to join a Business Network
- * and then interact with other Business Network members. The test also demonstrates how the BNO can activate / revoke memberships
+ * and then interact with other Business Network members. The test also demonstrates how the BNO can activate / suspend memberships
  */
 class FullBNMSFlowDemo : AbstractFlowTest(5) {
     override fun registerFlows() {
@@ -29,7 +30,7 @@ class FullBNMSFlowDemo : AbstractFlowTest(5) {
         val nonMember = participantsNodes[1]
 
         // participant submits a membership request to the BNO via RequestMembershipFlow
-        runRequestMembershipFlow(newJoiner, MembershipMetadata(role="My new role"))
+        runRequestMembershipFlow(newJoiner, SimpleMembershipMetadata(role="My new role"))
 
         // the flow issues MembershipState in PENDING status onto the ledger
         // After the state has been issued, the BNO needs to kick-off their internal KYC / on-boarding procedures, do all the paperwork and etc.
@@ -41,7 +42,7 @@ class FullBNMSFlowDemo : AbstractFlowTest(5) {
         // otherwise the BNO will notify the existing members about the new-joiner immediately after membership activation
 
         // now the new-joiner can request memberships from the BNO via GetMembershipsFlow. Memberships list contains just a single party
-        val memberships = runGetMembershipsListFlow(newJoiner, false)
+        val memberships = runGetMembershipsListFlow(newJoiner, false).ofType<SimpleMembershipMetadata>()
         assert(memberships.keys.single() == identity(newJoiner))
         assert(memberships[identity(newJoiner)]!!.state.data.membershipMetadata.role == "My new role")
 
@@ -54,12 +55,12 @@ class FullBNMSFlowDemo : AbstractFlowTest(5) {
         }
 
         // Business Network members can amend their membership metadata via AmendMembershipMetadataFlow
-        runAmendMetadataFlow(newJoiner, MembershipMetadata(role="Some other role"))
+        runAmendMetadataFlow(newJoiner, SimpleMembershipMetadata(role="Some other role"))
 
-        // BNO can revoke memberships via RevokeMembershipFlow
-        runRevokeMembershipFlow(bnoNode, identity(newJoiner))
+        // BNO can suspend memberships via SuspendMembershipFlow
+        runSuspendMembershipFlow(bnoNode, identity(newJoiner))
 
-        // revoked members are not able to transact on the Business Network neither can interact with the BNO's node
+        // suspended members are not able to transact on the Business Network neither can interact with the BNO's node
         try {
             runGetMembershipsListFlow(newJoiner, true)
             fail()
@@ -67,7 +68,7 @@ class FullBNMSFlowDemo : AbstractFlowTest(5) {
             // pass
         }
 
-        // BNO can re-activate revoked memberships via ActivateMembershipFlow
+        // BNO can re-activate suspended memberships via ActivateMembershipFlow
         runActivateMembershipFlow(bnoNode, identity(newJoiner))
 
         // Business Network members need to explicitly verify membership of their counterparties, before transacting with them

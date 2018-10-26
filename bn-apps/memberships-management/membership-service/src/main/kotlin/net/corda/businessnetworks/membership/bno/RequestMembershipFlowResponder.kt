@@ -6,7 +6,8 @@ import net.corda.businessnetworks.membership.member.RequestMembershipFlow
 import net.corda.businessnetworks.membership.bno.service.BNOConfigurationService
 import net.corda.businessnetworks.membership.bno.service.DatabaseService
 import net.corda.businessnetworks.membership.bno.support.BusinessNetworkOperatorFlowLogic
-import net.corda.businessnetworks.membership.states.Membership
+import net.corda.businessnetworks.membership.states.MembershipContract
+import net.corda.businessnetworks.membership.states.MembershipState
 import net.corda.core.flows.CollectSignaturesFlow
 import net.corda.core.flows.FinalityFlow
 import net.corda.core.flows.FlowException
@@ -20,6 +21,10 @@ import java.sql.SQLException
  * The flow issues a PENDING membership state onto the ledger. After the state is issued, the BNO is supposed to perform
  * required governance / KYC checks / paperwork and etc. After all of the required activities are completed, the BNO can activate membership
  * via [ActivateMembershipFlow].
+ *
+ * The flow supports automatic membership activation via [MembershipAutoAcceptor].
+ *
+ * TODO: remove MembershipAutoAcceptor in favour of flow overrides when Corda 4 is released
  */
 @InitiatedBy(RequestMembershipFlow::class)
 class RequestMembershipFlowResponder(val session : FlowSession) : BusinessNetworkOperatorFlowLogic<Unit>() {
@@ -43,7 +48,7 @@ class RequestMembershipFlowResponder(val session : FlowSession) : BusinessNetwor
         }
 
         val configuration = serviceHub.cordaService(BNOConfigurationService::class.java)
-        val membership : Membership.State
+        val membership : MembershipState<Any>
         // Issuing PENDING membership state onto the ledger
         try {
             // receive an on-boarding request
@@ -52,10 +57,10 @@ class RequestMembershipFlowResponder(val session : FlowSession) : BusinessNetwor
             val notary = configuration.notaryParty()
 
             // issue pending membership state on the ledger
-            membership = Membership.State(counterparty, ourIdentity, request.metadata)
+            membership = MembershipState(counterparty, ourIdentity, request.metadata)
             val builder = TransactionBuilder(notary)
-                    .addOutputState(membership, Membership.CONTRACT_NAME)
-                    .addCommand(Membership.Commands.Request(), counterparty.owningKey, ourIdentity.owningKey)
+                    .addOutputState(membership, configuration.membershipContractName())
+                    .addCommand(MembershipContract.Commands.Request(), counterparty.owningKey, ourIdentity.owningKey)
             builder.verify(serviceHub)
             val selfSignedTx = serviceHub.signInitialTransaction(builder)
             val allSignedTx = subFlow(CollectSignaturesFlow(selfSignedTx, listOf(session)))
@@ -76,7 +81,7 @@ class RequestMembershipFlowResponder(val session : FlowSession) : BusinessNetwor
         }
     }
 
-    private fun activateRightAway(membershipState : Membership.State, configuration : BNOConfigurationService) : Boolean {
+    private fun activateRightAway(membershipState : MembershipState<Any>, configuration : BNOConfigurationService) : Boolean {
         return configuration.getMembershipAutoAcceptor()?.autoActivateThisMembership(membershipState) ?: false
     }
 }
