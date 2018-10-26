@@ -18,19 +18,18 @@ class MembershipsCacheTest : AbstractFlowTest(5) {
         val memberships = initialiseMemberships()
         val cache = MembershipsCache.from(MembershipsListResponse(memberships))
 
-        assert(cache.expires == null)
         assert(cache.membershipMap.map { it.value }.toSet() == memberships.toSet())
         memberships.forEach { assert(it == cache.membershipMap[it.state.data.member]) }
     }
 
     @Test
-    fun `test revoke membership`() {
+    fun `test suspend membership`() {
         val memberships = initialiseMemberships()
-        val cache = MembershipsCache.from(MembershipsListResponse(memberships, Instant.now()))
+        val cache = MembershipsCache.from(MembershipsListResponse(memberships))
 
         val nodeToRevoke = participantsNodes.first()
         val partyToRevoke = identity(nodeToRevoke)
-        cache.revokeMembership(partyToRevoke)
+        cache.suspendMembership(partyToRevoke)
 
         assertFalse(cache.membershipMap.containsKey(partyToRevoke))
     }
@@ -38,7 +37,7 @@ class MembershipsCacheTest : AbstractFlowTest(5) {
     @Test
     fun `test update membership`() {
         val memberships = initialiseMemberships()
-        val cache = MembershipsCache.from(MembershipsListResponse(memberships, Instant.now()))
+        val cache = MembershipsCache.from(MembershipsListResponse(memberships))
         val node = participantsNodes.first()
         val party = identity(node)
         runAmendMetadataFlow(node, SimpleMembershipMetadata(role="New metadata"))

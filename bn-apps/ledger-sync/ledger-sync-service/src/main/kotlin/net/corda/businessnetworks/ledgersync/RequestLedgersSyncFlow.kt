@@ -44,7 +44,7 @@ class RespondLedgerSyncFlow(
      *          private val otherSideSession: FlowSession
      *      ) : BusinessNetworkAwareInitiatedFlow<Unit>(otherSideSession)
      *
-     * Subsequently `onOtherPartyMembershipVerified` can be used.
+     * Subsequently `onCounterpartyMembershipVerified` can be used.
      */
 
     @Suspendable

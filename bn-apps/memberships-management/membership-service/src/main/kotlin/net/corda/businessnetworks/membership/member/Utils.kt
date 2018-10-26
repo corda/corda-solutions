@@ -8,6 +8,9 @@ import net.corda.core.utilities.loggerFor
 object Utils {
     val logger = loggerFor<Utils>()
 
+    /**
+     * A convenience method to convert MembershipState<Any> to a MembershipState<T>. All states which metadata is not T will be filtered out.
+     */
     inline fun <reified T : Any> Map<Party, StateAndRef<MembershipState<Any>>>.ofType() = this.filterValues {
         val matches = it.state.data.membershipMetadata is T
         if (!matches) {

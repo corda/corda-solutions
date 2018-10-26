@@ -3,24 +3,27 @@ package net.corda.businessnetworks.membership.bno.service
 import com.typesafe.config.ConfigFactory
 import net.corda.businessnetworks.membership.ConfigUtils.loadConfig
 import net.corda.businessnetworks.membership.bno.extension.MembershipAutoAcceptor
+import net.corda.businessnetworks.membership.states.MembershipContract
 import net.corda.core.identity.CordaX500Name
 import net.corda.core.node.ServiceHub
 import net.corda.core.node.services.CordaService
 import net.corda.core.serialization.SingletonSerializeAsToken
 import java.io.File
 
+/**
+ * Configuration that is used by BNO app. The configuration is red from cordapps/config/membership-service.conf with a fallback to
+ * membership-service.conf on the classpath.
+ */
 @CordaService
 class BNOConfigurationService(private val serviceHub : ServiceHub) : SingletonSerializeAsToken() {
     companion object {
         const val NOTARY_NAME = "notaryName"
-        // Specifies how often BN members should be refreshing their membership list caches. If this attribute is not set, then
-        // the BN members will pull membership list only once, when their node starts, and then would rely on the BNO to notify them
-        // about any membership change. Notifications can be enabled via NOTIFICATIONS_ENABLED flag
-        const val CACHE_REFRESH_PERIOD = "cacheRefreshPeriod"
-        // Specifies whether Notifications are enabled. Should be set to true if CACHE_REFRESH_PERIOD is not specified.
-        const val NOTIFICATIONS_ENABLED = "notificationsEnabled"
         // Specifies the class for delegating BNO decisions to
         const val MEMBERSHIP_AUTO_ACCEPTOR = "membershipAutoAcceptor"
+        // Name of the contract class to verify membership transactions with. Exists to let users to provide their own implementations
+        // in the case if they would like to extend MembershipContract functionality to contractually verify membership metadata evolution.
+        // Defaults to MembershipContract.CONTRACT_NAME
+        const val MEMBERSHIP_CONTRACT_NAME = "membershipContractName"
     }
 
     private var _config = loadConfig()
@@ -29,8 +32,7 @@ class BNOConfigurationService(private val serviceHub : ServiceHub) : SingletonSe
     fun notaryParty() = serviceHub.networkMapCache.getNotary(notaryName())
             ?: throw IllegalArgumentException("Notary ${notaryName()} has not been found on the network")
 
-    fun cacheRefreshPeriod() = if (_config.hasPath(CACHE_REFRESH_PERIOD)) _config.getLong(CACHE_REFRESH_PERIOD) else null
-    fun areNotificationEnabled() = if (_config.hasPath(NOTIFICATIONS_ENABLED)) _config.getBoolean(NOTIFICATIONS_ENABLED) else false
+    fun membershipContractName() = if (_config.hasPath(MEMBERSHIP_CONTRACT_NAME)) _config.getString(MEMBERSHIP_CONTRACT_NAME)!! else MembershipContract.CONTRACT_NAME
 
     fun getMembershipAutoAcceptor() : MembershipAutoAcceptor? {
         return if (_config.hasPath(MEMBERSHIP_AUTO_ACCEPTOR)) {

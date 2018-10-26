@@ -1,9 +1,11 @@
 package net.corda.businessnetworks.membership
 
 import net.corda.businessnetworks.membership.bno.RequestMembershipFlowResponder
+import net.corda.businessnetworks.membership.bno.service.BNOConfigurationService
 import net.corda.businessnetworks.membership.bno.service.DatabaseService
 import net.corda.businessnetworks.membership.states.MembershipContract
 import net.corda.businessnetworks.membership.states.MembershipState
+import net.corda.core.contracts.Contract
 import net.corda.core.flows.FlowException
 import org.junit.Test
 import kotlin.test.fail
@@ -69,4 +71,19 @@ class RequestMembershipFlowTest : AbstractFlowTest(2) {
             databaseService.deletePendingMembershipRequest(memberParty)
         }
     }
+
+    @Test
+    fun `membership transaction should be verified by a custom contract`() {
+        val memberNode = participantsNodes.first()
+
+        bnoNode.services.cordaService(BNOConfigurationService::class.java).reloadPropertiesFromFile(fileFromClasspath("membership-service-with-custom-contract.conf"))
+
+        val stx = runRequestMembershipFlow(memberNode)
+
+        val outputWithContract = stx.tx.outputs.single()
+
+        assert(outputWithContract.contract == "net.corda.businessnetworks.membership.DummyMembershipContract")
+    }
 }
+
+class DummyMembershipContract : Contract, MembershipContract()

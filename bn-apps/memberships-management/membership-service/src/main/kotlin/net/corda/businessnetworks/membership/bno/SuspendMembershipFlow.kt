@@ -13,9 +13,13 @@ import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.ProgressTracker
 
+/**
+ * A flow that is used by BNO to suspend a membership. BNO can unilaterally suspend memberships, for example as a result of the governance
+ * action.
+ */
 @InitiatingFlow
 @StartableByRPC
-class RevokeMembershipFlow(val membership : StateAndRef<MembershipState<Any>>) : BusinessNetworkOperatorFlowLogic<SignedTransaction>() {
+class SuspendMembershipFlow(val membership : StateAndRef<MembershipState<Any>>) : BusinessNetworkOperatorFlowLogic<SignedTransaction>() {
 
     @Suspendable
     override fun call() : SignedTransaction {
@@ -23,43 +27,41 @@ class RevokeMembershipFlow(val membership : StateAndRef<MembershipState<Any>>) :
         val configuration = serviceHub.cordaService(BNOConfigurationService::class.java)
         val notary = configuration.notaryParty()
 
-        // build revocation transaction
+        // build suspension transaction
         val builder = TransactionBuilder(notary)
                 .addInputState(membership)
-                .addOutputState(membership.state.data.copy(status = MembershipStatus.SUSPENDED, modified = serviceHub.clock.instant()), MembershipContract.CONTRACT_NAME)
+                .addOutputState(membership.state.data.copy(status = MembershipStatus.SUSPENDED, modified = serviceHub.clock.instant()), configuration.membershipContractName())
                 .addCommand(MembershipContract.Commands.Suspend(), ourIdentity.owningKey)
         builder.verify(serviceHub)
         val selfSignedTx = serviceHub.signInitialTransaction(builder)
         val finalisedTx = subFlow(FinalityFlow(selfSignedTx))
 
-        // notify other members about revocation
-        if (configuration.areNotificationEnabled()) {
-            subFlow(NotifyActiveMembersFlow(OnMembershipRevoked(membership.state.data.member)))
-            // sending notification to the revoked member separately
-            val revokedMember = membership.state.data.member
-            subFlow(NotifyMemberFlow(OnMembershipRevoked(revokedMember), revokedMember))
-        }
+        // notify other members about suspension
+        subFlow(NotifyActiveMembersFlow(OnMembershipSuspended(membership.state.data.member)))
+        // sending notification to the suspended member separately
+        val suspendedMember = membership.state.data.member
+        subFlow(NotifyMemberFlow(OnMembershipSuspended(suspendedMember), suspendedMember))
 
         return finalisedTx
     }
 }
 
 /**
- * This is a convenience flow that can be easily used from command line
+ * This is a convenience flow that can be easily used from a command line
  *
- * @param party whose membership state to be revoked
+ * @param party whose membership state to be suspended
  */
 @InitiatingFlow
 @StartableByRPC
-class RevokeMembershipForPartyFlow(val party : Party) : BusinessNetworkOperatorFlowLogic<SignedTransaction>() {
+class SuspendMembershipForPartyFlow(val party : Party) : BusinessNetworkOperatorFlowLogic<SignedTransaction>() {
 
     companion object {
         object LOOKING_FOR_MEMBERSHIP_STATE : ProgressTracker.Step("Looking for party's membership state")
-        object REVOKING_THE_MEMBERSHIP_STATE : ProgressTracker.Step("Revoking the membership state")
+        object SUSPENDING_THE_MEMBERSHIP_STATE : ProgressTracker.Step("Suspending the membership state")
 
         fun tracker() = ProgressTracker(
                 LOOKING_FOR_MEMBERSHIP_STATE,
-                REVOKING_THE_MEMBERSHIP_STATE
+                SUSPENDING_THE_MEMBERSHIP_STATE
         )
     }
 
@@ -70,8 +72,8 @@ class RevokeMembershipForPartyFlow(val party : Party) : BusinessNetworkOperatorF
         progressTracker.currentStep = LOOKING_FOR_MEMBERSHIP_STATE
         val stateToActivate = findMembershipStateForParty(party)
 
-        progressTracker.currentStep = REVOKING_THE_MEMBERSHIP_STATE
-        return subFlow(RevokeMembershipFlow(stateToActivate))
+        progressTracker.currentStep = SUSPENDING_THE_MEMBERSHIP_STATE
+        return subFlow(SuspendMembershipFlow(stateToActivate))
     }
 
 }

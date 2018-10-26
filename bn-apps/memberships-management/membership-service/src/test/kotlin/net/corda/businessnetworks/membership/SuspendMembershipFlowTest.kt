@@ -1,6 +1,6 @@
 package net.corda.businessnetworks.membership
 
-import net.corda.businessnetworks.membership.bno.OnMembershipRevoked
+import net.corda.businessnetworks.membership.bno.OnMembershipSuspended
 import net.corda.businessnetworks.membership.bno.service.BNOConfigurationService
 import net.corda.businessnetworks.membership.states.MembershipContract
 import org.junit.Before
@@ -24,7 +24,7 @@ class SuspendMembershipFlowTest : AbstractFlowTest(2) {
     }
 
     @Test
-    fun `membership revocation should succeed`() {
+    fun `membership suspension should succeed`() {
         val memberNode = participantsNodes.first()
         val memberParty = identity(memberNode)
 
@@ -34,7 +34,7 @@ class SuspendMembershipFlowTest : AbstractFlowTest(2) {
         }
 
         val inputMembership = getMembership(memberNode, memberParty)
-        val stx = runRevokeMembershipFlow(bnoNode, memberParty)
+        val stx = runSuspendMembershipFlow(bnoNode, memberParty)
         stx.verifyRequiredSignatures()
 
         val outputTxState = stx.tx.outputs.single()
@@ -44,12 +44,12 @@ class SuspendMembershipFlowTest : AbstractFlowTest(2) {
         assert(command.value is MembershipContract.Commands.Suspend)
         assert(stx.inputs.single() == inputMembership.ref)
 
-        val notifiedParties = TestNotifyMembersFlowResponder.NOTIFICATIONS.filter { it.second is OnMembershipRevoked }.map { it.first }
+        val notifiedParties = TestNotifyMembersFlowResponder.NOTIFICATIONS.filter { it.second is OnMembershipSuspended }.map { it.first }
         assert(notifiedParties.toSet() == participantsNodes.map { identity(it) }.toSet())
     }
 
     @Test
-    fun `membership revocation should succeed when using convenience flow`() {
+    fun `membership suspension should succeed when using convenience flow`() {
         val memberNode = participantsNodes.first()
         val memberParty = identity(memberNode)
 
@@ -59,7 +59,7 @@ class SuspendMembershipFlowTest : AbstractFlowTest(2) {
         }
 
         val inputMembership = getMembership(memberNode, memberParty)
-        val stx = runRevokeMembershipForPartyFlow(bnoNode, memberParty)
+        val stx = runSuspendMembershipForPartyFlow(bnoNode, memberParty)
         stx.verifyRequiredSignatures()
 
         val outputTxState = stx.tx.outputs.single()
@@ -69,7 +69,7 @@ class SuspendMembershipFlowTest : AbstractFlowTest(2) {
         assert(command.value is MembershipContract.Commands.Suspend)
         assert(stx.inputs.single() == inputMembership.ref)
 
-        val notifiedParties = TestNotifyMembersFlowResponder.NOTIFICATIONS.filter { it.second is OnMembershipRevoked }.map { it.first }
+        val notifiedParties = TestNotifyMembersFlowResponder.NOTIFICATIONS.filter { it.second is OnMembershipSuspended }.map { it.first }
         assert(notifiedParties.toSet() == participantsNodes.map { identity(it) }.toSet())
     }
 
@@ -80,27 +80,10 @@ class SuspendMembershipFlowTest : AbstractFlowTest(2) {
 
         runRequestMembershipFlow(memberNode)
         try {
-            runRevokeMembershipFlow(memberNode, memberParty)
+            runSuspendMembershipFlow(memberNode, memberParty)
             fail()
         } catch (e : NotBNOException) {
             assertEquals("This node is not the business network operator of this membership", e.message)
         }
-    }
-
-
-    @Test
-    fun `no message should be sent if notifications are disabled`() {
-        val bnoConfiguration = bnoNode.services.cordaService(BNOConfigurationService::class.java)
-        bnoConfiguration.reloadPropertiesFromFile(fileFromClasspath("membership-service-notifications-disabled.conf"))
-
-        val memberNode = participantsNodes.first()
-        val memberParty = identity(memberNode)
-
-        participantsNodes.forEach {
-            runRequestMembershipFlow(it)
-        }
-        runRevokeMembershipFlow(bnoNode, memberParty)
-
-        assert(TestNotifyMembersFlowResponder.NOTIFICATIONS.isEmpty())
     }
 }

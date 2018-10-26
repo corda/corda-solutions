@@ -21,6 +21,10 @@ import java.sql.SQLException
  * The flow issues a PENDING membership state onto the ledger. After the state is issued, the BNO is supposed to perform
  * required governance / KYC checks / paperwork and etc. After all of the required activities are completed, the BNO can activate membership
  * via [ActivateMembershipFlow].
+ *
+ * The flow supports automatic membership activation via [MembershipAutoAcceptor].
+ *
+ * TODO: remove MembershipAutoAcceptor in favour of flow overrides when Corda 4 is released
  */
 @InitiatedBy(RequestMembershipFlow::class)
 class RequestMembershipFlowResponder(val session : FlowSession) : BusinessNetworkOperatorFlowLogic<Unit>() {
@@ -48,14 +52,14 @@ class RequestMembershipFlowResponder(val session : FlowSession) : BusinessNetwor
         // Issuing PENDING membership state onto the ledger
         try {
             // receive an on-boarding request
-            val request = session.receive<OnBoardingRequest<Any>>().unwrap { it }
+            val request = session.receive<OnBoardingRequest>().unwrap { it }
 
             val notary = configuration.notaryParty()
 
             // issue pending membership state on the ledger
             membership = MembershipState(counterparty, ourIdentity, request.metadata)
             val builder = TransactionBuilder(notary)
-                    .addOutputState(membership, MembershipContract.CONTRACT_NAME)
+                    .addOutputState(membership, configuration.membershipContractName())
                     .addCommand(MembershipContract.Commands.Request(), counterparty.owningKey, ourIdentity.owningKey)
             builder.verify(serviceHub)
             val selfSignedTx = serviceHub.signInitialTransaction(builder)

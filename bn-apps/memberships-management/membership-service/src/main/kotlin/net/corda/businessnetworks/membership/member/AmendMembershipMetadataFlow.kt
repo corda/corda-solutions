@@ -45,10 +45,6 @@ class AmendMembershipMetadataFlow(private val newMetadata : Any) : FlowLogic<Sig
                     throw FlowException("Invalid membership state. Wrong BNO's identity ${newMembershipState.bno}.")
                 }
 
-                if (newMembership.contract != MembershipContract.CONTRACT_NAME) {
-                    throw FlowException("Invalid membership state. Wrong contract ${newMembership.contract}")
-                }
-
                 stx.toLedgerTransaction(serviceHub, false).verify()
             }
         }

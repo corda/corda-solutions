@@ -10,14 +10,14 @@ import net.corda.core.transactions.SignedTransaction
 import net.corda.core.utilities.ProgressTracker
 
 @CordaSerializable
-data class OnBoardingRequest<out T>(val metadata : T)
+data class OnBoardingRequest(val metadata : Any)
 
 /**
- * The flow requests BNO to kick-off the on-boarding procedure
+ * The flow requests BNO to kick-off the on-boarding procedure.
  */
 @StartableByRPC
 @InitiatingFlow
-class RequestMembershipFlow<T>(private val membershipMetadata : T) : FlowLogic<SignedTransaction>() {
+class RequestMembershipFlow(private val membershipMetadata : Any) : FlowLogic<SignedTransaction>() {
 
     companion object {
         object SENDING_MEMBERSHIP_DATA_TO_BNO : ProgressTracker.Step("Sending membership data to BNO")
@@ -48,10 +48,7 @@ class RequestMembershipFlow<T>(private val membershipMetadata : T) : FlowLogic<S
                 }
 
                 val output = stx.tx.outputs.single()
-                if (output.contract != MembershipContract.CONTRACT_NAME) {
-                    throw FlowException("Output state has to be verified by ${MembershipContract.CONTRACT_NAME}")
-                }
-                val membershipState = output.data as MembershipState<T>
+                val membershipState = output.data as MembershipState<*>
                 if (bno != membershipState.bno) {
                     throw IllegalArgumentException("Wrong BNO identity")
                 }

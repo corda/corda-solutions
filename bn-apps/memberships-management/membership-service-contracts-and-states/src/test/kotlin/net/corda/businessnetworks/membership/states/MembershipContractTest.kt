@@ -103,7 +103,7 @@ class MembershipContractTest {
     }
 
     @Test
-    fun `test revoke membership`() {
+    fun `test suspend membership`() {
         ledgerServices.ledger {
             transaction {
                 val input = membershipState(MembershipStatus.ACTIVE)
@@ -117,28 +117,28 @@ class MembershipContractTest {
                 input(MembershipContract.CONTRACT_NAME,  input)
                 output(MembershipContract.CONTRACT_NAME,  input.copy(status = MembershipStatus.SUSPENDED, modified = input.modified.plusMillis(1)))
                 command(listOf(bno.publicKey, member.publicKey), MembershipContract.Commands.Suspend())
-                this.`fails with`("Only BNO should sign a revocation transaction")
+                this.`fails with`("Only BNO should sign a suspension transaction")
             }
             transaction {
                 val input = membershipState(MembershipStatus.SUSPENDED)
                 input(MembershipContract.CONTRACT_NAME,  input)
                 output(MembershipContract.CONTRACT_NAME,  input.copy(status = MembershipStatus.SUSPENDED, modified = input.modified.plusMillis(1)))
                 command(listOf(bno.publicKey), MembershipContract.Commands.Suspend())
-                this.`fails with`("Input state of a revocation transaction shouldn't be already revoked")
+                this.`fails with`("Input state of a suspension transaction shouldn't be already suspended")
             }
             transaction {
                 val input = membershipState(MembershipStatus.ACTIVE)
                 input(MembershipContract.CONTRACT_NAME,  input)
                 output(MembershipContract.CONTRACT_NAME,  input.copy(status = MembershipStatus.PENDING, modified = input.modified.plusMillis(1)))
                 command(listOf(bno.publicKey), MembershipContract.Commands.Suspend())
-                this.`fails with`( "Output state of a revocation transaction should be revoked")
+                this.`fails with`( "Output state of a suspension transaction should be suspended")
             }
             transaction {
                 val input = membershipState(MembershipStatus.ACTIVE)
                 input(MembershipContract.CONTRACT_NAME,  input)
                 output(MembershipContract.CONTRACT_NAME,  input.copy(status = MembershipStatus.SUSPENDED, modified = input.modified.plusMillis(1), membershipMetadata = SimpleMembershipMetadata(role="Another role")))
                 command(listOf(bno.publicKey), MembershipContract.Commands.Suspend())
-                this.`fails with`("Input and output states of a revocation transaction should have the same metadata")
+                this.`fails with`("Input and output states of a suspension transaction should have the same metadata")
             }
         }
     }
@@ -219,6 +219,13 @@ class MembershipContractTest {
                 output(MembershipContract.CONTRACT_NAME,  output.copy(membershipMetadata = input.membershipMetadata))
                 command(listOf(bno.publicKey, member.publicKey), MembershipContract.Commands.Amend())
                 this.`fails with`("Input and output states of an amendment transaction should have different membership metadata")
+            }
+            transaction {
+                input(MembershipContract.CONTRACT_NAME,  input)
+                // changing metadata to an object of a different type
+                output(MembershipContract.CONTRACT_NAME,  (output as MembershipState<Any>).copy(membershipMetadata = 1))
+                command(listOf(bno.publicKey, member.publicKey), MembershipContract.Commands.Amend())
+                this.`fails with`("Input and output states's metadata of an amendment transaction should be of the same type")
             }
         }
     }

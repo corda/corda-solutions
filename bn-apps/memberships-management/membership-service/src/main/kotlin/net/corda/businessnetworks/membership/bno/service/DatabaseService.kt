@@ -12,6 +12,9 @@ import net.corda.core.node.services.vault.QueryCriteria
 import net.corda.core.node.services.vault.builder
 import net.corda.core.serialization.SingletonSerializeAsToken
 
+/**
+ * Used by BNO to interact with the underlying database.
+ */
 @CordaService
 class DatabaseService(val serviceHub : ServiceHub) : SingletonSerializeAsToken() {
     companion object {
@@ -44,6 +47,11 @@ class DatabaseService(val serviceHub : ServiceHub) : SingletonSerializeAsToken()
     fun getAllMemberships() = serviceHub.vaultService.queryBy<MembershipState<Any>>().states
     fun getActiveMemberships() = getAllMemberships().filter { it.state.data.isActive() }
 
+    /**
+     * This method exists to prevent the same member from being able to request a membership multiple times, while their first membership transaction is being processed.
+     * Pending membership request is created when a membership request arrives and is deleted when the membership transaction is finalised.
+     * Any attempt to create a duplicate pending membership request would violate the DB constraint.
+     */
     fun createPendingMembershipRequest(party : Party) {
         val nativeQuery = """
                 insert into $PENDING_MEMBERSHIP_REQUESTS_TABLE ($PENDING_MEMBER_COLUMN)

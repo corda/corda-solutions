@@ -13,13 +13,12 @@ import net.corda.core.identity.Party
 import net.corda.core.serialization.CordaSerializable
 import net.corda.core.utilities.ProgressTracker
 import net.corda.core.utilities.unwrap
-import java.time.Instant
 
 @CordaSerializable
 class MembershipListRequest
 
 @CordaSerializable
-data class MembershipsListResponse(val memberships: List<StateAndRef<MembershipState<Any>>>, val expires: Instant? = null)
+data class MembershipsListResponse(val memberships: List<StateAndRef<MembershipState<Any>>>)
 
 /**
  * The flow pulls down a list of active members from the BNO. The list is cached via the [MembershipService].
@@ -49,10 +48,9 @@ class GetMembershipsFlow(private val forceRefresh: Boolean = false, private val 
     override fun call(): Map<Party, StateAndRef<MembershipState<Any>>> {
         val membershipService = serviceHub.cordaService(MembershipsCacheHolder::class.java)
         val cache = membershipService.cache
-        val now = serviceHub.clock.instant()
 
         val membershipsToReturn : Map<Party, StateAndRef<MembershipState<Any>>>
-        if (forceRefresh || cache == null || if (cache.expires == null) false else cache.expires < (now)) {
+        if (forceRefresh || cache == null) {
             val configuration = serviceHub.cordaService(MemberConfigurationService::class.java)
             val bno = configuration.bnoParty()
             val bnoSession = initiateFlow(bno)

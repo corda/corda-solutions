@@ -44,27 +44,6 @@ class AmendMembershipMetadataFlowTest : AbstractFlowTest(2) {
         assert(notifiedParty == memberParty)
     }
 
-
-    @Test
-    fun `no message should be sent if notifications are disabled`() {
-        assert(TestNotifyMembersFlowResponder.NOTIFICATIONS.isEmpty())
-        val bnoConfiguration = bnoNode.services.cordaService(BNOConfigurationService::class.java)
-        bnoConfiguration.reloadPropertiesFromFile(fileFromClasspath("membership-service-notifications-disabled.conf"))
-
-        val memberNode = participantsNodes.first()
-        val memberParty = identity(memberNode)
-
-        runRequestMembershipFlow(memberNode)
-        runActivateMembershipFlow(bnoNode, memberParty)
-
-        val existingMembership = getMembership(memberNode, memberParty)
-        val newMetadata = existingMembership.state.data.membershipMetadata.copy(role = "Some other role")
-
-        runAmendMetadataFlow(memberNode, newMetadata)
-
-        assert(TestNotifyMembersFlowResponder.NOTIFICATIONS.isEmpty())
-    }
-
     @Test
     fun `non members should be unable to trigger this flow`() {
         val memberNode = participantsNodes.first()

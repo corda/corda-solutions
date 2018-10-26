@@ -45,7 +45,7 @@ class GetMembershipsFlowTest : AbstractFlowTest(5) {
 
     @Test
     fun `only active members should be included`() {
-        val revokedNode = participantsNodes[0]
+        val suspendedNode = participantsNodes[0]
         val pendingNode = participantsNodes[1]
         val okNode = participantsNodes[2]
 
@@ -54,24 +54,24 @@ class GetMembershipsFlowTest : AbstractFlowTest(5) {
             if (it != pendingNode)
                 runActivateMembershipFlow(bnoNode, identity(it))
         }
-        runRevokeMembershipFlow(bnoNode, identity(revokedNode))
+        runSuspendMembershipFlow(bnoNode, identity(suspendedNode))
 
         val memberships = runGetMembershipsListFlow(okNode, true)
 
 
         assert(memberships.size == numberOfIdentities - 2)
-        assert(memberships.map { it.value.state.data.member }.toSet().none { it == identity(revokedNode) || it == identity(pendingNode) })
+        assert(memberships.map { it.value.state.data.member }.toSet().none { it == identity(suspendedNode) || it == identity(pendingNode) })
     }
 
     @Test
     fun `only active members should be able to use this flow`() {
-        val revokedNode = participantsNodes[0]
+        val suspendedNode = participantsNodes[0]
         val pendingNode = participantsNodes[1]
         val notMember = participantsNodes[3]
 
-        runRequestMembershipFlow(revokedNode)
+        runRequestMembershipFlow(suspendedNode)
         runRequestMembershipFlow(pendingNode)
-        runRevokeMembershipFlow(bnoNode, identity(revokedNode))
+        runSuspendMembershipFlow(bnoNode, identity(suspendedNode))
 
         try {
             runGetMembershipsListFlow(notMember, true)
@@ -86,10 +86,10 @@ class GetMembershipsFlowTest : AbstractFlowTest(5) {
             assert("Counterparty's ${identity(pendingNode)} membership in this business network is not active" == e.message)
         }
         try {
-            runGetMembershipsListFlow(revokedNode, true)
+            runGetMembershipsListFlow(suspendedNode, true)
             fail()
         } catch (e : MembershipNotActiveException) {
-            assert("Counterparty's ${identity(revokedNode)} membership in this business network is not active" == e.message)
+            assert("Counterparty's ${identity(suspendedNode)} membership in this business network is not active" == e.message)
         }
     }
 

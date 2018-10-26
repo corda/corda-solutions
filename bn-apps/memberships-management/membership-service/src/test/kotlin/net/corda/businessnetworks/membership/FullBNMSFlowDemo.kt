@@ -16,7 +16,7 @@ import net.corda.businessnetworks.membership.member.Utils.ofType
 
 /**
  * This is a demo of the Business Network Membership Service. The test demonstrates how a participant can request to join a Business Network
- * and then interact with other Business Network members. The test also demonstrates how the BNO can activate / revoke memberships
+ * and then interact with other Business Network members. The test also demonstrates how the BNO can activate / suspend memberships
  */
 class FullBNMSFlowDemo : AbstractFlowTest(5) {
     override fun registerFlows() {
@@ -57,10 +57,10 @@ class FullBNMSFlowDemo : AbstractFlowTest(5) {
         // Business Network members can amend their membership metadata via AmendMembershipMetadataFlow
         runAmendMetadataFlow(newJoiner, SimpleMembershipMetadata(role="Some other role"))
 
-        // BNO can revoke memberships via RevokeMembershipFlow
-        runRevokeMembershipFlow(bnoNode, identity(newJoiner))
+        // BNO can suspend memberships via SuspendMembershipFlow
+        runSuspendMembershipFlow(bnoNode, identity(newJoiner))
 
-        // revoked members are not able to transact on the Business Network neither can interact with the BNO's node
+        // suspended members are not able to transact on the Business Network neither can interact with the BNO's node
         try {
             runGetMembershipsListFlow(newJoiner, true)
             fail()
@@ -68,7 +68,7 @@ class FullBNMSFlowDemo : AbstractFlowTest(5) {
             // pass
         }
 
-        // BNO can re-activate revoked memberships via ActivateMembershipFlow
+        // BNO can re-activate suspended memberships via ActivateMembershipFlow
         runActivateMembershipFlow(bnoNode, identity(newJoiner))
 
         // Business Network members need to explicitly verify membership of their counterparties, before transacting with them

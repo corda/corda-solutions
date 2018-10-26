@@ -16,10 +16,12 @@ data class OnMembershipActivated(val changedMembership : StateAndRef<MembershipS
 data class OnMembershipChanged(val changedMembership : StateAndRef<MembershipState<Any>>)
 
 @CordaSerializable
-data class OnMembershipRevoked(val revokedMember : Party)
+data class OnMembershipSuspended(val suspendedMember : Party)
 
+/**
+ * Flow that is used by BNO to notify active BN members about changes to the membership list.
+ */
 class NotifyActiveMembersFlow(private val notification : Any) : BusinessNetworkOperatorFlowLogic<Unit>() {
-
     @Suspendable
     override fun call() {
         val memberships = getActiveMembershipStates()
@@ -27,6 +29,9 @@ class NotifyActiveMembersFlow(private val notification : Any) : BusinessNetworkO
     }
 }
 
+/**
+ * Flow that is used by BNO to notify a BN member about changes to the membership list.
+ */
 @InitiatingFlow
 class NotifyMemberFlow(private val notification : Any, private val member : Party) : FlowLogic<Unit>() {
     @Suspendable
