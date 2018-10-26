@@ -86,4 +86,6 @@ class RequestMembershipFlowTest : AbstractFlowTest(2) {
     }
 }
 
-class DummyMembershipContract : Contract, MembershipContract()
+class DummyMembershipContract : Contract, MembershipContract() {
+    override fun contractName() = "net.corda.businessnetworks.membership.DummyMembershipContract"
+}
