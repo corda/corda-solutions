@@ -18,6 +18,7 @@ import org.eclipse.aether.repository.RemoteRepository
 import org.eclipse.aether.resolution.ArtifactRequest
 import org.eclipse.aether.resolution.ArtifactResult
 import org.eclipse.aether.resolution.VersionRangeRequest
+import org.eclipse.aether.resolution.VersionRangeResult
 import org.eclipse.aether.spi.connector.RepositoryConnectorFactory
 import org.eclipse.aether.spi.connector.transport.TransporterFactory
 import org.eclipse.aether.transfer.ArtifactNotFoundException
@@ -152,8 +153,8 @@ class CordaMavenResolver private constructor(private val remoteRepoUrl : String,
                             configProps : Map<String, Any> = mapOf()) : ArtifactMetadata {
         val artifact = DefaultArtifact(coordinatesWithRange)
         val versionRangeRequest = VersionRangeRequest(artifact, listOf(remoteRepository), null)
-        val session = createRepositorySession(configProps)
-        val versionRangeResult = repositorySystem.resolveVersionRange(session, versionRangeRequest)!!
+        val session : DefaultRepositorySystemSession = createRepositorySession(configProps)
+        val versionRangeResult : VersionRangeResult = repositorySystem.resolveVersionRange(session, versionRangeRequest)!!
 
         return ArtifactMetadata(artifact.groupId,
                 artifact.artifactId,
@@ -174,12 +175,12 @@ class CordaMavenResolver private constructor(private val remoteRepoUrl : String,
      */
     fun downloadVersionRange(coordinatesWithRange : String,
                              configProps : Map<String, Any> = mapOf()) : ArtifactMetadata {
-        val artifactMetadata = resolveVersionRange(coordinatesWithRange, configProps)
+        val artifactMetadata : ArtifactMetadata = resolveVersionRange(coordinatesWithRange, configProps)
 
         val aetherArtifact = DefaultArtifact(coordinatesWithRange)
 
         // downloading the most recent version first
-        val versions = artifactMetadata.versions.asReversed().map {
+        val versions : List<VersionMetadata> = artifactMetadata.versions.asReversed().map {
             val artifactVersion = aetherArtifact.setVersion(it.version)!!
             downloadVersion(artifactVersion.toString(), configProps).versions.single()
         }.asReversed()
@@ -199,7 +200,7 @@ class CordaMavenResolver private constructor(private val remoteRepoUrl : String,
      */
     fun downloadVersion(coordinates : String,
                         configProps : Map<String, Any> = mapOf()) : ArtifactMetadata {
-        val session = createRepositorySession(configProps)
+        val session : DefaultRepositorySystemSession = createRepositorySession(configProps)
         val aetherArtifact = DefaultArtifact(coordinates)
         val artifactRequest = ArtifactRequest(aetherArtifact, listOf(remoteRepository), null)
         val resolutionResult : ArtifactResult
@@ -209,7 +210,7 @@ class CordaMavenResolver private constructor(private val remoteRepoUrl : String,
             when (ex.cause) {
                 is ArtifactNotFoundException -> throw ResourceNotFoundException(coordinates, ex)
                 is ArtifactTransferException -> throw ResourceTransferException(coordinates, ex)
-                else -> throw CordaMavenResolverException("Error while resolving the artifact $coordinates", ex)
+                else -> throw GeneralResolverException("Error while resolving the artifact $coordinates", ex)
             }
         }
         return ArtifactMetadata(aetherArtifact.groupId,
@@ -220,7 +221,7 @@ class CordaMavenResolver private constructor(private val remoteRepoUrl : String,
     }
 
     private fun createRepositorySession(additionalConfigProperties : Map<String, Any>) : DefaultRepositorySystemSession {
-        val session = newSession()!!
+        val session : DefaultRepositorySystemSession = newSession()!!
         (configProperties + additionalConfigProperties).forEach {
             session.setConfigProperty(it.key, it.value)
         }
@@ -232,17 +233,31 @@ class CordaMavenResolver private constructor(private val remoteRepoUrl : String,
 }
 
 /**
- * Representation of an artifact and its versions
+ * Representation of an artifact and its versions.
  */
-data class ArtifactMetadata(val group : String, val name : String, val classifier : String = "", val extension : String = "jar", val versions : List<VersionMetadata> = listOf()) {
-    fun toMavenArtifacts() = versions.map { DefaultArtifact(group, name, classifier, extension, it.version) }
-}
-
+data class ArtifactMetadata(val group : String, val name : String, val classifier : String = "", val extension : String = "jar", val versions : List<VersionMetadata> = listOf())
 /**
  * Representation of an artifact version. isFromLocal field indicates whether the version was resolved from the local repository.
  */
 data class VersionMetadata(val version : String, val isFromLocal : Boolean)
 
-open class CordaMavenResolverException(message : String, cause : Throwable) : Exception(message, cause)
-class ResourceNotFoundException(val resource : String, cause : Throwable) : CordaMavenResolverException("Resource $resource has not been found", cause)
-class ResourceTransferException(val resource : String, cause : Throwable) : CordaMavenResolverException("Resource $resource has not been found", cause)
+/**
+ * Wrapper around Aether's [RepositoryException]. The aim is to provide a clear exception hierarchy to Aether exception model
+ * so the calling site can act accordingly.
+ */
+sealed class CordaMavenResolverException(message : String, cause : RepositoryException) : Exception(message, cause)
+
+/**
+ * Thrown when a resource is not found in the remote repository
+ */
+class ResourceNotFoundException(val resource : String, cause : RepositoryException) : CordaMavenResolverException("Resource $resource has not been found", cause)
+
+/**
+ * Thrown when a transfer exception occurs. I.e. no connection, invalid proxy settings etc.
+ */
+class ResourceTransferException(val resource : String, cause : RepositoryException) : CordaMavenResolverException("Resource $resource has not been found", cause)
+
+/**
+ * Thrown if the cause is neither of the above.
+ */
+class GeneralResolverException(message : String, cause : RepositoryException) : CordaMavenResolverException(message, cause)

@@ -13,7 +13,7 @@ import java.lang.IllegalArgumentException
 import java.nio.file.Paths
 
 /**
- * Member-side cordapp configuration. Configuration is red from "cordapps/config/corda-updates-app.conf" file in the node's folder.
+ * Member-side cordapp configuration. Configuration is read from "cordapps/config/corda-updates-app.conf" file in the node's folder.
  *
  * TODO: update to use serviceHub.getAppContext().config once it is available
  */

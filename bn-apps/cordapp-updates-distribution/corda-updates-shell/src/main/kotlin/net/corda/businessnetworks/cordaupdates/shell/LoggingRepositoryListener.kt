@@ -7,9 +7,9 @@ import org.slf4j.LoggerFactory
 
 /**
  * Simple maven resolver repository listener that logs everything into the console
- * The implementation is kindly borrowed from https://github.com/eclipse/aether-demo/blob/master/aether-demo-snippets/src/main/java/org/eclipse/aether/examples/util/ConsoleRepositoryListener.java
+ * The implementation is kindly borrowed from https://github.com/eclipse/aether-demo/blob/master/aether-demo-snippets/src/main/java/org/eclipse/aether/examples/util/LoggingRepositoryListener.java
  */
-class ConsoleRepositoryListener : AbstractRepositoryListener() {
+class LoggingRepositoryListener : AbstractRepositoryListener() {
     companion object {
         val logger : Logger by lazy { LoggerFactory.getLogger("corda-updates") }
     }

@@ -6,6 +6,8 @@ import net.corda.core.node.AppServiceHub
 import net.corda.core.node.services.CordaService
 import net.corda.core.serialization.SingletonSerializeAsToken
 import java.sql.Connection
+import java.sql.PreparedStatement
+import java.sql.ResultSet
 
 /**
  * Allows BNO to store and to retrieve reported CorDapp versions from the database
@@ -33,7 +35,7 @@ class DatabaseService(private val serviceHub : AppServiceHub) : SingletonSeriali
                 );
                 create unique index if not exists party_group_name_unique_index on $CORDAPP_VERSION_INFO_TABLE($PARTY, $CORDAPP_GROUP, $CORDAPP_NAME);
             """
-        val session = serviceHub.jdbcSession()
+        val session : Connection = serviceHub.jdbcSession()
         session.prepareStatement(nativeQuery).execute()
     }
 
@@ -41,10 +43,10 @@ class DatabaseService(private val serviceHub : AppServiceHub) : SingletonSeriali
      * Updates or inserts information about a cordapp version
      */
     fun updateCordappVersionInfo(party : Party, cordappVersionInfo : CordappVersionInfo) {
-        val session = serviceHub.jdbcSession()
+        val session : Connection = serviceHub.jdbcSession()
 
         // trying update first
-        val updated = tryUpdateCordappVersionInfo(session, party, cordappVersionInfo)
+        val updated : Int = tryUpdateCordappVersionInfo(session, party, cordappVersionInfo)
 
         // if nothing has been updated then insert
         if (updated == 0) insertCordappVersionInfo(session, party, cordappVersionInfo)
@@ -57,7 +59,7 @@ class DatabaseService(private val serviceHub : AppServiceHub) : SingletonSeriali
             where $PARTY = ? AND $CORDAPP_GROUP = ? AND $CORDAPP_NAME = ?
             """
 
-        val updateStatement = session.prepareStatement(updateQuery)
+        val updateStatement : PreparedStatement = session.prepareStatement(updateQuery)
 
         updateStatement.setString(1, cordappVersionInfo.version)
         updateStatement.setLong(2, System.currentTimeMillis())
@@ -73,7 +75,7 @@ class DatabaseService(private val serviceHub : AppServiceHub) : SingletonSeriali
                 insert into $CORDAPP_VERSION_INFO_TABLE ($PARTY, $CORDAPP_GROUP, $CORDAPP_NAME, $CORDAPP_VERSION, $LAST_UPDATED)
                 values (?, ?, ?, ?, ?)
                 """
-        val insertStatement = session.prepareStatement(insertQuery)
+        val insertStatement : PreparedStatement = session.prepareStatement(insertQuery)
         insertStatement.setString(1, party.name.toString())
         insertStatement.setString(2, cordappVersionInfo.group)
         insertStatement.setString(3, cordappVersionInfo.name)
@@ -89,12 +91,12 @@ class DatabaseService(private val serviceHub : AppServiceHub) : SingletonSeriali
         val nativeQuery = """
                 select * from $CORDAPP_VERSION_INFO_TABLE
             """
-        val session = serviceHub.jdbcSession()
-        val resultSet = session.prepareStatement(nativeQuery).use { it.executeQuery()!! }
+        val session : Connection = serviceHub.jdbcSession()
+        val resultSet : ResultSet = session.prepareStatement(nativeQuery).use { it.executeQuery()!! }
         val results = mapOf<String, MutableList<CordappVersionInfo>>()
         while (resultSet.next()) {
-            val party = resultSet.getString(PARTY)!!
-            val versions = results.getOrElse(party) { mutableListOf() }
+            val party : String = resultSet.getString(PARTY)!!
+            val versions : MutableList<CordappVersionInfo> = results.getOrElse(party) { mutableListOf() }
             versions.add(
                     CordappVersionInfo(resultSet.getString(CORDAPP_GROUP)!!,
                             resultSet.getString(CORDAPP_NAME)!!,
@@ -111,9 +113,9 @@ class DatabaseService(private val serviceHub : AppServiceHub) : SingletonSeriali
         val nativeQuery = """
                 select * from $CORDAPP_VERSION_INFO_TABLE where $PARTY='${party.name}'
             """
-        val session = serviceHub.jdbcSession()
+        val session : Connection = serviceHub.jdbcSession()
         return session.prepareStatement(nativeQuery).use {
-            val resultSet = it.executeQuery()!!
+            val resultSet : ResultSet = it.executeQuery()!!
             val results = mutableListOf<CordappVersionInfo>()
             while (resultSet.next()) {
                 results.add(
