@@ -11,12 +11,14 @@ Please forgive any omissions, and create a pull request, or email <dave.hudson@r
 if you wish to see changes to this list.
 
 * Alex Koller (R3)
+* Clinton Alexander (R3)
 * Cristina Buendia (R3)
 * Dave Hudson (R3)
 * Guy Hochstetler (R3)
 * Ivan Schasny (R3)
 * Mark Raynes (R3)
 * Matt Bradbury (R3)
+* Matt Layton (Trade IX)
+* Mike Hearn (R3)
 * Moritz Platt (R3)
 * Nigel King (R3)
-
