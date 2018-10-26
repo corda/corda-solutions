@@ -6,7 +6,7 @@ class IssueTicketTest : AbstractBaseTest(2) {
 
 
     @Test
-    fun `Ticket can be requested and issued`() {
+    fun `Ticket can be requested`() {
 
     }
 
