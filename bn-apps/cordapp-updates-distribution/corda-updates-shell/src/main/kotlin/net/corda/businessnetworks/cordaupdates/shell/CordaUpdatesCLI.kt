@@ -10,6 +10,7 @@ import net.corda.businessnetworks.cordaupdates.core.SyncerConfiguration
 import net.corda.cliutils.CordaCliWrapper
 import net.corda.cliutils.ExitCodes
 import net.corda.cliutils.start
+import org.eclipse.aether.artifact.DefaultArtifact
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import picocli.CommandLine
@@ -133,7 +134,7 @@ class CordaUpdatesCLI : CordaCliWrapper("corda-updates", "CLI for corda-updates 
         logger.info("Loading configuration from $configFile")
 
         val syncerConfig = SyncerConfiguration.readFromFile(configFile)
-        return CordappSyncer(syncerConfig, ConsoleRepositoryListener(), ConsoleTransferListener())
+        return CordappSyncer(syncerConfig, LoggingRepositoryListener(), ConsoleTransferListener())
     }
 
     private fun printVersions() : Int {
@@ -159,5 +160,7 @@ fun printResults(results : List<ArtifactMetadata>) =
         results.flatMap { it.toMavenArtifacts() }.forEach {
             println("> $it")
         }
+
+fun ArtifactMetadata.toMavenArtifacts() = versions.map { DefaultArtifact(group, name, classifier, extension, it.version) }
 
 fun main(args : Array<String>) = CordaUpdatesCLI().start(args)

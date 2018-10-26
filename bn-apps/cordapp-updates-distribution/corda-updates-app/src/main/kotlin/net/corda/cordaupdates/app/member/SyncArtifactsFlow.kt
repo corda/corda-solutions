@@ -49,7 +49,7 @@ class SyncArtifactsFlow private constructor (private val scheduledStateRef : Sta
 
     @Suspendable
     override fun call() : List<ArtifactMetadata>? {
-        val syncerService = serviceHub.cordaService(SyncerService::class.java)
+        val syncerService : SyncerService = serviceHub.cordaService(SyncerService::class.java)
         progressTracker.currentStep = LAUNCHING_SYNCHRONISATION
         return if (launchAsync) {
             syncerService.syncArtifactsAsync(syncerConfig)
@@ -63,6 +63,8 @@ class SyncArtifactsFlow private constructor (private val scheduledStateRef : Sta
 /**
  * Issues a [ScheduledSyncState] onto the ledger (all existing [ScheduledSyncState]s will be spent first) and then triggers
  * a synchronisation via [SyncArtifactsFlow]
+ *
+ * TODO: refactor once new scheduling mechanism is implemented (https://r3-cev.atlassian.net/browse/CORDA-2117).
  */
 @StartableByRPC
 class ScheduleSyncFlow @JvmOverloads constructor(private val syncerConfig : SyncerConfiguration? = null,
@@ -86,12 +88,12 @@ class ScheduleSyncFlow @JvmOverloads constructor(private val syncerConfig : Sync
     @Suspendable
     override fun call() : List<ArtifactMetadata>? {
         progressTracker.currentStep = SCHEDULING_STATE
-        val configuration = serviceHub.cordaService(MemberConfiguration::class.java)
+        val configuration : MemberConfiguration = serviceHub.cordaService(MemberConfiguration::class.java)
 
-        val scheduledStates = serviceHub.vaultService.queryBy<ScheduledSyncState>().states
+        val scheduledStates : List<StateAndRef<ScheduledSyncState>> = serviceHub.vaultService.queryBy<ScheduledSyncState>().states
 
-        // spending all existing scheduled states
-        scheduledStates.forEach { spendScheduledState(it, configuration.notaryParty()) }
+        // removing all existing scheduled states from the ledger
+        scheduledStates.forEach { removeScheduledState(it, configuration.notaryParty()) }
 
         // issuing a new scheduled state
         issueScheduledState(configuration.syncInterval(), configuration.notaryParty())
@@ -102,12 +104,12 @@ class ScheduleSyncFlow @JvmOverloads constructor(private val syncerConfig : Sync
     }
 
     @Suspendable
-    private fun spendScheduledState(state : StateAndRef<ScheduledSyncState>, notary : Party) {
+    private fun removeScheduledState(state : StateAndRef<ScheduledSyncState>, notary : Party) {
         val builder = TransactionBuilder(notary)
                 .addInputState(state)
                 .addCommand(ScheduledSyncContract.Commands.Stop(), ourIdentity.owningKey)
         builder.verify(serviceHub)
-        val signedTx = serviceHub.signInitialTransaction(builder)
+        val signedTx : SignedTransaction = serviceHub.signInitialTransaction(builder)
         subFlow(FinalityFlow(signedTx))
     }
 
@@ -118,7 +120,7 @@ class ScheduleSyncFlow @JvmOverloads constructor(private val syncerConfig : Sync
                 .addCommand(ScheduledSyncContract.Commands.Start(), ourIdentity.owningKey)
 
         builder.verify(serviceHub)
-        val signedTx = serviceHub.signInitialTransaction(builder)
+        val signedTx : SignedTransaction = serviceHub.signInitialTransaction(builder)
         return subFlow(FinalityFlow(signedTx))
     }
 }

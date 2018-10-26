@@ -2,6 +2,7 @@ package net.corda.cordaupdates.transport
 
 import com.sun.xml.internal.messaging.saaj.util.ByteInputStream
 import net.corda.client.rpc.CordaRPCClient
+import net.corda.client.rpc.CordaRPCConnection
 import net.corda.cordaupdates.transport.flows.GetResourceFlow
 import net.corda.cordaupdates.transport.flows.PeekResourceFlow
 import net.corda.core.flows.FlowException
@@ -69,7 +70,7 @@ class FlowsTransporter(private val session : RepositorySystemSession,
 
     override fun implGet(task : GetTask?) {
         val appServiceHub = ConfigUtils.getObject(session, null, SessionConfigurationProperties.APP_SERVICE_HUB) as AppServiceHub
-        val bytes = appServiceHub.startFlow(GetResourceFlow(task!!.location.toString(), repoHosterName)).returnValue.getOrThrow()
+        val bytes : ByteArray = appServiceHub.startFlow(GetResourceFlow(task!!.location.toString(), repoHosterName)).returnValue.getOrThrow()
         utilGet(task, ByteInputStream(bytes, bytes.size), true, bytes.size.toLong(), false)
     }
 
@@ -104,7 +105,7 @@ class RPCTransporter(private val session : RepositorySystemSession,
     }
 
     override fun implGet(task : GetTask?) {
-        val bytes = rpcOps().startFlowDynamic(GetResourceFlow::class.java, task!!.location.toString(), repoHosterName).returnValue.getOrThrow()
+        val bytes : ByteArray = rpcOps().startFlowDynamic(GetResourceFlow::class.java, task!!.location.toString(), repoHosterName).returnValue.getOrThrow()
         utilGet(task, ByteInputStream(bytes, bytes.size), true, bytes.size.toLong(), false)
     }
 
@@ -127,7 +128,7 @@ class RPCTransporter(private val session : RepositorySystemSession,
 
         val rpcAddress = NetworkHostAndPort(host, port)
         val rpcClient = CordaRPCClient(rpcAddress)
-        val rpcConnection = rpcClient.start(username, password)
+        val rpcConnection : CordaRPCConnection = rpcClient.start(username, password)
         return rpcConnection.proxy
     }
 }

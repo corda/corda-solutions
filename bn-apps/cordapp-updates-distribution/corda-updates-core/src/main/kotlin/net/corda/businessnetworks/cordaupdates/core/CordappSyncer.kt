@@ -6,13 +6,14 @@ import org.eclipse.aether.RepositoryListener
 import org.eclipse.aether.artifact.DefaultArtifact
 import org.eclipse.aether.transfer.TransferListener
 import java.io.File
+import java.lang.Exception
 
 /**
- * A wrapper around [CordaMavenResolver] that can sync different CorDapps from different remote repositories via single method invocation
+ * A wrapper around [CordaMavenResolver] that can sync different CorDapps from different remote repositories via single method invocation.
  *
- * @syncerCong syncer configuration
- * @repositoryListener repository listener that will be passed to an underlying [CordaMavenResolver] instance
- * @transferListener transfer listener that will be passed to an underlying [CordaMavenResolver] instance
+ * @param syncerConf syncer configuration
+ * @param repositoryListener repository listener that will be passed to an underlying [CordaMavenResolver] instance
+ * @param transferListener transfer listener that will be passed to an underlying [CordaMavenResolver] instance
  */
 class CordappSyncer(private val syncerConf : SyncerConfiguration,
                     private val repositoryListener : RepositoryListener? = null,
@@ -21,10 +22,10 @@ class CordappSyncer(private val syncerConf : SyncerConfiguration,
     /**
      * Downloads locally missing CorDapps versions from the remote repositories.
      *
-     * @coordinatesWithoutVersion optional maven coordinates of a CorDapp, without a version i.e. "net.corda:corda-finance".
+     * @param coordinatesWithoutVersion optional maven coordinates of a CorDapp, without a version i.e. "net.corda:corda-finance".
      *              If not provided, then all missing versions of all CorDapps defined in the [syncerConf] will be downloaded.
      *              If provided, then [syncerConf] is expected to contain a configured [CordappSource] for the CorDapp coordinates.
-     * @additionalConfigurationProperties additional parameters to be passed to [CordaMavenResolver]
+     * @param additionalConfigurationProperties additional parameters to be passed to [CordaMavenResolver]
      * @return a list of CorDapp metadatas that have been resolved from local / remote repositories
      *
      * @throws [CordappSourceNotFoundException] if CorDapp source has not been found
@@ -32,14 +33,15 @@ class CordappSyncer(private val syncerConf : SyncerConfiguration,
     fun syncCordapps(coordinatesWithoutVersion : String? = null, additionalConfigurationProperties : Map<String, Any> = mapOf()) : List<ArtifactMetadata> {
         return if (coordinatesWithoutVersion == null) {
             syncerConf.cordappSources.flatMap { syncTask ->
-                val resolver = CordaMavenResolver.create(syncerConf, syncTask, repositoryListener = repositoryListener, transferListener = transferListener)
+                val resolver : CordaMavenResolver = CordaMavenResolver.create(syncerConf, syncTask, repositoryListener = repositoryListener, transferListener = transferListener)
                 syncTask.cordapps.map {
                     resolver.downloadVersionRange("$it:[,)", additionalConfigurationProperties)
                 }
             }
         } else {
-            val source = syncerConf.findSourceFor(coordinatesWithoutVersion) ?: throw CordappSourceNotFoundException(coordinatesWithoutVersion)
-            val resolver = CordaMavenResolver.create(syncerConf, source)
+            val source : CordappSource = syncerConf.findSourceFor(coordinatesWithoutVersion)
+                    ?: throw CordappSourceNotFoundException(coordinatesWithoutVersion, syncerConf)
+            val resolver : CordaMavenResolver = CordaMavenResolver.create(syncerConf, source)
             listOf(resolver.downloadVersionRange(coordinatesWithoutVersion, additionalConfigurationProperties))
         }
     }
@@ -51,14 +53,15 @@ class CordappSyncer(private val syncerConf : SyncerConfiguration,
      * @param additionalConfigurationProperties additional parameters to be passed to [CordaMavenResolver]
      */
     fun getAvailableVersions(coordinatesWithRange : String, additionalConfigurationProperties : Map<String, Any> = mapOf()) : List<ArtifactMetadata> {
-        val syncTask = syncerConf.findSourceFor(coordinatesWithRange) ?: throw CordappSourceNotFoundException(coordinatesWithRange)
-        val resolver = CordaMavenResolver.create(syncerConf, syncTask)
+        val syncTask : CordappSource = syncerConf.findSourceFor(coordinatesWithRange)
+                ?: throw CordappSourceNotFoundException(coordinatesWithRange, syncerConf)
+        val resolver : CordaMavenResolver = CordaMavenResolver.create(syncerConf, syncTask)
         return listOf(resolver.resolveVersionRange(coordinatesWithRange, additionalConfigurationProperties))
     }
 }
 
 /**
- * [CordappSource] allows, that allows to associate multiple CorDapps with a remote repository
+ * [CordappSource] allows to associate multiple CorDapps with a remote repository
  */
 data class CordappSource(
         val remoteRepoUrl : String,
@@ -67,7 +70,7 @@ data class CordappSource(
         val httpPassword : String? = null)
 
 /**
- * Configuration for [CordappSyncer]. Usually is red from settings.conf
+ * Configuration for [CordappSyncer]. Usually is read from settings.conf
  */
 data class SyncerConfiguration(
         val localRepoPath : String,
@@ -118,5 +121,7 @@ data class SyncerConfiguration(
 
 }
 
-open class SyncerException(message : String? = null, cause : Throwable? = null) : Exception(message, cause)
-class CordappSourceNotFoundException(cordapp : String) : SyncerException("Cordapp source has not been found for cordapp $cordapp")
+/**
+ * Thrown if a cordapp source have not been found in the provided configuration
+ */
+class CordappSourceNotFoundException(cordapp : String, syncerConf : SyncerConfiguration) : Exception("Cordapp source has not been found for $cordapp in $syncerConf")

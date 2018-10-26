@@ -21,12 +21,12 @@ class ReportCordappVersionFlowResponder(session : FlowSession) : AbstractReposit
 
     @Suspendable
     override fun doCall() {
-        val cordappVersionInfo = session.receive<CordappVersionInfo>().unwrap {
+        val cordappVersionInfo : CordappVersionInfo = session.receive<CordappVersionInfo>().unwrap {
             // we don't verify the payload here, as we know that the request is coming from a known participant,
             // who has passed through the session filter
             it
         }
-        val dbService = serviceHub.cordaService(DatabaseService::class.java)
+        val dbService : DatabaseService = serviceHub.cordaService(DatabaseService::class.java)
         dbService.updateCordappVersionInfo(session.counterparty, cordappVersionInfo)
     }
 }
@@ -49,7 +49,7 @@ class GetCordappVersionsFlow : FlowLogic<Map<String, List<CordappVersionInfo>>>(
     @Suspendable
     override fun call() : Map<String, List<CordappVersionInfo>> {
         progressTracker.currentStep = QUERYING_FROM_DATABASE
-        val dbService = serviceHub.cordaService(DatabaseService::class.java)
+        val dbService : DatabaseService = serviceHub.cordaService(DatabaseService::class.java)
         return dbService.getCordappVersionInfos()
     }
 }
@@ -75,7 +75,7 @@ class GetCordappVersionsForPartyFlow(private val party : Party) : FlowLogic<List
     @Suspendable
     override fun call() : List<CordappVersionInfo> {
         progressTracker.currentStep = QUERYING_FROM_DATABASE
-        val dbService = serviceHub.cordaService(DatabaseService::class.java)
+        val dbService : DatabaseService = serviceHub.cordaService(DatabaseService::class.java)
         return dbService.getCordappVersionInfos(party)
     }
 }

@@ -21,7 +21,9 @@ import java.util.concurrent.Executors
 class ArtifactsMetadataCache(private val appServiceHub : AppServiceHub) : SingletonSerializeAsToken() {
     private var _cache : List<ArtifactMetadata> = listOf()
     var cache : List<ArtifactMetadata>
-        internal set(value) { _cache = value }
+        internal set(value) {
+            _cache = value
+        }
         get() = _cache
 }
 
@@ -40,29 +42,32 @@ internal class SyncerService(private val appServiceHub : AppServiceHub) : Single
     }
 
     /**
-     * Configures [CordappSyncer]. [CordappSyncer] configuration is red from the path specified in the cordapp settings file and defaults
+     * Configures [CordappSyncer]. [CordappSyncer] configuration is read from the path specified in the cordapp settings file and defaults
      * to ~/.corda-updates/settings.conf otherwise.
      */
     private fun syncer(syncerConfiguration : SyncerConfiguration? = null) =
-        if (syncerConfiguration == null) {
-            val configuration = appServiceHub.cordaService(MemberConfiguration::class.java)
-            val syncerConfigPath = configuration.syncerConfig()
-            val config = (if (syncerConfigPath == null) getConfigurationFileFromDefaultLocations() else File(syncerConfigPath))
-                    ?: throw CordaUpdatesException("Configuration for CordappSyncer has not been found")
-            CordappSyncer(SyncerConfiguration.readFromFile(config))
-        } else CordappSyncer(syncerConfiguration)
+            if (syncerConfiguration == null) {
+                val configuration : MemberConfiguration = appServiceHub.cordaService(MemberConfiguration::class.java)
+                val syncerConfigPath : String? = configuration.syncerConfig()
+                val config : File = (if (syncerConfigPath == null) getConfigurationFileFromDefaultLocations() else File(syncerConfigPath))
+                        ?: throw ConfigurationNotFoundException("Configuration for CordappSyncer has not been found")
+                CordappSyncer(SyncerConfiguration.readFromFile(config))
+            } else CordappSyncer(syncerConfiguration)
 
     private fun additionalConfigurationProperties() = mapOf(Pair(SessionConfigurationProperties.APP_SERVICE_HUB, appServiceHub))
+
+    private fun refreshMetadataCacheSynchronously(syncerConfiguration : SyncerConfiguration? = null, body : (syncer : CordappSyncer) -> List<ArtifactMetadata>) : List<ArtifactMetadata> {
+        val artifacts : List<ArtifactMetadata> = body(syncer(syncerConfiguration))
+        val artifactsMetadataCache : ArtifactsMetadataCache = appServiceHub.cordaService(ArtifactsMetadataCache::class.java)
+        artifactsMetadataCache.cache = artifacts
+        return artifacts
+    }
 
     /**
      * Synchronously launches artifact synchronisation.
      */
-    fun syncArtifacts(syncerConfiguration : SyncerConfiguration? = null) : List<ArtifactMetadata> {
-        val syncer = syncer(syncerConfiguration)
-        val artifacts = syncer.syncCordapps(additionalConfigurationProperties = additionalConfigurationProperties())
-        val artifactsMetadataCache = appServiceHub.cordaService(ArtifactsMetadataCache::class.java)
-        artifactsMetadataCache.cache = artifacts
-        return artifacts
+    fun syncArtifacts(syncerConfiguration : SyncerConfiguration? = null) = refreshMetadataCacheSynchronously(syncerConfiguration) { syncer ->
+        syncer.syncCordapps(additionalConfigurationProperties = additionalConfigurationProperties())
     }
 
     /**
@@ -70,12 +75,8 @@ internal class SyncerService(private val appServiceHub : AppServiceHub) : Single
      *
      * @param cordappCoordinatesWithRange coordinates of a cordapp with range, i.e. "net.corda:corda-finance:[0,2.0)"
      */
-    fun getArtifactsMetadata(cordappCoordinatesWithRange : String, syncerConfiguration : SyncerConfiguration? = null) : List<ArtifactMetadata>  {
-        val syncer = syncer(syncerConfiguration)
-        val artifacts = syncer.getAvailableVersions(cordappCoordinatesWithRange, additionalConfigurationProperties())
-        val artifactsMetadataCache = appServiceHub.cordaService(ArtifactsMetadataCache::class.java)
-        artifactsMetadataCache.cache = artifacts
-        return artifacts
+    fun getArtifactsMetadata(cordappCoordinatesWithRange : String, syncerConfiguration : SyncerConfiguration? = null) = refreshMetadataCacheSynchronously(syncerConfiguration) { syncer ->
+        syncer.getAvailableVersions(cordappCoordinatesWithRange, additionalConfigurationProperties())
     }
 
     /**
@@ -93,6 +94,9 @@ internal class SyncerService(private val appServiceHub : AppServiceHub) : Single
     fun getArtifactsMetadataAsync(cordappCoordinatesWithRange : String, syncerConfiguration : SyncerConfiguration? = null) {
         executor.submit(Callable { getArtifactsMetadata(cordappCoordinatesWithRange, syncerConfiguration) })
     }
-}
 
-class CordaUpdatesException(message : String) : Exception(message)
+    /**
+     * Thrown if Syncer configuration has not been found
+     */
+    class ConfigurationNotFoundException(message : String) : Exception(message)
+}
