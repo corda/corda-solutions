@@ -1,16 +1,11 @@
 Welcome to Corda Solutions!
 ===========================
 
-What does it take to build a solution to a distributed problem using Corda?  This seems like an easy question, but it's
-trickier than might first appear.  Distributed and, in particular, decentralised problems typically need to address
-questions around how all of the participants come to agreements, and this needs more than just code to achieve it.
-
-`Corda <https://www.corda.net/>`_ provides the technical capabilities we need to build these sorts of solutions, but how
-should we think about these other issues?  When we have thought about them, then are there specific technical
-approaches that we should use?
-
-This site aims to ask some of these questions and offer some solutions.
-
+`Corda <https://www.corda.net/>`_ is an open source blockchain platform built to power a new generation of
+reliable, decentralised, applications.  These applications come in many forms, but, whatever problem you're thinking
+about solving, this site aims to help you with concepts, advice, and example software.  Our aim is to provide support
+that is relevant at all phases of your journey, whether you're just starting, are prototyping a design, building your
+finished application, are about to deploy, or are already in production.
 
 .. toctree::
    :caption: Business Networks
@@ -19,21 +14,37 @@ This site aims to ask some of these questions and offer some solutions.
    business-networks/intro.rst
 
 .. toctree::
-   :caption: Designs
+   :caption: Software Designs
    :maxdepth: 1
 
    designs/business-networks-membership-service.rst
    designs/ledger-synchronisation-service.rst
 
 .. toctree::
-    :caption: Corda Modelling Notation
-    :maxdepth: 1
+   :caption: Corda Modelling Notation
+   :maxdepth: 1
 
-    corda-modelling-notation/intro.rst
-
+   corda-modelling-notation/intro.rst
 
 .. toctree::
    :caption: FAQ
    :maxdepth: 1
 
    faq.rst
+
+Can't Find What You're Looking For?
+===================================
+
+If you can't find what you're looking for here then the team behind this site and the wider Corda community can offer
+lots of advice about how to solve problem using Corda.  Here are a few ways to reach out:
+
+- Interactively via `Slack <https://slack.corda.net/>`_
+- Ask questions on `Stack Overflow <https://stackoverflow.com/questions/tagged/corda>`_
+- Via the `corda-dev` mailing list on `Groups.io <https://groups.io/>`_
+
+Found a Problem or Suggestions For Improvements?
+================================================
+
+This site is based on an open source git repository, so you can either suggest a fix (via a pull request), or leave
+us a problem report on `GitHub <https://github.com/corda/corda-solutions/>`_.
+
