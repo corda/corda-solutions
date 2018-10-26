@@ -46,11 +46,13 @@ open class MembershipContract : Contract {
 
     override fun verify(tx : LedgerTransaction) {
         val command = tx.commands.requireSingleCommand<Commands>()
-        val outputMembership = tx.outputsOfType<MembershipState<*>>().single()
+        val output = tx.outputs.single { it.data is MembershipState<*> }
+        val outputMembership = output.data as MembershipState<*>
 
         requireThat {
             "Modified date has to be greater or equal to the issued date" using (outputMembership.modified >= outputMembership.issued)
             "Both BNO and member have to be participants" using (outputMembership.participants.toSet() == setOf(outputMembership.member, outputMembership.bno))
+            "Output state has to be validated with ${contractName()}" using (output.contract == contractName())
             if (!tx.inputs.isEmpty()) {
                 val input = tx.inputs.single()
                 val inputState = input.state.data as MembershipState<*>
@@ -70,6 +72,9 @@ open class MembershipContract : Contract {
             else -> throw IllegalArgumentException("Unsupported command ${command.value}")
         }
     }
+
+    // custom implementations should be able to specify their own contract names
+    open fun contractName() = CONTRACT_NAME
 
     open fun verifyRequest(tx : LedgerTransaction, command : CommandWithParties<Commands>, outputMembership : MembershipState<*>) = requireThat {
         "Both BNO and member have to sign a membership request transaction" using (command.signers.toSet() == outputMembership.participants.map { it.owningKey }.toSet() )
@@ -148,4 +153,4 @@ enum class MembershipStatus {
  * Simple metadata example.
  */
 @CordaSerializable
-data class SimpleMembershipMetadata(val role : String = "", val humanReadableName : String = "")
+data class SimpleMembershipMetadata(val role : String = "", val displayedName : String = "")

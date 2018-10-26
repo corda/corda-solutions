@@ -63,6 +63,13 @@ class MembershipContractTest {
                 this.`fails with`("Input and output states should have the same linear ids")
             }
             transaction {
+                val input = output.copy()
+                input(MembershipContract.CONTRACT_NAME, input)
+                output(MyDummyContract.CONTRACT_NAME, output)
+                command(listOf(member.publicKey), MembershipContract.Commands.Request())
+                this.`fails with`("Output state has to be validated with ${MembershipContract.CONTRACT_NAME}")
+            }
+            transaction {
                 val issuedDate = Instant.now()
                 val inputModifiedDate = issuedDate.plusSeconds(10)
                 val outputModifiedDate = issuedDate.plusSeconds(5)
