@@ -38,6 +38,31 @@ class RequestWideTicketFlow(val subject : String) : BusinessNetworkAwareFlowLogi
 }
 
 @StartableByRPC
+class RequestTargetedTicketFlow(val subject : String, val targetedParties : List<Party>) : BusinessNetworkAwareFlowLogic<SignedTransaction>() {
+
+    companion object {
+        object CREATING_TICKET : ProgressTracker.Step("Creating ticket")
+        object SENDING_TO_BNO : ProgressTracker.Step("Sending to BNO")
+
+
+        fun tracker() = ProgressTracker(
+                CREATING_TICKET,
+                SENDING_TO_BNO
+        )
+    }
+
+    override val progressTracker = tracker()
+
+    @Suspendable
+    override fun call(): SignedTransaction {
+        progressTracker.currentStep = CREATING_TICKET
+        val ticket = Ticket.TargetedTicket(ourIdentity, getBno(), subject, targetedParties)
+        progressTracker.currentStep = SENDING_TO_BNO
+        return subFlow(RequestTicketFlow(ticket))
+    }
+}
+
+@StartableByRPC
 @InitiatingFlow
 class RequestTicketFlow(val ticket : Ticket.State) : BusinessNetworkAwareFlowLogic<SignedTransaction>() {
 

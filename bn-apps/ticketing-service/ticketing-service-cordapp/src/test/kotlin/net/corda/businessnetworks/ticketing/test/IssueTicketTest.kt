@@ -3,6 +3,7 @@ package net.corda.businessnetworks.ticketing.test
 import net.corda.businessnetworks.membership.NotAMemberException
 import net.corda.businessnetworks.ticketing.contracts.Ticket
 import net.corda.businessnetworks.ticketing.contracts.TicketStatus
+import net.corda.businessnetworks.ticketing.flows.RequestTargetedTicketFlow
 import net.corda.businessnetworks.ticketing.flows.RequestTicketFlow
 import net.corda.businessnetworks.ticketing.flows.RequestWideTicketFlow
 import net.corda.core.flows.FlowException
@@ -44,6 +45,32 @@ class IssueTicketTest : BusinessNetworksTestsSupport(listOf("net.corda.businessn
                 val tickets = bnoNode.services.vaultService.queryBy<Ticket.State>().states
                 assertEquals(1, tickets.size)
                 assertEquals(TicketStatus.PENDING, tickets.single().state.data.status)
+            }
+        }
+    }
+
+    @Test
+    fun `Member can ask for a targeted ticket`() {
+        createNetworkAndRunTest(2, true ) {
+            val participantNode = participantNodes.first()
+            val targetedParty = participantNodes[1].party()
+
+            val future = participantNode.startFlow(RequestTargetedTicketFlow("Subject 1", listOf(targetedParty)))
+            mockNetwork.runNetwork()
+            future.getOrThrow()
+
+            participantNode.transaction {
+                val tickets = participantNode.services.vaultService.queryBy<Ticket.TargetedTicket>().states
+                assertEquals(1, tickets.size)
+                assertEquals(TicketStatus.PENDING, tickets.single().state.data.status)
+                assertEquals(listOf(targetedParty),tickets.single().state.data.appliesTo)
+            }
+
+            bnoNode.transaction {
+                val tickets = bnoNode.services.vaultService.queryBy<Ticket.TargetedTicket>().states
+                assertEquals(1, tickets.size)
+                assertEquals(TicketStatus.PENDING, tickets.single().state.data.status)
+                assertEquals(listOf(targetedParty),tickets.single().state.data.appliesTo)
             }
         }
     }
