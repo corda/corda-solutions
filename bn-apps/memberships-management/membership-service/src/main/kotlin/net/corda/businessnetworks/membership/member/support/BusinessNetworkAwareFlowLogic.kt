@@ -1,5 +1,6 @@
 package net.corda.businessnetworks.membership.member.support
 
+import co.paralleluniverse.fibers.Suspendable
 import net.corda.businessnetworks.membership.member.GetNotaryFlow
 import net.corda.businessnetworks.membership.member.service.MemberConfigurationService
 import net.corda.core.flows.FlowLogic
@@ -16,6 +17,7 @@ abstract class BusinessNetworkAwareFlowLogic<out T> : FlowLogic<T>() {
         return configuration.bnoParty()
     }
 
+    @Suspendable
     protected fun getNotary() : Party {
         return subFlow(GetNotaryFlow())
     }

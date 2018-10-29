@@ -13,6 +13,31 @@ import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.ProgressTracker
 
 @StartableByRPC
+class RequestWideTicketFlow(val subject : String) : BusinessNetworkAwareFlowLogic<SignedTransaction>() {
+
+    companion object {
+        object CREATING_TICKET : ProgressTracker.Step("Creating ticket")
+        object SENDING_TO_BNO : ProgressTracker.Step("Sending to BNO")
+
+
+        fun tracker() = ProgressTracker(
+                CREATING_TICKET,
+                SENDING_TO_BNO
+        )
+    }
+
+    override val progressTracker = tracker()
+
+    @Suspendable
+    override fun call(): SignedTransaction {
+        progressTracker.currentStep = CREATING_TICKET
+        val ticket = Ticket.WideTicket(ourIdentity, getBno(), subject)
+        progressTracker.currentStep = SENDING_TO_BNO
+        return subFlow(RequestTicketFlow(ticket))
+    }
+}
+
+@StartableByRPC
 @InitiatingFlow
 class RequestTicketFlow(val ticket : Ticket.State) : BusinessNetworkAwareFlowLogic<SignedTransaction>() {
 
