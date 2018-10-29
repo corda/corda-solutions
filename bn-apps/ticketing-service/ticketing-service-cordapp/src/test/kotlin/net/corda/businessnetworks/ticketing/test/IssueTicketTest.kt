@@ -2,6 +2,7 @@ package net.corda.businessnetworks.ticketing.test
 
 import net.corda.businessnetworks.membership.NotAMemberException
 import net.corda.businessnetworks.ticketing.contracts.Ticket
+import net.corda.businessnetworks.ticketing.contracts.TicketStatus
 import net.corda.businessnetworks.ticketing.flows.RequestTicketFlow
 import net.corda.businessnetworks.ticketing.flows.RequestWideTicketFlow
 import net.corda.core.flows.FlowException
@@ -36,22 +37,37 @@ class IssueTicketTest : BusinessNetworksTestsSupport(listOf("net.corda.businessn
             participantNode.transaction {
                 val tickets = participantNode.services.vaultService.queryBy<Ticket.State>().states
                 assertEquals(1, tickets.size)
+                assertEquals(TicketStatus.PENDING, tickets.single().state.data.status)
             }
 
             bnoNode.transaction {
                 val tickets = bnoNode.services.vaultService.queryBy<Ticket.State>().states
                 assertEquals(1, tickets.size)
+                assertEquals(TicketStatus.PENDING, tickets.single().state.data.status)
             }
         }
     }
 
     @Test(expected = FlowException::class)
-    fun `BNO won't sign if they are not the BNO on the ticket`() {
+    fun `BNO won't sign request if they are not the BNO on the ticket`() {
         createNetworkAndRunTest(2, true ) {
             val participantNode = participantNodes.first()
             val maliciousNode = participantNodes[1]
 
             val ticket = Ticket.WideTicket(participantNode.party(),maliciousNode.party(),"Subject 1")
+            val future = participantNode.startFlow(RequestTicketFlow(ticket))
+            mockNetwork.runNetwork()
+            future.getOrThrow()
+        }
+    }
+
+    @Test(expected = FlowException::class)
+    fun `BNO won't sign request if the initiator is not the proposed holder`() {
+        createNetworkAndRunTest(2, true ) {
+            val participantNode = participantNodes.first()
+            val maliciousNode = participantNodes[1]
+
+            val ticket = Ticket.WideTicket(maliciousNode.party(),bnoNode.party(),"Subject 1")
             val future = participantNode.startFlow(RequestTicketFlow(ticket))
             mockNetwork.runNetwork()
             future.getOrThrow()
