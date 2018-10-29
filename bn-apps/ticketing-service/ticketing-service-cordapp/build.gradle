@@ -37,6 +37,7 @@ dependencies {
     testCompile "$corda_release_group:corda-node-driver:$corda_release_version"
 
     cordapp project(":bn-apps:memberships-management:membership-service")
+    cordapp project(":bn-apps:ticketing-service:ticketing-service-contracts-and-states")
 
 }
 

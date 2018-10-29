@@ -1,23 +1,33 @@
 package net.corda.businessnetworks.ticketing.flows
 
 import co.paralleluniverse.fibers.Suspendable
+import net.corda.businessnetworks.membership.bno.support.BusinessNetworkOperatorInitiatedFlow
+import net.corda.businessnetworks.membership.member.support.BusinessNetworkAwareFlowLogic
+import net.corda.businessnetworks.membership.states.MembershipState
+import net.corda.businessnetworks.ticketing.contracts.Ticket
+import net.corda.core.contracts.StateAndRef
 import net.corda.core.flows.*
+import net.corda.core.identity.Party
 import net.corda.core.transactions.SignedTransaction
+import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.ProgressTracker
 
 @StartableByRPC
 @InitiatingFlow
-class RequestTicketFlow() : FlowLogic<SignedTransaction>() {
+class RequestTicketFlow(val ticket : Ticket.State) : BusinessNetworkAwareFlowLogic<SignedTransaction>() {
 
     companion object {
-        object CREATING_TICKET_IN_PENDING : ProgressTracker.Step("Creating ticket in pending status")
-        object SIGNED_BY_BNO : ProgressTracker.Step("Signed by BNO")
-        object FINALIZING : ProgressTracker.Step("Finalizing")
+        object GETTING_NOTARY_IDENTITY : ProgressTracker.Step("Getting notary identity from BNO")
+        object CREATING_TRANSACTION : ProgressTracker.Step("Creating transaction")
+        object SIGNING_TRANSACTION : ProgressTracker.Step("Signing transaction")
+        object FINALISING_TRANSACTION : ProgressTracker.Step("Finalising transaction")
+
 
         fun tracker() = ProgressTracker(
-                CREATING_TICKET_IN_PENDING,
-                SIGNED_BY_BNO,
-                FINALIZING
+                GETTING_NOTARY_IDENTITY,
+                CREATING_TRANSACTION,
+                SIGNING_TRANSACTION,
+                FINALISING_TRANSACTION
         )
     }
 
@@ -25,40 +35,65 @@ class RequestTicketFlow() : FlowLogic<SignedTransaction>() {
 
     @Suspendable
     override fun call() : SignedTransaction {
-        /*
-        progressTracker.currentStep = SENDING_MEMBERSHIP_DATA_TO_BNO
-        val configuration = serviceHub.cordaService(MemberConfigurationService::class.java)
-        val bno = configuration.bnoParty()
 
-        val bnoSession = initiateFlow(bno)
-        bnoSession.send(OnBoardingRequest(membershipMetadata))
+        progressTracker.currentStep = GETTING_NOTARY_IDENTITY
+        val notary = getNotary()
 
-        val signResponder = object : SignTransactionFlow(bnoSession) {
+        progressTracker.currentStep = CREATING_TRANSACTION
+        val transactionBuilder = createTransaction(notary, ticket, getBno())
+
+        progressTracker.currentStep = SIGNING_TRANSACTION
+        val signedByUs = serviceHub.signInitialTransaction(transactionBuilder)
+
+        progressTracker.currentStep = FINALISING_TRANSACTION
+        return subFlow(FinalityFlow(signedByUs))
+    }
+
+    private fun createTransaction(notary : Party, ticket : Ticket.State, bno : Party) : TransactionBuilder {
+        val transactionBuilder = TransactionBuilder(notary)
+        transactionBuilder.addOutputState(ticket, Ticket.CONTRACT_NAME)
+        transactionBuilder.addCommand(Ticket.Commands.Request(),ourIdentity.owningKey, bno.owningKey)
+        transactionBuilder.verify(serviceHub)
+        return transactionBuilder
+    }
+
+}
+
+@InitiatedBy(RequestTicketFlow::class)
+class RequestTicketFlowResponder(flowSession : FlowSession) : BusinessNetworkOperatorInitiatedFlow<Unit>(flowSession) {
+
+    companion object {
+        object CHECKING_TRANSACTION : ProgressTracker.Step("Checking transaction")
+
+        fun tracker() = ProgressTracker(
+                CHECKING_TRANSACTION
+        )
+    }
+
+    override val progressTracker = tracker()
+
+    @Suspendable
+    override fun onCounterpartyMembershipVerified(counterpartyMembership: StateAndRef<MembershipState<Any>>) {
+        val transactionSigner = object : SignTransactionFlow(flowSession) {
             override fun checkTransaction(stx : SignedTransaction) {
-                val command = stx.tx.commands.single()
-                if (command.value !is Membership.Commands.Request) {
-                    throw FlowException("Only Request command is allowed")
-                }
-
                 val output = stx.tx.outputs.single()
-                if (output.contract != Membership.CONTRACT_NAME) {
-                    throw FlowException("Output state has to be verified by ${Membership.CONTRACT_NAME}")
-                }
-                val membershipState = output.data as Membership.State
-                if (bno != membershipState.bno) {
-                    throw IllegalArgumentException("Wrong BNO identity")
-                }
-                if (ourIdentity != membershipState.member) {
-                    throw IllegalArgumentException("We have to be the member")
+                if (output.contract != Ticket.CONTRACT_NAME) {
+                    throw FlowException("Output state has to be verified by ${Ticket.CONTRACT_NAME}")
                 }
 
-                stx.toLedgerTransaction(serviceHub, false).verify()
+                val ticketState = output.data as Ticket.State
+                if (ourIdentity != ticketState.bno) {
+                    throw IllegalArgumentException("We have to be the BNO")
+                }
+
+                if (flowSession.counterparty != ticketState.holder) {
+                    throw IllegalArgumentException("The initiating counterparty has to be the holder")
+                }
             }
         }
-        progressTracker.currentStep = ACCEPTING_INCOMING_PENDING_MEMBERSHIP
-        return subFlow(signResponder)
-        */
-        throw RuntimeException("not implemented yet")
+        progressTracker.currentStep = CHECKING_TRANSACTION
+        subFlow(transactionSigner)
     }
+
 }
 

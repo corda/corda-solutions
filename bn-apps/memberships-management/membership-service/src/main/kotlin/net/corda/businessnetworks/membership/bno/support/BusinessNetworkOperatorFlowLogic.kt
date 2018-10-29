@@ -2,6 +2,7 @@ package net.corda.businessnetworks.membership.bno.support
 
 import net.corda.businessnetworks.membership.MembershipNotFound
 import net.corda.businessnetworks.membership.NotBNOException
+import net.corda.businessnetworks.membership.bno.service.BNOConfigurationService
 import net.corda.businessnetworks.membership.bno.service.DatabaseService
 import net.corda.businessnetworks.membership.states.MembershipState
 import net.corda.core.contracts.StateAndRef
@@ -17,6 +18,11 @@ abstract class BusinessNetworkOperatorFlowLogic<out T> : FlowLogic<T>() {
         if(ourIdentity != membership.bno) {
             throw NotBNOException(membership)
         }
+    }
+
+    protected fun getNotary() : Party {
+        val configuration = serviceHub.cordaService(BNOConfigurationService::class.java)
+        return configuration.notaryParty()
     }
 
     protected fun findMembershipStateForParty(party : Party) : StateAndRef<MembershipState<Any>> {
