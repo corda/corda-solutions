@@ -22,10 +22,10 @@ class Ticket : Contract {
     }
 
 
-    abstract class State(
+    abstract class State<T>(
                      val holder : Party,
                      val bno : Party,
-                     val subject : String,
+                     val subject : T,
                      val issued : Instant = Instant.now(),
                      val status : TicketStatus = TicketStatus.PENDING,
                      override val linearId : UniqueIdentifier = UniqueIdentifier()) : LinearState {
@@ -36,18 +36,18 @@ class Ticket : Contract {
         fun isActive() = status == TicketStatus.ACTIVE
     }
 
-    class TargetedTicket(holder : Party,
+    class TargetedTicket<T>(holder : Party,
                          bno : Party,
-                         subject : String,
+                         subject : T,
                          val appliesTo : List<Party>,
-                         status : TicketStatus = TicketStatus.PENDING) : State(holder, bno, subject, status = status) {
+                         status : TicketStatus = TicketStatus.PENDING) : State<T>(holder, bno, subject, status = status) {
 
     }
 
-    class WideTicket(holder : Party,
+    class WideTicket<T>(holder : Party,
                      bno : Party,
-                     subject : String,
-                     status : TicketStatus = TicketStatus.PENDING) : State(holder, bno, subject, status = status) {
+                     subject : T,
+                     status : TicketStatus = TicketStatus.PENDING) : State<T>(holder, bno, subject, status = status) {
 
     }
 }

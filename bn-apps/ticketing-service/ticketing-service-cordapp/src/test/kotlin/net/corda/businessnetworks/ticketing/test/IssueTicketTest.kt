@@ -12,6 +12,10 @@ import net.corda.core.utilities.getOrThrow
 import org.junit.Test
 import kotlin.test.assertEquals
 
+enum class TestTicketSubject {
+    SUBJECT_1
+}
+
 class IssueTicketTest : BusinessNetworksTestsSupport(listOf("net.corda.businessnetworks.ticketing.contracts",
                                                             "net.corda.businessnetworks.ticketing.flows")) {
 
@@ -20,7 +24,7 @@ class IssueTicketTest : BusinessNetworksTestsSupport(listOf("net.corda.businessn
         createNetworkAndRunTest(1, false ) {
             val participantNode = participantNodes.first()
 
-            val future = participantNode.startFlow(RequestWideTicketFlow("Subject 1"))
+            val future = participantNode.startFlow(RequestWideTicketFlow(TestTicketSubject.SUBJECT_1))
             mockNetwork.runNetwork()
             future.getOrThrow()
         }
@@ -36,13 +40,13 @@ class IssueTicketTest : BusinessNetworksTestsSupport(listOf("net.corda.businessn
             future.getOrThrow()
 
             participantNode.transaction {
-                val tickets = participantNode.services.vaultService.queryBy<Ticket.State>().states
+                val tickets = participantNode.services.vaultService.queryBy<Ticket.State<*>>().states
                 assertEquals(1, tickets.size)
                 assertEquals(TicketStatus.PENDING, tickets.single().state.data.status)
             }
 
             bnoNode.transaction {
-                val tickets = bnoNode.services.vaultService.queryBy<Ticket.State>().states
+                val tickets = bnoNode.services.vaultService.queryBy<Ticket.State<*>>().states
                 assertEquals(1, tickets.size)
                 assertEquals(TicketStatus.PENDING, tickets.single().state.data.status)
             }
@@ -60,14 +64,14 @@ class IssueTicketTest : BusinessNetworksTestsSupport(listOf("net.corda.businessn
             future.getOrThrow()
 
             participantNode.transaction {
-                val tickets = participantNode.services.vaultService.queryBy<Ticket.TargetedTicket>().states
+                val tickets = participantNode.services.vaultService.queryBy<Ticket.TargetedTicket<*>>().states
                 assertEquals(1, tickets.size)
                 assertEquals(TicketStatus.PENDING, tickets.single().state.data.status)
                 assertEquals(listOf(targetedParty),tickets.single().state.data.appliesTo)
             }
 
             bnoNode.transaction {
-                val tickets = bnoNode.services.vaultService.queryBy<Ticket.TargetedTicket>().states
+                val tickets = bnoNode.services.vaultService.queryBy<Ticket.TargetedTicket<*>>().states
                 assertEquals(1, tickets.size)
                 assertEquals(TicketStatus.PENDING, tickets.single().state.data.status)
                 assertEquals(listOf(targetedParty),tickets.single().state.data.appliesTo)

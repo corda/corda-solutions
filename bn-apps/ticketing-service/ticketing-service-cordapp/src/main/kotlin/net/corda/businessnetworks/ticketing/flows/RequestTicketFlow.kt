@@ -13,7 +13,7 @@ import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.ProgressTracker
 
 @StartableByRPC
-class RequestWideTicketFlow(val subject : String) : BusinessNetworkAwareFlowLogic<SignedTransaction>() {
+class RequestWideTicketFlow<T>(val subject : T) : BusinessNetworkAwareFlowLogic<SignedTransaction>() {
 
     companion object {
         object CREATING_TICKET : ProgressTracker.Step("Creating ticket")
@@ -38,7 +38,7 @@ class RequestWideTicketFlow(val subject : String) : BusinessNetworkAwareFlowLogi
 }
 
 @StartableByRPC
-class RequestTargetedTicketFlow(val subject : String, val targetedParties : List<Party>) : BusinessNetworkAwareFlowLogic<SignedTransaction>() {
+class RequestTargetedTicketFlow<T>(val subject : T, val targetedParties : List<Party>) : BusinessNetworkAwareFlowLogic<SignedTransaction>() {
 
     companion object {
         object CREATING_TICKET : ProgressTracker.Step("Creating ticket")
@@ -64,7 +64,7 @@ class RequestTargetedTicketFlow(val subject : String, val targetedParties : List
 
 @StartableByRPC
 @InitiatingFlow
-class RequestTicketFlow(val ticket : Ticket.State) : BusinessNetworkAwareFlowLogic<SignedTransaction>() {
+class RequestTicketFlow(val ticket : Ticket.State<*>) : BusinessNetworkAwareFlowLogic<SignedTransaction>() {
 
     companion object {
         object GETTING_NOTARY_IDENTITY : ProgressTracker.Step("Getting notary identity from BNO")
@@ -106,7 +106,7 @@ class RequestTicketFlow(val ticket : Ticket.State) : BusinessNetworkAwareFlowLog
         return subFlow(FinalityFlow(signedByAll))
     }
 
-    private fun createTransaction(notary : Party, ticket : Ticket.State, bno : Party) : TransactionBuilder {
+    private fun createTransaction(notary : Party, ticket : Ticket.State<*>, bno : Party) : TransactionBuilder {
         val transactionBuilder = TransactionBuilder(notary)
         transactionBuilder.addOutputState(ticket, Ticket.CONTRACT_NAME)
         transactionBuilder.addCommand(Ticket.Commands.Request(),ourIdentity.owningKey, bno.owningKey)
@@ -138,7 +138,7 @@ class RequestTicketFlowResponder(flowSession : FlowSession) : BusinessNetworkOpe
                     throw FlowException("Output state has to be verified by ${Ticket.CONTRACT_NAME}")
                 }
 
-                val ticketState = output.data as Ticket.State
+                val ticketState = output.data as Ticket.State<*>
                 if (ourIdentity != ticketState.bno) {
                     throw IllegalArgumentException("We have to be the BNO")
                 }
