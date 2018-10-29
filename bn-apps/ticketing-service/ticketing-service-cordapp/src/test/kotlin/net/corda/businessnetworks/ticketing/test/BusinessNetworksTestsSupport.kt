@@ -15,7 +15,7 @@ import net.corda.testing.node.MockNetworkNotarySpec
 import net.corda.testing.node.MockNodeParameters
 import net.corda.testing.node.StartedMockNode
 
-abstract class BusinessNetworksTestsSupport {
+abstract class BusinessNetworksTestsSupport(val additionalPackages : List<String>) {
 
     val notaryName = CordaX500Name.parse("O=Notary,L=London,C=GB")
     val bnoName = CordaX500Name.parse("O=BNO,L=New York,C=US")
@@ -24,9 +24,12 @@ abstract class BusinessNetworksTestsSupport {
     lateinit var bnoNode: StartedMockNode
     lateinit var participantNodes: List<StartedMockNode>
 
-    fun createNetworkAndRunTest(numberOfParticipants : Int, test : ()->Unit) {
+    fun createNetworkAndRunTest(numberOfParticipants : Int, grantMemberships : Boolean, test : ()->Unit) {
         createNetwork(numberOfParticipants)
         try {
+            if(grantMemberships) {
+                grantMemberships()
+            }
             test()
         } finally {
             stopNetwork()
@@ -36,7 +39,7 @@ abstract class BusinessNetworksTestsSupport {
     protected open fun createNetwork(participants : Int) {
         mockNetwork = MockNetwork(cordappPackages = listOf(
                                     "net.corda.businessnetworks.membership",
-                                    "net.corda.businessnetworks.membership.states"),
+                                    "net.corda.businessnetworks.membership.states") + additionalPackages,
                 notarySpecs = listOf(MockNetworkNotarySpec(notaryName)))
         bnoNode = mockNetwork.createNode(MockNodeParameters(legalName = bnoName))
 
@@ -44,7 +47,6 @@ abstract class BusinessNetworksTestsSupport {
             mockNetwork.createNode(MockNodeParameters(legalName = CordaX500Name.parse("O=Participant $it,L=London,C=GB")))
         }
 
-        registerFlows()
         mockNetwork.runNetwork()
     }
 
@@ -52,20 +54,15 @@ abstract class BusinessNetworksTestsSupport {
         mockNetwork.stopNodes()
     }
 
-    abstract fun registerFlows()
-
-
-
+    protected open fun grantMemberships() {
+        participantNodes.forEach {
+            runRequestMembershipFlow(it)
+            runActivateMembershipForPartyFlow(bnoNode, it.info.legalIdentities.first())
+        }
+    }
 
     fun runRequestMembershipFlow(nodeToRunTheFlow : StartedMockNode, membershipMetadata : SimpleMembershipMetadata = SimpleMembershipMetadata(role="DEFAULT")) : SignedTransaction {
         val future = nodeToRunTheFlow.startFlow(RequestMembershipFlow(membershipMetadata))
-        mockNetwork.runNetwork()
-        return future.getOrThrow()
-    }
-
-    fun runActivateMembershipFlow(nodeToRunTheFlow : StartedMockNode, party : Party) : SignedTransaction {
-        val membership = getMembership(nodeToRunTheFlow, party)
-        val future = nodeToRunTheFlow.startFlow(ActivateMembershipFlow(membership))
         mockNetwork.runNetwork()
         return future.getOrThrow()
     }
@@ -75,12 +72,6 @@ abstract class BusinessNetworksTestsSupport {
         mockNetwork.runNetwork()
         return future.getOrThrow()
     }
-
-    fun getMembership (node : StartedMockNode, party : Party) = node.transaction {
-        val dbService = node.services.cordaService(DatabaseService::class.java)
-        dbService.getMembership(party)!! as StateAndRef<MembershipState<SimpleMembershipMetadata>>
-    }
-
 
 
 }

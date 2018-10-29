@@ -45,6 +45,7 @@ class RequestTicketFlow(val ticket : Ticket.State) : BusinessNetworkAwareFlowLog
         object GETTING_NOTARY_IDENTITY : ProgressTracker.Step("Getting notary identity from BNO")
         object CREATING_TRANSACTION : ProgressTracker.Step("Creating transaction")
         object SIGNING_TRANSACTION : ProgressTracker.Step("Signing transaction")
+        object COLLECTING_SIGNATURES : ProgressTracker.Step("Collecting signatures")
         object FINALISING_TRANSACTION : ProgressTracker.Step("Finalising transaction")
 
 
@@ -52,6 +53,7 @@ class RequestTicketFlow(val ticket : Ticket.State) : BusinessNetworkAwareFlowLog
                 GETTING_NOTARY_IDENTITY,
                 CREATING_TRANSACTION,
                 SIGNING_TRANSACTION,
+                COLLECTING_SIGNATURES,
                 FINALISING_TRANSACTION
         )
     }
@@ -65,13 +67,18 @@ class RequestTicketFlow(val ticket : Ticket.State) : BusinessNetworkAwareFlowLog
         val notary = getNotary()
 
         progressTracker.currentStep = CREATING_TRANSACTION
-        val transactionBuilder = createTransaction(notary, ticket, getBno())
+        val bno = getBno()
+        val transactionBuilder = createTransaction(notary, ticket, bno)
 
         progressTracker.currentStep = SIGNING_TRANSACTION
         val signedByUs = serviceHub.signInitialTransaction(transactionBuilder)
 
+        progressTracker.currentStep = COLLECTING_SIGNATURES
+        val bnoSession = initiateFlow(bno)
+        val signedByAll = subFlow(CollectSignaturesFlow(signedByUs, listOf(bnoSession)))
+
         progressTracker.currentStep = FINALISING_TRANSACTION
-        return subFlow(FinalityFlow(signedByUs))
+        return subFlow(FinalityFlow(signedByAll))
     }
 
     private fun createTransaction(notary : Party, ticket : Ticket.State, bno : Party) : TransactionBuilder {
