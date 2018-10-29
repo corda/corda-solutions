@@ -1,4 +1,4 @@
-package net.corda.businessnetworks.ticketing.flows
+package net.corda.businessnetworks.ticketing.flows.member
 
 import co.paralleluniverse.fibers.Suspendable
 import net.corda.businessnetworks.membership.bno.support.BusinessNetworkOperatorInitiatedFlow

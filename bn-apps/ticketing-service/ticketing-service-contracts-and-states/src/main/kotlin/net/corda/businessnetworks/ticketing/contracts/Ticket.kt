@@ -34,6 +34,8 @@ class Ticket : Contract {
         fun isRevoked() = status == TicketStatus.REVOKED
         fun isPending() = status == TicketStatus.PENDING
         fun isActive() = status == TicketStatus.ACTIVE
+
+        abstract fun withNewStatus(newStatus : TicketStatus) : State<T>
     }
 
     class TargetedTicket<T>(holder : Party,
@@ -42,6 +44,10 @@ class Ticket : Contract {
                          val appliesTo : List<Party>,
                          status : TicketStatus = TicketStatus.PENDING) : State<T>(holder, bno, subject, status = status) {
 
+        override fun withNewStatus(newStatus : TicketStatus) : State<T> {
+            return TargetedTicket(holder, bno, subject, appliesTo, newStatus)
+        }
+
     }
 
     class WideTicket<T>(holder : Party,
@@ -49,6 +55,9 @@ class Ticket : Contract {
                      subject : T,
                      status : TicketStatus = TicketStatus.PENDING) : State<T>(holder, bno, subject, status = status) {
 
+        override fun withNewStatus(newStatus : TicketStatus) : State<T> {
+            return WideTicket(holder, bno, subject, newStatus)
+        }
     }
 }
 

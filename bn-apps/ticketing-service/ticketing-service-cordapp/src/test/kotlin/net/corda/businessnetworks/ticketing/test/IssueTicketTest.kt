@@ -3,9 +3,10 @@ package net.corda.businessnetworks.ticketing.test
 import net.corda.businessnetworks.membership.NotAMemberException
 import net.corda.businessnetworks.ticketing.contracts.Ticket
 import net.corda.businessnetworks.ticketing.contracts.TicketStatus
-import net.corda.businessnetworks.ticketing.flows.RequestTargetedTicketFlow
-import net.corda.businessnetworks.ticketing.flows.RequestTicketFlow
-import net.corda.businessnetworks.ticketing.flows.RequestWideTicketFlow
+import net.corda.businessnetworks.ticketing.flows.bno.ActivateTicketByLinearIdFlow
+import net.corda.businessnetworks.ticketing.flows.member.RequestTargetedTicketFlow
+import net.corda.businessnetworks.ticketing.flows.member.RequestTicketFlow
+import net.corda.businessnetworks.ticketing.flows.member.RequestWideTicketFlow
 import net.corda.core.flows.FlowException
 import net.corda.core.node.services.queryBy
 import net.corda.core.utilities.getOrThrow
@@ -17,7 +18,7 @@ enum class TestTicketSubject {
 }
 
 class IssueTicketTest : BusinessNetworksTestsSupport(listOf("net.corda.businessnetworks.ticketing.contracts",
-                                                            "net.corda.businessnetworks.ticketing.flows")) {
+                                                            "net.corda.businessnetworks.ticketing.flows.member")) {
 
     @Test(expected = NotAMemberException::class)
     fun `Party has to be a member to be able to ask for ticket`() {
@@ -102,6 +103,47 @@ class IssueTicketTest : BusinessNetworksTestsSupport(listOf("net.corda.businessn
             val future = participantNode.startFlow(RequestTicketFlow(ticket))
             mockNetwork.runNetwork()
             future.getOrThrow()
+        }
+    }
+
+    @Test
+    fun `Ticket can be activated`() {
+        createNetworkAndRunTest(1, true ) {
+            val participantNode = participantNodes.first()
+
+            val future = participantNode.startFlow(RequestWideTicketFlow("Subject 1"))
+            mockNetwork.runNetwork()
+            future.getOrThrow()
+            lateinit var ticketId : String
+
+            participantNode.transaction {
+                val tickets = participantNode.services.vaultService.queryBy<Ticket.State<*>>().states
+                assertEquals(1, tickets.size)
+                assertEquals(TicketStatus.PENDING, tickets.single().state.data.status)
+                ticketId = tickets.single().state.data.linearId.toString()
+            }
+
+            bnoNode.transaction {
+                val tickets = bnoNode.services.vaultService.queryBy<Ticket.State<*>>().states
+                assertEquals(1, tickets.size)
+                assertEquals(TicketStatus.PENDING, tickets.single().state.data.status)
+            }
+
+            bnoNode.startFlow(ActivateTicketByLinearIdFlow(ticketId))
+            mockNetwork.runNetwork()
+            future.getOrThrow()
+
+            participantNode.transaction {
+                val tickets = participantNode.services.vaultService.queryBy<Ticket.State<*>>().states
+                assertEquals(1, tickets.size)
+                assertEquals(TicketStatus.ACTIVE, tickets.single().state.data.status)
+            }
+
+            bnoNode.transaction {
+                val tickets = bnoNode.services.vaultService.queryBy<Ticket.State<*>>().states
+                assertEquals(1, tickets.size)
+                assertEquals(TicketStatus.ACTIVE, tickets.single().state.data.status)
+            }
         }
     }
 
