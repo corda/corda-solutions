@@ -2,10 +2,7 @@ package net.corda.businessnetworks.ticketing.test
 
 import net.corda.businessnetworks.membership.bno.*
 import net.corda.businessnetworks.membership.member.RequestMembershipFlow
-import net.corda.businessnetworks.membership.bno.service.DatabaseService
-import net.corda.businessnetworks.membership.states.MembershipState
 import net.corda.businessnetworks.membership.states.SimpleMembershipMetadata
-import net.corda.core.contracts.StateAndRef
 import net.corda.core.identity.CordaX500Name
 import net.corda.core.identity.Party
 import net.corda.core.transactions.SignedTransaction
@@ -74,4 +71,8 @@ abstract class BusinessNetworksTestsSupport(val additionalPackages : List<String
     }
 
 
+}
+
+fun StartedMockNode.party() : Party {
+    return this.info.legalIdentities.single()
 }
