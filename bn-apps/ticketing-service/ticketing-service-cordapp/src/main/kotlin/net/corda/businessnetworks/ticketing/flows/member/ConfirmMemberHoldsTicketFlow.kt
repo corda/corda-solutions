@@ -4,10 +4,16 @@ import co.paralleluniverse.fibers.Suspendable
 import net.corda.businessnetworks.membership.bno.support.BusinessNetworkOperatorInitiatedFlow
 import net.corda.businessnetworks.membership.member.support.BusinessNetworkAwareFlowLogic
 import net.corda.businessnetworks.membership.states.MembershipState
+import net.corda.businessnetworks.ticketing.contracts.Ticket
 import net.corda.businessnetworks.ticketing.entity.PartyAndSubject
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.flows.*
 import net.corda.core.identity.Party
+import net.corda.core.node.services.Vault
+import net.corda.core.node.services.queryBy
+import net.corda.core.node.services.vault.MAX_PAGE_SIZE
+import net.corda.core.node.services.vault.PageSpecification
+import net.corda.core.node.services.vault.QueryCriteria
 import net.corda.core.utilities.ProgressTracker
 import net.corda.core.utilities.unwrap
 
@@ -56,11 +62,24 @@ class ConfirmMemberHoldsTicketFlowResponder(flowSession : FlowSession) : Busines
     override fun onCounterpartyMembershipVerified(counterpartyMembership: StateAndRef<MembershipState<Any>>) {
         progressTracker.currentStep = RECEIVING_REQUEST
         val request = flowSession.receive<PartyAndSubject<Any>>().unwrap { it }
+        logger.info("Received $request from ${flowSession.counterparty}")
 
         progressTracker.currentStep = LOOKNG_FOR_TICKET
+        val applicableTickets = findApplicableTickets(request.party, flowSession.counterparty, request.subject)
+        logger.info("All applicable tickets: $applicableTickets")
 
         progressTracker.currentStep = SENDING_RESPONSE_BACK
-        flowSession.send(false)
+        flowSession.send(applicableTickets.isNotEmpty())
+    }
+
+    private fun findApplicableTickets(holder : Party, applicableTo: Party, subject : Any) : List<Ticket.State<*>> {
+        val queryCriteria = QueryCriteria.VaultQueryCriteria(status = Vault.StateStatus.UNCONSUMED)
+        val pageSpecification = PageSpecification(1, MAX_PAGE_SIZE)
+        val allTickets = serviceHub.vaultService.queryBy<Ticket.State<*>>(queryCriteria, pageSpecification).states.map { it.state.data }
+        val applicableTickets = allTickets.filter { it.holder == holder }
+                                          .filter { it.subject == subject }
+                                          .filter { (it is Ticket.WideTicket) || (it is Ticket.TargetedTicket && it.appliesTo.contains(applicableTo)) }
+        return applicableTickets
     }
 
 }

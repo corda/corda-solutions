@@ -31,8 +31,7 @@ class Ticket : Contract {
                      val status : TicketStatus,
                      override val linearId : UniqueIdentifier) : LinearState {
         override val participants = listOf(bno, holder)
-
-        fun isRevoked() = status == TicketStatus.REVOKED
+        
         fun isPending() = status == TicketStatus.PENDING
         fun isActive() = status == TicketStatus.ACTIVE
 
@@ -68,5 +67,5 @@ class Ticket : Contract {
 
 @CordaSerializable
 enum class TicketStatus {
-    PENDING, ACTIVE, REVOKED
+    PENDING, ACTIVE
 }

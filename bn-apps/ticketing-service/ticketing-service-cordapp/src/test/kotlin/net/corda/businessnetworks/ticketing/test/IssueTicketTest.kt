@@ -114,7 +114,7 @@ class IssueTicketTest : BusinessNetworksTestsSupport(listOf("net.corda.businessn
         createNetworkAndRunTest(1, true ) {
             val participantNode = participantNodes.first()
 
-            val future = participantNode.startFlow(RequestWideTicketFlow("Subject 1"))
+            var future = participantNode.startFlow(RequestWideTicketFlow("Subject 1"))
             mockNetwork.runNetwork()
             future.getOrThrow()
             lateinit var ticketId : String
@@ -132,7 +132,7 @@ class IssueTicketTest : BusinessNetworksTestsSupport(listOf("net.corda.businessn
                 assertEquals(TicketStatus.PENDING, tickets.single().state.data.status)
             }
 
-            bnoNode.startFlow(ActivateTicketByLinearIdFlow(ticketId))
+            future = bnoNode.startFlow(ActivateTicketByLinearIdFlow(ticketId))
             mockNetwork.runNetwork()
             future.getOrThrow()
 
