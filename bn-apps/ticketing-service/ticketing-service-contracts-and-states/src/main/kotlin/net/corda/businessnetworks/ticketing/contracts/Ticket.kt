@@ -26,9 +26,9 @@ class Ticket : Contract {
                      val holder : Party,
                      val bno : Party,
                      val subject : T,
-                     val issued : Instant = Instant.now(),
-                     val status : TicketStatus = TicketStatus.PENDING,
-                     override val linearId : UniqueIdentifier = UniqueIdentifier()) : LinearState {
+                     val issued : Instant,
+                     val status : TicketStatus,
+                     override val linearId : UniqueIdentifier) : LinearState {
         override val participants = listOf(bno, holder)
 
         fun isRevoked() = status == TicketStatus.REVOKED
@@ -42,7 +42,9 @@ class Ticket : Contract {
                          bno : Party,
                          subject : T,
                          val appliesTo : List<Party>,
-                         status : TicketStatus = TicketStatus.PENDING) : State<T>(holder, bno, subject, status = status) {
+                         status : TicketStatus = TicketStatus.PENDING,
+                         issued : Instant = Instant.now(),
+                         linearId : UniqueIdentifier = UniqueIdentifier()) : State<T>(holder, bno, subject, issued, status, linearId) {
 
         override fun withNewStatus(newStatus : TicketStatus) : State<T> {
             return TargetedTicket(holder, bno, subject, appliesTo, newStatus)
@@ -53,7 +55,9 @@ class Ticket : Contract {
     class WideTicket<T>(holder : Party,
                      bno : Party,
                      subject : T,
-                     status : TicketStatus = TicketStatus.PENDING) : State<T>(holder, bno, subject, status = status) {
+                     status : TicketStatus = TicketStatus.PENDING,
+                     issued : Instant = Instant.now(),
+                     linearId : UniqueIdentifier = UniqueIdentifier()) : State<T>(holder, bno, subject, issued, status, linearId) {
 
         override fun withNewStatus(newStatus : TicketStatus) : State<T> {
             return WideTicket(holder, bno, subject, newStatus)
