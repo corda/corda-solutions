@@ -72,6 +72,8 @@ class ConfirmMemberHoldsTicketFlowResponder(flowSession : FlowSession) : Busines
         flowSession.send(matchingTickets.isNotEmpty())
     }
 
+    //Should the holder also be required to be an active member? Probably not given that the initiator of this flow shouldn't
+    //even get to this point of asking the BNO about ticket if the counterparty in question wasn't even a member of the business network
     private fun findMatchingTickets(holder : Party, applicableTo: Party, subject : Any) : List<Ticket.State<*>> {
         val queryCriteria = QueryCriteria.VaultQueryCriteria(status = Vault.StateStatus.UNCONSUMED)
         val pageSpecification = PageSpecification(1, MAX_PAGE_SIZE)
