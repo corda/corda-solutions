@@ -65,21 +65,21 @@ class ConfirmMemberHoldsTicketFlowResponder(flowSession : FlowSession) : Busines
         logger.info("Received $request from ${flowSession.counterparty}")
 
         progressTracker.currentStep = LOOKNG_FOR_TICKET
-        val applicableTickets = findApplicableTickets(request.party, flowSession.counterparty, request.subject)
-        logger.info("All applicable tickets: $applicableTickets")
+        val matchingTickets = findMatchingTickets(request.party, flowSession.counterparty, request.subject)
+        logger.info("All matching tickets: $matchingTickets")
 
         progressTracker.currentStep = SENDING_RESPONSE_BACK
-        flowSession.send(applicableTickets.isNotEmpty())
+        flowSession.send(matchingTickets.isNotEmpty())
     }
 
-    private fun findApplicableTickets(holder : Party, applicableTo: Party, subject : Any) : List<Ticket.State<*>> {
+    private fun findMatchingTickets(holder : Party, applicableTo: Party, subject : Any) : List<Ticket.State<*>> {
         val queryCriteria = QueryCriteria.VaultQueryCriteria(status = Vault.StateStatus.UNCONSUMED)
         val pageSpecification = PageSpecification(1, MAX_PAGE_SIZE)
         val allTickets = serviceHub.vaultService.queryBy<Ticket.State<*>>(queryCriteria, pageSpecification).states.map { it.state.data }
-        val applicableTickets = allTickets.filter { it.holder == holder }
-                                          .filter { it.subject == subject }
-                                          .filter { (it is Ticket.WideTicket) || (it is Ticket.TargetedTicket && it.appliesTo.contains(applicableTo)) }
-        return applicableTickets
+        val matchingTickets = allTickets.filter { it.holder == holder }
+                                        .filter { it.subject == subject }
+                                        .filter { (it is Ticket.WideTicket) || (it is Ticket.TargetedTicket && it.appliesTo.contains(applicableTo)) }
+        return matchingTickets
     }
 
 }

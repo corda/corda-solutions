@@ -31,7 +31,7 @@ class Ticket : Contract {
                      val status : TicketStatus,
                      override val linearId : UniqueIdentifier) : LinearState {
         override val participants = listOf(bno, holder)
-        
+
         fun isPending() = status == TicketStatus.PENDING
         fun isActive() = status == TicketStatus.ACTIVE
 
