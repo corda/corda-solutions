@@ -6,6 +6,7 @@ import net.corda.businessnetworks.ticketing.contracts.TicketStatus
 import net.corda.businessnetworks.ticketing.flows.bno.ActivateTicketByLinearIdFlow
 import net.corda.businessnetworks.ticketing.flows.member.RequestTicketFlow
 import net.corda.businessnetworks.ticketing.test.flows.TestInitiator
+import net.corda.core.identity.Party
 import net.corda.core.node.services.queryBy
 import net.corda.core.serialization.CordaSerializable
 import net.corda.core.utilities.getOrThrow
@@ -33,7 +34,7 @@ class UseTicketTest : BusinessNetworksTestsSupport(listOf("net.corda.businessnet
     }
 
     @Test
-    fun `Flow triggers if ticket exists`() {
+    fun `Flow triggers if ticket exists (wide ticket)`() {
         createNetworkAndRunTest(2, true ) {
             val ticketHoldingNode = participantNodes[0]
             acquireAWideTicket(ticketHoldingNode, TestTicketSubject.SUBJECT_1)
@@ -41,6 +42,23 @@ class UseTicketTest : BusinessNetworksTestsSupport(listOf("net.corda.businessnet
             val anotherMemberNode = participantNodes[1]
             runGuineaPigFlow(ticketHoldingNode, anotherMemberNode)
         }
+    }
+
+    @Test
+    fun `Flow triggers if ticket exists (targeted ticket)`() {
+        createNetworkAndRunTest(2, true ) {
+            val ticketHoldingNode = participantNodes[0]
+            val anotherMemberNode = participantNodes[1]
+
+            acquireTargetedTicket(ticketHoldingNode, anotherMemberNode.party(), TestTicketSubject.SUBJECT_1)
+
+            runGuineaPigFlow(ticketHoldingNode, anotherMemberNode)
+        }
+    }
+
+    private fun <T> acquireTargetedTicket(memberNode : StartedMockNode, target : Party, subject : T) {
+        val ticket = Ticket.TargetedTicket(memberNode.party(), bnoNode.party(), subject, listOf(target))
+        acquireATicket(memberNode, ticket)
     }
 
     private fun <T> acquireAWideTicket(memberNode : StartedMockNode, subject : T) {
