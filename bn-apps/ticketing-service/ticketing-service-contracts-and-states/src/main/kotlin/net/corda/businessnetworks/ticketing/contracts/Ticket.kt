@@ -18,7 +18,8 @@ class Ticket : Contract {
     }
 
     override fun verify(tx : LedgerTransaction) {
-
+        //that if it's activate then bno is the signer
+        //if it's request then bno is
     }
 
 

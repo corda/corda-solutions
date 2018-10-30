@@ -1,6 +1,7 @@
 package net.corda.businessnetworks.ticketing.test
 
 import net.corda.businessnetworks.membership.NotAMemberException
+import net.corda.businessnetworks.ticketing.NotBNOException
 import net.corda.businessnetworks.ticketing.contracts.Ticket
 import net.corda.businessnetworks.ticketing.contracts.TicketStatus
 import net.corda.businessnetworks.ticketing.flows.bno.ActivateTicketByLinearIdFlow
@@ -144,6 +145,35 @@ class IssueTicketTest : BusinessNetworksTestsSupport(listOf("net.corda.businessn
                 assertEquals(1, tickets.size)
                 assertEquals(TicketStatus.ACTIVE, tickets.single().state.data.status)
             }
+        }
+    }
+
+    @Test(expected = NotBNOException::class)
+    fun `Member can't activate their own ticket`() {
+        createNetworkAndRunTest(1, true ) {
+            val participantNode = participantNodes.first()
+
+            var future = participantNode.startFlow(RequestWideTicketFlow("Subject 1"))
+            mockNetwork.runNetwork()
+            future.getOrThrow()
+            lateinit var ticketId : String
+
+            participantNode.transaction {
+                val tickets = participantNode.services.vaultService.queryBy<Ticket.State<*>>().states
+                assertEquals(1, tickets.size)
+                assertEquals(TicketStatus.PENDING, tickets.single().state.data.status)
+                ticketId = tickets.single().state.data.linearId.toString()
+            }
+
+            bnoNode.transaction {
+                val tickets = bnoNode.services.vaultService.queryBy<Ticket.State<*>>().states
+                assertEquals(1, tickets.size)
+                assertEquals(TicketStatus.PENDING, tickets.single().state.data.status)
+            }
+
+            future = participantNode.startFlow(ActivateTicketByLinearIdFlow(ticketId))
+            mockNetwork.runNetwork()
+            future.getOrThrow()
         }
     }
 
