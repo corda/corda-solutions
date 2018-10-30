@@ -8,7 +8,7 @@ import net.corda.core.utilities.getOrThrow
 import net.corda.testing.node.StartedMockNode
 import org.junit.Test
 
-class UsingTicketTest : BusinessNetworksTestsSupport(listOf("net.corda.businessnetworks.ticketing.contracts",
+class UseTicketTest : BusinessNetworksTestsSupport(listOf("net.corda.businessnetworks.ticketing.contracts",
                                                             "net.corda.businessnetworks.ticketing.flows.member",
                                                             "net.corda.businessnetworks.ticketing.test.flows")) {
 
