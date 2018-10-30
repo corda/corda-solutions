@@ -56,6 +56,30 @@ class UseTicketTest : BusinessNetworksTestsSupport(listOf("net.corda.businessnet
         }
     }
 
+    @Test(expected = TriggeringThisFlowRequiresTicket::class)
+    fun `The owned ticket must have the required subject`() {
+        createNetworkAndRunTest(2, true ) {
+            val ticketHoldingNode = participantNodes[0]
+            acquireAWideTicket(ticketHoldingNode, TestTicketSubject.SUBJECT_2) //granting ticket but different subject to the one required
+
+            val anotherMemberNode = participantNodes[1]
+            runGuineaPigFlow(ticketHoldingNode, anotherMemberNode)
+        }
+    }
+
+    @Test(expected = TriggeringThisFlowRequiresTicket::class)
+    fun `The owned targeted ticket must apply to the right member`() {
+        createNetworkAndRunTest(3, true ) {
+            val ticketHoldingNode = participantNodes[0]
+            val anotherMemberNode = participantNodes[1]
+            val targetedMemberNode = participantNodes[2]
+
+            acquireTargetedTicket(ticketHoldingNode, targetedMemberNode.party(), TestTicketSubject.SUBJECT_1) //granting ticket targeted at one member
+
+            runGuineaPigFlow(ticketHoldingNode, anotherMemberNode) //this triggers a flow on another member
+        }
+    }
+
     private fun <T> acquireTargetedTicket(memberNode : StartedMockNode, target : Party, subject : T) {
         val ticket = Ticket.TargetedTicket(memberNode.party(), bnoNode.party(), subject, listOf(target))
         acquireATicket(memberNode, ticket)
