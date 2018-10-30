@@ -10,16 +10,18 @@ import net.corda.businessnetworks.ticketing.flows.member.RequestTicketFlow
 import net.corda.businessnetworks.ticketing.flows.member.RequestWideTicketFlow
 import net.corda.core.flows.FlowException
 import net.corda.core.node.services.queryBy
+import net.corda.core.serialization.CordaSerializable
 import net.corda.core.utilities.getOrThrow
 import org.junit.Test
 import kotlin.test.assertEquals
 
-enum class TestTicketSubject {
-    SUBJECT_1
-}
-
 class IssueTicketTest : BusinessNetworksTestsSupport(listOf("net.corda.businessnetworks.ticketing.contracts",
                                                             "net.corda.businessnetworks.ticketing.flows.member")) {
+
+    @CordaSerializable
+    enum class TestTicketSubject {
+        SUBJECT_1
+    }
 
     @Test(expected = NotAMemberException::class)
     fun `Party has to be a member to be able to ask for ticket`() {
