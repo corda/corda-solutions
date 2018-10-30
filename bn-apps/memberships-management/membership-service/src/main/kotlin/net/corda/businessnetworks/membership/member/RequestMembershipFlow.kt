@@ -1,10 +1,14 @@
 package net.corda.businessnetworks.membership.member
 
 import co.paralleluniverse.fibers.Suspendable
-import net.corda.businessnetworks.membership.member.service.MemberConfigurationService
+import net.corda.businessnetworks.membership.member.support.BusinessNetworkAwareInitiatingFlow
 import net.corda.businessnetworks.membership.states.MembershipContract
 import net.corda.businessnetworks.membership.states.MembershipState
-import net.corda.core.flows.*
+import net.corda.core.flows.FlowException
+import net.corda.core.flows.InitiatingFlow
+import net.corda.core.flows.SignTransactionFlow
+import net.corda.core.flows.StartableByRPC
+import net.corda.core.identity.Party
 import net.corda.core.serialization.CordaSerializable
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.utilities.ProgressTracker
@@ -17,8 +21,7 @@ data class OnBoardingRequest(val metadata : Any)
  */
 @StartableByRPC
 @InitiatingFlow
-class RequestMembershipFlow(private val membershipMetadata : Any) : FlowLogic<SignedTransaction>() {
-
+class RequestMembershipFlow(bno : Party, private val membershipMetadata : Any) : BusinessNetworkAwareInitiatingFlow<SignedTransaction>(bno) {
     companion object {
         object SENDING_MEMBERSHIP_DATA_TO_BNO : ProgressTracker.Step("Sending membership data to BNO")
         object ACCEPTING_INCOMING_PENDING_MEMBERSHIP : ProgressTracker.Step("Accepting incoming pending membership")
@@ -32,10 +35,8 @@ class RequestMembershipFlow(private val membershipMetadata : Any) : FlowLogic<Si
     override val progressTracker = tracker()
 
     @Suspendable
-    override fun call() : SignedTransaction {
+    override fun afterBNOIdentityVerified() : SignedTransaction {
         progressTracker.currentStep = SENDING_MEMBERSHIP_DATA_TO_BNO
-        val configuration = serviceHub.cordaService(MemberConfigurationService::class.java)
-        val bno = configuration.bnoParty()
 
         val bnoSession = initiateFlow(bno)
         bnoSession.send(OnBoardingRequest(membershipMetadata))
@@ -63,4 +64,3 @@ class RequestMembershipFlow(private val membershipMetadata : Any) : FlowLogic<Si
         return subFlow(signResponder)
     }
 }
-

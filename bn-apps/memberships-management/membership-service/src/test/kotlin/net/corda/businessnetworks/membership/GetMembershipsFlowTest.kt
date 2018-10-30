@@ -17,6 +17,7 @@ import net.corda.core.identity.Party
 import net.corda.core.utilities.getOrThrow
 import net.corda.testing.core.TestIdentity
 import org.junit.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import kotlin.test.fail
@@ -27,7 +28,7 @@ class GetMembershipsFlowTest : AbstractFlowTest(5) {
     }
 
     @Test
-    fun `all nodes should be getting the same list of members`() {
+    fun `all nodes should be getting the same list of memberships`() {
         participantsNodes.forEach {
             runRequestMembershipFlow(it)
             runActivateMembershipFlow(bnoNode, identity(it))
@@ -44,7 +45,7 @@ class GetMembershipsFlowTest : AbstractFlowTest(5) {
 
 
     @Test
-    fun `only active members should be included`() {
+    fun `all members should be included into the list`() {
         val suspendedNode = participantsNodes[0]
         val pendingNode = participantsNodes[1]
         val okNode = participantsNodes[2]
@@ -56,11 +57,10 @@ class GetMembershipsFlowTest : AbstractFlowTest(5) {
         }
         runSuspendMembershipFlow(bnoNode, identity(suspendedNode))
 
-        val memberships = runGetMembershipsListFlow(okNode, true)
+        val membershipsSnapshot = runGetMembershipsListFlow(okNode, true)
 
-
-        assert(memberships.size == numberOfIdentities - 2)
-        assert(memberships.map { it.value.state.data.member }.toSet().none { it == identity(suspendedNode) || it == identity(pendingNode) })
+        val bnoMemberships = getBNOMemberships()
+        assertEquals(bnoMemberships.toSet(), membershipsSnapshot.values.toSet())
     }
 
     @Test
@@ -94,7 +94,7 @@ class GetMembershipsFlowTest : AbstractFlowTest(5) {
     }
 
     @Test
-    fun `not existing nodes should be filtered out from the list`() {
+    fun `nodes that are not in the Network Map should be filtered out from the list`() {
         // requesting memberships
         participantsNodes.forEach {
             runRequestMembershipFlow(it)
@@ -106,7 +106,7 @@ class GetMembershipsFlowTest : AbstractFlowTest(5) {
 
         // adding not existing party to the cache
         val notExistingParty = TestIdentity(CordaX500Name.parse("O=Member,L=London,C=GB")).party
-        val future = participant.startFlow(AddNotExistingPartyToMembershipsCache(notExistingParty, MembershipState(notExistingParty, bnoParty, SimpleMembershipMetadata("DEFAULT"), status = MembershipStatus.ACTIVE)))
+        val future = participant.startFlow(AddNotExistingPartyToMembershipsCache(bnoParty, MembershipState(notExistingParty, bnoParty, SimpleMembershipMetadata("DEFAULT"), status = MembershipStatus.ACTIVE)))
         mockNetwork.runNetwork()
         future.getOrThrow()
 
@@ -120,11 +120,11 @@ class GetMembershipsFlowTest : AbstractFlowTest(5) {
     }
 }
 
-class AddNotExistingPartyToMembershipsCache(val party : Party, val membership : MembershipState<SimpleMembershipMetadata>) : FlowLogic<Unit>() {
+class AddNotExistingPartyToMembershipsCache(val bno : Party, val membership : MembershipState<SimpleMembershipMetadata>) : FlowLogic<Unit>() {
     @Suspendable
     override fun call() {
         val cacheHolder = serviceHub.cordaService(MembershipsCacheHolder::class.java)
-        cacheHolder.cache!!.membershipMap.put(party,
-                StateAndRef(TransactionState(membership, MembershipContract.CONTRACT_NAME, serviceHub.networkMapCache.notaryIdentities.single()), StateRef(SecureHash.zeroHash, 0)))
+        val stateAndRef = StateAndRef(TransactionState(membership, MembershipContract.CONTRACT_NAME, serviceHub.networkMapCache.notaryIdentities.single()), StateRef(SecureHash.zeroHash, 0))
+        cacheHolder.cache.updateMembership(stateAndRef)
     }
 }

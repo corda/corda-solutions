@@ -10,13 +10,7 @@ import net.corda.core.identity.Party
 import net.corda.core.serialization.CordaSerializable
 
 @CordaSerializable
-data class OnMembershipActivated(val changedMembership : StateAndRef<MembershipState<Any>>)
-
-@CordaSerializable
 data class OnMembershipChanged(val changedMembership : StateAndRef<MembershipState<Any>>)
-
-@CordaSerializable
-data class OnMembershipSuspended(val suspendedMember : Party)
 
 /**
  * Flow that is used by BNO to notify active BN members about changes to the membership list.

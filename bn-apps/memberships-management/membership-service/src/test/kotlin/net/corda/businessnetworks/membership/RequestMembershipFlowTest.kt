@@ -8,6 +8,7 @@ import net.corda.businessnetworks.membership.states.MembershipState
 import net.corda.core.contracts.Contract
 import net.corda.core.flows.FlowException
 import org.junit.Test
+import kotlin.test.assertTrue
 import kotlin.test.fail
 
 class RequestMembershipFlowTest : AbstractFlowTest(2) {
@@ -33,8 +34,10 @@ class RequestMembershipFlowTest : AbstractFlowTest(2) {
         assert(outputWithContract.contract == MembershipContract.CONTRACT_NAME)
         assert(outputMembership.bno == bnoParty)
         assert(outputMembership.member == memberParty)
-
         stx.verifyRequiredSignatures()
+
+        // no notifications should be sent at this point
+        assertTrue(NotificationsCounterFlow.NOTIFICATIONS.isEmpty())
     }
 
     @Test
@@ -51,7 +54,7 @@ class RequestMembershipFlowTest : AbstractFlowTest(2) {
     }
 
     @Test
-    fun `membership request should fail if another membership request is already in progress`() {
+    fun `membership request should fail if another membership request form the same member is already in progress`() {
         val memberNode = participantsNodes.first()
         val memberParty = identity(memberNode)
         val databaseService = bnoNode.services.cordaService(DatabaseService::class.java)
@@ -73,7 +76,7 @@ class RequestMembershipFlowTest : AbstractFlowTest(2) {
     }
 
     @Test
-    fun `membership transaction should be verified by a custom contract`() {
+    fun `membership transaction can be verified by a custom contract`() {
         val memberNode = participantsNodes.first()
 
         bnoNode.services.cordaService(BNOConfigurationService::class.java).reloadPropertiesFromFile(fileFromClasspath("membership-service-with-custom-contract.conf"))

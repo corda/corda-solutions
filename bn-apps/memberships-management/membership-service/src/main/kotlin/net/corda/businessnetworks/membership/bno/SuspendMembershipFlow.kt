@@ -2,6 +2,7 @@ package net.corda.businessnetworks.membership.bno
 
 import co.paralleluniverse.fibers.Suspendable
 import net.corda.businessnetworks.membership.bno.service.BNOConfigurationService
+import net.corda.businessnetworks.membership.bno.service.DatabaseService
 import net.corda.businessnetworks.membership.bno.support.BusinessNetworkOperatorFlowLogic
 import net.corda.businessnetworks.membership.states.MembershipContract
 import net.corda.businessnetworks.membership.states.MembershipState
@@ -36,11 +37,14 @@ class SuspendMembershipFlow(val membership : StateAndRef<MembershipState<Any>>) 
         val selfSignedTx = serviceHub.signInitialTransaction(builder)
         val finalisedTx = subFlow(FinalityFlow(selfSignedTx))
 
+        val dbService = serviceHub.cordaService(DatabaseService::class.java)
+        val suspendedMembership = dbService.getMembership(membership.state.data.member)!!
+
         // notify other members about suspension
-        subFlow(NotifyActiveMembersFlow(OnMembershipSuspended(membership.state.data.member)))
+        subFlow(NotifyActiveMembersFlow(OnMembershipChanged(suspendedMembership)))
         // sending notification to the suspended member separately
-        val suspendedMember = membership.state.data.member
-        subFlow(NotifyMemberFlow(OnMembershipSuspended(suspendedMember), suspendedMember))
+        val suspendedMember = suspendedMembership.state.data.member
+        subFlow(NotifyMemberFlow(OnMembershipChanged(suspendedMembership), suspendedMember))
 
         return finalisedTx
     }

@@ -175,7 +175,8 @@ class LedgerConsistencyTests {
     }
 
     private fun StartedNode<MockNode>.runRequestMembershipFlow(): SignedTransaction {
-        val future = services.startFlow(RequestMembershipFlow(SimpleMembershipMetadata("DEFAULT"))).resultFuture
+        val bnoParty = services.identityService.wellKnownPartyFromX500Name(bno)!!
+        val future = services.startFlow(RequestMembershipFlow(bnoParty, SimpleMembershipMetadata("DEFAULT"))).resultFuture
         mockNetwork.runNetwork()
         return future.getOrThrow()
     }
@@ -205,7 +206,8 @@ class LedgerConsistencyTests {
     }
 
     private fun StartedNode<MockNode>.members(): List<Party> {
-        val future = services.startFlow(GetMembershipsFlow(true)).resultFuture
+        val bnoParty = services.identityService.wellKnownPartyFromX500Name(bno)!!
+        val future = services.startFlow(GetMembershipsFlow(bnoParty, forceRefresh = true)).resultFuture
         mockNetwork.runNetwork()
         return future.getOrThrow().keys.toList()
     }

@@ -22,8 +22,6 @@ class GetMembershipListFlowResponder(flowSession : FlowSession) : BusinessNetwor
         //build memberships snapshot
         flowSession.receive<MembershipListRequest>()
         val databaseService = serviceHub.cordaService(DatabaseService::class.java)
-        val memberships = databaseService.getActiveMemberships()
-
-        flowSession.send(MembershipsListResponse(memberships))
+        flowSession.send(MembershipsListResponse(databaseService.getAllMemberships()))
     }
 }

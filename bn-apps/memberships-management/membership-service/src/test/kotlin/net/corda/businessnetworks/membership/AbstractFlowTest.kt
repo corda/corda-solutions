@@ -24,16 +24,13 @@ import org.junit.After
 import org.junit.Before
 import java.io.File
 
-abstract class AbstractFlowTest(
-        val numberOfIdentities : Int
-) {
-
+abstract class AbstractFlowTest(val numberOfIdentities : Int) {
     val notaryName = CordaX500Name.parse("O=Notary,L=London,C=GB")
     val bnoName = CordaX500Name.parse("O=BNO,L=New York,C=US")
 
-    lateinit var mockNetwork: MockNetwork
-    lateinit var bnoNode: StartedMockNode
-    lateinit var participantsNodes: List<StartedMockNode>
+    lateinit var mockNetwork : MockNetwork
+    lateinit var bnoNode : StartedMockNode
+    lateinit var participantsNodes : List<StartedMockNode>
 
     lateinit var bnoParty : Party
 
@@ -49,20 +46,22 @@ abstract class AbstractFlowTest(
         registerFlows()
         mockNetwork.runNetwork()
         bnoParty = bnoNode.info.chooseIdentityAndCert().party
+        NotificationsCounterFlow.NOTIFICATIONS.clear()
     }
 
     abstract fun registerFlows()
 
-    fun createNode(name : CordaX500Name, isBno : Boolean = false) =
+    private fun createNode(name : CordaX500Name, isBno : Boolean = false) =
             mockNetwork.createNode(MockNodeParameters(legalName = name))
 
     @After
     open fun tearDown() {
         mockNetwork.stopNodes()
+        NotificationsCounterFlow.NOTIFICATIONS.clear()
     }
 
-    fun runRequestMembershipFlow(nodeToRunTheFlow : StartedMockNode, membershipMetadata : SimpleMembershipMetadata = SimpleMembershipMetadata(role="DEFAULT")) : SignedTransaction {
-        val future = nodeToRunTheFlow.startFlow(RequestMembershipFlow(membershipMetadata))
+    fun runRequestMembershipFlow(nodeToRunTheFlow : StartedMockNode, membershipMetadata : SimpleMembershipMetadata = SimpleMembershipMetadata(role = "DEFAULT")) : SignedTransaction {
+        val future = nodeToRunTheFlow.startFlow(RequestMembershipFlow(bnoParty, membershipMetadata))
         mockNetwork.runNetwork()
         return future.getOrThrow()
     }
@@ -74,7 +73,7 @@ abstract class AbstractFlowTest(
         return future.getOrThrow()
     }
 
-    fun runSuspendMembershipForPartyFlow(nodeToRunTheFlow : StartedMockNode, party: Party) : SignedTransaction {
+    fun runSuspendMembershipForPartyFlow(nodeToRunTheFlow : StartedMockNode, party : Party) : SignedTransaction {
         val future = nodeToRunTheFlow.startFlow(SuspendMembershipForPartyFlow(party))
         mockNetwork.runNetwork()
         return future.getOrThrow()
@@ -94,21 +93,26 @@ abstract class AbstractFlowTest(
     }
 
     fun runAmendMetadataFlow(nodeToRunTheFlow : StartedMockNode, newMetadata : SimpleMembershipMetadata) : SignedTransaction {
-        val future = nodeToRunTheFlow.startFlow(AmendMembershipMetadataFlow(newMetadata))
+        val future = nodeToRunTheFlow.startFlow(AmendMembershipMetadataFlow(bnoParty, newMetadata))
         mockNetwork.runNetwork()
         return future.getOrThrow()
     }
 
     fun runGetMembershipsListFlow(nodeToRunTheFlow : StartedMockNode, force : Boolean, filterOutNotExisting : Boolean = true) : Map<Party, StateAndRef<MembershipState<Any>>> {
-        val future = nodeToRunTheFlow.startFlow(GetMembershipsFlow(force, filterOutNotExisting))
+        val future = nodeToRunTheFlow.startFlow(GetMembershipsFlow(bnoParty, force, filterOutNotExisting))
         mockNetwork.runNetwork()
         return future.getOrThrow()
     }
 
-    fun getMembership (node : StartedMockNode, party : Party) = node.transaction {
-            val dbService = node.services.cordaService(DatabaseService::class.java)
-            dbService.getMembership(party)!! as StateAndRef<MembershipState<SimpleMembershipMetadata>>
-        }
+    fun getMembership(node : StartedMockNode, party : Party) : StateAndRef<MembershipState<SimpleMembershipMetadata>> = node.transaction {
+        val dbService = node.services.cordaService(DatabaseService::class.java)
+        dbService.getMembership(party)!! as StateAndRef<MembershipState<SimpleMembershipMetadata>>
+    }
+
+    fun getBNOMemberships() : List<StateAndRef<MembershipState<SimpleMembershipMetadata>>> = bnoNode.transaction {
+        val dbService = bnoNode.services.cordaService(DatabaseService::class.java)
+        dbService.getAllMemberships() as List<StateAndRef<MembershipState<SimpleMembershipMetadata>>>
+    }
 
     fun allTransactions(node : StartedMockNode) = node.transaction {
         node.services.validatedTransactions.track().snapshot

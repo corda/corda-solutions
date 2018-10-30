@@ -1,13 +1,13 @@
 package net.corda.businessnetworks.membership.member
 
 import co.paralleluniverse.fibers.Suspendable
-import net.corda.businessnetworks.membership.member.service.MemberConfigurationService
+import net.corda.businessnetworks.membership.member.support.BusinessNetworkAwareInitiatingFlow
 import net.corda.businessnetworks.membership.states.MembershipContract
 import net.corda.businessnetworks.membership.states.MembershipState
 import net.corda.core.flows.FlowException
-import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.InitiatingFlow
 import net.corda.core.flows.SignTransactionFlow
+import net.corda.core.identity.Party
 import net.corda.core.serialization.CordaSerializable
 import net.corda.core.transactions.SignedTransaction
 
@@ -18,13 +18,10 @@ data class AmendMembershipMetadataRequest(val metadata : Any)
  * Proposes a change to the membership metadata
  */
 @InitiatingFlow
-class AmendMembershipMetadataFlow(private val newMetadata : Any) : FlowLogic<SignedTransaction>() {
+class AmendMembershipMetadataFlow(bno : Party, private val newMetadata : Any) : BusinessNetworkAwareInitiatingFlow<SignedTransaction>(bno) {
 
     @Suspendable
-    override fun call() : SignedTransaction {
-        val configuration = serviceHub.cordaService(MemberConfigurationService::class.java)
-        val bno = configuration.bnoParty()
-
+    override fun afterBNOIdentityVerified() : SignedTransaction {
         val bnoSession = initiateFlow(bno)
         bnoSession.send(AmendMembershipMetadataRequest(newMetadata))
 
@@ -51,4 +48,3 @@ class AmendMembershipMetadataFlow(private val newMetadata : Any) : FlowLogic<Sig
         return subFlow(signTransactionFlow)
     }
 }
-

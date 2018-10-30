@@ -9,14 +9,17 @@ import net.corda.core.identity.Party
 import net.corda.core.utilities.unwrap
 
 @InitiatedBy(NotifyMemberFlow::class)
-class TestNotifyMembersFlowResponder(val session : FlowSession) : FlowLogic<Unit>() {
+class NotificationsCounterFlow(private val session : FlowSession) : FlowLogic<Unit>() {
     companion object {
-        val NOTIFICATIONS = mutableListOf<Pair<Party, Any>>()
+        val NOTIFICATIONS : MutableList<NotificationHolder> = mutableListOf()
     }
 
     @Suspendable
     override fun call() {
         val notification  = session.receive<Any>().unwrap { it }
-        NOTIFICATIONS.add(Pair(ourIdentity, notification))
+        NOTIFICATIONS.add(NotificationHolder(ourIdentity, session.counterparty, notification))
     }
 }
+
+
+data class NotificationHolder(val member : Party, val bno : Party, val notification : Any)

@@ -13,6 +13,7 @@ import net.corda.core.utilities.getOrThrow
 import org.junit.Test
 import kotlin.test.fail
 import net.corda.businessnetworks.membership.member.Utils.ofType
+import net.corda.core.identity.CordaX500Name
 
 /**
  * This is a demo of the Business Network Membership Service. The test demonstrates how a participant can request to join a Business Network
@@ -92,11 +93,16 @@ class FullBNMSFlowDemo : AbstractFlowTest(5) {
 
     @InitiatedBy(MyInitiatingFlow::class)
     class MyInitiatedFlow(val flowSession : FlowSession) : FlowLogic<Unit>() {
+        companion object {
+            val BNO_NAME = CordaX500Name.parse("O=BNO,L=New York,C=US")
+        }
+
         @Suspendable
         override fun call() {
-            val memberships = subFlow(GetMembershipsFlow())
-            if (!memberships.containsKey(flowSession.counterparty)) {
-                throw FlowException("Counterparty is not a member")
+            val bnoParty = serviceHub.identityService.wellKnownPartyFromX500Name(BNO_NAME)!!
+            val membership = subFlow(GetMembershipsFlow(bnoParty))[flowSession.counterparty]
+            if (membership == null || !membership.state.data.isActive()) {
+                throw FlowException("Counterparty must be a member")
             }
             flowSession.receive<String>()
             flowSession.send("Hello!")

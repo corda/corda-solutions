@@ -1,8 +1,10 @@
 package net.corda.businessnetworks.membership.member
 
+import net.corda.businessnetworks.membership.member.service.MemberConfigurationService
 import net.corda.businessnetworks.membership.states.MembershipState
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.identity.Party
+import net.corda.core.node.ServiceHub
 import net.corda.core.utilities.loggerFor
 
 object Utils {
@@ -18,4 +20,13 @@ object Utils {
         }
         matches
     }.mapValues { it.value as StateAndRef<MembershipState<T>> }
+
+
+    fun throwExceptionIfNotBNO(bno : Party, serviceHub : ServiceHub) {
+        // Only configured BNOs should be accepted
+        val configuration = serviceHub.cordaService(MemberConfigurationService::class.java)
+        if (bno !in configuration.bnoIdentities()) {
+            throw IllegalArgumentException("Invalid BNO identity $bno")
+        }
+    }
 }

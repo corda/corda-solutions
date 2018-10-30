@@ -1,9 +1,9 @@
 package net.corda.businessnetworks.membership
 
-import net.corda.businessnetworks.membership.bno.OnMembershipSuspended
-import net.corda.businessnetworks.membership.bno.service.BNOConfigurationService
+import net.corda.businessnetworks.membership.bno.OnMembershipChanged
 import net.corda.businessnetworks.membership.states.MembershipContract
-import org.junit.Before
+import net.corda.core.identity.Party
+import net.corda.core.transactions.SignedTransaction
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.fail
@@ -12,29 +12,26 @@ class SuspendMembershipFlowTest : AbstractFlowTest(2) {
 
     override fun registerFlows() {
         participantsNodes.forEach {
-            it.registerInitiatedFlow(TestNotifyMembersFlowResponder::class.java)
+            it.registerInitiatedFlow(NotificationsCounterFlow::class.java)
         }
     }
 
-    @Before
-    override fun setup() {
-        super.setup()
-        // This is ugly, but there is no other way to check whether the responding flow was actually triggered
-        TestNotifyMembersFlowResponder.NOTIFICATIONS.clear()
-    }
-
-    @Test
-    fun `membership suspension should succeed`() {
-        val memberNode = participantsNodes.first()
-        val memberParty = identity(memberNode)
+    private fun testMembershipSuspension(suspensionFunction : (memberParty : Party) -> SignedTransaction) {
+        val suspendedMemberNode = participantsNodes.first()
+        val activeMemberNode = participantsNodes[1]
+        val suspendedMemberIdentity = identity(suspendedMemberNode)
+        val activeMemberIdentity = identity(activeMemberNode)
 
         participantsNodes.forEach {
             runRequestMembershipFlow(it)
             runActivateMembershipFlow(bnoNode, identity(it))
         }
 
-        val inputMembership = getMembership(memberNode, memberParty)
-        val stx = runSuspendMembershipFlow(bnoNode, memberParty)
+        // cleaning up notifications as we are interested in SUSPENDs only
+        NotificationsCounterFlow.NOTIFICATIONS.clear()
+
+        val inputMembership = getMembership(suspendedMemberNode, suspendedMemberIdentity)
+        val stx = suspensionFunction(suspendedMemberIdentity)
         stx.verifyRequiredSignatures()
 
         val outputTxState = stx.tx.outputs.single()
@@ -44,34 +41,18 @@ class SuspendMembershipFlowTest : AbstractFlowTest(2) {
         assert(command.value is MembershipContract.Commands.Suspend)
         assert(stx.inputs.single() == inputMembership.ref)
 
-        val notifiedParties = TestNotifyMembersFlowResponder.NOTIFICATIONS.filter { it.second is OnMembershipSuspended }.map { it.first }
-        assert(notifiedParties.toSet() == participantsNodes.map { identity(it) }.toSet())
+        // both the active and the suspended member should have received the same notification
+        val suspendedMembership = getMembership(bnoNode, suspendedMemberIdentity)
+        assertEquals(setOf(NotificationHolder(suspendedMemberIdentity, bnoParty, OnMembershipChanged(suspendedMembership)),
+                NotificationHolder(activeMemberIdentity, bnoParty, OnMembershipChanged(suspendedMembership))), NotificationsCounterFlow.NOTIFICATIONS.toSet())
+
     }
 
     @Test
-    fun `membership suspension should succeed when using convenience flow`() {
-        val memberNode = participantsNodes.first()
-        val memberParty = identity(memberNode)
+    fun `membership suspension happy path`() = testMembershipSuspension { memberParty -> runSuspendMembershipFlow(bnoNode, memberParty) }
 
-        participantsNodes.forEach {
-            runRequestMembershipFlow(it)
-            runActivateMembershipFlow(bnoNode, identity(it))
-        }
-
-        val inputMembership = getMembership(memberNode, memberParty)
-        val stx = runSuspendMembershipForPartyFlow(bnoNode, memberParty)
-        stx.verifyRequiredSignatures()
-
-        val outputTxState = stx.tx.outputs.single()
-        val command = stx.tx.commands.single()
-
-        assert(MembershipContract.CONTRACT_NAME == outputTxState.contract)
-        assert(command.value is MembershipContract.Commands.Suspend)
-        assert(stx.inputs.single() == inputMembership.ref)
-
-        val notifiedParties = TestNotifyMembersFlowResponder.NOTIFICATIONS.filter { it.second is OnMembershipSuspended }.map { it.first }
-        assert(notifiedParties.toSet() == participantsNodes.map { identity(it) }.toSet())
-    }
+    @Test
+    fun `membership suspension should succeed when using a convenience flow`() = testMembershipSuspension { memberParty -> runSuspendMembershipForPartyFlow(bnoNode, memberParty) }
 
     @Test
     fun `only BNO should be able to start the flow`() {

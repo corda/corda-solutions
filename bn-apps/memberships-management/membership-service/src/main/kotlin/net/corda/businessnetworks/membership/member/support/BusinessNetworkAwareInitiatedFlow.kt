@@ -13,20 +13,28 @@ import net.corda.core.identity.Party
  * that check is performed. If the initiating party is not a member an exception is thrown.
  */
 abstract class BusinessNetworkAwareInitiatedFlow<out T>(private val flowSession: FlowSession) : FlowLogic<T>() {
-
     @Suspendable
     override fun call(): T {
         verifyMembership(flowSession.counterparty)
         return onOtherPartyMembershipVerified()
     }
 
+    /**
+     * Will be called once counterpart's membership is successfully verified
+     */
     @Suspendable
     abstract fun onOtherPartyMembershipVerified() : T
 
+    /**
+     * Identity of the BNO to verify counterpart's membership against
+     */
+    abstract fun bnoIdentity() : Party
+
     @Suspendable
     private fun verifyMembership(initiator : Party) {
-        val memberships = subFlow(GetMembershipsFlow())
-        if(memberships[initiator] == null) {
+        val membership = subFlow(GetMembershipsFlow(bnoIdentity()))[initiator]
+        // inactive members can't transact on the network
+        if(membership == null || !membership.state.data.isActive()) {
             throw NotAMemberException(initiator)
         }
     }
