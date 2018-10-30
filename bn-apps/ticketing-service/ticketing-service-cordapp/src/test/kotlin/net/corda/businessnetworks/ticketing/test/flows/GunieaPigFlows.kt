@@ -2,7 +2,8 @@ package net.corda.businessnetworks.ticketing.test.flows
 
 import co.paralleluniverse.fibers.Suspendable
 import net.corda.businessnetworks.membership.member.support.BusinessNetworkAwareFlowLogic
-import net.corda.businessnetworks.membership.member.support.BusinessNetworkAwareInitiatedFlow
+import net.corda.businessnetworks.ticketing.flows.member.support.TicketRequiringInitiatedFlow
+import net.corda.businessnetworks.ticketing.test.UseTicketTest
 import net.corda.core.flows.FlowSession
 import net.corda.core.flows.InitiatedBy
 import net.corda.core.flows.InitiatingFlow
@@ -21,11 +22,12 @@ class TestInitiator(val counterParty : Party) : BusinessNetworkAwareFlowLogic<St
 }
 
 @InitiatedBy(TestInitiator::class)
-class TestResponder(flowSession : FlowSession) : BusinessNetworkAwareInitiatedFlow<Unit>(flowSession) {
+class TestResponder(flowSession : FlowSession) : TicketRequiringInitiatedFlow<Unit>(flowSession, UseTicketTest.TestTicketSubject.SUBJECT_1) {
 
     @Suspendable
-    override fun onOtherPartyMembershipVerified() {
-        val greeting = flowSession.receive<String>().unwrap {it}
+    override fun onTicketVerified() {
+        flowSession.receive<String>().unwrap {it}
         flowSession.send("Hi")
     }
+
 }

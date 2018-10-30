@@ -1,5 +1,6 @@
 package net.corda.businessnetworks.ticketing.test
 
+import net.corda.businessnetworks.ticketing.TriggeringThisFlowRequiresTicket
 import net.corda.businessnetworks.ticketing.contracts.Ticket
 import net.corda.businessnetworks.ticketing.flows.member.RequestTicketFlow
 import net.corda.businessnetworks.ticketing.test.flows.TestInitiator
@@ -14,16 +15,14 @@ class UseTicketTest : BusinessNetworksTestsSupport(listOf("net.corda.businessnet
 
     @CordaSerializable
     enum class TestTicketSubject {
-        SUBJECT_1
+        SUBJECT_1,
+        SUBJECT_2
     }
 
-    @Test
-    fun `Wide ticket can be used on any participant`() {
+    @Test(expected = TriggeringThisFlowRequiresTicket::class)
+    fun `A flow won't trigger without a ticket`() {
         createNetworkAndRunTest(2, true ) {
             val ticketHoldingNode = participantNodes[0]
-
-            acquireAWideTicket(ticketHoldingNode, TestTicketSubject.SUBJECT_1)
-
             val anotherMemberNode = participantNodes[1]
             runGuineaPigFlow(ticketHoldingNode, anotherMemberNode)
         }
