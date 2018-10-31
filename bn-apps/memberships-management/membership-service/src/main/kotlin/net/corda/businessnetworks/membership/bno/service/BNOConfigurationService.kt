@@ -42,7 +42,7 @@ class BNOConfigurationService(private val serviceHub : ServiceHub) : SingletonSe
         } else null
     }
 
-    fun reloadPropertiesFromFile(file : File) {
+    fun reloadConfigurationFromFile(file : File) {
         _config = ConfigFactory.parseFile(file)
     }
 }

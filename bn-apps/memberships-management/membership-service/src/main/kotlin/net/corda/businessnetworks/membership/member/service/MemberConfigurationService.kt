@@ -1,5 +1,6 @@
 package net.corda.businessnetworks.membership.member.service
 
+import com.typesafe.config.ConfigFactory
 import net.corda.businessnetworks.membership.ConfigUtils.loadConfig
 import net.corda.core.identity.CordaX500Name
 import net.corda.core.identity.Party
@@ -7,6 +8,7 @@ import net.corda.core.node.ServiceHub
 import net.corda.core.node.services.CordaService
 import net.corda.core.serialization.SingletonSerializeAsToken
 import net.corda.core.utilities.loggerFor
+import java.io.File
 
 /**
  * Configuration that is used by member app.
@@ -19,7 +21,7 @@ class MemberConfigurationService(private val serviceHub : ServiceHub) : Singleto
         val logger = loggerFor<MemberConfigurationService>()
     }
 
-    private val _config = loadConfig()
+    private var _config = loadConfig()
 
     /**
      * BNOs should be explicitly whitelisted. Any attempt to communicate with not whitelisted BNO would fail.
@@ -34,5 +36,9 @@ class MemberConfigurationService(private val serviceHub : ServiceHub) : Singleto
                     }
                     party
                 }.filterNotNull().toSet()
+    }
+
+    fun reloadConfigurationFromFile(file : File) {
+        _config = ConfigFactory.parseFile(file)
     }
 }

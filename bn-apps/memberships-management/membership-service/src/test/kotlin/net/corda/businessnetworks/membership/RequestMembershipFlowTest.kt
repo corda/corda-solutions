@@ -3,6 +3,7 @@ package net.corda.businessnetworks.membership
 import net.corda.businessnetworks.membership.bno.RequestMembershipFlowResponder
 import net.corda.businessnetworks.membership.bno.service.BNOConfigurationService
 import net.corda.businessnetworks.membership.bno.service.DatabaseService
+import net.corda.businessnetworks.membership.member.service.MemberConfigurationService
 import net.corda.businessnetworks.membership.states.MembershipContract
 import net.corda.businessnetworks.membership.states.MembershipState
 import net.corda.core.contracts.Contract
@@ -11,17 +12,16 @@ import org.junit.Test
 import kotlin.test.assertTrue
 import kotlin.test.fail
 
-class RequestMembershipFlowTest : AbstractFlowTest(2) {
-    override fun registerFlows() {
-        bnoNode.registerInitiatedFlow(RequestMembershipFlowResponder::class.java)
-    }
+class RequestMembershipFlowTest : AbstractFlowTest(numberOfBusinessNetworks = 2,
+        numberOfParticipants = 2,
+        participantRespondingFlows = listOf(RequestMembershipFlowResponder::class.java)) {
 
     @Test
-    fun `membership request should succeed`() {
-        val memberNode = participantsNodes.first()
-        val memberParty = identity(memberNode)
+    fun `membership request happy path`() {
+        val bnoNode = bnoNodes.first()
+        val participantNode = participantsNodes.first()
 
-        val stx = runRequestMembershipFlow(memberNode)
+        val stx = runRequestMembershipFlow(bnoNode, participantNode)
 
         assert(stx.tx.inputs.isEmpty())
         assert(stx.notary!!.name == notaryName)
@@ -32,8 +32,8 @@ class RequestMembershipFlowTest : AbstractFlowTest(2) {
 
         assert(command.value is MembershipContract.Commands.Request)
         assert(outputWithContract.contract == MembershipContract.CONTRACT_NAME)
-        assert(outputMembership.bno == bnoParty)
-        assert(outputMembership.member == memberParty)
+        assert(outputMembership.bno == bnoNode.identity())
+        assert(outputMembership.member == participantNode.identity())
         stx.verifyRequiredSignatures()
 
         // no notifications should be sent at this point
@@ -42,11 +42,12 @@ class RequestMembershipFlowTest : AbstractFlowTest(2) {
 
     @Test
     fun `membership request should fail if a membership state already exists`() {
-        val memberNode = participantsNodes.first()
+        val bnoNode = bnoNodes.first()
+        val participantNode = participantsNodes.first()
 
-        runRequestMembershipFlow(memberNode)
+        runRequestMembershipFlow(bnoNode, participantNode)
         try {
-            runRequestMembershipFlow(memberNode)
+            runRequestMembershipFlow(bnoNode, participantNode)
             fail()
         } catch (e : FlowException) {
             assert("Membership already exists" == e.message)
@@ -55,37 +56,47 @@ class RequestMembershipFlowTest : AbstractFlowTest(2) {
 
     @Test
     fun `membership request should fail if another membership request form the same member is already in progress`() {
-        val memberNode = participantsNodes.first()
-        val memberParty = identity(memberNode)
+        val bnoNode = bnoNodes.first()
+        val participantNode = participantsNodes.first()
         val databaseService = bnoNode.services.cordaService(DatabaseService::class.java)
 
         bnoNode.transaction {
-            databaseService.createPendingMembershipRequest(memberParty)
+            databaseService.createPendingMembershipRequest(participantNode.identity())
         }
 
         try {
-            runRequestMembershipFlow(memberNode)
+            runRequestMembershipFlow(bnoNode, participantNode)
             fail()
         } catch (e : FlowException) {
             assert("Membership request already exists" == e.message)
         }
 
         bnoNode.transaction {
-            databaseService.deletePendingMembershipRequest(memberParty)
+            databaseService.deletePendingMembershipRequest(participantNode.identity())
         }
     }
 
     @Test
     fun `membership transaction can be verified by a custom contract`() {
+        val bnoNode = bnoNodes.first()
         val memberNode = participantsNodes.first()
 
-        bnoNode.services.cordaService(BNOConfigurationService::class.java).reloadPropertiesFromFile(fileFromClasspath("membership-service-with-custom-contract.conf"))
+        bnoNode.services.cordaService(BNOConfigurationService::class.java).reloadConfigurationFromFile(fileFromClasspath("membership-service-with-custom-contract.conf"))
 
-        val stx = runRequestMembershipFlow(memberNode)
+        val stx = runRequestMembershipFlow(bnoNode, memberNode)
 
         val outputWithContract = stx.tx.outputs.single()
 
         assert(outputWithContract.contract == "net.corda.businessnetworks.membership.DummyMembershipContract")
+    }
+
+    @Test(expected = BNONotWhitelisted::class)
+    fun `the flow can be run only against whitelisted BNOs`() {
+        val bnoNode = bnoNodes.first()
+        val participantNode = participantsNodes.first()
+        participantNode.services.cordaService(MemberConfigurationService::class.java).reloadConfigurationFromFile(fileFromClasspath("membership-service-without-bno-whitelist.conf"))
+
+        runRequestMembershipFlow(bnoNode, participantNode)
     }
 }
 
