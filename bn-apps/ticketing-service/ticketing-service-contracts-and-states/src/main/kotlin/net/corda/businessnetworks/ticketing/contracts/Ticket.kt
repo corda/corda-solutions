@@ -120,7 +120,7 @@ class Ticket : Contract {
 
     }
 
-    class PartiesTargetedTicket<T>(holder : Party,
+    open class PartiesTargetedTicket<T>(holder : Party,
                                    bno : Party,
                                    subject : T,
                                    val appliesTo : List<Party>,
@@ -161,7 +161,7 @@ class Ticket : Contract {
 
     }
 
-    class WideTicket<T>(holder : Party,
+    open class WideTicket<T>(holder : Party,
                      bno : Party,
                      subject : T,
                      status : TicketStatus = TicketStatus.PENDING,
@@ -186,6 +186,39 @@ class Ticket : Contract {
             if (!super.equals(other)) return false
             return true
         }
+
+    }
+
+    class ExpiringWideTicket<T>(holder : Party,
+                        bno : Party,
+                        subject : T,
+                        status : TicketStatus = TicketStatus.PENDING,
+                        val expires : Instant,
+                        issued : Instant = Instant.now(),
+                        linearId : UniqueIdentifier = UniqueIdentifier()) : WideTicket<T>(holder, bno, subject, status, issued, linearId) {
+
+        override fun expireAt(): Instant? {
+            return expires
+        }
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+            if (!super.equals(other)) return false
+
+            other as ExpiringWideTicket<*>
+
+            if (expires != other.expires) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            var result = super.hashCode()
+            result = 31 * result + expires.hashCode()
+            return result
+        }
+
 
     }
 }

@@ -11,6 +11,7 @@ import net.corda.core.node.services.queryBy
 import net.corda.core.node.services.vault.QueryCriteria
 import net.corda.core.utilities.ProgressTracker
 
+@SchedulableFlow
 @StartableByRPC
 class ExpireTicketFromSchedulerFlow(val ticketStateRef: StateRef) : FlowLogic<Unit>() {
 
