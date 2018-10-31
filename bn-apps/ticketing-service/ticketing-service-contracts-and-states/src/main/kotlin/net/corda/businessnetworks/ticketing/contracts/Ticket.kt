@@ -1,8 +1,10 @@
 package net.corda.businessnetworks.ticketing.contracts
 
 import net.corda.businessnetworks.membership.states.MembershipState
+import net.corda.businessnetworks.ticketing.flows.bno.ExpireTicketFromSchedulerFlow
 import net.corda.core.contracts.*
 import net.corda.core.contracts.Requirements.using
+import net.corda.core.flows.FlowLogicRefFactory
 import net.corda.core.identity.Party
 import net.corda.core.serialization.CordaSerializable
 import net.corda.core.transactions.LedgerTransaction
@@ -67,14 +69,25 @@ class Ticket : Contract {
                      val subject : T,
                      val issued : Instant,
                      val status : TicketStatus,
-                     override val linearId : UniqueIdentifier) : LinearState {
+                     override val linearId : UniqueIdentifier) : LinearState, SchedulableState {
         override val participants = listOf(bno, holder)
 
         fun isPending() = status == TicketStatus.PENDING
         fun isActive() = status == TicketStatus.ACTIVE
 
+        override fun nextScheduledActivity(thisStateRef: StateRef, flowLogicRefFactory: FlowLogicRefFactory): ScheduledActivity? {
+            val expireAt = expireAt()
+            return if(expireAt == null) {
+                null
+            } else {
+                val flowRef = flowLogicRefFactory.create(ExpireTicketFromSchedulerFlow::class.java, thisStateRef)
+                return ScheduledActivity(flowRef, expireAt)
+            }
+        }
+
         abstract fun withNewStatus(newStatus : TicketStatus) : State<T>
         abstract fun doesApplyToMember(membershipState : MembershipState<*>) : Boolean
+        abstract fun expireAt() : Instant?
 
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
@@ -123,6 +136,10 @@ class Ticket : Contract {
             return appliesTo.contains(membershipState.member)
         }
 
+        override fun expireAt(): Instant? {
+            return null
+        }
+
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (javaClass != other?.javaClass) return false
@@ -157,6 +174,10 @@ class Ticket : Contract {
 
         override fun doesApplyToMember(membershipState: MembershipState<*>): Boolean {
             return true //it's a wide ticket, it applies to all
+        }
+
+        override fun expireAt(): Instant? {
+            return null
         }
 
         override fun equals(other: Any?): Boolean {

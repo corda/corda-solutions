@@ -45,8 +45,8 @@ class RevokeTicketByLinearIdFlow(val linearId : String) : FlowLogic<SignedTransa
         val criteria = QueryCriteria.LinearStateQueryCriteria(linearId = listOf(UniqueIdentifier.fromString(linearId)))
         val tickets = serviceHub.vaultService.queryBy<Ticket.State<*>>(criteria).states
         return when {
-            tickets.isEmpty() -> throw TicketNotFound(linearId)
-            tickets.size > 1 -> throw MultipleTicketsFound(linearId, tickets.size)
+            tickets.isEmpty() -> throw TicketNotFound(linearId, null)
+            tickets.size > 1 -> throw MultipleTicketsFound(linearId, null, tickets.size)
             else -> tickets.single()
         }
     }
