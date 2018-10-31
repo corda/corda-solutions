@@ -1,6 +1,7 @@
 package net.corda.businessnetworks.membership.member
 
 import co.paralleluniverse.fibers.Suspendable
+import net.corda.businessnetworks.membership.member.service.MemberConfigurationService
 import net.corda.businessnetworks.membership.member.support.BusinessNetworkAwareInitiatingFlow
 import net.corda.businessnetworks.membership.states.MembershipContract
 import net.corda.businessnetworks.membership.states.MembershipState
@@ -27,8 +28,14 @@ class AmendMembershipMetadataFlow(bno : Party, private val newMetadata : Any) : 
 
         val signTransactionFlow = object : SignTransactionFlow(bnoSession) {
             override fun checkTransaction(stx : SignedTransaction) {
+                val configuration = serviceHub.cordaService(MemberConfigurationService::class.java)
+
                 val newMembership = stx.coreTransaction.outputs.single()
                 val newMembershipState = newMembership.data as MembershipState<*>
+
+                if (newMembership.contract != configuration.membershipContractName()) {
+                    throw FlowException("Membership transactions have to be verified with ${configuration.membershipContractName()} contract")
+                }
 
                 if (stx.tx.commands.single().value !is MembershipContract.Commands.Amend) {
                     throw FlowException("Invalid command.")

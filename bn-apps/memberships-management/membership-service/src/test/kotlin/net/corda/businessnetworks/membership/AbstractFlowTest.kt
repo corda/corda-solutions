@@ -6,17 +6,16 @@ import net.corda.businessnetworks.membership.bno.ActivateMembershipForPartyFlow
 import net.corda.businessnetworks.membership.bno.NotifyMemberFlow
 import net.corda.businessnetworks.membership.bno.SuspendMembershipFlow
 import net.corda.businessnetworks.membership.bno.SuspendMembershipForPartyFlow
+import net.corda.businessnetworks.membership.bno.service.DatabaseService
 import net.corda.businessnetworks.membership.member.AmendMembershipMetadataFlow
 import net.corda.businessnetworks.membership.member.GetMembershipsFlow
 import net.corda.businessnetworks.membership.member.RequestMembershipFlow
-import net.corda.businessnetworks.membership.bno.service.DatabaseService
 import net.corda.businessnetworks.membership.states.MembershipState
 import net.corda.businessnetworks.membership.states.SimpleMembershipMetadata
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.FlowSession
 import net.corda.core.flows.InitiatedBy
-import net.corda.core.flows.InitiatingFlow
 import net.corda.core.identity.CordaX500Name
 import net.corda.core.identity.Party
 import net.corda.core.transactions.SignedTransaction
@@ -76,12 +75,12 @@ abstract class AbstractFlowTest(private val numberOfBusinessNetworks : Int,
         NotificationsCounterFlow.NOTIFICATIONS.clear()
     }
 
-    fun runrequestAndActivateMembershipFlow(bnoNode : StartedMockNode, participantNode : StartedMockNode, membershipMetadata : Any = SimpleMembershipMetadata(role = "DEFAULT")) {
+    fun runRequestAndActivateMembershipFlow(bnoNode : StartedMockNode, participantNode : StartedMockNode, membershipMetadata : Any = SimpleMembershipMetadata(role = "DEFAULT")) {
         runRequestMembershipFlow(bnoNode, participantNode, membershipMetadata)
         runActivateMembershipFlow(bnoNode, participantNode.identity())
     }
 
-    fun runrequestAndActivateMembershipFlow(bnoNode : StartedMockNode, participantNodes : List<StartedMockNode>, membershipMetadata : Any = SimpleMembershipMetadata(role = "DEFAULT")) {
+    fun runRequestAndActivateMembershipFlow(bnoNode : StartedMockNode, participantNodes : List<StartedMockNode>, membershipMetadata : Any = SimpleMembershipMetadata(role = "DEFAULT")) {
         runRequestMembershipFlow(bnoNode, participantNodes, membershipMetadata)
         runActivateMembershipFlow(bnoNode, participantNodes.map { it.identity() })
     }
@@ -173,16 +172,3 @@ class NotificationsCounterFlow(private val session : FlowSession) : FlowLogic<Un
 
 data class NotificationHolder(val member : Party, val bno : Party, val notification : Any)
 
-@InitiatingFlow
-class BN_1_InitiatingFlow(counterparty : Party) : AbstractDummyInitiatingFlow(counterparty)
-@InitiatingFlow
-class BN_2_InitiatingFlow(counterparty : Party) : AbstractDummyInitiatingFlow(counterparty)
-@InitiatingFlow
-class BN_3_InitiatingFlow(counterparty : Party) : AbstractDummyInitiatingFlow(counterparty)
-
-@InitiatedBy(BN_1_InitiatingFlow::class)
-class BN_1_RespondingFlow(session : FlowSession) : AbstractBNAwareRespondingFlow(session, "O=BNO_0,L=New York,C=US")
-@InitiatedBy(BN_2_InitiatingFlow::class)
-class BN_2_RespondingFlow(session : FlowSession) : AbstractBNAwareRespondingFlow(session, "O=BNO_1,L=New York,C=US")
-@InitiatedBy(BN_3_InitiatingFlow::class)
-class BN_3_RespondingFlow(session : FlowSession) : AbstractBNAwareRespondingFlow(session, "O=BNO_2,L=New York,C=US")

@@ -2,13 +2,25 @@
 
 # Business Network Membership Service (BNMS)
 
-This is a reference implementation for the Business Network Membership Service. 
+Contents of this article assume reader's familiarity with the concepts of Business Network and Business Network Operator. More information can be found [here](https://solutions.corda.net/business-networks/intro.html).
 
-Please see the [design doc](./design/design.md) for more information about the problem this service is aimed to tackle. 
+Business Network Membership Service aims to solve the following problems:
+* On-boarding of new members to a business network. 
+* Suspension of members from a business network.
+* Distribution of a membership list to the business network members.
+* Association of a custom metadata with a node's identity.
+* Participation in multiple business networks for a single node.
+
+BNMS supports the following API extension points:
+* Custom metadata. Nodes can associate a custom metadata with their Corda identity. The metadata might contain such fields as role, address, displayed name, email and etc. The metadata can be different for different business networks. It can be even represented with different classes.
+* Custom membership contract implementations. BNOs can extend `MembershipContract` with their own verification logic (for example to verify custom metadata evolution).  
+* Automatic acceptance of memberships requests. BNOs can implement custom verification code that would be run against incoming membership requests to determine whether they are eligible for auto-activation. Auto-activated members will be able to start transacting straight-away.
+
+Please see the [design doc](./design/design.md) for more information about technical design considerations.
 
 ## Structure
 
-BNMS provides generic implementations of flows, states and contracts to model memberships on a Business Network.
+BNMS includes implementations of flows, states and contracts to model memberships on a Business Network.
 
 BNMS consists of 2 CorDapps:
 * `membership-service-contracts-and-states` - contracts and states

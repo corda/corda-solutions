@@ -18,7 +18,7 @@ class AmendMembershipMetadataFlowTest : AbstractFlowTest(
         val bnoNode = bnoNodes.first()
         val participantNode = participantsNodes.first()
 
-        runrequestAndActivateMembershipFlow(bnoNode, participantsNodes)
+        runRequestAndActivateMembershipFlow(bnoNode, participantsNodes)
 
         // cleaning up the received notifications as we are interested in the notifications related to metadata amendment only
         NotificationsCounterFlow.NOTIFICATIONS.clear()

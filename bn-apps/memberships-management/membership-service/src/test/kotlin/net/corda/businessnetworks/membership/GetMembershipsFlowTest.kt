@@ -32,7 +32,7 @@ class GetMembershipsFlowTest : AbstractFlowTest(
     fun `all nodes should be getting the same list of memberships`() {
         val bnoNode = bnoNodes.first()
 
-        runrequestAndActivateMembershipFlow(bnoNode, participantsNodes)
+        runRequestAndActivateMembershipFlow(bnoNode, participantsNodes)
         val allParties = participantsNodes.identities()
 
         // verifying memberships list for each party
@@ -101,7 +101,7 @@ class GetMembershipsFlowTest : AbstractFlowTest(
         val bnoNode = bnoNodes.first()
 
         // requesting memberships
-        runrequestAndActivateMembershipFlow(bnoNode, participantsNodes)
+        runRequestAndActivateMembershipFlow(bnoNode, participantsNodes)
 
         val participant = participantsNodes.first()
         runGetMembershipsListFlow(bnoNode, participant, true)
@@ -131,12 +131,12 @@ class GetMembershipsFlowTest : AbstractFlowTest(
         val bn2Participants = participantsNodes.subList(3, 6)
 
         // activating multiBnParticipant's node in both of the business networks
-        runrequestAndActivateMembershipFlow(bno1Node, multiBnParticipant)
-        runrequestAndActivateMembershipFlow(bno2Node, multiBnParticipant)
+        runRequestAndActivateMembershipFlow(bno1Node, multiBnParticipant)
+        runRequestAndActivateMembershipFlow(bno2Node, multiBnParticipant)
 
         // activating bn1 and bn2 members
-        runrequestAndActivateMembershipFlow(bno1Node, bn1Participants)
-        runrequestAndActivateMembershipFlow(bno2Node, bn2Participants)
+        runRequestAndActivateMembershipFlow(bno1Node, bn1Participants)
+        runRequestAndActivateMembershipFlow(bno2Node, bn2Participants)
 
         // membership lists received from BNOs
         val bn1MembershipsList = runGetMembershipsListFlow(bno1Node, multiBnParticipant)
@@ -163,8 +163,8 @@ class GetMembershipsFlowTest : AbstractFlowTest(
         val bn2Metadata = SimpleMembershipMetadata(role = "BANK", displayedName = "RBS")
 
         // activating multiBnParticipant's node in both of the business networks
-        runrequestAndActivateMembershipFlow(bno1Node, multiBnParticipant, bn1Metadata)
-        runrequestAndActivateMembershipFlow(bno2Node, multiBnParticipant, bn2Metadata)
+        runRequestAndActivateMembershipFlow(bno1Node, multiBnParticipant, bn1Metadata)
+        runRequestAndActivateMembershipFlow(bno2Node, multiBnParticipant, bn2Metadata)
 
         val bn1MembershipsList = runGetMembershipsListFlow(bno1Node, multiBnParticipant)
         val bn2MembershipsList = runGetMembershipsListFlow(bno2Node, multiBnParticipant)

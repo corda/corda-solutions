@@ -9,6 +9,7 @@ import net.corda.businessnetworks.membership.states.MembershipState
 import net.corda.core.contracts.Contract
 import net.corda.core.flows.FlowException
 import org.junit.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.test.fail
 
@@ -81,7 +82,9 @@ class RequestMembershipFlowTest : AbstractFlowTest(numberOfBusinessNetworks = 2,
         val bnoNode = bnoNodes.first()
         val memberNode = participantsNodes.first()
 
+        // reloading configurations for both the member and the bno
         bnoNode.services.cordaService(BNOConfigurationService::class.java).reloadConfigurationFromFile(fileFromClasspath("membership-service-with-custom-contract.conf"))
+        memberNode.services.cordaService(MemberConfigurationService::class.java).reloadConfigurationFromFile(fileFromClasspath("membership-service-with-custom-contract.conf"))
 
         val stx = runRequestMembershipFlow(bnoNode, memberNode)
 
@@ -97,6 +100,22 @@ class RequestMembershipFlowTest : AbstractFlowTest(numberOfBusinessNetworks = 2,
         participantNode.services.cordaService(MemberConfigurationService::class.java).reloadConfigurationFromFile(fileFromClasspath("membership-service-without-bno-whitelist.conf"))
 
         runRequestMembershipFlow(bnoNode, participantNode)
+    }
+
+    @Test
+    fun `request membership transaction should be rejected if BNO specifies a wrong contract`() {
+        val bnoNode = bnoNodes.first()
+        val participantNode = participantsNodes.first()
+
+        // reloading configuration with a fake contract name
+        participantNode.services.cordaService(MemberConfigurationService::class.java).reloadConfigurationFromFile(fileFromClasspath("membership-service-with-fake-contract-name.conf"))
+
+        try {
+            runRequestMembershipFlow(bnoNode, participantNode)
+            fail()
+        } catch (ex : FlowException) {
+            assertEquals("Membership transactions have to be verified with not.existing.contract.Class contract", ex.message)
+        }
     }
 }
 

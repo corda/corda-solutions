@@ -18,7 +18,7 @@ class SuspendMembershipFlowTest : AbstractFlowTest(numberOfBusinessNetworks = 2,
         val bnoNode = bnoNodes.first()
         val suspendedMemberNode = participantsNodes.first()
 
-        runrequestAndActivateMembershipFlow(bnoNode, participantsNodes)
+        runRequestAndActivateMembershipFlow(bnoNode, participantsNodes)
 
         // cleaning up notifications as we are interested in SUSPENDs only
         NotificationsCounterFlow.NOTIFICATIONS.clear()
@@ -60,40 +60,6 @@ class SuspendMembershipFlowTest : AbstractFlowTest(numberOfBusinessNetworks = 2,
             fail()
         } catch (e : NotBNOException) {
             assertEquals("This node is not the business network operator for this membership", e.message)
-        }
-    }
-
-    @Test
-    fun `nodes shouldn't be able to transact on business networks where their membership is suspended`() {
-        val bno1Node = bnoNodes[0]
-        val bno2Node = bnoNodes[1]
-
-        val multiBnNode= participantsNodes[0] // participates on both of the BNs
-        val bn1ParticipantNode = participantsNodes[1] // participates in BN1 only
-        val bn2ParticipantNode = participantsNodes[2] // participates in BN2 only
-
-        // registering BN-specific initiated flows
-        bn1ParticipantNode.registerInitiatedFlow(BN_1_RespondingFlow::class.java)
-        bn2ParticipantNode.registerInitiatedFlow(BN_2_RespondingFlow::class.java)
-
-        // requesting and activating memberships
-        runrequestAndActivateMembershipFlow(bno1Node, listOf(multiBnNode, bn1ParticipantNode))
-        runrequestAndActivateMembershipFlow(bno2Node, listOf(multiBnNode, bn2ParticipantNode))
-
-        // suspending multiBnNode's membership in BN2
-        runSuspendMembershipFlow(bno2Node, multiBnNode.identity())
-
-        val future1 = multiBnNode.startFlow(BN_1_InitiatingFlow(bn1ParticipantNode.identity()))
-        val future2 = multiBnNode.startFlow(BN_2_InitiatingFlow(bn2ParticipantNode.identity()))
-
-        mockNetwork.runNetwork()
-
-        future1.getOrThrow()
-        // future 2 should fail as multiBnNode's membership is suspended in this business network
-        try {
-            future2.getOrThrow()
-            fail()
-        } catch (ex : NotAMemberException) {
         }
     }
 }

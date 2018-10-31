@@ -3,6 +3,7 @@ package net.corda.businessnetworks.membership.member.support
 import co.paralleluniverse.fibers.Suspendable
 import net.corda.businessnetworks.membership.NotAMemberException
 import net.corda.businessnetworks.membership.member.GetMembershipsFlow
+import net.corda.businessnetworks.membership.member.service.MemberConfigurationService
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.FlowSession
 import net.corda.core.identity.Party
@@ -33,10 +34,12 @@ abstract class BusinessNetworkAwareInitiatedFlow<out T>(protected val session: F
     @Suspendable
     private fun verifyMembership(initiator : Party) {
         val membership = subFlow(GetMembershipsFlow(bnoIdentity()))[initiator]
-        // inactive members can't transact on the network
-        if(membership == null || !membership.state.data.isActive()) {
+        val configuration = serviceHub.cordaService(MemberConfigurationService::class.java)
+        // 1. membership should exist
+        // 2. membership have to be active
+        // 3. membership have to be validated by the correct contract
+        if(membership == null || !membership.state.data.isActive() || membership.state.contract != configuration.membershipContractName()) {
             throw NotAMemberException(initiator)
         }
     }
 }
-

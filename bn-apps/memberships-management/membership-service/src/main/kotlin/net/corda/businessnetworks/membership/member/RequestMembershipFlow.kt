@@ -1,6 +1,7 @@
 package net.corda.businessnetworks.membership.member
 
 import co.paralleluniverse.fibers.Suspendable
+import net.corda.businessnetworks.membership.member.service.MemberConfigurationService
 import net.corda.businessnetworks.membership.member.support.BusinessNetworkAwareInitiatingFlow
 import net.corda.businessnetworks.membership.states.MembershipContract
 import net.corda.businessnetworks.membership.states.MembershipState
@@ -43,12 +44,18 @@ class RequestMembershipFlow(bno : Party, private val membershipMetadata : Any) :
 
         val signResponder = object : SignTransactionFlow(bnoSession) {
             override fun checkTransaction(stx : SignedTransaction) {
+                val configuration = serviceHub.cordaService(MemberConfigurationService::class.java)
+
                 val command = stx.tx.commands.single()
                 if (command.value !is MembershipContract.Commands.Request) {
                     throw FlowException("Only Request command is allowed")
                 }
 
                 val output = stx.tx.outputs.single()
+                if (output.contract != configuration.membershipContractName()) {
+                    throw FlowException("Membership transactions have to be verified with ${configuration.membershipContractName()} contract")
+                }
+
                 val membershipState = output.data as MembershipState<*>
                 if (bno != membershipState.bno) {
                     throw IllegalArgumentException("Wrong BNO identity")
