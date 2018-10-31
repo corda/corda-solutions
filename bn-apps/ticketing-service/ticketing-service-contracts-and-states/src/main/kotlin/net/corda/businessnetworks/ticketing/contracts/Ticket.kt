@@ -38,16 +38,16 @@ class Ticket : Contract {
         abstract fun withNewStatus(newStatus : TicketStatus) : State<T>
     }
 
-    class TargetedTicket<T>(holder : Party,
-                         bno : Party,
-                         subject : T,
-                         val appliesTo : List<Party>,
-                         status : TicketStatus = TicketStatus.PENDING,
-                         issued : Instant = Instant.now(),
-                         linearId : UniqueIdentifier = UniqueIdentifier()) : State<T>(holder, bno, subject, issued, status, linearId) {
+    class PartiesTargetedTicket<T>(holder : Party,
+                                   bno : Party,
+                                   subject : T,
+                                   val appliesTo : List<Party>,
+                                   status : TicketStatus = TicketStatus.PENDING,
+                                   issued : Instant = Instant.now(),
+                                   linearId : UniqueIdentifier = UniqueIdentifier()) : State<T>(holder, bno, subject, issued, status, linearId) {
 
         override fun withNewStatus(newStatus : TicketStatus) : State<T> {
-            return TargetedTicket(holder, bno, subject, appliesTo, newStatus)
+            return PartiesTargetedTicket(holder, bno, subject, appliesTo, newStatus)
         }
 
     }

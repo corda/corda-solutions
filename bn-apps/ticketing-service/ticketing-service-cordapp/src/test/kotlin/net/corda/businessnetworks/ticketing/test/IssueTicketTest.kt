@@ -61,14 +61,14 @@ class IssueTicketTest : TicketingServiceTestsSupport() {
             future.getOrThrow()
 
             participantNode.transaction {
-                val tickets = participantNode.services.vaultService.queryBy<Ticket.TargetedTicket<*>>().states
+                val tickets = participantNode.services.vaultService.queryBy<Ticket.PartiesTargetedTicket<*>>().states
                 assertEquals(1, tickets.size)
                 assertEquals(TicketStatus.PENDING, tickets.single().state.data.status)
                 assertEquals(listOf(targetedParty),tickets.single().state.data.appliesTo)
             }
 
             bnoNode.transaction {
-                val tickets = bnoNode.services.vaultService.queryBy<Ticket.TargetedTicket<*>>().states
+                val tickets = bnoNode.services.vaultService.queryBy<Ticket.PartiesTargetedTicket<*>>().states
                 assertEquals(1, tickets.size)
                 assertEquals(TicketStatus.PENDING, tickets.single().state.data.status)
                 assertEquals(listOf(targetedParty),tickets.single().state.data.appliesTo)

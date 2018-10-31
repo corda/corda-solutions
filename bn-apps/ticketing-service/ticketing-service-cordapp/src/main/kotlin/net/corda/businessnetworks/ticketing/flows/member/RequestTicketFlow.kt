@@ -56,7 +56,7 @@ class RequestTargetedTicketFlow<T>(val subject : T, val targetedParties : List<P
     @Suspendable
     override fun call(): SignedTransaction {
         progressTracker.currentStep = CREATING_TICKET
-        val ticket = Ticket.TargetedTicket(ourIdentity, getBno(), subject, targetedParties)
+        val ticket = Ticket.PartiesTargetedTicket(ourIdentity, getBno(), subject, targetedParties)
         progressTracker.currentStep = SENDING_TO_BNO
         return subFlow(RequestTicketFlow(ticket))
     }

@@ -79,7 +79,7 @@ class ConfirmMemberHoldsTicketFlowResponder(flowSession : FlowSession) : Busines
         val pageSpecification = PageSpecification(1, MAX_PAGE_SIZE)
         val allTickets = serviceHub.vaultService.queryBy<Ticket.State<*>>(queryCriteria, pageSpecification).states.map { it.state.data }
         val matchingTickets = allTickets.filter { it.holder == holder && it.subject == subject && it.isActive() }
-                                        .filter { (it is Ticket.WideTicket) || (it is Ticket.TargetedTicket && it.appliesTo.contains(applicableTo)) }
+                                        .filter { (it is Ticket.WideTicket) || (it is Ticket.PartiesTargetedTicket && it.appliesTo.contains(applicableTo)) }
         return matchingTickets
     }
 
