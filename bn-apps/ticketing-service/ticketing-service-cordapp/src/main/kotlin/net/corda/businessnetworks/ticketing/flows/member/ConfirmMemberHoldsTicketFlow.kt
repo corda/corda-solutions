@@ -65,7 +65,7 @@ class ConfirmMemberHoldsTicketFlowResponder(flowSession : FlowSession) : Busines
         logger.info("Received $request from ${flowSession.counterparty}")
 
         progressTracker.currentStep = LOOKNG_FOR_TICKET
-        val matchingTickets = findMatchingTickets(request.party, flowSession.counterparty, request.subject)
+        val matchingTickets = findMatchingTickets(request.party, counterpartyMembership.state.data, request.subject)
         logger.info("All matching tickets: $matchingTickets")
 
         progressTracker.currentStep = SENDING_RESPONSE_BACK
@@ -74,12 +74,12 @@ class ConfirmMemberHoldsTicketFlowResponder(flowSession : FlowSession) : Busines
 
     //Should the holder also be required to be an active member? Probably not given that the initiator of this flow shouldn't
     //even get to this point of asking the BNO about ticket if the counterparty in question wasn't even a member of the business network
-    private fun findMatchingTickets(holder : Party, applicableTo: Party, subject : Any) : List<Ticket.State<*>> {
+    private fun findMatchingTickets(holder : Party, applicableTo: MembershipState<*>, subject : Any) : List<Ticket.State<*>> {
         val queryCriteria = QueryCriteria.VaultQueryCriteria(status = Vault.StateStatus.UNCONSUMED)
         val pageSpecification = PageSpecification(1, MAX_PAGE_SIZE)
         val allTickets = serviceHub.vaultService.queryBy<Ticket.State<*>>(queryCriteria, pageSpecification).states.map { it.state.data }
         val matchingTickets = allTickets.filter { it.holder == holder && it.subject == subject && it.isActive() }
-                                        .filter { (it is Ticket.WideTicket) || (it is Ticket.PartiesTargetedTicket && it.appliesTo.contains(applicableTo)) }
+                                        .filter { it.doesApplyToMember(applicableTo) }
         return matchingTickets
     }
 

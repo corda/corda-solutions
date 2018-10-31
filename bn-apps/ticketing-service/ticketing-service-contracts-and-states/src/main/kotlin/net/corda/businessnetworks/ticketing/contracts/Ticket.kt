@@ -1,5 +1,6 @@
 package net.corda.businessnetworks.ticketing.contracts
 
+import net.corda.businessnetworks.membership.states.MembershipState
 import net.corda.core.contracts.*
 import net.corda.core.identity.Party
 import net.corda.core.serialization.CordaSerializable
@@ -20,6 +21,7 @@ class Ticket : Contract {
     override fun verify(tx : LedgerTransaction) {
         //that if it's activate then bno is the signer
         //if it's request then bno is
+        //status is the only thing changing on activate
     }
 
 
@@ -36,6 +38,7 @@ class Ticket : Contract {
         fun isActive() = status == TicketStatus.ACTIVE
 
         abstract fun withNewStatus(newStatus : TicketStatus) : State<T>
+        abstract fun doesApplyToMember(membershipState : MembershipState<*>) : Boolean
     }
 
     class PartiesTargetedTicket<T>(holder : Party,
@@ -50,6 +53,9 @@ class Ticket : Contract {
             return PartiesTargetedTicket(holder, bno, subject, appliesTo, newStatus)
         }
 
+        override fun doesApplyToMember(membershipState: MembershipState<*>) : Boolean {
+            return appliesTo.contains(membershipState.member)
+        }
     }
 
     class WideTicket<T>(holder : Party,
@@ -61,6 +67,10 @@ class Ticket : Contract {
 
         override fun withNewStatus(newStatus : TicketStatus) : State<T> {
             return WideTicket(holder, bno, subject, newStatus)
+        }
+
+        override fun doesApplyToMember(membershipState: MembershipState<*>): Boolean {
+            return true //it's a wide ticket, it applies to all
         }
     }
 }
