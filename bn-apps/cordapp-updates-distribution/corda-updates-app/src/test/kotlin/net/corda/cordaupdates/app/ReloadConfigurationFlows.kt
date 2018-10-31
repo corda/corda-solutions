@@ -1,8 +1,8 @@
 package net.corda.cordaupdates.app
 
 import co.paralleluniverse.fibers.Suspendable
+import net.corda.cordaupdates.app.bno.BNOConfiguration
 import net.corda.cordaupdates.app.member.MemberConfiguration
-import net.corda.cordaupdates.transport.flows.RepositoryHosterConfigurationService
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.StartableByRPC
 import java.io.File
@@ -22,7 +22,7 @@ class ReloadBNOConfigurationFlow(private val fileName : String) : FlowLogic<Unit
     @Suspendable
     override fun call() {
         val config = File(ReloadBNOConfigurationFlow::class.java.classLoader.getResource(fileName).toURI())
-        val configuration = serviceHub.cordaService(RepositoryHosterConfigurationService::class.java)
+        val configuration = serviceHub.cordaService(BNOConfiguration::class.java)
         configuration.reloadConfigurationFromFile(config)
     }
 }

@@ -3,12 +3,26 @@ package net.corda.businessnetworks.cordaupdates.testutils
 import java.io.File
 import kotlin.test.assertEquals
 
+/**
+ * Scans contents of the local Maven repository and verifies them against expectations ([RepoVerifierExpectation]) provided by the user.
+ * Contents of the local repository has to match 1-to-1 with the provided expectations, otherwise an exception will be thrown.
+ * Typical usage could look like:
+ *
+ * RepoVerifier("~/.m2/repository")
+ *      .shouldContain("net.corda", "corda-finance", setOf("0.1", "0.2"))
+ *      .shouldContain("net.corda.businessnetworks", "membership-service", setOf("1.0"))
+ *      .verify()
+ *
+ * This class is intended to be used from tests only.
+ */
 class RepoVerifier(private val repoPath : String, private val fileExtensions : Set<String> = setOf("jar")) {
-    private val tasks = mutableListOf<RepoVerifierTask>()
+    private val expectations = mutableListOf<RepoVerifierExpectation>()
 
-    // TODO: add support for classifiers
+    /**
+     * Adds an expectation to the expectations list.
+     */
     fun shouldContain(group : String, artifact : String, versions : Set<String>) : RepoVerifier {
-        tasks.add(RepoVerifierTask(group, artifact, versions))
+        expectations.add(RepoVerifierExpectation(group, artifact, versions))
         return this
     }
 
@@ -24,7 +38,7 @@ class RepoVerifier(private val repoPath : String, private val fileExtensions : S
     }
 
     fun verify() {
-        val expectedPaths = tasks.flatMap { task ->
+        val expectedPaths = expectations.flatMap { task ->
             task.versions.flatMap { version ->
                 fileExtensions.map { extension -> "$repoPath/${task.group.replace(":", "/")}/${task.artifact}/$version/${task.artifact}-$version.$extension" }
             }
@@ -34,6 +48,9 @@ class RepoVerifier(private val repoPath : String, private val fileExtensions : S
     }
 }
 
-private data class RepoVerifierTask(val group : String,
-                                    val artifact : String,
-                                    val versions : Set<String>)
+/**
+ * Wrapper around artifact group, name and a set of versions
+ */
+private data class RepoVerifierExpectation(val group : String,
+                                           val artifact : String,
+                                           val versions : Set<String>)

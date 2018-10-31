@@ -1,4 +1,4 @@
-package net.corda.cordaupdates.transport.flows
+package net.corda.cordaupdates.app.bno
 
 import co.paralleluniverse.fibers.Suspendable
 import net.corda.core.flows.FlowLogic

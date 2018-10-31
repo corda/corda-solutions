@@ -1,4 +1,4 @@
-package net.corda.cordaupdates.transport.flows
+package net.corda.cordaupdates.app.bno
 
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
@@ -9,16 +9,10 @@ import net.corda.core.serialization.SingletonSerializeAsToken
 import java.io.File
 import java.nio.file.Paths
 
-/**
- * Configuration for the repository hoster.
- *
- * TODO: replace with serviceHub.getAppContext().config when released
- */
 @CordaService
-class RepositoryHosterConfigurationService(private val serviceHub : AppServiceHub) : SingletonSerializeAsToken() {
+class BNOConfiguration(private val appServiceHub : AppServiceHub) : SingletonSerializeAsToken() {
     companion object {
         const val PROPERTIES_FILE_NAME = "corda-updates-app.conf"
-        const val REMOTE_REPO_URL = "remoteRepoUrl"
         const val SESSION_FILTER = "sessionFilter"
     }
     private var _config = readProps((Paths.get("cordapps") / "config" / PROPERTIES_FILE_NAME).toFile())
@@ -26,11 +20,6 @@ class RepositoryHosterConfigurationService(private val serviceHub : AppServiceHu
     fun reloadConfigurationFromFile(file : File) {
         _config = readProps(file)
     }
-
-    /**
-     * URL of the remote repository to fetch an artifact from. Supports -http and -file based transports
-     */
-    fun remoteRepoUrl() : String = _config.getString(REMOTE_REPO_URL)
 
     /**
      * Returns a session filter to filter out an unauthorised traffic
@@ -46,5 +35,5 @@ class RepositoryHosterConfigurationService(private val serviceHub : AppServiceHu
     }
 
     private fun readProps(file : File) : Config = ConfigFactory.parseFile(file)
-}
 
+}

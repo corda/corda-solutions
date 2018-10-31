@@ -39,9 +39,6 @@ dependencies {
         exclude group: "org.apache.maven.resolver", module: "*"
     }
 
-    // transport over flows
-    compile project(':bn-apps:cordapp-updates-distribution:corda-updates-transport')
-
     // typesafe
     compile "com.typesafe:config:$typesafe_version"
 

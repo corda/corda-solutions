@@ -5,8 +5,4 @@ include ':bn-apps:memberships-management:membership-service-contracts-and-states
 include ':bn-apps:cordapp-updates-distribution:corda-updates-app'
 include ':bn-apps:cordapp-updates-distribution:corda-updates-app-states'
 include ':bn-apps:cordapp-updates-distribution:corda-updates-core'
-include ':bn-apps:cordapp-updates-distribution:corda-updates-shell'
 include ':bn-apps:cordapp-updates-distribution:corda-updates-test-utils'
-include ':bn-apps:cordapp-updates-distribution:corda-updates-transport'
-
-
