@@ -3,6 +3,7 @@ package net.corda.businessnetworks.ticketing.test
 import net.corda.businessnetworks.ticketing.contracts.Ticket
 import net.corda.businessnetworks.ticketing.contracts.TicketStatus
 import net.corda.businessnetworks.ticketing.flows.bno.ActivateTicketByLinearIdFlow
+import net.corda.businessnetworks.ticketing.flows.bno.RevokeTicketByLinearIdFlow
 import net.corda.businessnetworks.ticketing.flows.member.RequestTicketFlow
 import net.corda.businessnetworks.ticketing.test.flows.TestInitiator
 import net.corda.core.identity.Party
@@ -28,9 +29,9 @@ abstract class TicketingServiceTestsSupport() : BusinessNetworksTestsSupport(lis
         acquireATicket(memberNode, ticket)
     }
 
-    protected fun <T> acquireAWideTicket(memberNode : StartedMockNode, subject : T) {
+    protected fun <T> acquireAWideTicketAndConfirmAssertions(memberNode : StartedMockNode, subject : T) : String {
         val ticket = Ticket.WideTicket(memberNode.party(), bnoNode.party(), subject)
-        acquireATicket(memberNode, ticket)
+        return acquireATicket(memberNode, ticket)
     }
 
     protected fun <T> requestATicket(memberNode: StartedMockNode, ticket : Ticket.State<T>) : String {
@@ -51,6 +52,7 @@ abstract class TicketingServiceTestsSupport() : BusinessNetworksTestsSupport(lis
             val tickets = bnoNode.services.vaultService.queryBy<Ticket.State<*>>().states
             assertEquals(1, tickets.size)
             assertEquals(TicketStatus.PENDING, tickets.single().state.data.status)
+            assertEquals(ticketId, tickets.single().state.data.linearId.toString())
         }
 
         return ticketId
@@ -75,9 +77,27 @@ abstract class TicketingServiceTestsSupport() : BusinessNetworksTestsSupport(lis
         }
     }
 
-    protected fun <T> acquireATicket(memberNode : StartedMockNode, ticket : Ticket.State<T>) {
+    protected fun revokeATicketAndConfirmAssertions(memberNode: StartedMockNode, ticketLinearId : String) {
+        val future = bnoNode.startFlow(RevokeTicketByLinearIdFlow(ticketLinearId))
+        mockNetwork.runNetwork()
+        future.getOrThrow()
+
+        //confirm it's gone from the vaults
+        memberNode.transaction {
+            val tickets = memberNode.services.vaultService.queryBy<Ticket.State<*>>().states
+            assertEquals(0, tickets.size)
+        }
+
+        bnoNode.transaction {
+            val tickets = bnoNode.services.vaultService.queryBy<Ticket.State<*>>().states
+            assertEquals(0, tickets.size)
+        }
+    }
+
+    protected fun <T> acquireATicket(memberNode : StartedMockNode, ticket : Ticket.State<T>) : String {
         val ticketId = requestATicket(memberNode, ticket)
         activateATicket(memberNode, ticketId)
+        return ticketId
     }
 
     protected fun runGuineaPigFlow(initiator : StartedMockNode, initiatee : StartedMockNode) : String {

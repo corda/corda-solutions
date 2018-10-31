@@ -31,7 +31,7 @@ class UseTicketTest : TicketingServiceTestsSupport() {
     fun `Flow triggers if ticket exists (wide ticket)`() {
         createNetworkAndRunTest(2, true ) {
             val ticketHoldingNode = participantNodes[0]
-            acquireAWideTicket(ticketHoldingNode, TestTicketSubject.SUBJECT_1)
+            acquireAWideTicketAndConfirmAssertions(ticketHoldingNode, TestTicketSubject.SUBJECT_1)
 
             val anotherMemberNode = participantNodes[1]
             runGuineaPigFlow(ticketHoldingNode, anotherMemberNode)
@@ -54,7 +54,7 @@ class UseTicketTest : TicketingServiceTestsSupport() {
     fun `The owned ticket must have the required subject`() {
         createNetworkAndRunTest(2, true ) {
             val ticketHoldingNode = participantNodes[0]
-            acquireAWideTicket(ticketHoldingNode, TestTicketSubject.SUBJECT_2) //granting ticket but different subject to the one required
+            acquireAWideTicketAndConfirmAssertions(ticketHoldingNode, TestTicketSubject.SUBJECT_2) //granting ticket but different subject to the one required
 
             val anotherMemberNode = participantNodes[1]
             runGuineaPigFlow(ticketHoldingNode, anotherMemberNode)
