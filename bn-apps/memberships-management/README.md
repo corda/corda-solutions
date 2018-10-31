@@ -39,7 +39,6 @@ Memberships are represented with a `MembershipState`. Users can associate a cust
 * `ACTIVE` - active membership holders can transact on the Business Network.
 * `SUSPENDED` - Business Network members can be temporarily suspended by their BNO as a result of a governance action for example. Suspended members can't transact on the Business Network.
 
-
 ### Membership contract
 
 `MembershipState` evolution is curated by `MembershipContract`. However, `MembershipContract` can't verify evolution of the membership metadata as it's a generic parameter.   
@@ -47,7 +46,6 @@ Memberships are represented with a `MembershipState`. Users can associate a cust
 Membership metadata evolution can be verified in the following ways:
 * In the responding flows, by overriding them at the BNO's side (_off-ledger verification_). Will be introduced in Corda 4.
 * By extending the `MembershipContract` (_on-ledger verification_). `MembershipContract` is an `open` class and can be extended by users to add a custom verification logic. A custom contract implementation can be provided to the BNMS via `membershipContractName` configuration property supported by both BNO and member CorDapps.
-
 
 ### Flows
 
