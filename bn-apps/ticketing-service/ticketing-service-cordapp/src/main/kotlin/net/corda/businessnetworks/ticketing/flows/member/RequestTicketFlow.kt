@@ -38,7 +38,7 @@ class RequestWideTicketFlow<T>(val subject : T) : BusinessNetworkAwareFlowLogic<
 }
 
 @StartableByRPC
-class RequestTargetedTicketFlow<T>(val subject : T, val targetedParties : List<Party>) : BusinessNetworkAwareFlowLogic<SignedTransaction>() {
+class RequestPartiesTargetedTicketFlow<T>(val subject : T, val targetedParties : List<Party>) : BusinessNetworkAwareFlowLogic<SignedTransaction>() {
 
     companion object {
         object CREATING_TICKET : ProgressTracker.Step("Creating ticket")

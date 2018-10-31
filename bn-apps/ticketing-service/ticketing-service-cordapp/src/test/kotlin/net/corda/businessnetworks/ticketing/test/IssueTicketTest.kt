@@ -5,7 +5,7 @@ import net.corda.businessnetworks.ticketing.NotBNOException
 import net.corda.businessnetworks.ticketing.contracts.Ticket
 import net.corda.businessnetworks.ticketing.contracts.TicketStatus
 import net.corda.businessnetworks.ticketing.flows.bno.ActivateTicketByLinearIdFlow
-import net.corda.businessnetworks.ticketing.flows.member.RequestTargetedTicketFlow
+import net.corda.businessnetworks.ticketing.flows.member.RequestPartiesTargetedTicketFlow
 import net.corda.businessnetworks.ticketing.flows.member.RequestTicketFlow
 import net.corda.businessnetworks.ticketing.flows.member.RequestWideTicketFlow
 import net.corda.core.flows.FlowException
@@ -51,12 +51,12 @@ class IssueTicketTest : TicketingServiceTestsSupport() {
     }
 
     @Test
-    fun `Member can ask for a targeted ticket`() {
+    fun `Member can ask for a parties targeted ticket`() {
         createNetworkAndRunTest(2, true ) {
             val participantNode = participantNodes.first()
             val targetedParty = participantNodes[1].party()
 
-            val future = participantNode.startFlow(RequestTargetedTicketFlow("Subject 1", listOf(targetedParty)))
+            val future = participantNode.startFlow(RequestPartiesTargetedTicketFlow("Subject 1", listOf(targetedParty)))
             mockNetwork.runNetwork()
             future.getOrThrow()
 
