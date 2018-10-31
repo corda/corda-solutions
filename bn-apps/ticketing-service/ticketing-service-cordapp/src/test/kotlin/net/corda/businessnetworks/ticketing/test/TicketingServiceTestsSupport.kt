@@ -23,7 +23,7 @@ abstract class TicketingServiceTestsSupport() : BusinessNetworksTestsSupport(lis
         SUBJECT_2
     }
 
-    protected fun <T> acquireTargetedTicket(memberNode : StartedMockNode, target : Party, subject : T) {
+    protected fun <T> acquirePartiesTargetedTicket(memberNode : StartedMockNode, target : Party, subject : T) {
         val ticket = Ticket.PartiesTargetedTicket(memberNode.party(), bnoNode.party(), subject, listOf(target))
         acquireATicket(memberNode, ticket)
     }

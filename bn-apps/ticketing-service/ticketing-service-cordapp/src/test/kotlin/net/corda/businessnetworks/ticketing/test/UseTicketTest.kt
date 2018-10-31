@@ -39,12 +39,12 @@ class UseTicketTest : TicketingServiceTestsSupport() {
     }
 
     @Test
-    fun `Flow triggers if ticket exists (targeted ticket)`() {
+    fun `Flow triggers if ticket exists (parties targeted ticket)`() {
         createNetworkAndRunTest(2, true ) {
             val ticketHoldingNode = participantNodes[0]
             val anotherMemberNode = participantNodes[1]
 
-            acquireTargetedTicket(ticketHoldingNode, anotherMemberNode.party(), TestTicketSubject.SUBJECT_1)
+            acquirePartiesTargetedTicket(ticketHoldingNode, anotherMemberNode.party(), TestTicketSubject.SUBJECT_1)
 
             runGuineaPigFlow(ticketHoldingNode, anotherMemberNode)
         }
@@ -62,13 +62,13 @@ class UseTicketTest : TicketingServiceTestsSupport() {
     }
 
     @Test(expected = TriggeringThisFlowRequiresTicket::class)
-    fun `The owned targeted ticket must apply to the right member`() {
+    fun `The owned parties targeted ticket must apply to the right member`() {
         createNetworkAndRunTest(3, true ) {
             val ticketHoldingNode = participantNodes[0]
             val anotherMemberNode = participantNodes[1]
             val targetedMemberNode = participantNodes[2]
 
-            acquireTargetedTicket(ticketHoldingNode, targetedMemberNode.party(), TestTicketSubject.SUBJECT_1) //granting ticket targeted at one member
+            acquirePartiesTargetedTicket(ticketHoldingNode, targetedMemberNode.party(), TestTicketSubject.SUBJECT_1) //granting ticket targeted at one member
 
             runGuineaPigFlow(ticketHoldingNode, anotherMemberNode) //this triggers a flow on another member
         }
