@@ -33,23 +33,51 @@ abstract class TicketingServiceTestsSupport() : BusinessNetworksTestsSupport(lis
         acquireATicket(memberNode, ticket)
     }
 
-    protected fun <T> acquireATicket(memberNode : StartedMockNode, ticket : Ticket.State<T>) {
-        var future = memberNode.startFlow(RequestTicketFlow(ticket))
+    protected fun <T> requestATicket(memberNode: StartedMockNode, ticket : Ticket.State<T>) : String {
+        val future = memberNode.startFlow(RequestTicketFlow(ticket))
         mockNetwork.runNetwork()
         future.getOrThrow()
 
         lateinit var ticketId : String
 
-        bnoNode.transaction {
-            val tickets = bnoNode.services.vaultService.queryBy<Ticket.State<*>>().states
+        memberNode.transaction {
+            val tickets = memberNode.services.vaultService.queryBy<Ticket.State<*>>().states
             assertEquals(1, tickets.size)
             assertEquals(TicketStatus.PENDING, tickets.single().state.data.status)
             ticketId = tickets.single().state.data.linearId.toString()
         }
 
-        future = bnoNode.startFlow(ActivateTicketByLinearIdFlow(ticketId))
+        bnoNode.transaction {
+            val tickets = bnoNode.services.vaultService.queryBy<Ticket.State<*>>().states
+            assertEquals(1, tickets.size)
+            assertEquals(TicketStatus.PENDING, tickets.single().state.data.status)
+        }
+
+        return ticketId
+    }
+
+    protected fun activateATicket(memberNode: StartedMockNode, ticketLinearId : String) {
+        val future = bnoNode.startFlow(ActivateTicketByLinearIdFlow(ticketLinearId))
         mockNetwork.runNetwork()
         future.getOrThrow()
+
+        //confirm it's in the vaults in active state
+        memberNode.transaction {
+            val tickets = memberNode.services.vaultService.queryBy<Ticket.State<*>>().states
+            assertEquals(1, tickets.size)
+            assertEquals(TicketStatus.ACTIVE, tickets.single().state.data.status)
+        }
+
+        bnoNode.transaction {
+            val tickets = bnoNode.services.vaultService.queryBy<Ticket.State<*>>().states
+            assertEquals(1, tickets.size)
+            assertEquals(TicketStatus.ACTIVE, tickets.single().state.data.status)
+        }
+    }
+
+    protected fun <T> acquireATicket(memberNode : StartedMockNode, ticket : Ticket.State<T>) {
+        val ticketId = requestATicket(memberNode, ticket)
+        activateATicket(memberNode, ticketId)
     }
 
     protected fun runGuineaPigFlow(initiator : StartedMockNode, initiatee : StartedMockNode) : String {

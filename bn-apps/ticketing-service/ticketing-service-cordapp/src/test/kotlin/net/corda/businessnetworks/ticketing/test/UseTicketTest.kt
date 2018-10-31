@@ -1,6 +1,7 @@
 package net.corda.businessnetworks.ticketing.test
 
 import net.corda.businessnetworks.ticketing.TriggeringThisFlowRequiresTicket
+import net.corda.businessnetworks.ticketing.contracts.Ticket
 import org.junit.Test
 
 class UseTicketTest : TicketingServiceTestsSupport() {
@@ -11,6 +12,18 @@ class UseTicketTest : TicketingServiceTestsSupport() {
             val initiatingNode = participantNodes[0]
             val anotherMemberNode = participantNodes[1]
             runGuineaPigFlow(initiatingNode, anotherMemberNode)
+        }
+    }
+
+    @Test(expected = TriggeringThisFlowRequiresTicket::class)
+    fun `A flow won't trigger without an active ticket`() {
+        createNetworkAndRunTest(2, true ) {
+            val ticketHoldingNode = participantNodes[0]
+            val ticket = Ticket.WideTicket(ticketHoldingNode.party(), bnoNode.party(), TestTicketSubject.SUBJECT_1)
+            requestATicket(ticketHoldingNode, ticket)
+
+            val anotherMemberNode = participantNodes[1]
+            runGuineaPigFlow(ticketHoldingNode, anotherMemberNode)
         }
     }
 
