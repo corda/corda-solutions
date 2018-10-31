@@ -1,13 +1,27 @@
 CorDapp Distribution Service
 ============================
 
-*This README and some KDocs mentions corda-based transports that are going to be added in the future versions*.
+**Please note that this README and some KDocs mention about corda-based transports, which are currently not supported and will be released in the future versions**.
 
 CorDapp Distribution Service allows Corda network operators to distribute CorDapp updates to their network participants. Please see [this](./design/design.md) design doc for more details on the technical implementation.
 
 CorDapp Distribution Service utilises Maven repositories for artifact distribution (as CorDapps are effectively fat-jars). Network participants periodically query a remote repository for updates and download them locally. Installation of updates is not automated yet. Corda node administrators need to stop / update / restart their nodes manually.  
 
 CorDapp Distribution Service supports conventional HTTP(s) transport as well as bespoke Corda transports which are described in the further sections. 
+
+# Quickstart
+
+To start using CorDapp Distribution Service please follow the steps below:
+
+1. Create a folder for your local Maven repository and place `settings.conf` in there. Please see [this section](#hocon-configuration) for more information about supported configuration parameters.
+2. Add CorDapps that you would like to synchronize to `settings.conf`, which is located in the root of the local repository created on the previous step (`~/.corda-updates/settings.conf` by default). Please refer to [this](#hocon-configuration) section for more details about the configuration file format.
+3. Download `corda-updates-app` jar or build it by yourself. TODO: download link here
+4. Install the CorDapp to the network participant's nodes and configure it as described [here](#participant-cordapp-configuration). `configPath` should point to the `settings.conf` created on the step #2.
+5. If you are going to use [Corda-based transports](#corda-updates-transport) - then install the CorDapp to the repository hoster's node and configure it as described [here](#repository-hoster-cordapp-configuration).   
+6. Schedule periodic synchronization by invoking [ScheduleSyncFlow](#scheduling-synchronisation) from the Corda shell of every participant node.
+7. Done. When published, all updates will appear in the local repositories of participants. Please bear in mind that node administrators will still have to [install updates manually](https://docs.corda.net/releases/release-M8.2/creating-a-cordapp.html#installing-apps).
+
+Please read through the rest of the document for more information about the operational considerations and the available configuration options.
  
 # Structure
 
@@ -95,18 +109,6 @@ httpProxyUsername = "proxy_user"
 # Password for proxy authentication. Should be specified only if HTTP(S) proxy is used.
 httpProxyPassword = "P@$$w0rD"
 
-# RPC host of a Corda node to connect to. Should be specified only if corda-rpc or corda-auto transport is used.
-rpcHost = "localhost"
-
-# RPC port of a Corda node to connect to. Should be specified only if corda-rpc or corda-auto transport is used.
-rpcPort = "8003"
-
-# RPC username of a Corda node to connect to. Should be specified only if corda-rpc or corda-auto transport is used.
-rpcUsername = "johndoe"
-
-# RPC password of a Corda node to connect to. Should be specified only if corda-rpc or corda-auto transport is used.
-rpcPassword = "10004"
-
 # List of CorDapps to sync from remote repos. Can sync multiple CorDapps from multiple remote repositories
 cordappSources = [
     {
@@ -175,9 +177,6 @@ bno="O=BNO,L=London,C=GB"
 
 Configuration is loaded from `cordapps/config/corda-updates-app.conf` file in the node's folder. Repository hoster node is required only if `corda-flows` transport is used.
 ```
-# URL of the repository where the hoster would serve the artifacts from. Supports http(s) and file transports. Proxies and authentication are not supported 
-remoteRepoUrl=file:/path/to/local/repository
-
 # Class that implements the SessionFilter interface. Optional.
 sessionFilter=com.my.app.MySessionFilter
 ```
