@@ -1,28 +1,13 @@
 CorDapp Distribution Service
 ============================
 
-*The README mentions corda-based transports that are going to be added in the future versions*.
+*This README and some KDocs mentions corda-based transports that are going to be added in the future versions*.
 
 CorDapp Distribution Service allows Corda network operators to distribute CorDapp updates to their network participants. Please see [this](./design/design.md) design doc for more details on the technical implementation.
 
 CorDapp Distribution Service utilises Maven repositories for artifact distribution (as CorDapps are effectively fat-jars). Network participants periodically query a remote repository for updates and download them locally. Installation of updates is not automated yet. Corda node administrators need to stop / update / restart their nodes manually.  
 
 CorDapp Distribution Service supports conventional HTTP(s) transport as well as bespoke Corda transports which are described in the further sections. 
-
-# Quickstart
-
-To start using CorDapp Distribution Service please follow the steps below:
-
-1. Download `corda-updates-shell` jar or build it by yourself. TODO: download link here
-2. Initialise a local repository via `java -jar corda-updates-shell-xxx.jar --mode=INIT`. Please see the [usage](#usage) section for more information about the supported parameters. By default, the local repository will be created under `~/.corda-updates` folder. 
-3. Add CorDapps that you would like to synchronize to `settings.conf`, which is located in the root of the local repository created on the previous step (`~/.corda-updates/settings.conf` by default). Please refer to [this](#hocon-configuration) section for more details about the configuration file format.
-4. Download `corda-updates-app` jar or build it by yourself. TODO: download link here
-5. Install the CorDapp to the network participant's nodes and configure it as described [here](#participant-cordapp-configuration). `configPath` should point to the `settings.conf` created on the step #2.
-6. If you are going to use [Corda-based transports](#corda-updates-transport) - then install the CorDapp to the repository hoster's node and configure it as described [here](#repository-hoster-cordapp-configuration).   
-7. Schedule periodic synchronization by invoking [ScheduleSyncFlow](#scheduling-synchronisation) from the Corda shell of every participant node.
-8. Done. When published, all updates will appear in the local repositories of participants. Please bear in mind that node administrators will still have to [install updates manually](https://docs.corda.net/releases/release-M8.2/creating-a-cordapp.html#installing-apps).
-
-Please read through the rest of the document for more information about the operational considerations and the available configuration options.
  
 # Structure
 
@@ -30,7 +15,6 @@ Please read through the rest of the document for more information about the oper
 * **corda-updates-core** - API over Maven Resolver.
 * **corda-updates-transport** - custom transport implementations for Maven Resolver over Corda Flows.
 * **corda-updates-app** - CorDapp that allows participants to schedule periodic synchronization and provides a basic functionality for version reporting.
-* **corda-updates-shell** - command line interface.
 
 # corda-updates-core
 
@@ -140,51 +124,6 @@ cordappSources = [
     }
 ]
 ```
-
-# corda-updates-shell
-
-`corda-updates-shell` provides a Command Line Interface for CorDapp Distribution Service. The CLI is build using the [CordaCLIWrapper](https://docs.corda.net/head/cli-ux-guidelines.html) and supports all of its features.
-
-## Usage
-
-`corda-updates-shell` supports the following modes:
-
-* **INIT**. Initialises an empty local repository and creates a sample configuration file.
-```bash
-# Will initialize an empty local repository and create a settings.conf file under USER.HOME/.corda-updates folder
-java -jar corda-updates-shell-xxx.jar --mode=INIT
-
-# Will initialize an empty local repository and create a settings.conf file under ~/.my-repo
-java -jar corda-updates-shell-xxx.jar --mode=INIT --configPath="~/.my-repo"
-
-```  
-* **SYNC**. Synchronises the contents of the local repository with the remote repositories, configured in the `settings.conf`. All versions that are missing in the local repository will be downloaded during the synchronisation. 
-```bash
-# Will pull down locally missing versions of all CorDapps that are configured in the settings.conf file. 
-java -jar corda-updates-shell-xxx.jar --mode=SYNC
-
-# Will pull down locally missing versions of "net.corda:corda-finance" CorDapp starting from the version 0 and up to the version 2.0 not inclusively.
-java -jar corda-updates-shell-xxx.jar --mode=SYNC --cordapp="net.corda:corda-finance:[,2.0)"
-
-```  
-* **PRINT_VERSIONS**. Prints available versions of the specified CorDapp to the screen.
-```bash
-# Will print all available versions of "net.corda:corda-finance" CorDapp. 
-java -jar corda-updates-shell-xxx.jar --mode=PRINT_VERSIONS --cordapp="net.corda:corda-finance:[,)"
-```
-
-Configuration file is looked up in the following order:
-* A custom path if one was provided via `--configPath` parameter 
-* `settings.conf` in the current working folder
-* `settings.conf` in `USER.HOME/.corda-updates`
-
-## How to use the shell
-
-1. Download `corda-updates-shell` jar or build it by yourself. TODO: download link here
-2. Initialise a local repository via `java -jar corda-updates-shell-xxx.jar --mode=INIT`
-3. Add CorDapps that you would like to watch to the `settings.conf`
-4. Start using the utility by invoking `SYNC` or `PRINT_VERSIONS` commands
-
 # corda-updates-app
 
 `corda-updates-app`is a CorDapp that provides the following functionality:
@@ -194,7 +133,7 @@ Configuration file is looked up in the following order:
 
 ## Scheduling synchronisation
 
-Updates can be scheduled via `ScheduleSyncFlow`. Synchronisation interval is driven by `syncInterval` configuration property and defaults to *once in 5 hours*. `ScheduleSyncFlow` can be started from the shell or via RPC. 
+Updates can be scheduled via `ScheduleSyncFlow`. Synchronisation interval is driven by `syncInterval` configuration property and defaults to *once in 5 hours*. `ScheduleSyncFlow` can be started from Corda shell or via RPC. 
 
 ```kotlin
 // synchronisation should be launched asynchronously if corda-flows transport is used 
