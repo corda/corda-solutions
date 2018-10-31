@@ -62,11 +62,11 @@ Flows that can be invoked by BNO:
 
 Activation and suspension transactions don't require the member's signature. BNO is eligible to suspend memberships unilaterally, for example as a result of a governance action.  
 
-### Multiple Business Networks
+## Multiple Business Networks
 
 BNMS provides a support for multiple business networks. Business Networks are uniquely identified by BNO's `Party` object. All flows that assume any member -> BNO interactions take BNO's identity as a mandatory parameter.   
 
-### Membership Auto Approval
+## Membership Auto Approval
 
 If you don't want to manually activate every membership request and would like to instead automate the process then implement the interface `MembershipAutoAcceptor` and add a respective entry to the BNO's configuration file.
 
@@ -99,7 +99,7 @@ membershipContractName = "com.app.MyMembershipContract"
 membershipAutoAcceptor = "com.app.MyMembershipAutoAcceptor"
 
 ```
-### Designing your flows for business networks
+## Designing your flows for business networks
 
 As Business Networks is an *application level* concept, memberships have to be verified manually inside the flows of your CorDapp. *Corda does not perform any membership checks by itself*.
 
