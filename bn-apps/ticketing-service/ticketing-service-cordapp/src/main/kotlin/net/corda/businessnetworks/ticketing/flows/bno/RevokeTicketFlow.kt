@@ -6,6 +6,7 @@ import net.corda.businessnetworks.ticketing.MultipleTicketsFound
 import net.corda.businessnetworks.ticketing.NotBNOException
 import net.corda.businessnetworks.ticketing.TicketNotFound
 import net.corda.businessnetworks.ticketing.contracts.Ticket
+import net.corda.businessnetworks.ticketing.getTicketStateAndRef
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.contracts.UniqueIdentifier
 import net.corda.core.flows.*
@@ -35,20 +36,10 @@ class RevokeTicketByLinearIdFlow(val linearId : String) : FlowLogic<SignedTransa
     @Suspendable
     override fun call(): SignedTransaction {
         progressTracker.currentStep = LOOKING_FOR_THE_TICKET
-        val ticket = getTicketStateAndRef()
+        val ticket = serviceHub.vaultService.getTicketStateAndRef(linearId)
 
         progressTracker.currentStep = REVOKING_THE_TICKET
         return subFlow(RevokeTicketFlow(ticket))
-    }
-
-    private fun getTicketStateAndRef() : StateAndRef<Ticket.State<*>> {
-        val criteria = QueryCriteria.LinearStateQueryCriteria(linearId = listOf(UniqueIdentifier.fromString(linearId)))
-        val tickets = serviceHub.vaultService.queryBy<Ticket.State<*>>(criteria).states
-        return when {
-            tickets.isEmpty() -> throw TicketNotFound(linearId, null)
-            tickets.size > 1 -> throw MultipleTicketsFound(linearId, null, tickets.size)
-            else -> tickets.single()
-        }
     }
 }
 

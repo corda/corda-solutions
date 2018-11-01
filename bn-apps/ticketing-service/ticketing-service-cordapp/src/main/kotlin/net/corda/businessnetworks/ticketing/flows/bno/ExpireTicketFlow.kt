@@ -4,6 +4,7 @@ import co.paralleluniverse.fibers.Suspendable
 import net.corda.businessnetworks.ticketing.MultipleTicketsFound
 import net.corda.businessnetworks.ticketing.TicketNotFound
 import net.corda.businessnetworks.ticketing.contracts.Ticket
+import net.corda.businessnetworks.ticketing.getTicketStateAndRef
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.contracts.StateRef
 import net.corda.core.flows.*
@@ -31,7 +32,7 @@ class ExpireTicketFromSchedulerFlow(val ticketStateRef: StateRef) : FlowLogic<Un
     @Suspendable
     override fun call() {
         progressTracker.currentStep = LOOKING_FOR_THE_TICKET
-        val ticket = getTicketStateAndRef()
+        val ticket = serviceHub.vaultService.getTicketStateAndRef(ticketStateRef)
 
         progressTracker.currentStep = REVOKING_THE_TICKET_IF_WE_ARE_THE_BNO
         if(ticket.state.data.bno != ourIdentity) {
@@ -44,15 +45,6 @@ class ExpireTicketFromSchedulerFlow(val ticketStateRef: StateRef) : FlowLogic<Un
 
     }
 
-    private fun getTicketStateAndRef() : StateAndRef<Ticket.State<*>> {
-        val criteria = QueryCriteria.VaultQueryCriteria(stateRefs = listOf(ticketStateRef))
-        val tickets = serviceHub.vaultService.queryBy<Ticket.State<*>>(criteria).states
-        return when {
-            tickets.isEmpty() -> throw TicketNotFound(null, ticketStateRef)
-            tickets.size > 1 -> throw MultipleTicketsFound(null, ticketStateRef, tickets.size)
-            else -> tickets.single()
-        }
-    }
 }
 
 
