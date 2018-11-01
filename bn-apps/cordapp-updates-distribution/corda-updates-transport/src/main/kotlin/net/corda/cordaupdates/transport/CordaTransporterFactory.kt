@@ -40,10 +40,16 @@ class CordaTransporterFactory : TransporterFactory {
     }
 }
 
+/**
+ * Supported transport modes
+ */
 object Transports {
     const val CORDA_RPC = "corda-rpc"
     const val CORDA_FLOWS = "corda-flows"
     const val CORDA_AUTO = "corda-auto"
 }
 
+/**
+ * This exception might be thrown by [CordaTransporterFactory] if there was an error with instantiating a [Transporter]
+ */
 class CordaTransportException(message : String) : Exception(message)

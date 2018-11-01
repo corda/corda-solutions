@@ -48,7 +48,7 @@ class GetResourceFlow(private val resourceLocation : String, private val reposit
 
 /**
  * This flows should exist at the repository hoster's node. The flow fetches an artifact from a configured file- or http(s)- based repository,
- * splits it into chunks of [serviceHub.networkParameters.maxMessageSize] / 2 size and send back to the requester.
+ * splits it into chunks of [serviceHub.networkParameters.maxMessageSize] size and send back to the requester.
  *
  * The flow supports [SessionFilter]s to restrict unauthorised traffic.
  */
@@ -59,7 +59,7 @@ class GetResourceFlowResponder(session : FlowSession) : AbstractRepositoryHoster
         val location = session.receive<String>().unwrap { it }
         val bytes = getArtifactBytes(location)
 
-        val maxMessageSizeBytes = serviceHub.networkParameters.maxMessageSize / 2
+        val maxMessageSizeBytes = serviceHub.networkParameters.maxMessageSize
 
         session.send(bytes.size)
         for (i in 0..bytes.size step maxMessageSizeBytes) {

@@ -29,6 +29,8 @@ import org.eclipse.aether.util.ConfigUtils
  * When this transport is used from Corda OS, [CordaMavenResolver] should be invoked from a non-flow thread, to prevent the invoking flow from
  * blocking the only thread available to the flows executor. For example.
  *
+ * Under the hood [FlowsTransporter] uses [GetResourceFlow] and [PeekResourceFlow] to transfer the content.
+ *
  * @CordaService
  * class ResolverExecutor(val appServiceHub : AppServiceHub) : SingletonSerializeAsToken() {
  *     companion object {
@@ -87,7 +89,8 @@ class FlowsTransporter(private val session : RepositorySystemSession,
 }
 
 /**
- * Transport over Corda RPC. RPC credentials should be provided via custom session properties.
+ * Transport over Corda RPC. Same to [FlowsTransporter] with a difference that [GetResourceFlow] and [PeekResourceFlow] are triggered via RPC instead.
+ * RPC credentials should be provided via custom session properties.
  */
 class RPCTransporter(private val session : RepositorySystemSession,
                      private val repository : RemoteRepository) : AbstractTransporter() {
@@ -133,6 +136,9 @@ class RPCTransporter(private val session : RepositorySystemSession,
     }
 }
 
-
+/**
+ * This exception might be thrown by the transporter flows to indicate that the requested content has not been found at the responding side.
+ * Maven Resolver distinguishes between resource_not_found exceptions and everything else.
+ */
 @CordaSerializable
 class ResourceNotFoundException : FlowException()
