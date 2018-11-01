@@ -2,7 +2,7 @@
 
 # Business Network Membership Service (BNMS)
 
-Contents of this article assume reader's familiarity with the concepts of Business Network and Business Network Operator. Please see [this page](https://solutions.corda.net/business-networks/intro.html) for more information about Business Networks.
+*Contents of this article assume the reader's familiarity with the concepts of Business Networks and Business Network Operator. Please see [this page](https://solutions.corda.net/business-networks/intro.html) for more information on this topic.*
 
 Business Network Membership Service aims to solve the following problems:
 * On-boarding of new members to a business network. 
@@ -22,30 +22,28 @@ Please see [FullBNMSFlowDemo](./membership-service/src/test/kotlin/net/corda/bus
 
 ## Structure
 
-BNMS provides implementations of flows, states and contracts to model memberships on a Business Network.
+BNMS contains implementations of flows, states and contracts to model memberships on a Business Network. BNO and members are required to have both of the CorDapps installed.
 
 BNMS consists of 2 CorDapps:
 * `membership-service-contracts-and-states` - contracts and states
 * `membership-service` - flows for both BNO and member CorDapps 
 
-Both of the CorDapps are required to be installed to the nodes of all Business Network participants as well as to the BNO's node.
-
 ### States
 
-Memberships are represented with a `MembershipState`. Users can associate a custom metadata with their `MembershipState` via `membershipMetadata` field. `MembershipState` is generic and doesn't enforce any restrictions over the type of the metadata.
+Memberships are represented with a [MembershipState](./membership-service-contracts-and-states/src/main/kotlin/net/corda/businessnetworks/membership/states/Membership.kt). Users can associate a custom metadata with their `MembershipState` via `membershipMetadata` field. `MembershipState` is generic and doesn't enforce any restrictions over the type of the metadata.
 
 `MembershipState` can exist in the following statuses: 
-* `PENDING` - the very first status of each membership. To be able to transact on the Business Network `PENDING` memberships need to be activated first.
+* `PENDING` - the very first status for all newly issued memberships. To be able to transact on the Business Network `PENDING` memberships need to be activated first.
 * `ACTIVE` - active membership holders can transact on the Business Network.
-* `SUSPENDED` - Business Network members can be temporarily suspended by their BNO as a result of a governance action for example. Suspended members can't transact on the Business Network.
+* `SUSPENDED` - Business Network members can be temporarily suspended by their BNO, for example as a result of a governance action. Suspended members can't transact on the Business Network.
 
 ### Membership contract
 
-`MembershipState` evolution is curated by `MembershipContract`. However, `MembershipContract` can't verify evolution of the membership metadata as it's a generic parameter.   
+`MembershipState` evolution is curated by [MembershipContract](./membership-service-contracts-and-states/src/main/kotlin/net/corda/businessnetworks/membership/states/Membership.kt). By default `MembershipContract` verifies evolution of `MembershipState`s only and doesn't verify an evolution of memberships metadata, as it's a generic parameter.   
 
 Membership metadata evolution can be verified in the following ways:
 * In the responding flows, by overriding them at the BNO's side (_off-ledger verification_). Will be introduced in Corda 4.
-* By extending the `MembershipContract` (_on-ledger verification_). `MembershipContract` is an `open` class and can be extended by users to add a custom verification logic. A custom contract implementation can be provided to the BNMS via `membershipContractName` configuration property supported by both BNO and member CorDapps.
+* By extending the `MembershipContract` (_on-ledger verification_). `MembershipContract` is an `open` class and can be extended by users to add a custom verification logic. A custom contract implementation can be provided to the BNMS via `membershipContractName` configuration property.
 
 ### Flows
 
@@ -68,7 +66,7 @@ BNMS provides a support for multiple business networks. Business Networks are un
 
 ## Membership Auto Approval
 
-If you don't want to manually activate every membership request and would like to instead automate the process then implement the interface `MembershipAutoAcceptor` and add a respective entry to the BNO's configuration file.
+If you don't want to manually activate every membership request and would like to instead automate the process then implement the interface `MembershipAutoAcceptor` and set `membershipAutoAcceptor` property in BNO's configuration file.
 
 ## Configuration 
 
@@ -151,8 +149,8 @@ When verifying a membership it's important to make sure that:
 
 The easiest way of making your flow *"business network aware"* is to extend from `BusinessNetworkAwareInitiatedFlow`. Otherwise a counterparty's membership verification would have to be performed manually.
 
-> It's important to keep in mind that applications which are designed for Business Networks should be taking the list of members from their membership service instead of the Network Map (for example to populate a ComboBox in the UI). 
+> It's important to keep in mind that applications which are designed for Business Networks should be taking the list of available peers from their membership service instead of the Network Map (for example to populate a ComboBox in the UI). 
 
-> Please note that during development you can take advantage of extending from `BusinessNetworkOperatorFlowLogic` and `BusinessNetworkOperatorInitiatedFlow` if you are developing custom flows for BNO.
+> Please note that during development you can take an advantage of extending from `BusinessNetworkOperatorFlowLogic` and `BusinessNetworkOperatorInitiatedFlow` if you are developing custom flows for BNO.
 
  
