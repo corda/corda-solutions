@@ -46,12 +46,12 @@ class ConfirmMemberHoldsTicketFlowResponder(flowSession : FlowSession) : Busines
 
     companion object {
         object RECEIVING_REQUEST : ProgressTracker.Step("Receiving request")
-        object LOOKNG_FOR_TICKET: ProgressTracker.Step("Looking for ticket")
+        object LOOKING_FOR_TICKET: ProgressTracker.Step("Looking for ticket")
         object SENDING_RESPONSE_BACK: ProgressTracker.Step("Sending response back")
 
         fun tracker() = ProgressTracker(
                 RECEIVING_REQUEST,
-                LOOKNG_FOR_TICKET,
+                LOOKING_FOR_TICKET,
                 SENDING_RESPONSE_BACK
         )
     }
@@ -64,7 +64,7 @@ class ConfirmMemberHoldsTicketFlowResponder(flowSession : FlowSession) : Busines
         val request = flowSession.receive<PartyAndSubject<Any>>().unwrap { it }
         logger.info("Received $request from ${flowSession.counterparty}")
 
-        progressTracker.currentStep = LOOKNG_FOR_TICKET
+        progressTracker.currentStep = LOOKING_FOR_TICKET
         val matchingTickets = findMatchingTickets(request.party, counterpartyMembership.state.data, request.subject)
         logger.info("All matching tickets: $matchingTickets")
 
