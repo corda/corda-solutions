@@ -79,6 +79,10 @@ data class SyncerConfiguration(
         val httpProxyPort : Int? = null,
         val httpProxyUsername : String? = null,
         val httpProxyPassword : String? = null,
+        val rpcHost : String? = null,
+        val rpcPort : Int? = null,
+        val rpcUsername : String? = null,
+        val rpcPassword : String? = null,
         val cordappSources : List<CordappSource>) {
     companion object {
         fun readFromFile(file : File) : SyncerConfiguration {
@@ -98,6 +102,10 @@ data class SyncerConfiguration(
                     conf.getIntOrNull("httpProxyPort"),
                     conf.getStringOrNull("httpProxyUsername"),
                     conf.getStringOrNull("httpProxyPassword"),
+                    conf.getStringOrNull("rpcHost"),
+                    conf.getIntOrNull("rpcPort"),
+                    conf.getStringOrNull("rpcUsername"),
+                    conf.getStringOrNull("rpcPassword"),
                     cordapps
             )
         }

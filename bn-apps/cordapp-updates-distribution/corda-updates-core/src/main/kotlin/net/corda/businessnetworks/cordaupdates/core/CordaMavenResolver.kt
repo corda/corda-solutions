@@ -1,5 +1,7 @@
 package net.corda.businessnetworks.cordaupdates.core
 
+import net.corda.cordaupdates.transport.SessionConfigurationProperties
+import net.corda.cordaupdates.transport.CordaTransporterFactory
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils.newSession
 import org.eclipse.aether.DefaultRepositorySystemSession
@@ -59,6 +61,10 @@ class CordaMavenResolver private constructor(private val remoteRepoUrl : String,
                    httpProxyPort : Int? = null,
                    httpProxyUsername : String? = null,
                    httpProxyPassword : String? = null,
+                   rpcHost : String? = null,
+                   rpcPort : Int? = null,
+                   rpcUsername : String? = null,
+                   rpcPassword : String? = null,
                    repositoryListener : RepositoryListener? = null,
                    transferListener : TransferListener? = null) : CordaMavenResolver {
             // setting up authentication
@@ -78,6 +84,12 @@ class CordaMavenResolver private constructor(private val remoteRepoUrl : String,
             }
 
             val configurationProperties = mutableMapOf<String, Any>()
+
+            // RPC options
+            rpcHost?.let { configurationProperties[SessionConfigurationProperties.RPC_HOST] = it }
+            rpcPort?.let { configurationProperties[SessionConfigurationProperties.RPC_PORT] = it }
+            rpcUsername?.let { configurationProperties[SessionConfigurationProperties.RPC_USERNAME] = it }
+            rpcPassword?.let { configurationProperties[SessionConfigurationProperties.RPC_PASSWORD] = it }
 
             // listeners can be used to report Maven Resolver progress
             val resolver = CordaMavenResolver(remoteRepoUrl!!, localRepoPath!!, authentication, proxy, configurationProperties)
@@ -100,6 +112,10 @@ class CordaMavenResolver private constructor(private val remoteRepoUrl : String,
                         httpProxyPort = syncerConf.httpProxyPort,
                         httpProxyUsername = syncerConf.httpProxyUsername,
                         httpProxyPassword = syncerConf.httpProxyPassword,
+                        rpcHost = syncerConf.rpcHost,
+                        rpcPort = syncerConf.rpcPort,
+                        rpcUsername = syncerConf.rpcUsername,
+                        rpcPassword = syncerConf.rpcPassword,
                         repositoryListener = repositoryListener,
                         transferListener = transferListener)
     }
@@ -112,6 +128,7 @@ class CordaMavenResolver private constructor(private val remoteRepoUrl : String,
         locator.addService<RepositoryConnectorFactory>(RepositoryConnectorFactory::class.java, BasicRepositoryConnectorFactory::class.java)
         locator.addService<TransporterFactory>(TransporterFactory::class.java, FileTransporterFactory::class.java)
         locator.addService<TransporterFactory>(TransporterFactory::class.java, HttpTransporterFactory::class.java)
+        locator.addService<TransporterFactory>(TransporterFactory::class.java, CordaTransporterFactory::class.java)
         locator.getService(RepositorySystem::class.java)
     }
 

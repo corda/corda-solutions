@@ -50,6 +50,10 @@ class CordappSyncerTest {
                 httpProxyPort = 187,
                 httpProxyUsername = "ProxyUsername",
                 httpProxyPassword = "ProxyPassword",
+                rpcHost = "localhost",
+                rpcPort = 8007,
+                rpcUsername = "RpcUsername",
+                rpcPassword = "RpcPassword",
                 cordappSources = listOf(
                         CordappSource(
                                 remoteRepoUrl = "http://search.maven.org",
