@@ -12,7 +12,7 @@ import net.corda.testing.node.MockNetworkNotarySpec
 import net.corda.testing.node.MockNodeParameters
 import net.corda.testing.node.StartedMockNode
 
-abstract class BusinessNetworksTestsSupport(val additionalPackages : List<String>) {
+abstract class BusinessNetworksTestsSupport(val additionalPackages : List<String>, val threadPerNode : Boolean = false) {
 
     val notaryName = CordaX500Name.parse("O=Notary,L=London,C=GB")
     val bnoName = CordaX500Name.parse("O=BNO,L=New York,C=US")
@@ -33,18 +33,26 @@ abstract class BusinessNetworksTestsSupport(val additionalPackages : List<String
         }
     }
 
+    open protected fun runNetwork() {
+        if(threadPerNode) {
+            Thread.sleep(3000) //3s is rather arbitrary. It's to ensure that things take place before proceeding to assertions.
+        } else {
+            mockNetwork.runNetwork()
+        }
+    }
+
     protected open fun createNetwork(participants : Int) {
         mockNetwork = MockNetwork(cordappPackages = listOf(
                                     "net.corda.businessnetworks.membership",
                                     "net.corda.businessnetworks.membership.states") + additionalPackages,
-                notarySpecs = listOf(MockNetworkNotarySpec(notaryName)))
+                notarySpecs = listOf(MockNetworkNotarySpec(notaryName)), threadPerNode = threadPerNode)
         bnoNode = mockNetwork.createNode(MockNodeParameters(legalName = bnoName))
 
         participantNodes = (1..participants).map {
             mockNetwork.createNode(MockNodeParameters(legalName = CordaX500Name.parse("O=Participant $it,L=London,C=GB")))
         }
 
-        mockNetwork.runNetwork()
+        runNetwork()
     }
 
     protected open fun stopNetwork() {
@@ -60,13 +68,13 @@ abstract class BusinessNetworksTestsSupport(val additionalPackages : List<String
 
     fun runRequestMembershipFlow(nodeToRunTheFlow : StartedMockNode, membershipMetadata : SimpleMembershipMetadata = SimpleMembershipMetadata(role="DEFAULT")) : SignedTransaction {
         val future = nodeToRunTheFlow.startFlow(RequestMembershipFlow(membershipMetadata))
-        mockNetwork.runNetwork()
+        runNetwork()
         return future.getOrThrow()
     }
 
     fun runActivateMembershipForPartyFlow(nodeToRunTheFlow : StartedMockNode, party : Party) : SignedTransaction {
         val future = nodeToRunTheFlow.startFlow(ActivateMembershipForPartyFlow(party))
-        mockNetwork.runNetwork()
+        runNetwork()
         return future.getOrThrow()
     }
 

@@ -42,7 +42,7 @@ class Ticket : Contract {
             "Input state of a ticket activation transaction must be pending" using (inputState.isPending())
             "Output state of a ticket activation transaction must be active" using (outputState.isActive())
             "The BNO has to be among the signers of the activation" using (command.signers.contains(outputState.bno.owningKey))
-            "Input and output states of a ticket activation transaction shouldn't change anything but status" using (inputState.withNewStatus(TicketStatus.ACTIVE) == outputState)
+            "Input and output states of a ticket activation transaction shouldn't change anything but status" using (inputState::class == outputState::class && inputState.withNewStatus(TicketStatus.ACTIVE) == outputState)
 
         }
 
@@ -192,13 +192,17 @@ class Ticket : Contract {
     class ExpiringWideTicket<T>(holder : Party,
                         bno : Party,
                         subject : T,
-                        status : TicketStatus = TicketStatus.PENDING,
                         val expires : Instant,
+                        status : TicketStatus = TicketStatus.PENDING,
                         issued : Instant = Instant.now(),
                         linearId : UniqueIdentifier = UniqueIdentifier()) : WideTicket<T>(holder, bno, subject, status, issued, linearId) {
 
         override fun expireAt(): Instant? {
             return expires
+        }
+
+        override fun withNewStatus(newStatus: TicketStatus): State<T> {
+            return ExpiringWideTicket(holder, bno, subject, expires, newStatus, issued, linearId)
         }
 
         override fun equals(other: Any?): Boolean {

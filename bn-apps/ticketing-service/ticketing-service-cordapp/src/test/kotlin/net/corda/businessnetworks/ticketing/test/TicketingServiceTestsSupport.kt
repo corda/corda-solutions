@@ -11,12 +11,13 @@ import net.corda.core.node.services.queryBy
 import net.corda.core.serialization.CordaSerializable
 import net.corda.core.utilities.getOrThrow
 import net.corda.testing.node.StartedMockNode
+import java.time.Instant
 import kotlin.test.assertEquals
 
 
-abstract class TicketingServiceTestsSupport() : BusinessNetworksTestsSupport(listOf("net.corda.businessnetworks.ticketing.contracts",
+abstract class TicketingServiceTestsSupport(threadPerNode : Boolean = false) : BusinessNetworksTestsSupport(listOf("net.corda.businessnetworks.ticketing.contracts",
                                                                                     "net.corda.businessnetworks.ticketing.flows.member",
-                                                                                     "net.corda.businessnetworks.ticketing.test.flows")) {
+                                                                                     "net.corda.businessnetworks.ticketing.test.flows"),threadPerNode) {
 
     @CordaSerializable
     enum class TestTicketSubject {
@@ -34,9 +35,14 @@ abstract class TicketingServiceTestsSupport() : BusinessNetworksTestsSupport(lis
         return acquireATicket(memberNode, ticket)
     }
 
+    protected fun <T> acquireAnExpiringWideTicketAndConfirmAssertions(memberNode : StartedMockNode, subject : T, expiresAt : Instant) : String {
+        val ticket = Ticket.ExpiringWideTicket(memberNode.party(), bnoNode.party(), subject, expiresAt)
+        return acquireATicket(memberNode, ticket)
+    }
+
     protected fun <T> requestATicket(memberNode: StartedMockNode, ticket : Ticket.State<T>) : String {
         val future = memberNode.startFlow(RequestTicketFlow(ticket))
-        mockNetwork.runNetwork()
+        runNetwork()
         future.getOrThrow()
 
         lateinit var ticketId : String
@@ -60,7 +66,7 @@ abstract class TicketingServiceTestsSupport() : BusinessNetworksTestsSupport(lis
 
     protected fun activateATicket(memberNode: StartedMockNode, ticketLinearId : String) {
         val future = bnoNode.startFlow(ActivateTicketByLinearIdFlow(ticketLinearId))
-        mockNetwork.runNetwork()
+        runNetwork()
         future.getOrThrow()
 
         //confirm it's in the vaults in active state
@@ -79,7 +85,7 @@ abstract class TicketingServiceTestsSupport() : BusinessNetworksTestsSupport(lis
 
     protected fun revokeATicketAndConfirmAssertions(memberNode: StartedMockNode, ticketLinearId : String) {
         val future = bnoNode.startFlow(RevokeTicketByLinearIdFlow(ticketLinearId))
-        mockNetwork.runNetwork()
+        runNetwork()
         future.getOrThrow()
 
         //confirm it's gone from the vaults
@@ -102,7 +108,7 @@ abstract class TicketingServiceTestsSupport() : BusinessNetworksTestsSupport(lis
 
     protected fun runGuineaPigFlow(initiator : StartedMockNode, initiatee : StartedMockNode) : String {
         val future = initiator.startFlow(TestInitiator(initiatee.party()))
-        mockNetwork.runNetwork()
+        runNetwork()
         return future.getOrThrow()
     }
 
