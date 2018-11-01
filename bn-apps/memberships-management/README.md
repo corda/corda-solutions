@@ -97,7 +97,7 @@ membershipContractName = "com.app.MyMembershipContract"
 membershipAutoAcceptor = "com.app.MyMembershipAutoAcceptor"
 
 ```
-## Designing your flows for business networks
+## Designing your flows for Business Networks
 
 As Business Networks is an *application level* concept, memberships have to be verified manually inside the flows of your CorDapp. *Corda does not perform any membership checks by itself*.
 
