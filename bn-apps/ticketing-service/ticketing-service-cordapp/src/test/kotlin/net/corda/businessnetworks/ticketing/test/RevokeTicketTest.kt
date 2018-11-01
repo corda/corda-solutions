@@ -1,6 +1,7 @@
 package net.corda.businessnetworks.ticketing.test
 
 import net.corda.businessnetworks.ticketing.TriggeringThisFlowRequiresTicket
+import net.corda.businessnetworks.ticketing.test.support.TicketingServiceTestsSupport
 import org.junit.Test
 import kotlin.test.assertFalse
 

@@ -1,4 +1,4 @@
-package net.corda.businessnetworks.ticketing.test
+package net.corda.businessnetworks.ticketing.test.support
 
 import net.corda.businessnetworks.ticketing.contracts.Ticket
 import net.corda.businessnetworks.ticketing.contracts.TicketStatus

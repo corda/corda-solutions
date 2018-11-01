@@ -3,7 +3,7 @@ package net.corda.businessnetworks.ticketing.test.flows
 import co.paralleluniverse.fibers.Suspendable
 import net.corda.businessnetworks.membership.member.support.BusinessNetworkAwareFlowLogic
 import net.corda.businessnetworks.ticketing.flows.member.support.TicketRequiringInitiatedFlow
-import net.corda.businessnetworks.ticketing.test.TicketingServiceTestsSupport
+import net.corda.businessnetworks.ticketing.test.support.TicketingServiceTestsSupport
 import net.corda.core.flows.FlowSession
 import net.corda.core.flows.InitiatedBy
 import net.corda.core.flows.InitiatingFlow
