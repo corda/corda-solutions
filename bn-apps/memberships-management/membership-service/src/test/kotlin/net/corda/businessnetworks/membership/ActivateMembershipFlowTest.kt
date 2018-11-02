@@ -1,45 +1,39 @@
 package net.corda.businessnetworks.membership
 
-import net.corda.businessnetworks.membership.bno.OnMembershipActivated
+import co.paralleluniverse.fibers.Suspendable
+import net.corda.businessnetworks.membership.bno.ActivateMembershipFlow
+import net.corda.businessnetworks.membership.bno.OnMembershipChanged
 import net.corda.businessnetworks.membership.bno.service.BNOConfigurationService
+import net.corda.businessnetworks.membership.member.support.BusinessNetworkAwareInitiatedFlow
 import net.corda.businessnetworks.membership.states.MembershipContract
-import org.junit.After
-import org.junit.Before
+import net.corda.core.flows.FlowLogic
+import net.corda.core.flows.FlowSession
+import net.corda.core.identity.CordaX500Name
+import net.corda.core.identity.Party
+import net.corda.core.transactions.SignedTransaction
+import net.corda.core.utilities.getOrThrow
+import net.corda.core.utilities.unwrap
+import net.corda.testing.node.StartedMockNode
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.test.fail
 
-class ActivateMembershipFlowTest : AbstractFlowTest(2) {
+class ActivateMembershipFlowTest : AbstractFlowTest(
+        numberOfBusinessNetworks = 2,
+        numberOfParticipants = 4,
+        participantRespondingFlows = listOf(NotificationsCounterFlow::class.java)) {
 
-    override fun registerFlows() {
-        participantsNodes.forEach { it.registerInitiatedFlow(TestNotifyMembersFlowResponder::class.java) }
-    }
+    private fun testMembershipActivation(activateCallback : (bnoNode : StartedMockNode, participantNode : StartedMockNode) -> SignedTransaction) {
+        val bnoNode = bnoNodes.first()
+        val participantNode = participantsNodes.first()
 
-    @Before
-    override fun setup() {
-        super.setup()
-        // This is ugly, but there is no other way to check whether the responding flow was actually triggered
-        TestNotifyMembersFlowResponder.NOTIFICATIONS.clear()
-    }
-
-    @After
-    override fun tearDown() {
-        super.tearDown()
-        TestNotifyMembersFlowResponder.NOTIFICATIONS.clear() //if we don't do that it can interfere with tests in other classes
-    }
-
-    @Test
-    fun `membership activation should succeed`() {
-        val memberNode = participantsNodes.first()
-        val memberParty = identity(memberNode)
-
-        runRequestMembershipFlow(memberNode)
+        runRequestMembershipFlow(bnoNode, participantNode)
 
         // membership state before activation
-        val inputMembership = getMembership(memberNode, memberParty)
+        val inputMembership = getMembership(participantNode, participantNode.identity(), bnoNode.identity())
 
-        val stx = runActivateMembershipFlow(bnoNode, memberParty)
+        val stx = activateCallback(bnoNode, participantNode)
         stx.verifyRequiredSignatures()
 
         val outputTxState = stx.tx.outputs.single()
@@ -49,67 +43,70 @@ class ActivateMembershipFlowTest : AbstractFlowTest(2) {
         assert(command.value is MembershipContract.Commands.Activate)
         assert(stx.tx.inputs.single() == inputMembership.ref)
 
-        val notification = TestNotifyMembersFlowResponder.NOTIFICATIONS.single()
-        assert(notification.first == memberParty)
-        assert(notification.second is OnMembershipActivated)
+        // making sure that a correct notification has been send
+        val membershipStateAndRef = getMembership(bnoNode, participantNode.identity(), bnoNode.identity())
+        val notification = NotificationsCounterFlow.NOTIFICATIONS.single()
+        assertEquals(NotificationHolder(participantNode.identity(), bnoNode.identity(), OnMembershipChanged(membershipStateAndRef)), notification)
     }
 
     @Test
-    fun `membership activation should succeed when using convenience flow`() {
-        val memberNode = participantsNodes.first()
-        val memberParty = identity(memberNode)
-
-        runRequestMembershipFlow(memberNode)
-
-        // membership state before activation
-        val inputMembership = getMembership(memberNode, memberParty)
-
-        val stx = runActivateMembershipForPartyFlow(bnoNode, memberParty)
-        stx.verifyRequiredSignatures()
-
-        val outputTxState = stx.tx.outputs.single()
-        val command = stx.tx.commands.single()
-
-        assert(MembershipContract.CONTRACT_NAME == outputTxState.contract)
-        assert(command.value is MembershipContract.Commands.Activate)
-        assert(stx.tx.inputs.single() == inputMembership.ref)
-
-        val notification = TestNotifyMembersFlowResponder.NOTIFICATIONS.single()
-        assert(notification.first == memberParty)
-        assert(notification.second is OnMembershipActivated)
+    fun `membership activation happy path`() = testMembershipActivation { bnoNode, participantNode ->
+        runActivateMembershipFlow(bnoNode, participantNode.identity())
     }
 
+    @Test
+    fun `membership activation should succeed when using a convenience flow`() = testMembershipActivation { bnoNode, participantNode ->
+        runActivateMembershipForPartyFlow(bnoNode, participantNode.identity())
+    }
 
     @Test
     fun `only BNO should be able to start the flow`() {
-        val memberNode = participantsNodes.first()
-        val memberParty = identity(memberNode)
+        val bnoNode = bnoNodes.first()
+        val participantNode = participantsNodes.first()
 
-        runRequestMembershipFlow(memberNode)
+        runRequestMembershipFlow(bnoNode, participantNode)
+        val membership = getMembership(participantNode, participantNode.identity(), bnoNode.identity())
         try {
-            runActivateMembershipFlow(memberNode, memberParty)
+            val future = participantNode.startFlow(ActivateMembershipFlow(membership))
+            mockNetwork.runNetwork()
+            future.getOrThrow()
             fail()
         } catch (e : NotBNOException) {
-            assertEquals("This node is not the business network operator of this membership", e.message)
+            assertEquals("This node is not the business network operator for this membership", e.message)
         }
     }
 
     @Test
     fun `membership can be auto activated`() {
+        val bnoNode = bnoNodes.first()
         val bnoConfiguration = bnoNode.services.cordaService(BNOConfigurationService::class.java)
-        bnoConfiguration.reloadPropertiesFromFile(fileFromClasspath("membership-service-with-auto-approver.conf"))
-        val memberNode = participantsNodes.first()
-        val memberParty = identity(memberNode)
+        bnoConfiguration.reloadConfigurationFromFile(fileFromClasspath("membership-service-with-auto-approver.conf"))
+        val participantNode = participantsNodes.first()
 
-        runRequestMembershipFlow(memberNode)
+        runRequestMembershipFlow(bnoNode, participantNode)
 
         // membership state before activation
-        val inputMembership = getMembership(memberNode, memberParty)
+        val inputMembership = getMembership(participantNode, participantNode.identity(), bnoNode.identity())
         assertTrue(inputMembership.state.data.isActive())
 
+        val updatedMembership = getMembership(bnoNode, participantNode.identity(), bnoNode.identity())
+        assertEquals(NotificationHolder(participantNode.identity(), bnoNode.identity(), OnMembershipChanged(updatedMembership)), NotificationsCounterFlow.NOTIFICATIONS.single())
+    }
+}
 
-        val notification = TestNotifyMembersFlowResponder.NOTIFICATIONS.single()
-        assert(notification.first == memberParty)
-        assert(notification.second is OnMembershipActivated)
+open class AbstractDummyInitiatingFlow(private val counterparty : Party) : FlowLogic<Unit>() {
+    @Suspendable
+    override fun call() {
+        initiateFlow(counterparty).sendAndReceive<String>("Hello")
+    }
+}
+
+open class AbstractBNAwareRespondingFlow(session : FlowSession, private val bnoName : String) : BusinessNetworkAwareInitiatedFlow<Unit>(session)  {
+    override fun bnoIdentity()  = serviceHub.identityService.wellKnownPartyFromX500Name(CordaX500Name.parse(bnoName))!!
+
+    @Suspendable
+    override fun onOtherPartyMembershipVerified() {
+        flowSession.receive<String>().unwrap { it }
+        flowSession.send("Hello")
     }
 }

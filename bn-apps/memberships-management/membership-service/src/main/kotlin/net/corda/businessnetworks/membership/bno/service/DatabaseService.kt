@@ -1,5 +1,6 @@
 package net.corda.businessnetworks.membership.bno.service
 
+import net.corda.businessnetworks.membership.states.MembershipContract
 import net.corda.businessnetworks.membership.states.MembershipState
 import net.corda.businessnetworks.membership.states.MembershipStateSchemaV1
 import net.corda.core.contracts.StateAndRef
@@ -35,17 +36,23 @@ class DatabaseService(val serviceHub : ServiceHub) : SingletonSerializeAsToken()
         session.prepareStatement(nativeQuery).execute()
     }
 
-    fun getMembership(member : Party) : StateAndRef<MembershipState<Any>>? {
-        val memberEqual
-                = builder { MembershipStateSchemaV1.PersistentMembershipState::member.equal(member) }
+    fun getMembership(member : Party, bno : Party, contract : String) : StateAndRef<MembershipState<Any>>? {
         val criteria = QueryCriteria.VaultQueryCriteria(Vault.StateStatus.UNCONSUMED)
-                .and(QueryCriteria.VaultCustomQueryCriteria(memberEqual))
-        val states = serviceHub.vaultService.queryBy<MembershipState<Any>>(criteria).states
+                .and(memberCriteria(member))
+                .and(bnoCriteria(bno))
+        // filtering out the states validated by a correct contract
+        val states = serviceHub.vaultService.queryBy<MembershipState<Any>>(criteria).states.filterByContract(contract)
         return if (states.isEmpty()) null else (states.sortedBy { it.state.data.modified }.last())
     }
 
-    fun getAllMemberships() = serviceHub.vaultService.queryBy<MembershipState<Any>>().states
-    fun getActiveMemberships() = getAllMemberships().filter { it.state.data.isActive() }
+    fun getAllMemberships(bno : Party, contract : String) : List<StateAndRef<MembershipState<Any>>> {
+        val criteria = QueryCriteria.VaultQueryCriteria(Vault.StateStatus.UNCONSUMED)
+                .and(bnoCriteria(bno))
+        return serviceHub.vaultService.queryBy<MembershipState<Any>>(criteria).states.filterByContract(contract)
+    }
+
+    fun getActiveMemberships(bno : Party, contract : String)
+            = getAllMemberships(bno, contract).filter { it.state.data.isActive() }
 
     /**
      * This method exists to prevent the same member from being able to request a membership multiple times, while their first membership transaction is being processed.
@@ -75,4 +82,10 @@ class DatabaseService(val serviceHub : ServiceHub) : SingletonSerializeAsToken()
         statement.setString(1, party.name.toString())
         statement.executeUpdate()
     }
+
+    private fun List<StateAndRef<MembershipState<Any>>>.filterByContract(contract : String) = this.filter { it.state.contract == contract }
+    private fun memberCriteria(member : Party)
+            = QueryCriteria.VaultCustomQueryCriteria(builder { MembershipStateSchemaV1.PersistentMembershipState::member.equal(member) })
+    private fun bnoCriteria(bno: Party)
+            = QueryCriteria.VaultCustomQueryCriteria(builder { MembershipStateSchemaV1.PersistentMembershipState::bno.equal(bno) })
 }

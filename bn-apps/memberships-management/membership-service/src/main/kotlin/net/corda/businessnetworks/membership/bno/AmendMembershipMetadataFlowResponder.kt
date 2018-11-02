@@ -18,7 +18,7 @@ import net.corda.core.utilities.unwrap
 
 /**
  * BNO's responder to the [AmendMembershipMetadataFlow]. Receives an [AmendMembershipMetadataRequest], issues an amend membership transaction
- * and notifies all business network members via [OnMembershipChanged] when the transaction is finalised. Only ACTIVE embers can
+ * and notifies all business network members via [OnMembershipChanged] when the transaction is finalised. Only ACTIVE members can
  * amend their metadata.
  */
 @InitiatedBy(AmendMembershipMetadataFlow::class)
@@ -50,7 +50,7 @@ class AmendMembershipMetadataFlowResponder(flowSession : FlowSession) : Business
 
         // notify members about the changes
         val databaseService = serviceHub.cordaService(DatabaseService::class.java)
-        val membershipStateAndRef = databaseService.getMembership(flowSession.counterparty)!!
-        subFlow(NotifyActiveMembersFlow(OnMembershipChanged(membershipStateAndRef)))
+        val amendedMembership = databaseService.getMembership(flowSession.counterparty, ourIdentity, configuration.membershipContractName())!!
+        subFlow(NotifyActiveMembersFlow(OnMembershipChanged(amendedMembership)))
     }
 }

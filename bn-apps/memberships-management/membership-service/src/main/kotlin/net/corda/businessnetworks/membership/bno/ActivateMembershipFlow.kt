@@ -2,6 +2,7 @@ package net.corda.businessnetworks.membership.bno
 
 import co.paralleluniverse.fibers.Suspendable
 import net.corda.businessnetworks.membership.bno.service.BNOConfigurationService
+import net.corda.businessnetworks.membership.bno.service.DatabaseService
 import net.corda.businessnetworks.membership.bno.support.BusinessNetworkOperatorFlowLogic
 import net.corda.businessnetworks.membership.states.MembershipContract
 import net.corda.businessnetworks.membership.states.MembershipState
@@ -40,8 +41,10 @@ class ActivateMembershipFlow(val membership : StateAndRef<MembershipState<Any>>)
         val selfSignedTx = serviceHub.signInitialTransaction(builder)
         val stx = subFlow(FinalityFlow(selfSignedTx))
 
-        // notify members about changes
-        subFlow(NotifyActiveMembersFlow(OnMembershipActivated(membership)))
+        // We should notify members about changes with the ACTIVATED membership
+        val databaseService = serviceHub.cordaService(DatabaseService::class.java)
+        val activatedMembership = databaseService.getMembership(membership.state.data.member, ourIdentity, configuration.membershipContractName())!!
+        subFlow(NotifyActiveMembersFlow(OnMembershipChanged(activatedMembership)))
 
         return stx
     }

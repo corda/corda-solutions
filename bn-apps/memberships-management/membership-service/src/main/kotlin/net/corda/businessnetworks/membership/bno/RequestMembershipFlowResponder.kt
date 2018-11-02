@@ -33,8 +33,9 @@ class RequestMembershipFlowResponder(val session : FlowSession) : BusinessNetwor
     override fun call() {
         // checking that there is no existing membership state
         val counterparty = session.counterparty
+        val configuration = serviceHub.cordaService(BNOConfigurationService::class.java)
         val databaseService = serviceHub.cordaService(DatabaseService::class.java)
-        val counterpartMembership = databaseService.getMembership(counterparty)
+        val counterpartMembership = databaseService.getMembership(counterparty, ourIdentity, configuration.membershipContractName())
         if (counterpartMembership != null) {
             throw FlowException("Membership already exists")
         }
@@ -47,7 +48,6 @@ class RequestMembershipFlowResponder(val session : FlowSession) : BusinessNetwor
             throw FlowException("Membership request already exists")
         }
 
-        val configuration = serviceHub.cordaService(BNOConfigurationService::class.java)
         val membership : MembershipState<Any>
         // Issuing PENDING membership state onto the ledger
         try {

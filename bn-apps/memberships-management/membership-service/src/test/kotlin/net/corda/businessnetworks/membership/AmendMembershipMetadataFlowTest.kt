@@ -1,34 +1,33 @@
 package net.corda.businessnetworks.membership
 
 import net.corda.businessnetworks.membership.bno.OnMembershipChanged
-import net.corda.businessnetworks.membership.bno.service.BNOConfigurationService
 import net.corda.businessnetworks.membership.states.MembershipContract
 import net.corda.businessnetworks.membership.states.MembershipState
 import net.corda.businessnetworks.membership.states.SimpleMembershipMetadata
 import net.corda.core.flows.FlowException
 import org.junit.Test
+import kotlin.test.assertEquals
 
-class AmendMembershipMetadataFlowTest : AbstractFlowTest(2) {
-    override fun registerFlows() {
-        participantsNodes.forEach {
-            it.registerInitiatedFlow(TestNotifyMembersFlowResponder::class.java)
-        }
-    }
+class AmendMembershipMetadataFlowTest : AbstractFlowTest(
+        numberOfBusinessNetworks = 1,
+        numberOfParticipants = 2,
+        participantRespondingFlows = listOf(NotificationsCounterFlow::class.java)) {
 
     @Test
-    fun `amend metadata should succeed`() {
-        val memberNode = participantsNodes.first()
-        val memberParty = identity(memberNode)
+    fun `amend metadata happy path`() {
+        val bnoNode = bnoNodes.first()
+        val participantNode = participantsNodes.first()
 
-        runRequestMembershipFlow(memberNode)
-        runActivateMembershipFlow(bnoNode, memberParty)
+        runRequestAndActivateMembershipFlow(bnoNode, participantsNodes)
 
-        val existingMembership = getMembership(memberNode, memberParty)
-        val newMetadata = existingMembership.state.data.membershipMetadata.copy(role = "Some other role")
+        // cleaning up the received notifications as we are interested in the notifications related to metadata amendment only
+        NotificationsCounterFlow.NOTIFICATIONS.clear()
 
-        val partiallySignedTx = runAmendMetadataFlow(memberNode, newMetadata)
-        val allMemberTxs = allTransactions(memberNode)
-        val allSignedTx = allMemberTxs.single { it.id ==  partiallySignedTx.id}
+        val existingMembership = getMembership(participantNode, participantNode.identity(), bnoNode.identity())
+        val newMetadata = (existingMembership.state.data.membershipMetadata as SimpleMembershipMetadata).copy(role = "Some other role")
+
+        val partiallySignedTx = runAmendMetadataFlow(bnoNode, participantNode, newMetadata)
+        val allSignedTx = allTransactions(participantNode).single { it.id ==  partiallySignedTx.id}
         allSignedTx.verifyRequiredSignatures()
 
         val outputWithContract = allSignedTx.tx.outputs.single()
@@ -40,22 +39,25 @@ class AmendMembershipMetadataFlowTest : AbstractFlowTest(2) {
         assert(outputMembership.membershipMetadata == newMetadata)
         assert(allSignedTx.inputs.single() == existingMembership.ref)
 
-        val notifiedParty = TestNotifyMembersFlowResponder.NOTIFICATIONS.filter { it.second is OnMembershipChanged }.map { it.first }.single()
-        assert(notifiedParty == memberParty)
+        // all members should have received the same notification
+        val amendedMembership = getMembership(bnoNode, participantNode.identity(), bnoNode.identity())
+        val expectedNotifications = participantsNodes.map { NotificationHolder(it.identity(), bnoNode.identity(), OnMembershipChanged(amendedMembership)) }.toSet()
+        assertEquals(expectedNotifications, NotificationsCounterFlow.NOTIFICATIONS)
     }
 
-    @Test
-    fun `non members should be unable to trigger this flow`() {
-        val memberNode = participantsNodes.first()
-        val memberParty = identity(memberNode)
 
-        runRequestMembershipFlow(memberNode)
-        runActivateMembershipFlow(bnoNode, memberParty)
+    @Test
+    fun `non members should not be able to amend their metadata`() {
+        val bnoNode = bnoNodes.first()
+        val memberNode = participantsNodes.first()
+
+        runRequestMembershipFlow(bnoNode, memberNode)
+        runActivateMembershipFlow(bnoNode, memberNode.identity())
 
         try {
-            runAmendMetadataFlow(memberNode, SimpleMembershipMetadata(role="Some role"))
+            runAmendMetadataFlow(bnoNode, memberNode, SimpleMembershipMetadata(role="Some role"))
         } catch (e : FlowException) {
-            assert("$memberParty is not a member" == e.message)
+            assert("${memberNode.identity()} is not a member" == e.message)
         }
     }
 }
