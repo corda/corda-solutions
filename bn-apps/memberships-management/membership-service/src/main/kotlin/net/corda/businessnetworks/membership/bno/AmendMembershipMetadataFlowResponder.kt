@@ -18,7 +18,7 @@ import net.corda.core.utilities.unwrap
 
 /**
  * BNO's responder to the [AmendMembershipMetadataFlow]. Receives an [AmendMembershipMetadataRequest], issues an amend membership transaction
- * and notifies all business network members via [OnMembershipChanged] when the transaction is finalised. Only ACTIVE embers can
+ * and notifies all business network members via [OnMembershipChanged] when the transaction is finalised. Only ACTIVE members can
  * amend their metadata.
  */
 @InitiatedBy(AmendMembershipMetadataFlow::class)
