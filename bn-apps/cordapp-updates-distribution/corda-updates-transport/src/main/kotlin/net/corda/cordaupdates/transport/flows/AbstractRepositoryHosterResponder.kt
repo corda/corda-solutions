@@ -11,7 +11,7 @@ import net.corda.core.flows.FlowSession
  *
  * @throws FlowException if the incoming request doesn't satisfy [SessionFilter] requirements
  *
- * TODO: this logic should be moved to the flow overrides once the feature is available
+ * TODO: this logic should be implemented as flow overrides once the feature is available
  */
 abstract class AbstractRepositoryHosterResponder<T>(val session : FlowSession) : FlowLogic<T>() {
     @Suspendable

@@ -20,8 +20,8 @@ object Utils {
         }
 
     /**
-     * Converts Maven Resolver exception to Corda exception. The main purpose for that - is to let the initiating flow know whether
-     * the resource has been found or not
+     * Converts Maven Resolver exception to FlowException. The aim is to let the initiating flow know whether
+     * the resource has been found or not ib the remote repository
      */
     fun toCordaException(mavenResolverException : Exception, transporter : Transporter) : FlowException {
         val exType = transporter.classify(mavenResolverException)

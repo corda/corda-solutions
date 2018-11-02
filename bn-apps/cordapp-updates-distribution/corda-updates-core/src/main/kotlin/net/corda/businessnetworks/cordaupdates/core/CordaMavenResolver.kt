@@ -40,7 +40,7 @@ import org.eclipse.aether.util.repository.AuthenticationBuilder
  *
  * CordaMavenResolver supports basic authentication for HTTP(s) proxies and remote repositories.
  *
- * CordaMavenResolver supports standard file, http(s) transports as well as bespoke Corda transport.
+ * CordaMavenResolver supports standard file, http(s) transports as well as a bespoke Corda transport.
  * For more details @see [CordaTransporterFactory].
  */
 
