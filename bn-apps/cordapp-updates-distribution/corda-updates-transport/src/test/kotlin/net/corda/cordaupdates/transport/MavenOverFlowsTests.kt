@@ -64,7 +64,7 @@ class MavenOverFlowsTests {
     fun testFlows() {
         genericTest("corda-updates-app.conf") {
             participantNode.rpc.startFlowDynamic(TestFlow::class.java,
-                    "corda-flows:O=Repo Hoster,L=New York,C=US",
+                    "corda:O=Repo Hoster,L=New York,C=US",
                     nodeLocalRepoPath.toAbsolutePath().toString(),
                     "net.example:test-artifact:1.5").returnValue.getOrThrow()
             // let the flow to finish its job as it runs asynchronously

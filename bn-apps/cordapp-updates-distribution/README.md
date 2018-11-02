@@ -1,8 +1,6 @@
 CorDapp Distribution Service
 ============================
 
-**Please note that this README and some KDocs mention about corda-based transports, which are currently not supported and will be released in the future versions**.
-
 CorDapp Distribution Service allows Corda network operators to distribute CorDapp updates to their network participants. Please see [this](./design/design.md) design doc for more details on the technical implementation.
 
 CorDapp Distribution Service utilises Maven repositories for artifact distribution (as CorDapps are effectively fat-jars). Network participants periodically query a remote repository for updates and download them locally. Installation of updates is not automated yet. Corda node administrators need to stop / update / restart their nodes manually.  
@@ -17,7 +15,7 @@ To start using CorDapp Distribution Service please follow the steps below:
 2. Add CorDapps that you would like to synchronize to `settings.conf`, which is located in the root of the local repository created on the previous step (`~/.corda-updates/settings.conf` by default). Please refer to [this](#hocon-configuration) section for more details about the configuration file format.
 3. Download `corda-updates-app` jar or build it by yourself. TODO: download link here
 4. Install the CorDapp to the network participant's nodes and configure it as described [here](#participant-cordapp-configuration). `configPath` should point to the `settings.conf` created on the step #2.
-5. If you are going to use [Corda-based transports](#corda-updates-transport) - then install the CorDapp to the repository hoster's node and configure it as described [here](#repository-hoster-cordapp-configuration).   
+5. If you are going to use [Corda transport](#corda-updates-transport) - then install the CorDapp to the repository hoster's node and configure it as described [here](#repository-hoster-cordapp-configuration).   
 6. Schedule periodic synchronization by invoking [ScheduleSyncFlow](#scheduling-synchronisation) from the Corda shell of every participant node.
 7. Done. When published, all updates will appear in the local repositories of participants. Please bear in mind that node administrators will still have to [install updates manually](https://docs.corda.net/releases/release-M8.2/creating-a-cordapp.html#installing-apps).
 
@@ -27,12 +25,12 @@ Please read through the rest of the document for more information about the oper
 
 *CorDapp Distribution Service* consists of the following components:
 * **corda-updates-core** - API over Maven Resolver.
-* **corda-updates-transport** - custom transport implementations for Maven Resolver over Corda Flows.
+* **corda-updates-transport** - custom transport implementation for Maven Resolver over Corda Flows.
 * **corda-updates-app** - CorDapp that allows participants to schedule periodic synchronization and provides a basic functionality for version reporting.
 
 # corda-updates-core
 
-`corda-updates-core` sits in the heart of CorDapp Distribution Service and provides APIs on top of Maven Resolver to download CorDapps from remote Maven repositories over `file`, `http(s)`, `corda-flows` and `corda-rpc` transports. `corda-updates-core` is used internally only and is not visible to the end users. It effectively allows to:
+`corda-updates-core` sits in the heart of CorDapp Distribution Service and provides APIs on top of Maven Resolver to download CorDapps from remote Maven repositories over `file`, `http(s)` and `corda`  transports. `corda-updates-core` is used internally only and is not visible to the end users. It effectively allows to:
 * Get a list of available artifact versions from a remote repository
 * Download a single version of an artifact from a remote repository
 * Download an artifact version range from a remote repository, which is effectively a combination of the two previous steps.
@@ -42,15 +40,19 @@ Please read through the rest of the document for more information about the oper
 
 # corda-updates-transport
 
-`corda-updates-transport` provides a bespoke Maven Resolver transports over Corda Flows and Corda RPC.
+`corda-updates-transport` provides a bespoke Maven Resolver transports over Corda Flows.
 
 ## Why do we need it?
 
-Corda-based transports allow repository hosters to enforce their custom rules onto incoming requests and to filter out any unauthorised download attempts. For example CorDapp Distribution Service can be easily integrated with [Business Networks Membership Service](https://github.com/corda/corda-solutions/tree/master/bn-apps/memberships-management), that would effectively allow it to filter out any non Business Network traffic. 
+Corda transport allows to transfer data over Corda Flows. It can be invoked from *inside a Corda node* only. 
+
+Using this transport allow repository hosters to enforce their custom rules onto incoming requests and to filter out any unauthorised download attempts. For example CorDapp Distribution Service can be easily integrated with [Business Networks Membership Service](https://github.com/corda/corda-solutions/tree/master/bn-apps/memberships-management), that would effectively allow it to filter out any non Business Network traffic. 
+
+Corda transport expects a remote repository URL specified in the format of `corda:x500Name`. For example `corda:O=BNO,L=New York,C=US` (just imagine that you specify a Corda X500 name instead of a HTTP hostname).
 
 ## Session Filters
 
-Corda-based transports allow developers to implement their custom `SessionFilter`s that can be used to reject any unintended download requests. `SessionFilter` is a simple interface that, if implemented, is invoked against every incoming download request. `SessionFilter` returns a boolean that indicates whether the request should be let through or not.
+Corda transport allow developers to implement their custom `SessionFilter`s that can be used to reject any unintended download requests. `SessionFilter` is a simple interface that, if implemented, is invoked against every incoming download request. `SessionFilter` returns a boolean that indicates whether the request should be let through or not.
 
 ```kotlin
 interface SessionFilter {
@@ -69,20 +71,9 @@ class BusinessNetworkSessionFilter : SessionFilter {
 }
 ```
 
-## Transport modes
-
-The following transports are supported:
-* **corda-flows** allows to transfer data over Corda Flows. It can be invoked from *inside a Corda node* only. 
-* **corda-rpc** allows to transfer data over Corda RPC. It reuses the same flows as `corda-flows` transport, but invokes them via RPC instead.  
-* **corda-auto** is an automatic switch between `corda-rpc` and `corda-flows` transports. The underlying transport is chosen based on the value of `corda-updates.mode` custom Maven Resolver session property, that is set in the runtime based on the invocation context. The main purpose for this mode - is to allow Cordapp Distribution Service to reuse the same configuration file, regardless of whether it was invoked from inside or outside of a Corda node. 
-
-Corda-based transports expect a remote repository URL to be specified in the format of `transport-name:x500Name`. For example `corda-auto:O=BNO,L=New York,C=US` (just imagine that you specify a Corda X500 name instead of a HTTP hostname).
-
-**corda-auto** is the recommended way of using Corda-based transports.
-
 ### Asynchronous invocations
 
-Maven Resolver over Corda-based transports should always be invoked from a *non-flow thread* when used *inside Corda Flows*. This is because, under the hood Corda-based transports start a separate flow (which starts in a different from the calling thread) for data transfer to prevent Maven Resolver internals from being checkpointed as they are not `@Suspendable`. As Corda OS flows engine is single-threaded, invoking the transports synchronously would result into a deadlock, where the calling flow would be indefinitely waiting for the transport flow to finish while the transport flow would be indefinitely waiting for the calling flow to finish to be able to start.
+Maven Resolver over Corda transport should always be invoked from a *non-Flow thread*. This is because, under the hood Corda transport starts a separate flow (which starts in a different from the calling thread) for data transfer to prevent Maven Resolver internals from being checkpointed as they are not `@Suspendable`. As Corda Open Source flows engine is single-threaded, invoking the transport synchronously would result into a deadlock, where the calling flow would be indefinitely waiting for the transport flow to finish while the transport flow would be indefinitely waiting for the calling flow to finish to be able to start.
 
 *This behaviour is handled by CorDapp Distribution Service internally and is transparent to the end user.*  
 
@@ -138,11 +129,11 @@ cordappSources = [
 Updates can be scheduled via `ScheduleSyncFlow`. Synchronisation interval is driven by `syncInterval` configuration property and defaults to *once in 5 hours*. `ScheduleSyncFlow` can be started from Corda shell or via RPC. 
 
 ```kotlin
-// synchronisation should be launched asynchronously if corda-flows transport is used 
+// synchronisation should be launched asynchronously if Corda transport is used 
 subFlow(ScheduleSyncFlow(launchAsync = true))
 ```
 
-> If Corda-based transports are not used, then ScheduleSyncFlow can be run in synchronous mode (for example if all remote repositories are configured to use -http or -file transports). Synchronous invocations are more convenient from a developer's perspective as results are available straight after the execution is finished. However, launching ScheduleSyncFlow in synchronous mode for Corda-based transports might result to a deadlock on a single-threaded flavours of Corda. Please refer to "Asynchronous invocations" section for more information about that.
+> If Corda transport is not used, then ScheduleSyncFlow can be run in synchronous mode (for example if all remote repositories are configured to use -http or -file transports). Synchronous invocations are more convenient from a developer's perspective as results are available straight after the execution is finished. However, launching ScheduleSyncFlow in synchronous mode for Corda transport might result to a deadlock on a single-threaded flavours of Corda. Please refer to "Asynchronous invocations" section for more information about that.
 
 ## Getting available versions
 
@@ -175,7 +166,7 @@ bno="O=BNO,L=London,C=GB"
 
 ## Repository Hoster CorDapp Configuration
 
-Configuration is loaded from `cordapps/config/corda-updates-app.conf` file in the node's folder. Repository hoster node is required only if `corda-flows` transport is used.
+Configuration is loaded from `cordapps/config/corda-updates-app.conf` file in the node's folder. Repository hoster node is required only if Corda transport is used.
 ```
 # Class that implements the SessionFilter interface. Optional.
 sessionFilter=com.my.app.MySessionFilter

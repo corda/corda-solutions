@@ -1,15 +1,11 @@
 package net.corda.cordaupdates.transport
 
 import com.sun.xml.internal.messaging.saaj.util.ByteInputStream
-import net.corda.client.rpc.CordaRPCClient
-import net.corda.client.rpc.CordaRPCConnection
 import net.corda.cordaupdates.transport.flows.GetResourceFlow
 import net.corda.cordaupdates.transport.flows.PeekResourceFlow
 import net.corda.core.flows.FlowException
-import net.corda.core.messaging.CordaRPCOps
 import net.corda.core.node.AppServiceHub
 import net.corda.core.serialization.CordaSerializable
-import net.corda.core.utilities.NetworkHostAndPort
 import net.corda.core.utilities.getOrThrow
 import org.eclipse.aether.RepositorySystemSession
 import org.eclipse.aether.repository.RemoteRepository
@@ -60,7 +56,7 @@ class FlowsTransporter(private val session : RepositorySystemSession,
 
     init {
         session.configProperties
-        if (repository.protocol.toLowerCase() !in setOf(Transports.CORDA_AUTO, Transports.CORDA_FLOWS)) {
+        if (repository.protocol.toLowerCase() !in setOf(CordaTransporterFactory.CORDA_FLOWS_TRANSPORT)) {
             throw NoTransporterException(repository)
         }
     }
@@ -85,54 +81,6 @@ class FlowsTransporter(private val session : RepositorySystemSession,
     }
 
     override fun implClose() {
-    }
-}
-
-/**
- * Transport over Corda RPC. Same to [FlowsTransporter] with a difference that [GetResourceFlow] and [PeekResourceFlow] are triggered via RPC instead.
- * RPC credentials should be provided via custom session properties.
- */
-class RPCTransporter(private val session : RepositorySystemSession,
-                     private val repository : RemoteRepository) : AbstractTransporter() {
-
-    private val repoHosterName = repository.url.substring(repository.protocol!!.length + 1, repository.url.length)
-
-    init {
-        if (repository.protocol.toLowerCase() !in setOf(Transports.CORDA_AUTO, Transports.CORDA_RPC)) {
-            throw NoTransporterException(repository)
-        }
-    }
-
-    override fun implPeek(task : PeekTask?) {
-        rpcOps().startFlowDynamic(PeekResourceFlow::class.java, task!!.location.toString(), repoHosterName).returnValue.getOrThrow()
-    }
-
-    override fun implGet(task : GetTask?) {
-        val bytes : ByteArray = rpcOps().startFlowDynamic(GetResourceFlow::class.java, task!!.location.toString(), repoHosterName).returnValue.getOrThrow()
-        utilGet(task, ByteInputStream(bytes, bytes.size), true, bytes.size.toLong(), false)
-    }
-
-    override fun implPut(task : PutTask?) = throw Exception("RPC transport doesn't support PUT")
-
-    override fun classify(error : Throwable?) : Int {
-        if (error is ResourceNotFoundException)
-            return Transporter.ERROR_NOT_FOUND
-        return Transporter.ERROR_OTHER
-    }
-
-    override fun implClose() {
-    }
-
-    private fun rpcOps() : CordaRPCOps {
-        val host = ConfigUtils.getString(session, null, SessionConfigurationProperties.RPC_HOST)!!
-        val port = ConfigUtils.getInteger(session, 0, SessionConfigurationProperties.RPC_PORT)
-        val username = ConfigUtils.getString(session, null, SessionConfigurationProperties.RPC_USERNAME)!!
-        val password = ConfigUtils.getString(session.configProperties, null, SessionConfigurationProperties.RPC_PASSWORD)!!
-
-        val rpcAddress = NetworkHostAndPort(host, port)
-        val rpcClient = CordaRPCClient(rpcAddress)
-        val rpcConnection : CordaRPCConnection = rpcClient.start(username, password)
-        return rpcConnection.proxy
     }
 }
 
