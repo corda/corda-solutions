@@ -54,6 +54,9 @@ internal class SyncerService(private val appServiceHub : AppServiceHub) : Single
                 CordappSyncer(SyncerConfiguration.readFromFile(config))
             } else CordappSyncer(syncerConfiguration)
 
+    /**
+     * Passing an instance of [AppServiceHub] to Corda transport via custom session properties
+     */
     private fun additionalConfigurationProperties() = mapOf(Pair(SessionConfigurationProperties.APP_SERVICE_HUB, appServiceHub))
 
     private fun refreshMetadataCacheSynchronously(syncerConfiguration : SyncerConfiguration? = null, body : (syncer : CordappSyncer) -> List<ArtifactMetadata>) : List<ArtifactMetadata> {
