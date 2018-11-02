@@ -3,7 +3,6 @@ package net.corda.businessnetworks.membership.member.support
 import co.paralleluniverse.fibers.Suspendable
 import net.corda.businessnetworks.membership.NotAMemberException
 import net.corda.businessnetworks.membership.member.GetMembershipsFlow
-import net.corda.businessnetworks.membership.member.service.MemberConfigurationService
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.FlowSession
 import net.corda.core.identity.Party
@@ -13,10 +12,10 @@ import net.corda.core.identity.Party
  * the initiating party is also a member. Your code (inside onCounterpartyMembershipVerified) will be called only after
  * that check is performed. If the initiating party is not a member an exception is thrown.
  */
-abstract class BusinessNetworkAwareInitiatedFlow<out T>(protected val session: FlowSession) : FlowLogic<T>() {
+abstract class BusinessNetworkAwareInitiatedFlow<out T>(protected val flowSession : FlowSession) : FlowLogic<T>() {
     @Suspendable
     override fun call(): T {
-        verifyMembership(session.counterparty)
+        verifyMembership(flowSession.counterparty)
         return onOtherPartyMembershipVerified()
     }
 
@@ -33,13 +32,7 @@ abstract class BusinessNetworkAwareInitiatedFlow<out T>(protected val session: F
 
     @Suspendable
     private fun verifyMembership(initiator : Party) {
-        val membership = subFlow(GetMembershipsFlow(bnoIdentity()))[initiator]
-        val configuration = serviceHub.cordaService(MemberConfigurationService::class.java)
-        // 1. membership should exist
-        // 2. membership have to be active
-        // 3. membership have to be validated by the correct contract
-        if(membership == null || !membership.state.data.isActive() || membership.state.contract != configuration.membershipContractName()) {
-            throw NotAMemberException(initiator)
-        }
+        // Memberships list contains valid active memberships only. So we need to just make sure that the membership exists.
+        subFlow(GetMembershipsFlow(bnoIdentity()))[initiator] ?: throw NotAMemberException(initiator)
     }
 }

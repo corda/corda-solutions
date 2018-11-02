@@ -10,6 +10,7 @@ import net.corda.businessnetworks.membership.bno.service.DatabaseService
 import net.corda.businessnetworks.membership.member.AmendMembershipMetadataFlow
 import net.corda.businessnetworks.membership.member.GetMembershipsFlow
 import net.corda.businessnetworks.membership.member.RequestMembershipFlow
+import net.corda.businessnetworks.membership.states.MembershipContract
 import net.corda.businessnetworks.membership.states.MembershipState
 import net.corda.businessnetworks.membership.states.SimpleMembershipMetadata
 import net.corda.core.contracts.StateAndRef
@@ -96,7 +97,7 @@ abstract class AbstractFlowTest(private val numberOfBusinessNetworks : Int,
     }
 
     fun runSuspendMembershipFlow(bnoNode : StartedMockNode, participant : Party) : SignedTransaction {
-        val membership = getMembership(bnoNode, participant)
+        val membership = getMembership(bnoNode, participant, bnoNode.identity())
         val future = bnoNode.startFlow(SuspendMembershipFlow(membership))
         mockNetwork.runNetwork()
         return future.getOrThrow()
@@ -109,7 +110,7 @@ abstract class AbstractFlowTest(private val numberOfBusinessNetworks : Int,
     }
 
     fun runActivateMembershipFlow(bnoNode : StartedMockNode, participant : Party) : SignedTransaction {
-        val membership = getMembership(bnoNode, participant)
+        val membership = getMembership(bnoNode, participant, bnoNode.identity())
         val future = bnoNode.startFlow(ActivateMembershipFlow(membership))
         mockNetwork.runNetwork()
         return future.getOrThrow()
@@ -137,14 +138,14 @@ abstract class AbstractFlowTest(private val numberOfBusinessNetworks : Int,
         return future.getOrThrow()
     }
 
-    fun getMembership(node : StartedMockNode, party : Party) : StateAndRef<MembershipState<Any>> = node.transaction {
-        val dbService = node.services.cordaService(DatabaseService::class.java)
-        dbService.getMembership(party)!!
+    fun getMembership(nodeToGetFrom : StartedMockNode, member : Party, bno : Party) : StateAndRef<MembershipState<Any>> = nodeToGetFrom.transaction {
+        val dbService = nodeToGetFrom.services.cordaService(DatabaseService::class.java)
+        dbService.getMembership(member, bno, MembershipContract.CONTRACT_NAME)!!
     }
 
-    fun getAllMemberships(node : StartedMockNode) : List<StateAndRef<MembershipState<Any>>> = node.transaction {
-        val dbService = node.services.cordaService(DatabaseService::class.java)
-        dbService.getAllMemberships()
+    fun getAllMemberships(nodeToGetFrom : StartedMockNode, bno : Party) : List<StateAndRef<MembershipState<Any>>> = nodeToGetFrom.transaction {
+        val dbService = nodeToGetFrom.services.cordaService(DatabaseService::class.java)
+        dbService.getAllMemberships(bno, MembershipContract.CONTRACT_NAME)
     }
 
     fun allTransactions(node : StartedMockNode) = node.transaction {

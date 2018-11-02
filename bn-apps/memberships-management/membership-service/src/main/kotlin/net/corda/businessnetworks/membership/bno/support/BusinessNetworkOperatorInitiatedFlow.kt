@@ -1,9 +1,10 @@
 package net.corda.businessnetworks.membership.bno.support
 
 import co.paralleluniverse.fibers.Suspendable
-import net.corda.businessnetworks.membership.bno.service.DatabaseService
 import net.corda.businessnetworks.membership.MembershipNotActiveException
 import net.corda.businessnetworks.membership.NotAMemberException
+import net.corda.businessnetworks.membership.bno.service.BNOConfigurationService
+import net.corda.businessnetworks.membership.bno.service.DatabaseService
 import net.corda.businessnetworks.membership.states.MembershipState
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.flows.FlowSession
@@ -29,7 +30,9 @@ abstract class BusinessNetworkOperatorInitiatedFlow<out T>(val flowSession : Flo
     private fun verifyAndGetMembership(initiator : Party) : StateAndRef<MembershipState<Any>> {
         logger.info("Verifying membership status of $initiator")
         val databaseService = serviceHub.cordaService(DatabaseService::class.java)
-        val membership = databaseService.getMembership(initiator)
+        val configuration = serviceHub.cordaService(BNOConfigurationService::class.java)
+
+        val membership = databaseService.getMembership(initiator, ourIdentity, configuration.membershipContractName())
         if (membership == null) {
             throw NotAMemberException(initiator)
         } else if (!membership.state.data.isActive()) {

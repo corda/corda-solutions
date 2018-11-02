@@ -1,6 +1,7 @@
 package net.corda.businessnetworks.membership.member
 
 import co.paralleluniverse.fibers.Suspendable
+import net.corda.businessnetworks.membership.member.service.MemberConfigurationService
 import net.corda.businessnetworks.membership.member.service.MembershipsCacheHolder
 import net.corda.businessnetworks.membership.member.support.BusinessNetworkAwareInitiatingFlow
 import net.corda.businessnetworks.membership.states.MembershipState
@@ -16,15 +17,18 @@ import net.corda.core.utilities.unwrap
 class MembershipListRequest
 
 @CordaSerializable
-data class MembershipsListResponse(val memberships: List<StateAndRef<MembershipState<Any>>>)
+data class MembershipsListResponse(val memberships : List<StateAndRef<MembershipState<Any>>>)
 
 /**
  * The flow pulls down a list of active members from the BNO. The list is cached via the [MembershipService].
  * The cached list will be reused until it expires or util it gets force-refreshed.
- * GetMembershipsFlow can be used as follows:
  *
  * @param forceRefresh set to true to request memberships from BNO instead of the local cache
- * @param filterOutInactive if true then nodes that are not in the network map will be filtered out from the results list
+ * @param filterOutMissingFromNetworkMap if true then nodes that are not in the network map will be filtered out from the results list
+ *
+ * @return a list of ACTIVE memberships validated with a correct Membership Contract specified in the configuration
+
+ * GetMembershipsFlow can be used as follows:
  *
  * @InitiatedBy(SomeInitiatedFlow::class)
  * class MyAuthenticatedFlowResponder(val session : FlowSession) : FlowLogic<Unit>() {
@@ -40,10 +44,11 @@ data class MembershipsListResponse(val memberships: List<StateAndRef<MembershipS
  */
 @InitiatingFlow
 @StartableByRPC
-class GetMembershipsFlow(bno : Party, private val forceRefresh: Boolean = false, private val filterOutInactive : Boolean = true) : BusinessNetworkAwareInitiatingFlow<Map<Party, StateAndRef<MembershipState<Any>>>>(bno) {
+class GetMembershipsFlow(bno : Party, private val forceRefresh : Boolean = false, private val filterOutMissingFromNetworkMap : Boolean = true) : BusinessNetworkAwareInitiatingFlow<Map<Party, StateAndRef<MembershipState<Any>>>>(bno) {
 
     @Suspendable
     override fun afterBNOIdentityVerified() : Map<Party, StateAndRef<MembershipState<Any>>> {
+        val configuration = serviceHub.cordaService(MemberConfigurationService::class.java)
         val membershipService = serviceHub.cordaService(MembershipsCacheHolder::class.java)
         val cache = membershipService.cache
         val lastRefreshed = cache.getLastRefreshedTime(bno)
@@ -54,23 +59,25 @@ class GetMembershipsFlow(bno : Party, private val forceRefresh: Boolean = false,
             cache.applyMembershipsSnapshot(response.memberships)
         }
 
-        // returning an immutable copy of the cache contents
-        val membershipsToReturn : Map<Party, StateAndRef<MembershipState<Any>>> = cache.getMemberships(bno).toMap()
+        // filtering out ACTIVE memberships only verified by the correct contract
+        val membershipsToReturn : Map<Party, StateAndRef<MembershipState<Any>>> = cache.getMemberships(bno)
+                .filterValues { it.state.data.isActive() }
+                .filterValues { it.state.contract == configuration.membershipContractName() }
 
         // filtering out inactive memberships form the result list (the ones that are missing from the network map)
-        return if (filterOutInactive) membershipsToReturn.filterOutInactive() else membershipsToReturn
+        return if (filterOutMissingFromNetworkMap) membershipsToReturn.filterOutMissingFromNetworkMap() else membershipsToReturn
     }
 
-    private fun Map<Party, StateAndRef<MembershipState<Any>>>.filterOutInactive() = filter { serviceHub.networkMapCache.getNodeByLegalIdentity(it.key) != null }
+    private fun Map<Party, StateAndRef<MembershipState<Any>>>.filterOutMissingFromNetworkMap() = filter { serviceHub.networkMapCache.getNodeByLegalIdentity(it.key) != null }
 }
 
 @StartableByRPC
-class GetMembersFlow(bno : Party ,private val forceRefresh : Boolean = false, private val filterOutNotExisting : Boolean = true) : BusinessNetworkAwareInitiatingFlow<List<PartyAndMembershipMetadata<Any>>>(bno) {
+class GetMembersFlow(bno : Party, private val forceRefresh : Boolean = false, private val filterOutNotExisting : Boolean = true) : BusinessNetworkAwareInitiatingFlow<List<PartyAndMembershipMetadata<Any>>>(bno) {
     companion object {
         object GOING_TO_CACHE_OR_BNO : ProgressTracker.Step("Going to cache or BNO for membership data")
 
         fun tracker() = ProgressTracker(
-            GOING_TO_CACHE_OR_BNO
+                GOING_TO_CACHE_OR_BNO
         )
     }
 
@@ -83,4 +90,4 @@ class GetMembersFlow(bno : Party ,private val forceRefresh : Boolean = false, pr
 }
 
 @CordaSerializable
-data class PartyAndMembershipMetadata<out T>(val party : Party, val membershipMetadata: T)
+data class PartyAndMembershipMetadata<out T>(val party : Party, val membershipMetadata : T)

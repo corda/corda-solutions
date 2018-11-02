@@ -57,7 +57,7 @@ open class MembershipContract : Contract {
                 val input = tx.inputs.single()
                 val inputState = input.state.data as MembershipState<*>
                 "Participants of input and output states should be the same" using (outputMembership.participants.toSet() == input.state.data.participants.toSet())
-                "Input state has to be validated with $CONTRACT_NAME" using (input.state.contract == CONTRACT_NAME)
+                "Input state has to be validated with ${contractName()}" using (input.state.contract == contractName())
                 "Input and output states should have the same issued dates" using (inputState.issued == outputMembership.issued)
                 "Input and output states should have the same linear IDs" using (inputState.linearId == outputMembership.linearId)
                 "Output state's modified timestamp should be greater than input's" using (outputMembership.modified > inputState.modified)
@@ -125,6 +125,7 @@ data class MembershipState<out T : Any>(val member : Party,
         return when (schema) {
             is MembershipStateSchemaV1 -> MembershipStateSchemaV1.PersistentMembershipState(
                     member = this.member,
+                    bno = this.bno,
                     status = this.status
             )
             else -> throw IllegalArgumentException("Unrecognised schema $schema")

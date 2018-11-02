@@ -1,7 +1,7 @@
 package net.corda.businessnetworks.membership
 
 import co.paralleluniverse.fibers.Suspendable
-import net.corda.businessnetworks.membership.bno.GetMembershipListFlowResponder
+import net.corda.businessnetworks.membership.bno.GetMembershipsFlowResponder
 import net.corda.businessnetworks.membership.member.service.MemberConfigurationService
 import net.corda.businessnetworks.membership.member.service.MembershipsCacheHolder
 import net.corda.businessnetworks.membership.states.MembershipContract
@@ -21,15 +21,16 @@ import net.corda.testing.core.TestIdentity
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.test.fail
 
 class GetMembershipsFlowTest : AbstractFlowTest(
         numberOfBusinessNetworks = 2,
         numberOfParticipants = 6,
-        participantRespondingFlows = listOf(GetMembershipListFlowResponder::class.java)) {
+        participantRespondingFlows = listOf(GetMembershipsFlowResponder::class.java)) {
     @Test
-    fun `all nodes should be getting the same list of memberships`() {
+    fun `GetMembershipsFlow should return all active memberships to all business network members`() {
         val bnoNode = bnoNodes.first()
 
         runRequestAndActivateMembershipFlow(bnoNode, participantsNodes)
@@ -40,29 +41,52 @@ class GetMembershipsFlowTest : AbstractFlowTest(
             val memberships = runGetMembershipsListFlow(bnoNode, participantNode, true)
             assertEquals(allParties.toSet(), memberships.map { it.value.state.data.member }.toSet())
             val party = participantNode.identity()
-            assertEquals(getMembership(participantNode, party), memberships[party])
+            assertEquals(getMembership(participantNode, party, bnoNode.identity()), memberships[party])
         }
     }
 
     @Test
-    fun `all memberships should be included into the membership list`() {
+    fun `GetMembershipsFlow should not return suspended memberships`() {
         val bnoNode = bnoNodes.first()
 
         val suspendedNode = participantsNodes[0]
+        val okNode = participantsNodes[2]
+
+        runRequestAndActivateMembershipFlow(bnoNode, participantsNodes)
+        runSuspendMembershipFlow(bnoNode, suspendedNode.identity())
+
+        assertNull(runGetMembershipsListFlow(bnoNode, okNode)[suspendedNode.identity()])
+    }
+
+    @Test
+    fun `GetMembershipsFlow should not return pending memberships`() {
+        val bnoNode = bnoNodes.first()
+
         val pendingNode = participantsNodes[1]
         val okNode = participantsNodes[2]
 
         runRequestMembershipFlow(bnoNode, participantsNodes)
-        // not activating of the memberships to make sure that the pending membership will also appear on the membership list
         runActivateMembershipFlow(bnoNode, (participantsNodes - pendingNode).identities())
 
-        // suspending one of the memberships to make sure that the suspended membership will also appear on the membership list
-        runSuspendMembershipFlow(bnoNode, suspendedNode.identity())
+        assertNull(runGetMembershipsListFlow(bnoNode, okNode, true)[pendingNode.identity()])
+    }
 
-        val membershipsSnapshot = runGetMembershipsListFlow(bnoNode, okNode, true)
+    @Test
+    fun `GetMembershipsFlow should not return memberships verified by a wrong contract`() {
+        val bnoNode = bnoNodes[0]
 
-        val bnoMemberships = getAllMemberships(bnoNode)
-        assertEquals(bnoMemberships.toSet(), membershipsSnapshot.values.toSet())
+        val participant1 = participantsNodes[0]
+        val participant2 = participantsNodes[1]
+
+        runRequestAndActivateMembershipFlow(bnoNode, listOf(participant2, participant1))
+
+        // reloading configuration with a wrong contract name. All membership states verified by MembershipContract will be rejected
+        participant2.services.cordaService(MemberConfigurationService::class.java).reloadConfigurationFromFile(fileFromClasspath("membership-service-with-fake-contract-name.conf"))
+
+        val memberships = runGetMembershipsListFlow(bnoNode, participant2)
+
+        // participant1's membership shouldn't be on the list as it is validated by a wrong contract
+        assertNull(memberships[participant1.identity()])
     }
 
     @Test
@@ -143,8 +167,8 @@ class GetMembershipsFlowTest : AbstractFlowTest(
         val bn2MembershipsList = runGetMembershipsListFlow(bno2Node, multiBnParticipant)
 
         // membership states from BNOs vaults
-        val bn1MembershipStates = getAllMemberships(bno1Node)
-        val bn2MembershipStates = getAllMemberships(bno2Node)
+        val bn1MembershipStates = getAllMemberships(bno1Node, bno1Node.identity())
+        val bn2MembershipStates = getAllMemberships(bno2Node, bno2Node.identity())
 
         assertEquals(bn1MembershipStates.map { it.state.data.member }.toSet(), (bn1Participants + multiBnParticipant).map { it.identity() }.toSet())
         assertEquals(bn2MembershipStates.map { it.state.data.member }.toSet(), (bn2Participants + multiBnParticipant).map { it.identity() }.toSet())
@@ -183,6 +207,38 @@ class GetMembershipsFlowTest : AbstractFlowTest(
 
         runGetMembershipsListFlow(bnoNode, participantNode)
     }
+
+
+    @Test
+    fun `when membership gets activated after suspension the membership cache should be repopulated with the list of current members`() {
+        val bnoNode = bnoNodes.first()
+
+        runRequestAndActivateMembershipFlow(bnoNode, participantsNodes)
+
+        val suspendedMember = participantsNodes.first()
+        // populating the memberships cache
+        runGetMembershipsListFlow(bnoNode, suspendedMember)
+
+        // suspending membership
+        runSuspendMembershipFlow(bnoNode, suspendedMember.identity())
+
+        // the cache now should be empty
+        val cache = suspendedMember.services.cordaService(MembershipsCacheHolder::class.java).cache
+        assertTrue(cache.getMemberships(bnoNode.identity()).isEmpty())
+        assertNull(cache.getLastRefreshedTime(bnoNode.identity()))
+
+        // activating membership
+        runActivateMembershipFlow(bnoNode, suspendedMember.identity())
+
+        // making sure that the cache gets repopulated again
+        val memberships = runGetMembershipsListFlow(bnoNode, suspendedMember, true)
+        assertEquals(participantsNodes.identities().toSet(), memberships.map { it.value.state.data.member }.toSet())
+
+        // verifying memberships list for each party
+        participantsNodes.forEach { participantNode ->
+        }
+    }
+
 }
 
 class AddNotExistingPartyToMembershipsCache(val bno : Party, val membership : MembershipState<SimpleMembershipMetadata>) : FlowLogic<Unit>() {

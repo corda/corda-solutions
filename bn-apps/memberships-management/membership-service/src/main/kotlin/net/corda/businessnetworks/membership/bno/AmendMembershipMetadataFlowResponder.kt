@@ -50,7 +50,7 @@ class AmendMembershipMetadataFlowResponder(flowSession : FlowSession) : Business
 
         // notify members about the changes
         val databaseService = serviceHub.cordaService(DatabaseService::class.java)
-        val amendedMembership = databaseService.getMembership(flowSession.counterparty)!!
+        val amendedMembership = databaseService.getMembership(flowSession.counterparty, ourIdentity, configuration.membershipContractName())!!
         subFlow(NotifyActiveMembersFlow(OnMembershipChanged(amendedMembership)))
     }
 }

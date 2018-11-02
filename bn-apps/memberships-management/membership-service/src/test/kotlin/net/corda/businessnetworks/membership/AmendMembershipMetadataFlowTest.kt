@@ -23,7 +23,7 @@ class AmendMembershipMetadataFlowTest : AbstractFlowTest(
         // cleaning up the received notifications as we are interested in the notifications related to metadata amendment only
         NotificationsCounterFlow.NOTIFICATIONS.clear()
 
-        val existingMembership = getMembership(participantNode, participantNode.identity())
+        val existingMembership = getMembership(participantNode, participantNode.identity(), bnoNode.identity())
         val newMetadata = (existingMembership.state.data.membershipMetadata as SimpleMembershipMetadata).copy(role = "Some other role")
 
         val partiallySignedTx = runAmendMetadataFlow(bnoNode, participantNode, newMetadata)
@@ -40,7 +40,7 @@ class AmendMembershipMetadataFlowTest : AbstractFlowTest(
         assert(allSignedTx.inputs.single() == existingMembership.ref)
 
         // all members should have received the same notification
-        val amendedMembership = getMembership(bnoNode, participantNode.identity())
+        val amendedMembership = getMembership(bnoNode, participantNode.identity(), bnoNode.identity())
         val expectedNotifications = participantsNodes.map { NotificationHolder(it.identity(), bnoNode.identity(), OnMembershipChanged(amendedMembership)) }.toSet()
         assertEquals(expectedNotifications, NotificationsCounterFlow.NOTIFICATIONS)
     }

@@ -1,6 +1,7 @@
 package net.corda.businessnetworks.membership
 
 import co.paralleluniverse.fibers.Suspendable
+import net.corda.businessnetworks.membership.bno.ActivateMembershipFlow
 import net.corda.businessnetworks.membership.bno.OnMembershipChanged
 import net.corda.businessnetworks.membership.bno.service.BNOConfigurationService
 import net.corda.businessnetworks.membership.member.support.BusinessNetworkAwareInitiatedFlow
@@ -30,7 +31,7 @@ class ActivateMembershipFlowTest : AbstractFlowTest(
         runRequestMembershipFlow(bnoNode, participantNode)
 
         // membership state before activation
-        val inputMembership = getMembership(participantNode, participantNode.identity())
+        val inputMembership = getMembership(participantNode, participantNode.identity(), bnoNode.identity())
 
         val stx = activateCallback(bnoNode, participantNode)
         stx.verifyRequiredSignatures()
@@ -43,7 +44,7 @@ class ActivateMembershipFlowTest : AbstractFlowTest(
         assert(stx.tx.inputs.single() == inputMembership.ref)
 
         // making sure that a correct notification has been send
-        val membershipStateAndRef = getMembership(bnoNode, participantNode.identity())
+        val membershipStateAndRef = getMembership(bnoNode, participantNode.identity(), bnoNode.identity())
         val notification = NotificationsCounterFlow.NOTIFICATIONS.single()
         assertEquals(NotificationHolder(participantNode.identity(), bnoNode.identity(), OnMembershipChanged(membershipStateAndRef)), notification)
     }
@@ -64,8 +65,11 @@ class ActivateMembershipFlowTest : AbstractFlowTest(
         val participantNode = participantsNodes.first()
 
         runRequestMembershipFlow(bnoNode, participantNode)
+        val membership = getMembership(participantNode, participantNode.identity(), bnoNode.identity())
         try {
-            runActivateMembershipFlow(participantNode, participantNode.identity())
+            val future = participantNode.startFlow(ActivateMembershipFlow(membership))
+            mockNetwork.runNetwork()
+            future.getOrThrow()
             fail()
         } catch (e : NotBNOException) {
             assertEquals("This node is not the business network operator for this membership", e.message)
@@ -82,10 +86,10 @@ class ActivateMembershipFlowTest : AbstractFlowTest(
         runRequestMembershipFlow(bnoNode, participantNode)
 
         // membership state before activation
-        val inputMembership = getMembership(participantNode, participantNode.identity())
+        val inputMembership = getMembership(participantNode, participantNode.identity(), bnoNode.identity())
         assertTrue(inputMembership.state.data.isActive())
 
-        val updatedMembership = getMembership(bnoNode, participantNode.identity())
+        val updatedMembership = getMembership(bnoNode, participantNode.identity(), bnoNode.identity())
         assertEquals(NotificationHolder(participantNode.identity(), bnoNode.identity(), OnMembershipChanged(updatedMembership)), NotificationsCounterFlow.NOTIFICATIONS.single())
     }
 }
@@ -102,7 +106,7 @@ open class AbstractBNAwareRespondingFlow(session : FlowSession, private val bnoN
 
     @Suspendable
     override fun onOtherPartyMembershipVerified() {
-        session.receive<String>().unwrap { it }
-        session.send("Hello")
+        flowSession.receive<String>().unwrap { it }
+        flowSession.send("Hello")
     }
 }

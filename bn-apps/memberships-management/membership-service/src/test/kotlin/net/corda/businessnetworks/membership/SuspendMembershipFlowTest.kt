@@ -23,7 +23,7 @@ class SuspendMembershipFlowTest : AbstractFlowTest(numberOfBusinessNetworks = 2,
         // cleaning up notifications as we are interested in SUSPENDs only
         NotificationsCounterFlow.NOTIFICATIONS.clear()
 
-        val inputMembership = getMembership(suspendedMemberNode, suspendedMemberNode.identity())
+        val inputMembership = getMembership(suspendedMemberNode, suspendedMemberNode.identity(), bnoNode.identity())
         val stx = suspender(bnoNode, suspendedMemberNode)
         stx.verifyRequiredSignatures()
 
@@ -35,7 +35,7 @@ class SuspendMembershipFlowTest : AbstractFlowTest(numberOfBusinessNetworks = 2,
         assert(stx.inputs.single() == inputMembership.ref)
 
         // both the active and the suspended member should have received the same notification
-        val suspendedMembership = getMembership(bnoNode, suspendedMemberNode.identity())
+        val suspendedMembership = getMembership(bnoNode, suspendedMemberNode.identity(), bnoNode.identity())
         val expectedNotifications = participantsNodes.map { NotificationHolder(it.identity(), bnoNode.identity(), OnMembershipChanged(suspendedMembership)) }.toSet()
         assertEquals(expectedNotifications, NotificationsCounterFlow.NOTIFICATIONS)
     }
@@ -53,7 +53,7 @@ class SuspendMembershipFlowTest : AbstractFlowTest(numberOfBusinessNetworks = 2,
 
         runRequestMembershipFlow(bnoNode, memberNode)
         try {
-            val membership = getMembership(memberNode, memberNode.identity())
+            val membership = getMembership(memberNode, memberNode.identity(), bnoNode.identity())
             val future = memberNode.startFlow(SuspendMembershipFlow(membership))
             mockNetwork.runNetwork()
             future.getOrThrow()

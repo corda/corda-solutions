@@ -38,7 +38,7 @@ class SuspendMembershipFlow(val membership : StateAndRef<MembershipState<Any>>) 
         val finalisedTx = subFlow(FinalityFlow(selfSignedTx))
 
         val dbService = serviceHub.cordaService(DatabaseService::class.java)
-        val suspendedMembership = dbService.getMembership(membership.state.data.member)!!
+        val suspendedMembership = dbService.getMembership(membership.state.data.member, ourIdentity, configuration.membershipContractName())!!
 
         // notify other members about suspension
         subFlow(NotifyActiveMembersFlow(OnMembershipChanged(suspendedMembership)))

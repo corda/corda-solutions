@@ -14,8 +14,8 @@ class BusinessNetworkAwareInitiatedFlowTest : AbstractFlowTest(numberOfBusinessN
     fun `pending members should not be able to transact on the business network`() {
         val bnoNode = bnoNodes[0]
 
-        val participant1= participantsNodes[0]
-        val participant2= participantsNodes[1]
+        val participant1 = participantsNodes[0]
+        val participant2 = participantsNodes[1]
 
         participant2.registerInitiatedFlow(BN_1_RespondingFlow::class.java)
 
@@ -33,8 +33,8 @@ class BusinessNetworkAwareInitiatedFlowTest : AbstractFlowTest(numberOfBusinessN
     fun `suspended members should not be able to transact on the business network`() {
         val bnoNode = bnoNodes[0]
 
-        val participant1= participantsNodes[0]
-        val participant2= participantsNodes[1]
+        val participant1 = participantsNodes[0]
+        val participant2 = participantsNodes[1]
 
         participant2.registerInitiatedFlow(BN_1_RespondingFlow::class.java)
 
@@ -53,8 +53,8 @@ class BusinessNetworkAwareInitiatedFlowTest : AbstractFlowTest(numberOfBusinessN
     fun `active members should be able to transact on the business network`() {
         val bnoNode = bnoNodes[0]
 
-        val participant1= participantsNodes[0]
-        val participant2= participantsNodes[1]
+        val participant1 = participantsNodes[0]
+        val participant2 = participantsNodes[1]
 
         participant2.registerInitiatedFlow(BN_1_RespondingFlow::class.java)
 
@@ -72,8 +72,8 @@ class BusinessNetworkAwareInitiatedFlowTest : AbstractFlowTest(numberOfBusinessN
     fun `non-members should be able to transact on the business network`() {
         val bnoNode = bnoNodes[0]
 
-        val participant1= participantsNodes[0]
-        val participant2= participantsNodes[1]
+        val participant1 = participantsNodes[0]
+        val participant2 = participantsNodes[1]
 
         participant2.registerInitiatedFlow(BN_1_RespondingFlow::class.java)
 
@@ -90,8 +90,8 @@ class BusinessNetworkAwareInitiatedFlowTest : AbstractFlowTest(numberOfBusinessN
     fun `membership states with wrong membership contract should not be accepted`() {
         val bnoNode = bnoNodes[0]
 
-        val participant1= participantsNodes[0]
-        val participant2= participantsNodes[1]
+        val participant1 = participantsNodes[0]
+        val participant2 = participantsNodes[1]
 
         participant2.registerInitiatedFlow(BN_1_RespondingFlow::class.java)
 
@@ -111,22 +111,30 @@ class BusinessNetworkAwareInitiatedFlowTest : AbstractFlowTest(numberOfBusinessN
 
 @InitiatingFlow
 class BN_1_InitiatingFlow(counterparty : Party) : AbstractDummyInitiatingFlow(counterparty)
+
 @InitiatingFlow
 class BN_2_InitiatingFlow(counterparty : Party) : AbstractDummyInitiatingFlow(counterparty)
+
 @InitiatingFlow
 class BN_3_InitiatingFlow(counterparty : Party) : AbstractDummyInitiatingFlow(counterparty)
+
 @InitiatingFlow
 class BN_4_InitiatingFlow(counterparty : Party) : AbstractDummyInitiatingFlow(counterparty)
+
 @InitiatingFlow
 class BN_5_InitiatingFlow(counterparty : Party) : AbstractDummyInitiatingFlow(counterparty)
 
 @InitiatedBy(BN_1_InitiatingFlow::class)
 class BN_1_RespondingFlow(session : FlowSession) : AbstractBNAwareRespondingFlow(session, "O=BNO_0,L=New York,C=US")
+
 @InitiatedBy(BN_2_InitiatingFlow::class)
 class BN_2_RespondingFlow(session : FlowSession) : AbstractBNAwareRespondingFlow(session, "O=BNO_1,L=New York,C=US")
+
 @InitiatedBy(BN_3_InitiatingFlow::class)
 class BN_3_RespondingFlow(session : FlowSession) : AbstractBNAwareRespondingFlow(session, "O=BNO_2,L=New York,C=US")
+
 @InitiatedBy(BN_4_InitiatingFlow::class)
 class BN_4_RespondingFlow(session : FlowSession) : AbstractBNAwareRespondingFlow(session, "O=BNO_3,L=New York,C=US")
+
 @InitiatedBy(BN_5_InitiatingFlow::class)
 class BN_5_RespondingFlow(session : FlowSession) : AbstractBNAwareRespondingFlow(session, "O=BNO_4,L=New York,C=US")

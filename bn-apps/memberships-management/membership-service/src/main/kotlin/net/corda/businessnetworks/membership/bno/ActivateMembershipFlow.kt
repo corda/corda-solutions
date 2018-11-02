@@ -43,7 +43,7 @@ class ActivateMembershipFlow(val membership : StateAndRef<MembershipState<Any>>)
 
         // We should notify members about changes with the ACTIVATED membership
         val databaseService = serviceHub.cordaService(DatabaseService::class.java)
-        val activatedMembership = databaseService.getMembership(membership.state.data.member)!!
+        val activatedMembership = databaseService.getMembership(membership.state.data.member, ourIdentity, configuration.membershipContractName())!!
         subFlow(NotifyActiveMembersFlow(OnMembershipChanged(activatedMembership)))
 
         return stx
