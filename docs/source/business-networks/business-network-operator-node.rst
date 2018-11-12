@@ -33,7 +33,7 @@ Monitoring & Reporting
 For commercial, operational or regulatory reasons it is often a requirement to monitor and/or report on network level metrics.  For example, an operator may want to monitor network health by tracking operational metrics such transaction volumes and latency.  It may also choose to bill its members (periodically or on-demand) by tracking transactions across the network. The network may be designed to reveal as much or as little about the transactions as appropriate.
 
 Announcements & Signaling
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^
 Certain network level events such as planned maintenance, outages and upgrades must be communicated to all network users.  In many cases, traditional communications channels may suffice but in some cases it may be appropriate to use a BNO service to distribute such information such that it can be integrated into the application itself.
 
 Software Distribution

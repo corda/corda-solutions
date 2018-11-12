@@ -1,6 +1,5 @@
 package net.corda.businessnetworks.membership.bno.service
 
-import net.corda.businessnetworks.membership.states.MembershipContract
 import net.corda.businessnetworks.membership.states.MembershipState
 import net.corda.businessnetworks.membership.states.MembershipStateSchemaV1
 import net.corda.core.contracts.StateAndRef
