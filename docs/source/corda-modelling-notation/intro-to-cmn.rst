@@ -85,6 +85,33 @@ Corda Modelling Notation Views
 
 This section gives an example of each CMN view, see the sections dedicated to each view for more details.
 
+**Representing States**
+
+The Ledger Layer views are mostly concerned with Corda States, or more precisely State-Contract combinations as you only define behaviour when you have both.
+
+For the latest version of CMN we have standardised the representation of a Corda State across all the various views. The base representation of a Corda State is as follows and will be used in all three of the Ledger Layer views:
+
+
+.. image:: resources/CMN2_State.png
+  :width: 40%
+  :align: center
+
+
+1)  State and status
+
+  The type of State and the Status of the state, this defines the boxes
+
+2) Properties
+
+  These are the properties of the State whilst in the particular status. Not all Properties need to be shown, just the ones salient to the behaviour of the state.
+
+3) Participants
+
+  These are the participants in the state, this corresponds to the parties who the Transaction containing the State will be sent to. Note, if the Transaction contains multiple States the Transaction will be sent to the union of all the States' participants.
+
+
+
+
 **State Machine View (Ledger Layer)**
 
 
