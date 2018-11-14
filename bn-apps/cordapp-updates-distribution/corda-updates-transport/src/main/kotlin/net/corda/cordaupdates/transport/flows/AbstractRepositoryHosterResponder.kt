@@ -4,6 +4,7 @@ import co.paralleluniverse.fibers.Suspendable
 import net.corda.core.flows.FlowException
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.FlowSession
+import net.corda.core.serialization.CordaSerializable
 
 /**
  * This class puts every incoming session through a [SessionFilter] if one has been specified in the configuration.
@@ -27,3 +28,9 @@ abstract class AbstractRepositoryHosterResponder<T>(val session : FlowSession) :
     @Suspendable
     protected abstract fun doCall() : T
 }
+
+/**
+ * Request that is used to get / peek a resource from a remote repository. Repository with [repositoryName] has to be configured at the repository hoster's node
+ */
+@CordaSerializable
+data class ResourceRequest (val repositoryName : String, val resourceLocation : String)

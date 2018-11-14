@@ -61,7 +61,7 @@ class MavenOverFlowsTests {
     }
 
     @Test
-    fun testFlows() {
+    fun `repository name should default to "default" if not explicitly provided`() {
         genericTest("corda-updates-app.conf") {
             participantNode.rpc.startFlowDynamic(TestFlow::class.java,
                     "corda:O=Repo Hoster,L=New York,C=US",
@@ -73,26 +73,72 @@ class MavenOverFlowsTests {
         }
     }
 
+    @Test
+    fun `Should fetch artifacts from the specified repository`() {
+        genericTest("corda-updates-app-with-custom-repo-name.conf") {
+            participantNode.rpc.startFlowDynamic(TestFlow::class.java,
+                    "corda:O=Repo Hoster,L=New York,C=US/customRepo",
+                    nodeLocalRepoPath.toAbsolutePath().toString(),
+                    "net.example:test-artifact:1.5").returnValue.getOrThrow()
+            // let the flow to finish its job as it runs asynchronously
+            sleep(5000)
+            repoVerifier.shouldContain("net:example", "test-artifact", setOf("1.5")).verify()
+        }
+    }
 
     @Test
-    fun testSessionFilters() {
+    fun `should fail with deny all session filter`() {
         // should fail with deny filter
         genericTest ("corda-updates-with-deny-filter.conf") {
             try {
                 participantNode.rpc.startFlowDynamic(GetResourceFlow::class.java,
                         "net/example/test-artifact/1.5/test-artifact-1.5.pom",
-                        "O=Repo Hoster,L=New York,C=US").returnValue.getOrThrow()
-                fail("Operation should have failed")
+                        "O=Repo Hoster,L=New York,C=US",
+                        DEFAULT_REPOSITORY_NAME).returnValue.getOrThrow()
+                fail("Should have failed")
             } catch (ex : FlowException) {
                 // do nothing
             }
         }
+    }
 
-        // should pass with allow all filter
+    @Test
+    fun `should pass with allow all session filter`() {
         genericTest ("corda-updates-with-allow-filter.conf") {
             participantNode.rpc.startFlowDynamic(GetResourceFlow::class.java,
                     "net/example/test-artifact/1.5/test-artifact-1.5.pom",
-                    "O=Repo Hoster,L=New York,C=US").returnValue.getOrThrow()
+                    "O=Repo Hoster,L=New York,C=US",
+                    DEFAULT_REPOSITORY_NAME).returnValue.getOrThrow()
+        }
+    }
+
+    @Test
+    fun `should fail if a non existing repository name have been provided`() {
+        genericTest ("corda-updates-app.conf") {
+            try {
+                participantNode.rpc.startFlowDynamic(GetResourceFlow::class.java,
+                        "net/example/test-artifact/1.5/test-artifact-1.5.pom",
+                        "O=Repo Hoster,L=New York,C=US",
+                        "invalidRepoName").returnValue.getOrThrow()
+                fail("Should have failed")
+            } catch (ex : FlowException) {
+                // do nothing
+            }
+        }
+    }
+
+    @Test
+    fun `should fail if maven URI contains illegal characters`() {
+        genericTest ("corda-updates-app.conf") {
+            try {
+                participantNode.rpc.startFlowDynamic(GetResourceFlow::class.java,
+                        "\$net/example/test-artifact/1.5/test-artifact-1.5.pom",
+                        "O=Repo Hoster,L=New York,C=US",
+                        "invalidRepoName").returnValue.getOrThrow()
+                fail("Should have failed")
+            } catch (ex : FlowException) {
+                // do nothing
+            }
         }
     }
 }
@@ -117,7 +163,7 @@ class ExecutorService(private val appServiceHub : AppServiceHub) : SingletonSeri
     fun downloadVersionAsync(remoteRepoUrl : String, localRepoPath : String, mavenCoords : String) {
         executor.submit(Callable {
             val resolver = CordaMavenResolver.create(remoteRepoUrl = remoteRepoUrl, localRepoPath = localRepoPath)
-            resolver.downloadVersion(mavenCoords, configProps = mapOf(Pair(SessionConfigurationProperties.APP_SERVICE_HUB, appServiceHub)))
+            resolver.downloadVersion(mavenCoords, configProps = mapOf(Pair(APP_SERVICE_HUB, appServiceHub)))
         })
     }
 }

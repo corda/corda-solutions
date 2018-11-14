@@ -48,7 +48,7 @@ Corda transport allows to transfer data over Corda Flows. It can be invoked from
 
 Using this transport allow repository hosters to enforce their custom rules onto incoming requests and to filter out any unauthorised download attempts. For example CorDapp Distribution Service can be easily integrated with [Business Networks Membership Service](https://github.com/corda/corda-solutions/tree/master/bn-apps/memberships-management), that would effectively allow it to filter out any non Business Network traffic. 
 
-Corda transport expects a remote repository URL specified in the format of `corda:x500Name`. For example `corda:O=BNO,L=New York,C=US` (just imagine that you specify a Corda X500 name instead of a HTTP hostname).
+Corda transport expects a remote repository URL specified in the format of `corda:x500Name/repositoryName`. `repositoryName` allows a repository hoster to serve artifacts from multiple remote repositories via the same node. `repositoryName` defaults to *"default"* if have not been explicitly provided. For example `corda:O=BNO,L=New York,C=US/default` (just imagine that you specify a Corda X500 name instead of a HTTP hostname).
 
 ## Session Filters
 
@@ -170,6 +170,18 @@ Configuration is loaded from `cordapps/config/corda-updates-app.conf` file in th
 ```
 # Class that implements the SessionFilter interface. Optional.
 sessionFilter=com.my.app.MySessionFilter
+
+# List of repositories to serve artifcats from. A requester is supposed to provide a name of repository to serve his request from. 
+repositories {
+
+  # "default" repository will be used if a repository name has not been provided by the requester
+  default = "file:./LocalRepo"
+  
+  mavenCentral = http://repo1.maven.org/maven2/
+  
+  companyLocalRepo = ....
+  
+}
 ```
 
 ## Reporting CorDapp versions

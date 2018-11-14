@@ -18,6 +18,11 @@ import org.eclipse.aether.transfer.NoTransporterException
 import org.eclipse.aether.util.ConfigUtils
 
 /**
+ * This repository name will be used if one has not been explicitly specified in the URL
+ */
+const val DEFAULT_REPOSITORY_NAME = "default"
+
+/**
  * Transport over Corda flows. Should be used only within a Corda node. This transporter expects an instance of [AppServiceHub]
  * to be passed via custom session properties. An instance of [AppServiceHub] is required to delegate the data transfer to a separate flow,
  * to avoid checkpointing of Maven Resolver contents as the they are not @Suspendable.
@@ -50,9 +55,25 @@ import org.eclipse.aether.util.ConfigUtils
  * }
  */
 class FlowsTransporter(private val session : RepositorySystemSession,
-                       private val repository : RemoteRepository) : AbstractTransporter() {
+                       repository : RemoteRepository) : AbstractTransporter() {
 
-    private val repoHosterName = repository.url.substring(repository.protocol!!.length + 1, repository.url.length)
+    private val repoHosterName : String
+    private val repositoryName : String
+
+    init {
+        // x500 name and repo name without the protocol
+        val hosterAndRepoName = repository.url.substring(repository.protocol!!.length + 1, repository.url.length)
+
+        val split = hosterAndRepoName.split("/")
+        if (split.size > 2) {
+            throw IllegalArgumentException("Invalid repository URL ${repository.url}")
+        }
+
+        repoHosterName = split[0]
+        // repository name defaults to "default" if has not been provided
+        repositoryName = if (split.size > 1) split[1] else DEFAULT_REPOSITORY_NAME
+    }
+
 
     init {
         session.configProperties
@@ -61,18 +82,18 @@ class FlowsTransporter(private val session : RepositorySystemSession,
         }
     }
 
-    override fun implPeek(task : PeekTask?) {
-        val appServiceHub = ConfigUtils.getObject(session, null, SessionConfigurationProperties.APP_SERVICE_HUB) as AppServiceHub
-        appServiceHub.startFlow(PeekResourceFlow(task!!.location.toString(), repoHosterName)).returnValue.getOrThrow()
+    override fun implPeek(task : PeekTask) {
+        val appServiceHub = ConfigUtils.getObject(session, null, APP_SERVICE_HUB) as AppServiceHub
+        appServiceHub.startFlow(PeekResourceFlow(task.location.toString(), repoHosterName, repositoryName)).returnValue.getOrThrow()
     }
 
-    override fun implGet(task : GetTask?) {
-        val appServiceHub = ConfigUtils.getObject(session, null, SessionConfigurationProperties.APP_SERVICE_HUB) as AppServiceHub
-        val bytes : ByteArray = appServiceHub.startFlow(GetResourceFlow(task!!.location.toString(), repoHosterName)).returnValue.getOrThrow()
+    override fun implGet(task : GetTask) {
+        val appServiceHub = ConfigUtils.getObject(session, null, APP_SERVICE_HUB) as AppServiceHub
+        val bytes : ByteArray = appServiceHub.startFlow(GetResourceFlow(task.location.toString(), repoHosterName, repositoryName)).returnValue.getOrThrow()
         utilGet(task, ByteInputStream(bytes, bytes.size), true, bytes.size.toLong(), false)
     }
 
-    override fun implPut(task : PutTask?) = throw Exception("Flows transport doesn't support PUT")
+    override fun implPut(task : PutTask) = throw Exception("Flows transport doesn't support PUT")
 
     override fun classify(error : Throwable?) : Int {
         if (error is ResourceNotFoundException)

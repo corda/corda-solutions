@@ -23,7 +23,7 @@ import net.corda.core.utilities.ProgressTracker
  * @param scheduledStateRef reference to the schedule state. Automatically provided if the flow is started by Corda scheduler.
  * @param syncerConfig configuration for [CordappSyncer]. If not provided - will be red from a file, defined in the cordapp configuration.
  * @param launchAsync flag that indicates whether the synchronisation should be started asynchronously.
- *      Synchronous invocations shouldn be never used for Corda transport.
+ *      Synchronous invocations should be never used for Corda transport.
  *
  */
 @SchedulableFlow

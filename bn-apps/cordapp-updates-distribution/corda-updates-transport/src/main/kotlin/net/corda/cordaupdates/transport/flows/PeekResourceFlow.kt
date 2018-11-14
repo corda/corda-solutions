@@ -3,6 +3,7 @@ package net.corda.cordaupdates.transport.flows
 import co.paralleluniverse.fibers.Suspendable
 import net.corda.cordaupdates.transport.flows.Utils.toCordaException
 import net.corda.cordaupdates.transport.flows.Utils.transporterFactory
+import net.corda.core.flows.FlowException
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.FlowSession
 import net.corda.core.flows.InitiatedBy
@@ -22,16 +23,18 @@ import java.net.URI
  *
  * @param resourceLocation location of the resource provided by Maven Resolver
  * @param repoHosterName x500Name of the repository hoster
+ * @param repositoryName name of the repository to peek the resource from. Repository with this name should be configured on the other side.
  */
 @InitiatingFlow
 @StartableByRPC
 @StartableByService
-class PeekResourceFlow(private val resourceLocation : String, private val repoHosterName : String) : FlowLogic<Unit>() {
+class PeekResourceFlow(private val resourceLocation : String, private val repoHosterName : String, private val repositoryName : String) : FlowLogic<Unit>() {
     @Suspendable
     override fun call() {
-        val repoHosterParty = serviceHub.identityService.wellKnownPartyFromX500Name(CordaX500Name.parse(repoHosterName))!!
+        val repoHosterParty = serviceHub.identityService.wellKnownPartyFromX500Name(CordaX500Name.parse(repoHosterName))
+            ?: throw FlowException("Party $repoHosterName has not been found on the network")
         val repoHosterSession = initiateFlow(repoHosterParty)
-        repoHosterSession.sendAndReceive<Boolean>(resourceLocation).unwrap { it }
+        repoHosterSession.sendAndReceive<Boolean>(ResourceRequest(repositoryName, resourceLocation)).unwrap { it }
     }
 }
 
@@ -44,9 +47,15 @@ class PeekResourceFlow(private val resourceLocation : String, private val repoHo
 class PeekResourceFlowResponder(session : FlowSession) : AbstractRepositoryHosterResponder<Unit>(session) {
     @Suspendable
     override fun doCall() {
-        val location = session.receive<String>().unwrap { it }
+        val request = session.receive<ResourceRequest>().unwrap {
+            // make sure that the request contains only allowed character set
+            Utils.verifyMavenResourceURI(it.resourceLocation)
+            it
+        }
+
         val configuration = serviceHub.cordaService(RepositoryHosterConfigurationService::class.java)
-        val repository = RemoteRepository.Builder("remote", "default", configuration.remoteRepoUrl()).build()
+
+        val repository = RemoteRepository.Builder("remote", "default", configuration.repositoryUrl(request.repositoryName)).build()
 
         val transporterFactory = transporterFactory(repository.protocol)
         val repositorySession = MavenRepositorySystemUtils.newSession()
@@ -54,7 +63,7 @@ class PeekResourceFlowResponder(session : FlowSession) : AbstractRepositoryHoste
         val transporter = transporterFactory.newInstance(repositorySession, repository)!!
 
         try {
-            transporter.peek(PeekTask(URI.create(location)))
+            transporter.peek(PeekTask(URI.create(request.resourceLocation)))
         } catch (ex : Exception) {
             throw toCordaException(ex, transporter)
         }

@@ -21,13 +21,24 @@ object Utils {
 
     /**
      * Converts Maven Resolver exception to FlowException. The aim is to let the initiating flow know whether
-     * the resource has been found or not ib the remote repository
+     * the resource has been found or not in the remote repository
      */
     fun toCordaException(mavenResolverException : Exception, transporter : Transporter) : FlowException {
         val exType = transporter.classify(mavenResolverException)
         return when (exType) {
             Transporter.ERROR_NOT_FOUND -> ResourceNotFoundException()
             else -> FlowException("Error getting resource: ${mavenResolverException.message}")
+        }
+    }
+
+    /**
+     * Maven resource URIs that are received from remote nodes have to be validated against a whitelisted character set to prevent
+     * server-side request forgery
+     */
+    fun verifyMavenResourceURI(uri : String) {
+        val allowedCharacters = "abcdefghijklmnopqrstuvwxyz0123456789-/.".toSet()
+        if (!allowedCharacters.containsAll(uri.toLowerCase().trim().toSet())) {
+            throw FlowException("Invalid URI $uri")
         }
     }
 }

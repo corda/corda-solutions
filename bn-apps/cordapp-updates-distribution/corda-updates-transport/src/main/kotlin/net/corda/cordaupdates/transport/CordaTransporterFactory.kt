@@ -9,7 +9,10 @@ import org.eclipse.aether.transfer.NoTransporterException
 /**
  * Implementation of Maven Resolver's [TransporterFactory] for Corda transport.
  *
- * Corda transport expects a repository URL to be specified in the format of "corda:x500Name", i.e. for example "corda:O=BNO,L=New York,C=US"
+ * Corda transport expects a repository URL to be specified in the format of "corda:x500Name/repositoryName", i.e. for example "corda:O=BNO,L=New York,C=US/default".
+ * repositoryName allows a single node to serve artifacts from multiple repositories.
+ *
+ * TODO: replace '$' separator with ':' once it is confirmed that column can't be a part of x500 name
  */
 class CordaTransporterFactory : TransporterFactory {
     companion object {
