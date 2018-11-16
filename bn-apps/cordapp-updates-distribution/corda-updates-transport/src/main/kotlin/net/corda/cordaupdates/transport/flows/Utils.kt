@@ -10,6 +10,13 @@ import java.lang.Exception
 import java.lang.IllegalArgumentException
 
 object Utils {
+    // max allowed length for maven URIs
+    private const val maxURILength = 500
+    // set of alpha numeric characters to verify Maven URIs against
+    private val alphaNumericalCharacter = "abcdefghijklmnopqrstuvwxyz0123456789".toSet()
+    // set of other special characters allowed in Maven URIs
+    private val allowedSpecialCharacters = setOf('-', '.')
+
     /**
      * Creates Maven Resolver transporter factory based on the provided transport name
      */
@@ -36,6 +43,10 @@ object Utils {
      * server-side request forgery
      */
     fun verifyMavenResourceURI(uri : String) {
+        // Don't accept too long strings
+        if (uri.length > maxURILength) {
+            throw FlowException("Invalid URI $uri")
+        }
         // splitting the URI
         val split = uri.split("/")
         // should be at least 4 parts - group, name, version, file name
@@ -53,9 +64,6 @@ object Utils {
         val version = split[split.size - 2]
         // name is two before the last
         val name = split[split.size - 3]
-
-        val alphaNumericalCharacter = "abcdefghijklmnopqrstuvwxyz0123456789".toSet()
-        val allowedSpecialCharacters = setOf('-', '.')
 
         // name version type all together. It's a challenge to split them out, see this for example: https://repo1.maven.org/maven2/com/google/guava/guava/27.0-jre/
         if (nameVersionType.isEmpty()
