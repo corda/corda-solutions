@@ -2,11 +2,11 @@
 States Instance (Ledger)
 ========================
 
-The States Instance View is a snap shot in time of a set of States in a particular status together with how they are linked together. It is a Ledger Layer view as it represents a subset of the ledger and is independent of how the states came to be on the ledger. It is not trying to communicate controls or transitions, it is a just point in time instance diagram.
+The States Instance view is a subjective snap shot in time of a subset of States in a nodes vault. It shows the state statuses and how they may be linked together and is independent of how the states came to be on the ledger. It is not trying to communicate controls or transitions, it is a just point in time instance diagram.
 
-An instance diagram for our example might look like this:
+An State Instance diagram might look like this:
 
-.. image:: ../resources/CMN_Instance_view_arrows.png
+.. image:: ../resources/views/CMN2_SI_State_instance.png
   :width: 90%
   :align: center
 
@@ -19,24 +19,20 @@ The diagram is based on states using a similar representation to the State Machi
 
 2. Properties
 
-  These are similar to the properties in the state machine view but are more likely to hold specific values rather than just the property type.
+  These are similar to the properties shown in the State Evolution view, the generic types shown in the State Machine view are replaced by specific values for the Variables.
 
 3. Multiple instances of the same state/status
 
-  The diagram has two boxes which are AttachmentStates, this is because there are two instances of the AttachmentStates, however these are both ‘Live’ Attachment states so the equivalent State machine view would only have one box.
+  The diagram has two boxes which are AttachmentStates in a Live Status, this is because there are two separate instances of an AttachmentState. They are shown separately even if they are governed by the same state machine (not shown)
 
 4. No constraints
 
-  The diagram is not trying to show constraints, hence the box for state level constraints is not in the state box
+  The diagram is not trying to show constraints.
 
-5. Participants not visibility constraints
+5. State references
 
-  The visibility box is replaced by a participant’s box. Whereas the visibility box set out the constraints around acceptable participants in the transaction, the participants box shows actual participants on the state.
+  The diagram now shows references between States, the reference will need to show the id for the referenced state together with who is the publisher. There is a dotted line between from the State holding the reference to the referenced State
 
-6. State references
+6. Diagram can include any State instances
 
-  The diagram now shows references between states, the state box shows the reference and there is a dotted line between from the state holding the reference to the referenced state
-
-7. Diagram can include any state instances
-
-  The diagram can include any state instances which the drawer feels are relevant. In this diagram, we include the two BillingStates even though they are not referenced from the other states.
+  The diagram can include any State instances which the drawer feels are relevant. In this diagram, we include the two BillingStates even though they are not referenced from the other States.

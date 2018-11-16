@@ -2,13 +2,13 @@
 State Evolution (Ledger)
 ========================
 
-The State Evolution view aims to show how a State evolves over time. You can think of it as one of many potential paths through the transitions permitted in a State Machine the State Machine View.
+The State Evolution view aims to show how a State may evolve over time. You can think of it as one of many potential paths through the transitions permitted by a State Machine shown in the State Machine View.
 
 -----------------------------
 Basic State Evolution Diagram
 -----------------------------
 
-Let's start the State Machine example from the State Machine Section.
+Let's start with the State Machine example from the State Machine Section.
 
 .. image:: ../resources/views/CMN2_SM_Full_example.png
   :width: 100%
