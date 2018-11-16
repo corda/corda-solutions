@@ -11,7 +11,7 @@ In summary, Corda Modelling Notation should:
     *	Shared data and state
     *	Shared processing logic
     *	Permissioning (via digital signatures)
-    *	Visibility of data to different participants (Privacy)
+    *	Privacy (Visibility of data to different participants)
     *	Security
 
   3.	Draw a clear distinction between Ledger Layer and Orchestration Layer functionality.

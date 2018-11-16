@@ -2,10 +2,18 @@
 Flow Sequence (Orchestration)
 =============================
 
-To specify how we build and agree the transaction we can use the Flow Sequence Diagram, this is based on UML Sequence diagram and uses minor modifications to describes the Corda Flow. For our example:
+Note, The Flow Sequence view set out in this section is designed to be very accurate representation of the flows for detailed analysis. For many purposes a standard PlantUml style sequence digram may sufice. For example, from the Designs section of this site:
 
-.. image:: ../resources/CMN_Reduced_sequence_with_arrows.png
-  :width: 80%
+.. image:: ../resources/views/CMN2_FS_Plantuml_example.png
+  :width: 60%
+  :align: center
+
+
+To specify how we build and agree the transaction we can use the Flow Sequence Diagram, this is based on UML Sequence diagram and uses minor modifications to describes the Corda Flows:
+
+
+.. image:: ../resources/views/CMN2_FS_Short.png
+  :width: 100%
   :align: center
 
 1. Actors (Parties involved in the flow):
@@ -50,11 +58,11 @@ To specify how we build and agree the transaction we can use the Flow Sequence D
 
 9. Hiding complexity
 
-  The full flows can become quite complex and long, parts of the flow can be replaced by box to represent the details of the flow. In this example, the Corda provided Collect Signatures Flow and Finality flow are replaced by a box. However, if necessary the full flow can be modelled:
+  The full flows can become quite complex and long, parts of the flow can be replaced by a box to represent the details of the flow. In this example, the Corda provided Collect Signatures Flow and Finality flow are replaced by a box. However, if necessary the full flow can be modelled:
 
 
-.. image:: ../resources/CMN_Full_sequence.png
-  :width: 80%
+.. image:: ../resources/views/CMN2_FS_Long.png
+  :width: 100%
   :align: center
 
 10. Subflow not shown

@@ -2,15 +2,10 @@
 Why Corda Modelling Notation
 ----------------------------
 
-From working with several of R3’s members and partners, a common challenge is how to write down a CorDapp design. A CorDapp has a lot of interacting parts: States, Contracts, Flows, Transactions, API’s, Participants, Signers. It’s difficult to capture, and hence reason, about the behaviour of the whole CorDapp.
-
-There is a risk that if inappropriate modelling techniques are used, important dimensions of the design could be obscured leading to sub-optimal design decisions. Working on a design when you can’t quite write it down can also cause poor communication and inefficiencies within teams, this can lead to frustration and we want people to be happy using Corda.
-
 There are some specific drivers which have led to the development of Corda Modelling Notation (CMN)
 
 
 **1. Standard architecture techniques don’t capture all aspects of a CorDapp design**
-
 
   Describing computer application designs is not a new problem, there are many existing architectural and design techniques. However, Corda introduces some new dimensions that don’t fit with current techniques. In addition, where there may be appropriate existing techniques, it’s not always obvious which are best to use and they may require modification to make them applicable for CorDapps.
 
@@ -35,7 +30,7 @@ There are some specific drivers which have led to the development of Corda Model
 
   You can think of a CorDapp as having two distinct layers, the Ledger Layer and the Orchestration Layer. There are of course, many other parts such as UI, interfaces to other client systems, non-ledger storage etc., but they are left off for clarity.
 
-.. image:: resources/CMN_Cordapp_split.png
+.. image:: ../resources/overview/CMN2_O_Layers.png
   :width: 60%
   :align: center
 
@@ -52,10 +47,10 @@ There are some specific drivers which have led to the development of Corda Model
 
 **4. Privacy is Key**
 
-  A major benefit of Corda over other Blockchains is its peer to peer nature, participants on the Network who are not party to a transaction do not get sent the transaction. However, there is a subtlety here which is often overlooked but critical to CorDapp design: when a transactions input states are resolved (checked for provenance) the Corda node will request all the previous transactions in those states' history. Unless designed properly this runs the risk of pulling back trading history which some of the participant's of the current transaction should not see.
+  A major benefit of Corda over other Blockchains is its peer to peer nature, participants on the Network who are not party to a transaction do not get sent the transaction. However, there is a subtlety here which is often overlooked but critical to CorDapp design: when a transactions input States are resolved (checked for provenance) the Corda node will request all the previous transactions in those States' history. Unless designed properly this runs the risk of pulling back trading history which some of the participant's of the current transaction should not see.
 
   There are mitigations to these potential privacy leaks, such as confidential identities, token tear offs etc ... but these must be actively designed into the CorDapp and the Supporting Business Network Services.
 
   A CorDapp design should be able to prove that their Application does not leak privacy. To this end, Corda Modelling Notation aims to provide techniques for modelling and reasoning about privacy characteristics of CorDApps.
 
-**5. Re read 4, its really important**
+**5. Re-read 4, it's really important**

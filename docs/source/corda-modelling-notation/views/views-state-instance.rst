@@ -2,7 +2,7 @@
 States Instance (Ledger)
 ========================
 
-The States Instance view is a subjective snap shot in time of a subset of States in a nodes vault. It shows the state statuses and how they may be linked together and is independent of how the states came to be on the ledger. It is not trying to communicate controls or transitions, it is a just point in time instance diagram.
+The States Instance view is a subjective snap shot in time of a subset of States in a node's vault. It shows the state statuses and how they may be linked together and is independent of how the states came to be on the ledger. It is not trying to communicate controls or transitions, it is a just point in time instance diagram.
 
 An State Instance diagram might look like this:
 
