@@ -1,6 +1,6 @@
-=========================
-Orchestration – BPMN View
-=========================
+====================
+BPMN (Orchestration)
+====================
 
 The Orchestration layer is driven by business events. Whereas the Ledger layer models all the things you can do with Corda states and transactions, the Orchestration layer deals with what you intend to do with the states and transactions, ie. actions which reflect legitimate business events.
 
@@ -10,7 +10,7 @@ A simplified example for our Example agreement CorDapp might look like this.
 
 High-level processes:
 
-.. image:: resources/CMN_BPMN_high_level.png
+.. image:: ../resources/CMN_BPMN_high_level.png
   :width: 60%
   :align: center
 

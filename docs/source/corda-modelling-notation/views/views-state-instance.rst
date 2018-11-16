@@ -1,12 +1,12 @@
-=============================
-Ledger - States Instance View
-=============================
+========================
+States Instance (Ledger)
+========================
 
 The States Instance View is a snap shot in time of a set of States in a particular status together with how they are linked together. It is a Ledger Layer view as it represents a subset of the ledger and is independent of how the states came to be on the ledger. It is not trying to communicate controls or transitions, it is a just point in time instance diagram.
 
 An instance diagram for our example might look like this:
 
-.. image:: resources/CMN_Instance_view_arrows.png
+.. image:: ../resources/CMN_Instance_view_arrows.png
   :width: 90%
   :align: center
 

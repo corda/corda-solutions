@@ -1,10 +1,10 @@
-=========================================
-Orchestration – Transaction Instance View
-=========================================
+====================================
+Transaction Instance (Orchestration)
+====================================
 
 To specify the require transaction corresponding to a business event, we use the Transaction Instance view. This consists of writing down the specific transaction that needs to occur for the particular business event.
 
-.. image:: resources/CMN_Transaction_instance_with_arrows.png
+.. image:: ../resources/CMN_Transaction_instance_with_arrows.png
   :width: 80%
   :align: center
 

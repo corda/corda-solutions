@@ -1,10 +1,10 @@
-==================================
-Orchestration – Flow Sequence View
-==================================
+=============================
+Flow Sequence (Orchestration)
+=============================
 
 To specify how we build and agree the transaction we can use the Flow Sequence Diagram, this is based on UML Sequence diagram and uses minor modifications to describes the Corda Flow. For our example:
 
-.. image:: resources/CMN_Reduced_sequence_with_arrows.png
+.. image:: ../resources/CMN_Reduced_sequence_with_arrows.png
   :width: 80%
   :align: center
 
@@ -53,7 +53,7 @@ To specify how we build and agree the transaction we can use the Flow Sequence D
   The full flows can become quite complex and long, parts of the flow can be replaced by box to represent the details of the flow. In this example, the Corda provided Collect Signatures Flow and Finality flow are replaced by a box. However, if necessary the full flow can be modelled:
 
 
-.. image:: resources/CMN_Full_sequence.png
+.. image:: ../resources/CMN_Full_sequence.png
   :width: 80%
   :align: center
 

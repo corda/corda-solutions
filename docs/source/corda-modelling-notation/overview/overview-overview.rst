@@ -10,7 +10,7 @@ Corda Modelling Notation (CMN) is a bespoke modelling notation to represent CorD
 .. toctree::
    :maxdepth: 1
 
-   why-cmn.rst
-   aims-cmn.rst
-   views-cmn.rst
-   complexity-cmn.rst
+   overview-whycmn.rst
+   overview-aims.rst
+   overview-views.rst
+   overview-complexity.rst
