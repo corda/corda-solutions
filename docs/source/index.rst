@@ -26,6 +26,7 @@ finished application, are about to deploy, or are already in production.
 
    corda-modelling-notation/overview/overview-overview.rst
    corda-modelling-notation/views/views-overview.rst
+   corda-modelling-notation/high-level-architecture/arch-overview.rst
    corda-modelling-notation/privacy/privacy-overview.rst
    corda-modelling-notation/complexity/complexity-overview.rst
 
