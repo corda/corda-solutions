@@ -70,7 +70,7 @@ class GetResourceFlow(private val resourceLocation : String, private val reposit
 @InitiatedBy(GetResourceFlow::class)
 class GetResourceFlowResponder(session : FlowSession) : AbstractRepositoryHosterResponder<Unit>(session) {
     @Suspendable
-    override fun doCall() {
+    override fun postPermissionCheck() {
         val request = session.receive<ResourceRequest>().unwrap {
             // make sure that the request contains only allowed character set
             Utils.verifyMavenResourceURI(it.resourceLocation)

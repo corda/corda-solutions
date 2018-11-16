@@ -36,9 +36,49 @@ object Utils {
      * server-side request forgery
      */
     fun verifyMavenResourceURI(uri : String) {
-        val allowedCharacters = "abcdefghijklmnopqrstuvwxyz0123456789-/.".toSet()
-        if (!allowedCharacters.containsAll(uri.toLowerCase().trim().toSet())) {
+        // splitting the URI
+        val split = uri.split("/")
+        // should be at least 4 parts - group, name, version, file name
+        if (split.size < 4) {
             throw FlowException("Invalid URI $uri")
+        }
+        // no double dots are allowed
+        if (uri.contains("..")) {
+            throw FlowException("Invalid URI $uri")
+        }
+
+        // artifact name + version + type is the last item of the split
+        val nameVersionType = split.last()
+        // version is one before the last
+        val version = split[split.size - 2]
+        // name is two before the last
+        val name = split[split.size - 3]
+
+        val alphaNumericalCharacter = "abcdefghijklmnopqrstuvwxyz0123456789".toSet()
+        val allowedSpecialCharacters = setOf('-', '.')
+
+        // name version type all together. It's a challenge to split them out, see this for example: https://repo1.maven.org/maven2/com/google/guava/guava/27.0-jre/
+        if (nameVersionType.isEmpty()
+                || !(alphaNumericalCharacter + allowedSpecialCharacters).containsAll(nameVersionType.toLowerCase().toSet())
+                || !nameVersionType.startsWith("$name-$version")) {
+            throw FlowException("Invalid URI $uri")
+        }
+        // verify name
+        if (name.isEmpty()
+                || !(alphaNumericalCharacter + '-').containsAll(name.toLowerCase().toSet())) {
+            throw FlowException("Invalid URI $uri")
+        }
+        // verify version
+        if (version.isEmpty()
+                || !(alphaNumericalCharacter + allowedSpecialCharacters).containsAll(version.toLowerCase().toSet())) {
+            throw FlowException("Invalid URI $uri")
+        }
+        // verify each part of the group.
+        val group = split.subList(0, split.size - 3)
+        for (part in group) {
+            if (part.isEmpty() || !alphaNumericalCharacter.containsAll(part.toLowerCase().toSet())) {
+                throw FlowException("Invalid URI $uri")
+            }
         }
     }
 }

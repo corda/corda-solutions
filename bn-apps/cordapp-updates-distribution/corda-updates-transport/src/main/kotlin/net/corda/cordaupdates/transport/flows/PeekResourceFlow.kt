@@ -34,6 +34,8 @@ class PeekResourceFlow(private val resourceLocation : String, private val repoHo
         val repoHosterParty = serviceHub.identityService.wellKnownPartyFromX500Name(CordaX500Name.parse(repoHosterName))
             ?: throw FlowException("Party $repoHosterName has not been found on the network")
         val repoHosterSession = initiateFlow(repoHosterParty)
+        //If the resource is missing - then a ResourceNotFoundException would be thrown.
+        // If the resource exists - then we are not interested in what the actual reply is.
         repoHosterSession.sendAndReceive<Boolean>(ResourceRequest(repositoryName, resourceLocation)).unwrap { it }
     }
 }
@@ -46,7 +48,7 @@ class PeekResourceFlow(private val resourceLocation : String, private val repoHo
 @InitiatedBy(PeekResourceFlow::class)
 class PeekResourceFlowResponder(session : FlowSession) : AbstractRepositoryHosterResponder<Unit>(session) {
     @Suspendable
-    override fun doCall() {
+    override fun postPermissionCheck() {
         val request = session.receive<ResourceRequest>().unwrap {
             // make sure that the request contains only allowed character set
             Utils.verifyMavenResourceURI(it.resourceLocation)

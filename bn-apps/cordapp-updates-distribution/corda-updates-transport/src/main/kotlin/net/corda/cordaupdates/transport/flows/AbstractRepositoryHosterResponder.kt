@@ -22,11 +22,11 @@ abstract class AbstractRepositoryHosterResponder<T>(val session : FlowSession) :
         if (sessionFilter != null && !sessionFilter.isSessionAllowed(session, this)) {
             throw FlowException("Counterparty ${session.counterparty} is not allowed to access repository")
         }
-        return doCall()
+        return postPermissionCheck()
     }
 
     @Suspendable
-    protected abstract fun doCall() : T
+    protected abstract fun postPermissionCheck() : T
 }
 
 /**

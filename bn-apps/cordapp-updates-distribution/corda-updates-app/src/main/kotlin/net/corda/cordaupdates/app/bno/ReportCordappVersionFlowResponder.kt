@@ -20,7 +20,7 @@ import net.corda.core.utilities.unwrap
 class ReportCordappVersionFlowResponder(session : FlowSession) : AbstractRepositoryHosterResponder<Unit>(session) {
 
     @Suspendable
-    override fun doCall() {
+    override fun postPermissionCheck() {
         val cordappVersionInfo : CordappVersionInfo = session.receive<CordappVersionInfo>().unwrap {
             // we don't verify the payload here, as we know that the request is coming from a known participant,
             // who has passed through the session filter
