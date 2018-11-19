@@ -2,7 +2,7 @@
 Flow Sequence (Orchestration)
 =============================
 
-Note, The Flow Sequence view set out in this section is designed to be very accurate representation of the flows for detailed analysis. For many purposes a standard PlantUml style sequence digram may sufice. For example, from the Designs section of this site:
+Note, The Flow Sequence view set out in this section is designed to be very accurate representation of the flows for detailed analysis. For many purposes a standard PlantUml style sequence digram may suffice. For example, from the Designs section of this site:
 
 .. image:: ../resources/views/CMN2_FS_Plantuml_example.png
   :width: 60%
