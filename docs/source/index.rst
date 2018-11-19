@@ -24,7 +24,11 @@ finished application, are about to deploy, or are already in production.
    :caption: Corda Modelling Notation
    :maxdepth: 1
 
-   corda-modelling-notation/intro.rst
+   corda-modelling-notation/overview/overview-overview.rst
+   corda-modelling-notation/views/views-overview.rst
+   corda-modelling-notation/high-level-architecture/arch-overview.rst
+   corda-modelling-notation/privacy/privacy-overview.rst
+   corda-modelling-notation/complexity/complexity-overview.rst
 
 .. toctree::
    :caption: FAQ
@@ -47,4 +51,3 @@ Found a Problem or Suggestions For Improvements?
 
 This site is based on an open source git repository, so you can either suggest a fix (via a pull request), or leave
 us a problem report on `GitHub <https://github.com/corda/corda-solutions/>`_.
-
