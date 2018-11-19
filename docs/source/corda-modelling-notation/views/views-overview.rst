@@ -2,7 +2,7 @@
 CMN Views
 =========
 
-** todo: add intro to views ***
+CMN provides a number of views representing different aspects of a CorDapp design:
 
 .. toctree::
    :maxdepth: 1

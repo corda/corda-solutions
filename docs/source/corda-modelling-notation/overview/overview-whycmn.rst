@@ -23,7 +23,7 @@ There are some specific drivers which have led to the development of Corda Model
 
     * Production CorDapps are likely to have multiple interacting components. For example, in addition to the core CorDapp function, you could have interacting components to provide BNO (Business Network Operator) Billing, BNO whitelisting for participants, associated accounting balances, co-dependent agreements etc…
 
-  All of these, and more, point to an increase in design difficulty, likely beyond the point where it can fit reliably in solely in the developer’s head. We need techniques to be able to communicate and reason about complex CorDapp designs.
+  All of these, and more, point to an increase in design difficulty, likely beyond the point where it can fit reliably solely in the developer’s head. We need techniques to be able to communicate and reason about complex CorDapp designs.
 
 **3. Corda has two distinct layers, ignore them at your peril...**
 
@@ -43,14 +43,14 @@ There are some specific drivers which have led to the development of Corda Model
 
   There is a very important distinction between these two layers: The Ledger layer is the only part of the CorDapp where you get the Distributed Ledger guarantee of shared data and shared execution logic. The Flows and API may be distributed as part of the developed CorDapp and may represent the intended use of the CorDapp, but any party can rewrite the Flows in the Orchestration Layer to execute any logic they want.
 
-  Put another, exaggerated way, an assets trading CorDapp might be distributed with Flows for issuance, transfer, settlement, ie the intended actions. However, just because the CorDapp developers didn’t write a ‘steal all the assets’ Flow doesn’t mean that a nefarious actor can’t write their own. It’s the constraints baked into the Ledger Layer which stop the assets being stolen. Hence, when describing and reasoning about Corda, it is essential to split out the Ledger Layer from the Orchestration Layer and consider them separately. The Modelling notation needs to draw a clear distinction between these layers.
+  Put another, exaggerated way, an assets trading CorDapp might be distributed with Flows for issuance, transfer, settlement, ie the intended actions. However, just because the CorDapp developers didn’t write a ‘steal all the assets’ Flow doesn’t mean that a nefarious actor can’t write their own. It’s the constraints baked into the Ledger Layer which stop the assets being stolen. Hence, when describing and reasoning about Corda, it is essential to split out the Ledger Layer from the Orchestration Layer and consider them separately. The modelling notation needs to draw a clear distinction between these layers.
 
 **4. Privacy is Key**
 
-  A major benefit of Corda over other Blockchains is its peer to peer nature, participants on the Network who are not party to a transaction do not get sent the transaction. However, there is a subtlety here which is often overlooked but critical to CorDapp design: when a transactions input States are resolved (checked for provenance) the Corda node will request all the previous transactions in those States' history. Unless designed properly this runs the risk of pulling back trading history which some of the participant's of the current transaction should not see.
+  A major benefit of Corda over other Blockchains is it's peer to peer nature, participants on the Network who are not party to a transaction do not get sent the transaction. However, there is a subtlety here which is often overlooked but critical to CorDapp design: when a transaction's input States are resolved (checked for provenance) the Corda node will request all the previous transactions in those States' history. Unless designed properly this runs the risk of pulling back trading history which some of the participant's of the current transaction should not see.
 
-  There are mitigations to these potential privacy leaks, such as confidential identities, token tear offs etc ... but these must be actively designed into the CorDapp and the Supporting Business Network Services.
+  There are mitigations to these potential privacy leaks, such as confidential identities, token tear offs etc ... but these must be actively designed into the CorDapp and the supporting Business Network Services.
 
-  A CorDapp design should be able to prove that their Application does not leak privacy. To this end, Corda Modelling Notation aims to provide techniques for modelling and reasoning about privacy characteristics of CorDApps.
+  A CorDapp design should be able to prove that their application does not leak privacy. To this end, Corda Modelling Notation aims to provide techniques for modelling and reasoning about privacy characteristics of CorDApps.
 
 **5. Re-read 4, it's really important**

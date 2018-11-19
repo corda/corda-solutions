@@ -1,8 +1,8 @@
----------------------------
-Modelling Complexity in CMN
----------------------------
+----------------------------
+Managing Complexity with CMN
+----------------------------
 
-The Modelling Complexity in CMN section considers how to scale complexity in a CorDapp by applying the concepts of high cohesion / low coupling to CorDapp designs.
+The Managing Complexity in CMN section considers how to scale complexity in a CorDapp by applying the concepts of high cohesion / low coupling to CorDapp designs.
 
 It proposes splitting the design into modules where individual Corda State types provide related functionality (high cohesion) which are then (loosely) coupled together by one of four mechanisms:
 

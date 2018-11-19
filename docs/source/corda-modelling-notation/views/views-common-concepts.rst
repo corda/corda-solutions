@@ -8,7 +8,7 @@ Defining Terms
 
 When discussing CMN we need to define some common terms.
 
- * **State:** A class or object which inherits from ContractState interface in net.corda.core.contracts. In the training materials, this is what is referred to as a State.
+ * **State:** A class or object which complies with ContractState interface in net.corda.core.contracts. In the training materials, this is what is referred to as a State.
  * **Ledger state:**	This is the sum total of all the unconsumed ContractStates
  * **Status:** (of a State)	A snap shot of the potential values of the properties of a State.
  * **Contract:**	A class or object which inherits from Contract in net.corda.core.contracts. This defines the set of constraints which operate over the States in a Transaction.
@@ -26,13 +26,13 @@ Many views in CMN show representation of a Corda State. For the latest version o
   :align: center
 
 
-1)  State and Status
+1)  State Class and Status
 
-  The type of State and the Status of the state, this effectively defines the scope of the box, ie. if the State type or Status is different, it's a different box.
+  The Class of State and the Status of the State, this effectively defines the scope of the box, ie. if the State Class or Status is different, it's a different box. Note all Corda States comply with the ContractState Interface.
 
 2) Properties
 
-  These are the properties of the State whilst in the particular status. Not all Properties need to be shown, just the ones salient to the behaviour of the state in this status.
+  These are the properties of the State whilst in the particular status. Not all properties need to be shown, just the ones salient to the behaviour of the State in this Status.
 
 3) Participants
 
