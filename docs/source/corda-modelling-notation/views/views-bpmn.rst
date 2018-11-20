@@ -10,7 +10,7 @@ A simplified example for our Example agreement CorDapp might look like this.
 
 High-level processes:
 
-.. image:: ../resources/views/CMN2_BPMN_high_level.png
+.. image:: ../resources/views/CMN2_BPMN_High_level.png
   :width: 40%
   :align: center
 
