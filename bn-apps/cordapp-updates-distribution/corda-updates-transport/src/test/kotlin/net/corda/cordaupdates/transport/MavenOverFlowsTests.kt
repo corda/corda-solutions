@@ -63,7 +63,7 @@ class MavenOverFlowsTests {
     @Test
     fun `repository name should default to "default" if not explicitly provided`() {
         genericTest("corda-updates-app.conf") {
-            participantNode.rpc.startFlowDynamic(TestFlow::class.java,
+            participantNode.rpc.startFlowDynamic(DownloadVersionFlow::class.java,
                     "corda:O=Repo Hoster,L=New York,C=US",
                     nodeLocalRepoPath.toAbsolutePath().toString(),
                     "net.example:test-artifact:1.5").returnValue.getOrThrow()
@@ -76,13 +76,26 @@ class MavenOverFlowsTests {
     @Test
     fun `Should fetch artifacts from the specified repository`() {
         genericTest("corda-updates-app-with-custom-repo-name.conf") {
-            participantNode.rpc.startFlowDynamic(TestFlow::class.java,
+            participantNode.rpc.startFlowDynamic(DownloadVersionFlow::class.java,
                     "corda:O=Repo Hoster,L=New York,C=US/customRepo",
                     nodeLocalRepoPath.toAbsolutePath().toString(),
                     "net.example:test-artifact:1.5").returnValue.getOrThrow()
             // let the flow to finish its job as it runs asynchronously
             sleep(5000)
             repoVerifier.shouldContain("net:example", "test-artifact", setOf("1.5")).verify()
+        }
+    }
+
+   @Test
+    fun `Should fetch version range from the specified repository`() {
+        genericTest("corda-updates-app-with-custom-repo-name.conf") {
+            participantNode.rpc.startFlowDynamic(DownloadVersionRangeFlow::class.java,
+                    "corda:O=Repo Hoster,L=New York,C=US/customRepo",
+                    nodeLocalRepoPath.toAbsolutePath().toString(),
+                    "net.example:test-artifact:[0,1.5]").returnValue.getOrThrow()
+            // let the flow to finish its job as it runs asynchronously
+            sleep(5000)
+            repoVerifier.shouldContain("net:example", "test-artifact", setOf("0.1", "0.5", "1.0", "1.5")).verify()
         }
     }
 
@@ -144,12 +157,20 @@ class MavenOverFlowsTests {
 }
 
 @StartableByRPC
-class TestFlow(private val remoteRepoUrl : String, private val localRepoPath : String, val mavenCoords : String) : FlowLogic<Unit>() {
+class DownloadVersionFlow(private val remoteRepoUrl : String, private val localRepoPath : String, val mavenCoords : String) : FlowLogic<Unit>() {
     @Suspendable
     override fun call() {
-        logger.info("Starting TestFlow")
         val executor = serviceHub.cordaService(ExecutorService::class.java)
         executor.downloadVersionAsync(remoteRepoUrl, localRepoPath, mavenCoords)
+    }
+}
+
+@StartableByRPC
+class DownloadVersionRangeFlow(private val remoteRepoUrl : String, private val localRepoPath : String, val versionRange : String) : FlowLogic<Unit>() {
+    @Suspendable
+    override fun call() {
+        val executor = serviceHub.cordaService(ExecutorService::class.java)
+        executor.downloadVersionRangeAsync(remoteRepoUrl, localRepoPath, versionRange)
     }
 }
 
@@ -164,6 +185,13 @@ class ExecutorService(private val appServiceHub : AppServiceHub) : SingletonSeri
         executor.submit(Callable {
             val resolver = CordaMavenResolver.create(remoteRepoUrl = remoteRepoUrl, localRepoPath = localRepoPath)
             resolver.downloadVersion(mavenCoords, configProps = mapOf(Pair(APP_SERVICE_HUB, appServiceHub)))
+        })
+    }
+
+    fun downloadVersionRangeAsync(remoteRepoUrl : String, localRepoPath : String, versionRange : String) {
+        executor.submit(Callable {
+            val resolver = CordaMavenResolver.create(remoteRepoUrl = remoteRepoUrl, localRepoPath = localRepoPath)
+            resolver.downloadVersionRange(versionRange, configProps = mapOf(Pair(APP_SERVICE_HUB, appServiceHub)))
         })
     }
 }

@@ -60,7 +60,6 @@ object Utils {
 
         // file name is last part of the split
         val fileName = split.last()
-
         if (fileName.isEmpty()
                 || !(alphaNumericalCharacter + allowedSpecialCharacters).containsAll(fileName.toLowerCase().toSet())) {
             throw FlowException(exceptionMessage)
@@ -69,14 +68,13 @@ object Utils {
         // we need to distinguish between artifact and maven metadata requests
         val isMavenMetadataRequest =  fileName.split(".").first() == "maven-metadata"
 
-        // maven metadata requests should consist of at least 2 parts (group, file name), while artifact requests - 4 (group, artifact name, version, file name)
-        if ((isMavenMetadataRequest && split.size < 2) || (!isMavenMetadataRequest && split.size < 4)) {
+        // maven metadata requests should consist of at least 3 parts (group, artifact name, file name), while artifact requests - 4 (group, artifact name, version, file name)
+        if ((isMavenMetadataRequest && split.size < 3) || (!isMavenMetadataRequest && split.size < 4)) {
             throw FlowException(exceptionMessage)
         }
 
         // maven-metadata requests don't contain artifact name and artifact version in the URL
-        val artifactGroup = if (isMavenMetadataRequest) split.subList(0, split.size - 1) else split.subList(0, split.size - 3)
-
+        val artifactGroup = if (isMavenMetadataRequest) split.subList(0, split.size - 2) else split.subList(0, split.size - 3)
         // verify each part of the artifact group
         for (part in artifactGroup) {
             if (part.isEmpty() || !alphaNumericalCharacter.containsAll(part.toLowerCase().toSet())) {
@@ -84,25 +82,25 @@ object Utils {
             }
         }
 
+        // verify artifact name
+        val artifactName = if (isMavenMetadataRequest) split[split.size - 2] else split[split.size - 3]
+        if (artifactName.isEmpty()
+                || !(alphaNumericalCharacter + '-').containsAll(artifactName.toLowerCase().toSet())) {
+            throw FlowException(exceptionMessage)
+        }
+
         if (!isMavenMetadataRequest) {
             // version is one before the last
             val artifactVersion = split[split.size - 2]
-            // name is two before the last
-            val artifactName = split[split.size - 3]
 
-            // name version type all together. It's a challenge to split them out, see this for example: https://repo1.maven.org/maven2/com/google/guava/guava/27.0-jre/
-            if (!fileName.startsWith("$artifactName-$artifactVersion")) {
-                throw FlowException(exceptionMessage)
-            }
-
-            // verify name
-            if (artifactName.isEmpty()
-                    || !(alphaNumericalCharacter + '-').containsAll(artifactName.toLowerCase().toSet())) {
-                throw FlowException(exceptionMessage)
-            }
             // verify version
             if (artifactVersion.isEmpty()
                     || !(alphaNumericalCharacter + allowedSpecialCharacters).containsAll(artifactVersion.toLowerCase().toSet())) {
+                throw FlowException(exceptionMessage)
+            }
+
+            // name version type all together. It's a challenge to split them out, see this for example: https://repo1.maven.org/maven2/com/google/guava/guava/27.0-jre/
+            if (!fileName.startsWith("$artifactName-$artifactVersion")) {
                 throw FlowException(exceptionMessage)
             }
         }
