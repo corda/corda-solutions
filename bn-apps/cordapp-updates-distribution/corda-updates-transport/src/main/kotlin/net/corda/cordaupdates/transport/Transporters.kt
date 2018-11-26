@@ -23,6 +23,12 @@ import org.eclipse.aether.util.ConfigUtils
 const val DEFAULT_REPOSITORY_NAME = "default"
 
 /**
+ * Reference to an instance of AppServiceHub that is passed to Maven Resolver via custom session configuration properties.
+ * AppServiceHub is used by Corda transport to start a data transfer in a separate flow to prevent Maven resolver contents from being checkpointed.
+ */
+const val APP_SERVICE_HUB = "corda-updates.appServiceHub"
+
+/**
  * Transport over Corda flows. Should be used only within a Corda node. This transporter expects an instance of [AppServiceHub]
  * to be passed via custom session properties. An instance of [AppServiceHub] is required to delegate the data transfer to a separate flow,
  * to avoid checkpointing of Maven Resolver contents as the they are not @Suspendable.

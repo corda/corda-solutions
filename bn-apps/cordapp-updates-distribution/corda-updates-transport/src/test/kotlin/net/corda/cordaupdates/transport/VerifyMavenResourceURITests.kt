@@ -7,7 +7,10 @@ import org.junit.Test
 class VerifyMavenResourceURITests {
 
     @Test
-    fun `should succeed`() = verifyMavenResourceURI("com/google/guava/guava/27.0-jre/guava-27.0-jre-javadoc.jar.asc")
+    fun `artifact request should succeed`() = verifyMavenResourceURI("com/google/guava/guava/27.0-jre/guava-27.0-jre-javadoc.jar.asc")
+
+    @Test
+    fun `maven metadata request should succeed`() = verifyMavenResourceURI("com/google/guava/maven-metadata.xml")
 
     @Test(expected = FlowException::class)
     fun `should not contain spaces`() = verifyMavenResourceURI("com/google/guava/guava/27.0-jre/guava-27.0-jre-javadoc.jar.asc ")
@@ -25,5 +28,8 @@ class VerifyMavenResourceURITests {
     fun `special characters are not allowed`() = verifyMavenResourceURI("com/guava$/guava/27.0-jre/guava-27.0-jre-javadoc.jar.asc")
 
     @Test(expected = FlowException::class)
-    fun `url should contain at least 4 parts`() = verifyMavenResourceURI("guava/27.0-jre/guava-27.0-jre-javadoc.jar.asc")
+    fun `artifact request url should contain at least 4 parts`() = verifyMavenResourceURI("guava/27.0-jre/guava-27.0-jre-javadoc.jar.asc")
+
+    @Test(expected = FlowException::class)
+    fun `maven metadata request url should contain at least 2 parts`() = verifyMavenResourceURI("maven-metadata.xml")
 }

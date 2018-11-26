@@ -43,49 +43,67 @@ object Utils {
      * server-side request forgery
      */
     fun verifyMavenResourceURI(uri : String) {
-        // Don't accept too long strings
+        val exceptionMessage = "Invalid URI $uri"
+
+        // don't accept too long strings
         if (uri.length > maxURILength) {
-            throw FlowException("Invalid URI $uri")
+            throw FlowException(exceptionMessage)
         }
-        // splitting the URI
-        val split = uri.split("/")
-        // should be at least 4 parts - group, name, version, file name
-        if (split.size < 4) {
-            throw FlowException("Invalid URI $uri")
-        }
+
         // no double dots are allowed
         if (uri.contains("..")) {
-            throw FlowException("Invalid URI $uri")
+            throw FlowException(exceptionMessage)
         }
 
-        // artifact name + version + type is the last item of the split
-        val nameVersionType = split.last()
-        // version is one before the last
-        val version = split[split.size - 2]
-        // name is two before the last
-        val name = split[split.size - 3]
+        // splitting the URI
+        val split = uri.split("/")
 
-        // name version type all together. It's a challenge to split them out, see this for example: https://repo1.maven.org/maven2/com/google/guava/guava/27.0-jre/
-        if (nameVersionType.isEmpty()
-                || !(alphaNumericalCharacter + allowedSpecialCharacters).containsAll(nameVersionType.toLowerCase().toSet())
-                || !nameVersionType.startsWith("$name-$version")) {
-            throw FlowException("Invalid URI $uri")
+        // file name is last part of the split
+        val fileName = split.last()
+
+        if (fileName.isEmpty()
+                || !(alphaNumericalCharacter + allowedSpecialCharacters).containsAll(fileName.toLowerCase().toSet())) {
+            throw FlowException(exceptionMessage)
         }
-        // verify name
-        if (name.isEmpty()
-                || !(alphaNumericalCharacter + '-').containsAll(name.toLowerCase().toSet())) {
-            throw FlowException("Invalid URI $uri")
+
+        // we need to distinguish between artifact and maven metadata requests
+        val isMavenMetadataRequest =  fileName.split(".").first() == "maven-metadata"
+
+        // maven metadata requests should consist of at least 2 parts (group, file name), while artifact requests - 4 (group, artifact name, version, file name)
+        if ((isMavenMetadataRequest && split.size < 2) || (!isMavenMetadataRequest && split.size < 4)) {
+            throw FlowException(exceptionMessage)
         }
-        // verify version
-        if (version.isEmpty()
-                || !(alphaNumericalCharacter + allowedSpecialCharacters).containsAll(version.toLowerCase().toSet())) {
-            throw FlowException("Invalid URI $uri")
-        }
-        // verify each part of the group.
-        val group = split.subList(0, split.size - 3)
-        for (part in group) {
+
+        // maven-metadata requests don't contain artifact name and artifact version in the URL
+        val artifactGroup = if (isMavenMetadataRequest) split.subList(0, split.size - 1) else split.subList(0, split.size - 3)
+
+        // verify each part of the artifact group
+        for (part in artifactGroup) {
             if (part.isEmpty() || !alphaNumericalCharacter.containsAll(part.toLowerCase().toSet())) {
-                throw FlowException("Invalid URI $uri")
+                throw FlowException(exceptionMessage)
+            }
+        }
+
+        if (!isMavenMetadataRequest) {
+            // version is one before the last
+            val artifactVersion = split[split.size - 2]
+            // name is two before the last
+            val artifactName = split[split.size - 3]
+
+            // name version type all together. It's a challenge to split them out, see this for example: https://repo1.maven.org/maven2/com/google/guava/guava/27.0-jre/
+            if (!fileName.startsWith("$artifactName-$artifactVersion")) {
+                throw FlowException(exceptionMessage)
+            }
+
+            // verify name
+            if (artifactName.isEmpty()
+                    || !(alphaNumericalCharacter + '-').containsAll(artifactName.toLowerCase().toSet())) {
+                throw FlowException(exceptionMessage)
+            }
+            // verify version
+            if (artifactVersion.isEmpty()
+                    || !(alphaNumericalCharacter + allowedSpecialCharacters).containsAll(artifactVersion.toLowerCase().toSet())) {
+                throw FlowException(exceptionMessage)
             }
         }
     }
