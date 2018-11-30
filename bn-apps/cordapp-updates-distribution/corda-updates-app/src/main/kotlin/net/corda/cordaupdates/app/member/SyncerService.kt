@@ -7,6 +7,7 @@ import net.corda.core.node.AppServiceHub
 import net.corda.core.node.services.CordaService
 import net.corda.core.serialization.SingletonSerializeAsToken
 import java.io.File
+import java.time.Instant
 import java.util.concurrent.Callable
 import java.util.concurrent.Executors
 
@@ -31,6 +32,12 @@ class ArtifactsMetadataCache(private val appServiceHub : AppServiceHub) : Single
  */
 @CordaService
 internal class SyncerService(private val appServiceHub : AppServiceHub) : SingletonSerializeAsToken() {
+    // time when the artifacts have been synced
+    private var _lastSyncTime : Instant? = null
+
+    val lastSyncTime : Instant?
+        get() = _lastSyncTime
+
     companion object {
         val executor = Executors.newSingleThreadExecutor()!!
     }
@@ -64,7 +71,9 @@ internal class SyncerService(private val appServiceHub : AppServiceHub) : Single
      * Synchronously launches artifact synchronisation.
      */
     fun syncArtifacts(syncerConfiguration : SyncerConfiguration? = null) = refreshMetadataCacheSynchronously(syncerConfiguration) { syncer ->
-        syncer.syncCordapps()
+        val artifacts = syncer.syncCordapps()
+        _lastSyncTime = Instant.now()
+        artifacts
     }
 
     /**
