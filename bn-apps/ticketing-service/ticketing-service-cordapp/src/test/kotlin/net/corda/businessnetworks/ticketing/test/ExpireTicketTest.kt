@@ -20,6 +20,7 @@ class ExpireTicketTest : TicketingServiceTestsSupport(true) {
             runGuineaPigFlow(ticketHoldingNode, anotherMemberNode)
 
             //let the ticket expire, let at least 25 seconds pass from the ticket creation to running the flow
+            //alternatively we could call waitQuiescent on the mock network here  as that will wait for the scheduled activity to pass
             val timeElapsed = Instant.now().epochSecond - now.epochSecond
             Thread.sleep(max(25 - timeElapsed, 0)*1000)
 
