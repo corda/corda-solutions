@@ -1,5 +1,7 @@
 package net.corda.businessnetworks.cordaupdates.core
 
+import net.corda.core.serialization.CordaSerializable
+import net.corda.core.utilities.loggerFor
 import net.corda.cordaupdates.transport.CordaTransporterFactory
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils.newSession
@@ -49,8 +51,9 @@ class CordaMavenResolver private constructor(private val remoteRepoUrl : String,
                                              private val repoAuthentication : Authentication? = null,
                                              private val proxy : Proxy? = null,
                                              private val configProperties : Map<String, Any> = mapOf()) {
-
     companion object {
+        val logger = loggerFor<CordaMavenResolver>()
+
         fun create(remoteRepoUrl : String? = null,
                    localRepoPath : String? = null,
                    httpUsername : String? = null,
@@ -160,16 +163,25 @@ class CordaMavenResolver private constructor(private val remoteRepoUrl : String,
      */
     fun downloadVersionRange(coordinatesWithRange : String,
                              configProps : Map<String, Any> = mapOf()) : ArtifactMetadata {
+        logger.info("Syncing cordapps $coordinatesWithRange")
         val artifactMetadata : ArtifactMetadata = resolveVersionRange(coordinatesWithRange, configProps)
 
         val aetherArtifact = DefaultArtifact(coordinatesWithRange)
 
         // downloading the most recent version first
+        // .toList() after .asReversed() is required as ReversedReadOnlyList is not CordaSerialisable
         val versions : List<VersionMetadata> = artifactMetadata.versions.asReversed().map {
             val artifactVersion = aetherArtifact.setVersion(it.version)!!
             downloadVersion(artifactVersion.toString(), configProps).versions.single()
-        }.asReversed()
-        return artifactMetadata.copy(versions = versions)
+        }.asReversed().toList()
+        return artifactMetadata.copy(versions = versions).apply {
+            val downloaded = versions.filter { !it.isFromLocal }
+            if (downloaded.isEmpty()) {
+                logger.info("No new cordapps have been found")
+            } else {
+                logger.info("Downloaded cordapps: $downloaded")
+            }
+        }
     }
 
     /**
@@ -220,10 +232,12 @@ class CordaMavenResolver private constructor(private val remoteRepoUrl : String,
 /**
  * Representation of an artifact and its versions.
  */
+@CordaSerializable
 data class ArtifactMetadata(val group : String, val name : String, val classifier : String = "", val extension : String = "jar", val versions : List<VersionMetadata> = listOf())
 /**
  * Representation of an artifact version. isFromLocal field indicates whether the version was resolved from the local repository.
  */
+@CordaSerializable
 data class VersionMetadata(val version : String, val isFromLocal : Boolean)
 
 /**

@@ -7,6 +7,8 @@ import net.corda.cordaupdates.transport.APP_SERVICE_HUB
 import net.corda.core.node.AppServiceHub
 import net.corda.core.node.services.CordaService
 import net.corda.core.serialization.SingletonSerializeAsToken
+import net.corda.core.utilities.loggerFor
+import org.slf4j.LoggerFactory
 import java.io.File
 import java.time.Instant
 import java.util.concurrent.Callable
@@ -33,13 +35,10 @@ class ArtifactsMetadataCache(private val appServiceHub : AppServiceHub) : Single
  */
 @CordaService
 internal class SyncerService(private val appServiceHub : AppServiceHub) : SingletonSerializeAsToken() {
+
     companion object {
         val executor = Executors.newSingleThreadExecutor()!!
-    }
-
-    private fun getConfigurationFileFromDefaultLocations() : File? {
-        val userConfig = File("${System.getProperty("user.home")}/.corda-updates/settings.conf")
-        return if (userConfig.exists()) userConfig else null
+        val logger = loggerFor<SyncerService>()
     }
 
     /**
@@ -47,12 +46,16 @@ internal class SyncerService(private val appServiceHub : AppServiceHub) : Single
      * to ~/.corda-updates/settings.conf otherwise.
      */
     private fun syncer(syncerConfiguration : SyncerConfiguration? = null) =
+            // if syncerConfiguration have not been provided explicitly - checking `syncerConfig` configuration parameter
+            // if `syncerConfig` has not been provided - attempting to read the config from the CorDapp config file
             if (syncerConfiguration == null) {
                 val configuration : MemberConfiguration = appServiceHub.cordaService(MemberConfiguration::class.java)
                 val syncerConfigPath : String? = configuration.syncerConfig()
-                val config : File = (if (syncerConfigPath == null) getConfigurationFileFromDefaultLocations() else File(syncerConfigPath))
-                        ?: throw ConfigurationNotFoundException("Configuration for CordappSyncer has not been found")
-                CordappSyncer(SyncerConfiguration.readFromFile(config))
+                if (syncerConfigPath == null) {
+                    CordappSyncer(SyncerConfiguration.readFromConfig(configuration.config))
+                } else  {
+                    CordappSyncer(SyncerConfiguration.readFromFile(File(syncerConfigPath)))
+                }
             } else CordappSyncer(syncerConfiguration)
 
     /**
@@ -87,7 +90,13 @@ internal class SyncerService(private val appServiceHub : AppServiceHub) : Single
      * Asynchronously launches artifact synchronisation
      */
     fun syncArtifactsAsync(syncerConfiguration : SyncerConfiguration? = null) {
-        executor.submit(Callable { syncArtifacts(syncerConfiguration) })
+        executor.submit(Callable {
+            try {
+                syncArtifacts(syncerConfiguration)
+            } catch (ex : Exception) {
+                logger.error("Error while syncing artifacts", ex)
+            }
+        })
     }
 
     /**
@@ -96,11 +105,12 @@ internal class SyncerService(private val appServiceHub : AppServiceHub) : Single
      * @param cordappCoordinatesWithRange coordinates of cordapp with range, i.e. "net.corda:corda-finance:[0,2.0)"
      */
     fun getArtifactsMetadataAsync(cordappCoordinatesWithRange : String, syncerConfiguration : SyncerConfiguration? = null) {
-        executor.submit(Callable { getArtifactsMetadata(cordappCoordinatesWithRange, syncerConfiguration) })
+        executor.submit(Callable {
+            try {
+                getArtifactsMetadata(cordappCoordinatesWithRange, syncerConfiguration)
+            } catch (ex : Exception) {
+                logger.error("Error while getting artifacts metadata", ex)
+            }
+        })
     }
-
-    /**
-     * Thrown if Syncer configuration has not been found
-     */
-    class ConfigurationNotFoundException(message : String) : Exception(message)
 }

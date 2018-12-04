@@ -35,6 +35,7 @@ class SyncArtifactsFlow private constructor (private val scheduledStateRef : Sta
     constructor(scheduledStateRef : StateRef) : this(scheduledStateRef, null, true)
     constructor(syncerConfig : SyncerConfiguration? = null,
                 launchAsync : Boolean = true) : this(null, syncerConfig, launchAsync)
+    constructor() : this(null, true)
 
     // TODO: remove the progress tracker once Corda v4 is released
     companion object {
@@ -72,7 +73,9 @@ class ScheduleSyncFlow @JvmOverloads constructor(private val syncerConfig : Sync
 
     // TODO: remove the progress tracker once Corda v4 is released
     companion object {
-        object SCHEDULING_STATE : ProgressTracker.Step("Scheduling state")
+        object SCHEDULING_STATE : ProgressTracker.Step("Scheduling state") {
+            override fun childProgressTracker() = StopScheduledSyncFlow.tracker()
+        }
         object INVOKING_INITIAL_SYNCRONISATION : ProgressTracker.Step("Invoking initial synchronisation") {
             override fun childProgressTracker() = SyncArtifactsFlow.tracker()
         }
@@ -88,19 +91,59 @@ class ScheduleSyncFlow @JvmOverloads constructor(private val syncerConfig : Sync
     @Suspendable
     override fun call() : List<ArtifactMetadata>? {
         progressTracker.currentStep = SCHEDULING_STATE
+
+        // removing the existing scheduled states
+        subFlow(StopScheduledSyncFlow())
+
+        // issuing a new scheduled state
+        issueScheduledState()
+
+        progressTracker.currentStep = INVOKING_INITIAL_SYNCRONISATION
+        // triggering first sync
+        return subFlow(SyncArtifactsFlow(syncerConfig, launchAsync))
+    }
+
+    @Suspendable
+    private fun issueScheduledState() : SignedTransaction {
+        val configuration : MemberConfiguration = serviceHub.cordaService(MemberConfiguration::class.java)
+        val builder = TransactionBuilder(configuration.notaryParty())
+                .addOutputState(ScheduledSyncState(configuration.syncInterval(), ourIdentity), ScheduledSyncContract.CONTRACT_NAME)
+                .addCommand(ScheduledSyncContract.Commands.Start(), ourIdentity.owningKey)
+
+        builder.verify(serviceHub)
+        val signedTx : SignedTransaction = serviceHub.signInitialTransaction(builder)
+        return subFlow(FinalityFlow(signedTx))
+    }
+}
+
+/**
+ * Removes scheduled states form the ledger which effectively stops the sync
+ *
+ * TODO: refactor once new scheduling mechanism is implemented (https://r3-cev.atlassian.net/browse/CORDA-2117).
+ */
+@StartableByRPC
+class StopScheduledSyncFlow : FlowLogic<Unit>() {
+    // TODO: remove the progress tracker once Corda v4 is released
+    companion object {
+        object REMOVING_SCHEDULED_STATE : ProgressTracker.Step("Removing existing scheduled states")
+
+        fun tracker() = ProgressTracker(
+            REMOVING_SCHEDULED_STATE
+        )
+    }
+
+    override val progressTracker : ProgressTracker = StopScheduledSyncFlow.tracker()
+
+    @Suspendable
+    override fun call() {
+        progressTracker.currentStep = REMOVING_SCHEDULED_STATE
+
         val configuration : MemberConfiguration = serviceHub.cordaService(MemberConfiguration::class.java)
 
         val scheduledStates : List<StateAndRef<ScheduledSyncState>> = serviceHub.vaultService.queryBy<ScheduledSyncState>().states
 
         // removing all existing scheduled states from the ledger
         scheduledStates.forEach { removeScheduledState(it, configuration.notaryParty()) }
-
-        // issuing a new scheduled state
-        issueScheduledState(configuration.syncInterval(), configuration.notaryParty())
-
-        progressTracker.currentStep = INVOKING_INITIAL_SYNCRONISATION
-        // triggering first sync
-        return subFlow(SyncArtifactsFlow(syncerConfig, launchAsync))
     }
 
     @Suspendable
@@ -111,16 +154,5 @@ class ScheduleSyncFlow @JvmOverloads constructor(private val syncerConfig : Sync
         builder.verify(serviceHub)
         val signedTx : SignedTransaction = serviceHub.signInitialTransaction(builder)
         subFlow(FinalityFlow(signedTx))
-    }
-
-    @Suspendable
-    private fun issueScheduledState(syncInterval : Long, notary : Party) : SignedTransaction {
-        val builder = TransactionBuilder(notary)
-                .addOutputState(ScheduledSyncState(syncInterval, ourIdentity), ScheduledSyncContract.CONTRACT_NAME)
-                .addCommand(ScheduledSyncContract.Commands.Start(), ourIdentity.owningKey)
-
-        builder.verify(serviceHub)
-        val signedTx : SignedTransaction = serviceHub.signInitialTransaction(builder)
-        return subFlow(FinalityFlow(signedTx))
     }
 }

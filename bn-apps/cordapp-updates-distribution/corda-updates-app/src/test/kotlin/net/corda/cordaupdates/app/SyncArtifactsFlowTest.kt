@@ -7,7 +7,6 @@ import net.corda.businessnetworks.cordaupdates.core.CordappSource
 import net.corda.businessnetworks.cordaupdates.core.VersionMetadata
 import net.corda.businessnetworks.cordaupdates.testutils.RepoVerifier
 import net.corda.cordaupdates.app.member.ArtifactsMetadataCache
-import net.corda.cordaupdates.app.member.GetLastSyncTimeFlow
 import net.corda.cordaupdates.app.member.ScheduleSyncFlow
 import net.corda.cordaupdates.app.member.SyncArtifactsFlow
 import net.corda.cordaupdates.app.states.ScheduledSyncContract
@@ -26,10 +25,7 @@ import org.junit.Before
 import org.junit.Test
 import java.nio.file.Files
 import java.nio.file.Path
-import java.time.Instant
 import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertNull
 
 class SyncArtifactsFlowTest {
     private lateinit var mockNetwork : MockNetwork
@@ -42,7 +38,8 @@ class SyncArtifactsFlowTest {
     fun setup() {
         localRepoPath = Files.createTempDirectory("FakeRepo")
         repoVerifier = RepoVerifier(localRepoPath.toString())
-        syncerConfig = SyncerConfiguration(localRepoPath = localRepoPath.toString(),
+        syncerConfig = SyncerConfiguration(
+                localRepoPath = localRepoPath.toString(),
                 cordappSources = listOf(CordappSource("file:../TestRepo",
                         cordapps = listOf("net.example:test-artifact", "net.example:test-artifact-2"))))
 
@@ -101,25 +98,6 @@ class SyncArtifactsFlowTest {
         // should contain a single sync state on the ledger
         verifyScheduledState()
     }
-
-    @Test
-    fun `should update last sync time after artifacts have been synced`() {
-        // last sync time should be null initially
-        assertNull(getLastSyncTime())
-
-        val future = node.startFlow(SyncArtifactsFlow(syncerConfig, false))
-        mockNetwork.runNetwork()
-        future.getOrThrow()!!
-
-        assertNotNull(getLastSyncTime())
-    }
-
-    private fun getLastSyncTime() : Instant? {
-        val lastSyncTimeFuture = node.startFlow(GetLastSyncTimeFlow())
-        mockNetwork.runNetwork()
-        return lastSyncTimeFuture.getOrThrow()
-    }
-
 
     private fun verifyScheduledState() {
         val vaultState = node.transaction { node.services.vaultService.queryBy<ScheduledSyncState>().states.single().state.data }

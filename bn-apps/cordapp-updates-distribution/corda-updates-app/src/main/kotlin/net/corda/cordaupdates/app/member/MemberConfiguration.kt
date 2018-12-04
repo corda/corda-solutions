@@ -31,6 +31,9 @@ class MemberConfiguration(private val serviceHub : AppServiceHub) : SingletonSer
 
     private var _config = readProps((Paths.get("cordapps") / "config" / PROPERTIES_FILE_NAME).toFile())
 
+    val config : Config
+        get() = _config
+
     fun reloadConfigurationFromFile(file : File) {
         _config = readProps(file)
     }

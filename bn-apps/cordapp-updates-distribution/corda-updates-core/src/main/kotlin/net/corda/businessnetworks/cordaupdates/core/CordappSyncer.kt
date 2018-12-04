@@ -2,6 +2,9 @@ package net.corda.businessnetworks.cordaupdates.core
 
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
+import net.corda.businessnetworks.cordaupdates.core.SyncerConfiguration.Companion.getIntOrNull
+import net.corda.businessnetworks.cordaupdates.core.SyncerConfiguration.Companion.getStringOrNull
+import net.corda.core.utilities.loggerFor
 import org.eclipse.aether.RepositoryListener
 import org.eclipse.aether.artifact.DefaultArtifact
 import org.eclipse.aether.transfer.TransferListener
@@ -81,9 +84,9 @@ data class SyncerConfiguration(
         val httpProxyPassword : String? = null,
         val cordappSources : List<CordappSource>) {
     companion object {
-        fun readFromFile(file : File) : SyncerConfiguration {
+        fun readFromFile(file : File) : SyncerConfiguration  = readFromConfig(ConfigFactory.parseFile(file)!!)
 
-            val conf = ConfigFactory.parseFile(file)!!
+        fun readFromConfig(conf : Config) : SyncerConfiguration {
             val cordapps = conf.getObjectList("cordappSources").asSequence().map { it.toConfig()!! }.map { CordappSource(
                     it.getString("remoteRepoUrl"),
                     it.getStringList("cordapps"),
