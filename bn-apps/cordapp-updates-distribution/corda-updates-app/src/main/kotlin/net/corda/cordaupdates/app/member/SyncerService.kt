@@ -5,6 +5,7 @@ import net.corda.businessnetworks.cordaupdates.core.CordappSyncer
 import net.corda.businessnetworks.cordaupdates.core.SyncerConfiguration
 import net.corda.cordaupdates.transport.APP_SERVICE_HUB
 import net.corda.core.node.AppServiceHub
+import net.corda.core.node.ServiceHub
 import net.corda.core.node.services.CordaService
 import net.corda.core.serialization.SingletonSerializeAsToken
 import net.corda.core.utilities.loggerFor
@@ -39,6 +40,19 @@ internal class SyncerService(private val appServiceHub : AppServiceHub) : Single
     companion object {
         val executor = Executors.newSingleThreadExecutor()!!
         val logger = loggerFor<SyncerService>()
+
+        /**
+         * Loads Synced configuration based on CorDapp config
+         */
+        fun loadSyncerConfiguration(serviceHub : ServiceHub) : SyncerConfiguration {
+            val configuration : MemberConfiguration = serviceHub.cordaService(MemberConfiguration::class.java)
+            val syncerConfigPath : String? = configuration.syncerConfig()
+            return if (syncerConfigPath == null) {
+                SyncerConfiguration.readFromConfig(configuration.config)
+            } else  {
+                SyncerConfiguration.readFromFile(File(syncerConfigPath))
+            }
+        }
     }
 
     /**
@@ -48,15 +62,8 @@ internal class SyncerService(private val appServiceHub : AppServiceHub) : Single
     private fun syncer(syncerConfiguration : SyncerConfiguration? = null) =
             // if syncerConfiguration have not been provided explicitly - checking `syncerConfig` configuration parameter
             // if `syncerConfig` has not been provided - attempting to read the config from the CorDapp config file
-            if (syncerConfiguration == null) {
-                val configuration : MemberConfiguration = appServiceHub.cordaService(MemberConfiguration::class.java)
-                val syncerConfigPath : String? = configuration.syncerConfig()
-                if (syncerConfigPath == null) {
-                    CordappSyncer(SyncerConfiguration.readFromConfig(configuration.config))
-                } else  {
-                    CordappSyncer(SyncerConfiguration.readFromFile(File(syncerConfigPath)))
-                }
-            } else CordappSyncer(syncerConfiguration)
+            if (syncerConfiguration == null) CordappSyncer(loadSyncerConfiguration(appServiceHub))
+            else CordappSyncer(syncerConfiguration)
 
     /**
      * Passing an instance of [AppServiceHub] to Corda transport via custom session properties

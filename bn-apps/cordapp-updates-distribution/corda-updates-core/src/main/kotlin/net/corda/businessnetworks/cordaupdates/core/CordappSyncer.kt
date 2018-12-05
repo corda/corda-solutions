@@ -4,6 +4,7 @@ import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
 import net.corda.businessnetworks.cordaupdates.core.SyncerConfiguration.Companion.getIntOrNull
 import net.corda.businessnetworks.cordaupdates.core.SyncerConfiguration.Companion.getStringOrNull
+import net.corda.core.serialization.CordaSerializable
 import net.corda.core.utilities.loggerFor
 import org.eclipse.aether.RepositoryListener
 import org.eclipse.aether.artifact.DefaultArtifact
@@ -66,6 +67,7 @@ class CordappSyncer(private val syncerConf : SyncerConfiguration,
 /**
  * [CordappSource] allows to associate multiple CorDapps with a remote repository
  */
+@CordaSerializable
 data class CordappSource(
         val remoteRepoUrl : String,
         val cordapps : List<String>,
@@ -75,6 +77,7 @@ data class CordappSource(
 /**
  * Configuration for [CordappSyncer]. Usually is read from settings.conf
  */
+@CordaSerializable
 data class SyncerConfiguration(
         val localRepoPath : String,
         val httpProxyHost : String? = null,
