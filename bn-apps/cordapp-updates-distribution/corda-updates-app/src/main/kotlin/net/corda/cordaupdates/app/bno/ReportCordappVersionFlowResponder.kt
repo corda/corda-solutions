@@ -3,7 +3,7 @@ package net.corda.cordaupdates.app.bno
 import co.paralleluniverse.fibers.Suspendable
 import net.corda.cordaupdates.app.member.CordappVersionInfo
 import net.corda.cordaupdates.app.member.ReportCordappVersionFlow
-import net.corda.core.flows.FlowException
+import net.corda.cordaupdates.transport.flows.AbstractRepositoryHosterResponder
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.FlowSession
 import net.corda.core.flows.InitiatedBy
@@ -17,17 +17,10 @@ import net.corda.core.utilities.unwrap
  * Supports [SessionFilter]s to prevent unauthorised access.
  */
 @InitiatedBy(ReportCordappVersionFlow::class)
-class ReportCordappVersionFlowResponder(private val session : FlowSession) : FlowLogic<Unit>() {
+class ReportCordappVersionFlowResponder(session : FlowSession) : AbstractRepositoryHosterResponder<Unit>(session) {
 
     @Suspendable
-    override fun call() {
-        // passing incoming session through the session filter
-        val configuration = serviceHub.cordaService(BNOConfiguration::class.java)
-        val sessionFilter = configuration.getSessionFilter()
-        if (sessionFilter != null && !sessionFilter.isSessionAllowed(session, this)) {
-            throw FlowException("Counterparty ${session.counterparty} is not allowed to access repository")
-        }
-
+    override fun postPermissionCheck() {
         val cordappVersionInfo : CordappVersionInfo = session.receive<CordappVersionInfo>().unwrap {
             // we don't verify the payload here, as we know that the request is coming from a known participant,
             // who has passed through the session filter

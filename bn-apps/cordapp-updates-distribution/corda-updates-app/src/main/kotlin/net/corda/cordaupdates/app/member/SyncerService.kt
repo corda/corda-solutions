@@ -3,6 +3,7 @@ package net.corda.cordaupdates.app.member
 import net.corda.businessnetworks.cordaupdates.core.ArtifactMetadata
 import net.corda.businessnetworks.cordaupdates.core.CordappSyncer
 import net.corda.businessnetworks.cordaupdates.core.SyncerConfiguration
+import net.corda.cordaupdates.transport.APP_SERVICE_HUB
 import net.corda.core.node.AppServiceHub
 import net.corda.core.node.services.CordaService
 import net.corda.core.serialization.SingletonSerializeAsToken
@@ -53,6 +54,11 @@ internal class SyncerService(private val appServiceHub : AppServiceHub) : Single
                 CordappSyncer(SyncerConfiguration.readFromFile(config))
             } else CordappSyncer(syncerConfiguration)
 
+    /**
+     * Passing an instance of [AppServiceHub] to Corda transport via custom session properties
+     */
+    private fun additionalConfigurationProperties() = mapOf(Pair(APP_SERVICE_HUB, appServiceHub))
+
     private fun refreshMetadataCacheSynchronously(syncerConfiguration : SyncerConfiguration? = null, body : (syncer : CordappSyncer) -> List<ArtifactMetadata>) : List<ArtifactMetadata> {
         val artifacts : List<ArtifactMetadata> = body(syncer(syncerConfiguration))
         val artifactsMetadataCache : ArtifactsMetadataCache = appServiceHub.cordaService(ArtifactsMetadataCache::class.java)
@@ -64,7 +70,7 @@ internal class SyncerService(private val appServiceHub : AppServiceHub) : Single
      * Synchronously launches artifact synchronisation.
      */
     fun syncArtifacts(syncerConfiguration : SyncerConfiguration? = null) = refreshMetadataCacheSynchronously(syncerConfiguration) { syncer ->
-        syncer.syncCordapps()
+        syncer.syncCordapps(additionalConfigurationProperties = additionalConfigurationProperties())
     }
 
     /**
@@ -73,7 +79,7 @@ internal class SyncerService(private val appServiceHub : AppServiceHub) : Single
      * @param cordappCoordinatesWithRange coordinates of a cordapp with range, i.e. "net.corda:corda-finance:[0,2.0)"
      */
     fun getArtifactsMetadata(cordappCoordinatesWithRange : String, syncerConfiguration : SyncerConfiguration? = null) = refreshMetadataCacheSynchronously(syncerConfiguration) { syncer ->
-        syncer.getAvailableVersions(cordappCoordinatesWithRange)
+        syncer.getAvailableVersions(cordappCoordinatesWithRange, additionalConfigurationProperties())
     }
 
     /**

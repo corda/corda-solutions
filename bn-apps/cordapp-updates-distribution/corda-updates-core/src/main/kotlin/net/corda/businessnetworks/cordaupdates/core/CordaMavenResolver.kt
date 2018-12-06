@@ -1,5 +1,6 @@
 package net.corda.businessnetworks.cordaupdates.core
 
+import net.corda.cordaupdates.transport.CordaTransporterFactory
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils.newSession
 import org.eclipse.aether.DefaultRepositorySystemSession
@@ -39,7 +40,7 @@ import org.eclipse.aether.util.repository.AuthenticationBuilder
  *
  * CordaMavenResolver supports basic authentication for HTTP(s) proxies and remote repositories.
  *
- * CordaMavenResolver supports standard file, http(s) transports as well as bespoke transports corda-rpc, corda-flows over Corda flows.
+ * CordaMavenResolver supports standard file, http(s) transports as well as a bespoke Corda transport.
  * For more details @see [CordaTransporterFactory].
  */
 
@@ -112,6 +113,7 @@ class CordaMavenResolver private constructor(private val remoteRepoUrl : String,
         locator.addService<RepositoryConnectorFactory>(RepositoryConnectorFactory::class.java, BasicRepositoryConnectorFactory::class.java)
         locator.addService<TransporterFactory>(TransporterFactory::class.java, FileTransporterFactory::class.java)
         locator.addService<TransporterFactory>(TransporterFactory::class.java, HttpTransporterFactory::class.java)
+        locator.addService<TransporterFactory>(TransporterFactory::class.java, CordaTransporterFactory::class.java)
         locator.getService(RepositorySystem::class.java)
     }
 

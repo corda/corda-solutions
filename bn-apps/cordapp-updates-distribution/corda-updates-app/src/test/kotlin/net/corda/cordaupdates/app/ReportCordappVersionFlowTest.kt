@@ -1,9 +1,9 @@
 package net.corda.cordaupdates.app
 
 import net.corda.cordaupdates.app.bno.GetCordappVersionsForPartyFlow
-import net.corda.cordaupdates.app.bno.SessionFilter
 import net.corda.cordaupdates.app.member.CordappVersionInfo
 import net.corda.cordaupdates.app.member.ReportCordappVersionFlow
+import net.corda.cordaupdates.transport.flows.SessionFilter
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.FlowSession
 import net.corda.core.identity.CordaX500Name
