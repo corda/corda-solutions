@@ -2,7 +2,7 @@ package net.corda.businessnetworks.cordaupdates.core
 
 import net.corda.core.serialization.CordaSerializable
 import net.corda.core.utilities.loggerFor
-import net.corda.cordaupdates.transport.CordaTransporterFactory
+import net.corda.businessnetworks.cordaupdates.transport.CordaTransporterFactory
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils.newSession
 import org.eclipse.aether.DefaultRepositorySystemSession
