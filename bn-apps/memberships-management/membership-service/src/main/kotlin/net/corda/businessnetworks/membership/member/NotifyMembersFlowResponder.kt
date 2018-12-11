@@ -14,7 +14,7 @@ import net.corda.core.utilities.unwrap
  * Responder to the [NotifyMemberFlow]. The flow updates memberships cache with notifications from BNO
  */
 @InitiatedBy(NotifyMemberFlow::class)
-open class NotifyMembersFlowResponder(private val session : FlowSession) : FlowLogic<Unit>() {
+class NotifyMembersFlowResponder(private val session : FlowSession) : FlowLogic<Unit>() {
 
     @Suspendable
     override fun call() {
@@ -24,15 +24,19 @@ open class NotifyMembersFlowResponder(private val session : FlowSession) : FlowL
         throwExceptionIfNotBNO(bno, serviceHub)
 
         val membershipService = serviceHub.cordaService(MembershipsCacheHolder::class.java)
-        val notification = session.receive<OnMembershipChanged>().unwrap { it }
+        val notification = session.receive<Any>().unwrap { it }
         val cache = membershipService.cache
-
-        val membership = notification.changedMembership.state.data
-        // if our membership was suspended - then cleaning up the cache as suspended members won't get notifications anymore
-        if (membership.member == ourIdentity && membership.isSuspended()) {
-            cache.reset(membership.bno)
-        } else {
-            cache.updateMembership(notification.changedMembership)
+        when (notification) {
+            is OnMembershipChanged -> {
+                val membership = notification.changedMembership.state.data
+                // if our membership was suspended - then cleaning up the cache as suspended members won't get notifications anymore
+                if (membership.member == ourIdentity && membership.isSuspended()) {
+                    cache.reset(membership.bno)
+                } else {
+                    cache.updateMembership(notification.changedMembership)
+                }
+            }
+            else -> throw IllegalArgumentException("Unknown notification $notification")
         }
     }
 

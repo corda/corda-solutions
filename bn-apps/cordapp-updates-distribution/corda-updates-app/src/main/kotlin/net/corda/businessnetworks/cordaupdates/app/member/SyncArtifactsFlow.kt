@@ -114,7 +114,7 @@ class ScheduleSyncFlow @JvmOverloads constructor(private val syncerConfig : Sync
         builder.verify(serviceHub)
         val signedTx : SignedTransaction = serviceHub.signInitialTransaction(builder)
 
-        return subFlow(FinalityFlow(signedTx, listOf()))
+        return subFlow(FinalityFlow(signedTx))
     }
 }
 
@@ -155,6 +155,6 @@ class StopScheduledSyncFlow : FlowLogic<Unit>() {
                 .addCommand(ScheduledSyncContract.Commands.Stop(), ourIdentity.owningKey)
         builder.verify(serviceHub)
         val signedTx : SignedTransaction = serviceHub.signInitialTransaction(builder)
-        subFlow(FinalityFlow(signedTx, listOf()))
+        subFlow(FinalityFlow(signedTx))
     }
 }

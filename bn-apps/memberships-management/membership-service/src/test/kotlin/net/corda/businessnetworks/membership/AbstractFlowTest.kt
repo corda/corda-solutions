@@ -160,7 +160,7 @@ fun StartedMockNode.identity() = info.legalIdentities.single()
 fun List<StartedMockNode>.identities() = map { it.identity() }
 
 @InitiatedBy(NotifyMemberFlow::class)
-class NotificationsCounterFlow(private val session : FlowSession) : NotifyMembersFlowResponder(session) {
+class NotificationsCounterFlow(private val session : FlowSession) : FlowLogic<Unit>() {
     companion object {
         val NOTIFICATIONS : MutableSet<NotificationHolder> = mutableSetOf()
     }

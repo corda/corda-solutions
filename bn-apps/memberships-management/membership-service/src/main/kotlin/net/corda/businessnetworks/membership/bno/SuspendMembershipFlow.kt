@@ -36,9 +36,7 @@ class SuspendMembershipFlow(val membership : StateAndRef<MembershipState<Any>>) 
         builder.verify(serviceHub)
         val selfSignedTx = serviceHub.signInitialTransaction(builder)
 
-        val memberSession = initiateFlow(membership.state.data.member)
-
-        val finalisedTx = subFlow(FinalityFlow(selfSignedTx, listOf(memberSession)))
+        val finalisedTx = subFlow(FinalityFlow(selfSignedTx))
 
         val dbService = serviceHub.cordaService(DatabaseService::class.java)
         val suspendedMembership = dbService.getMembership(membership.state.data.member, ourIdentity, configuration.membershipContractName())!!
