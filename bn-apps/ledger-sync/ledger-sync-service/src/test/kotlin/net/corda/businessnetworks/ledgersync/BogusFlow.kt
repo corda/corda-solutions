@@ -10,6 +10,7 @@ import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.FlowSession
 import net.corda.core.flows.InitiatedBy
 import net.corda.core.flows.InitiatingFlow
+import net.corda.core.flows.ReceiveFinalityFlow
 import net.corda.core.flows.SignTransactionFlow
 import net.corda.core.flows.StartableByRPC
 import net.corda.core.identity.AbstractParty
@@ -40,9 +41,11 @@ class BogusFlow(
 
         val partiallySigned = serviceHub.signInitialTransaction(txBuilder)
 
-        val fullySigned = subFlow(CollectSignaturesFlow(partiallySigned, setOf(initiateFlow(them))))
+        val session = initiateFlow(them)
 
-        return subFlow(FinalityFlow(fullySigned))
+        val fullySigned = subFlow(CollectSignaturesFlow(partiallySigned, setOf(session)))
+
+        return subFlow(FinalityFlow(fullySigned, listOf(session)))
     }
 }
 
@@ -56,6 +59,7 @@ class BogusFlowFlowResponder(val flowSession: FlowSession) : FlowLogic<Unit>() {
                 // accept everything. this is a simple test fixture only.
             }
         })
+        subFlow(ReceiveFinalityFlow(flowSession))
     }
 }
 

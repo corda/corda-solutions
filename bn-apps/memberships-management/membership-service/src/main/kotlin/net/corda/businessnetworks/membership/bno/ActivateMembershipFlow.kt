@@ -39,7 +39,9 @@ class ActivateMembershipFlow(val membership : StateAndRef<MembershipState<Any>>)
                 .addCommand(MembershipContract.Commands.Activate(), ourIdentity.owningKey)
         builder.verify(serviceHub)
         val selfSignedTx = serviceHub.signInitialTransaction(builder)
-        val stx = subFlow(FinalityFlow(selfSignedTx))
+        val memberSession = initiateFlow(membership.state.data.member)
+
+        val stx = subFlow(FinalityFlow(selfSignedTx, listOf(memberSession)))
 
         // We should notify members about changes with the ACTIVATED membership
         val databaseService = serviceHub.cordaService(DatabaseService::class.java)

@@ -117,7 +117,7 @@ class IssueSomeScheduledStatesFlow(val syncInterval : Long, val statesQty : Int)
                     .addCommand(ScheduledSyncContract.Commands.Start(), ourIdentity.owningKey)
             builder.verify(serviceHub)
             val signedTx = serviceHub.signInitialTransaction(builder)
-            subFlow(FinalityFlow(signedTx))
+            subFlow(FinalityFlow(signedTx,listOf()))
         }
     }
 }

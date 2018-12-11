@@ -41,7 +41,7 @@ class MavenOverFlowsTests {
         driver(DriverParameters(
                 extraCordappPackagesToScan = listOf("net.corda.businessnetworks.cordaupdates.core"),
                 startNodesInProcess = true,
-                notarySpecs = listOf(NotarySpec(notaryName, true)))) {
+                notarySpecs = listOf(NotarySpec(notaryName )))) {
 
             repoHosterNode = startNode(NodeParameters(providedName = repoHosterName)).getOrThrow()
             participantNode = startNode(NodeParameters(providedName = participantName), rpcUsers = listOf(user1)).getOrThrow()

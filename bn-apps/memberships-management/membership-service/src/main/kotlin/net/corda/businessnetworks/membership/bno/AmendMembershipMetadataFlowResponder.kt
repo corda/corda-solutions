@@ -46,7 +46,7 @@ class AmendMembershipMetadataFlowResponder(flowSession : FlowSession) : Business
 
         val selfSignedTx = serviceHub.signInitialTransaction(builder)
         val allSignedTx = subFlow(CollectSignaturesFlow(selfSignedTx, listOf(flowSession)))
-        subFlow(FinalityFlow(allSignedTx))
+        subFlow(FinalityFlow(allSignedTx, listOf(flowSession)))
 
         // notify members about the changes
         val databaseService = serviceHub.cordaService(DatabaseService::class.java)

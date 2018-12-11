@@ -9,6 +9,7 @@ import net.corda.core.contracts.StateAndRef
 import net.corda.core.contracts.StateRef
 import net.corda.core.flows.FinalityFlow
 import net.corda.core.flows.FlowLogic
+import net.corda.core.flows.FlowSession
 import net.corda.core.flows.SchedulableFlow
 import net.corda.core.flows.StartableByRPC
 import net.corda.core.identity.Party
@@ -112,7 +113,8 @@ class ScheduleSyncFlow @JvmOverloads constructor(private val syncerConfig : Sync
 
         builder.verify(serviceHub)
         val signedTx : SignedTransaction = serviceHub.signInitialTransaction(builder)
-        return subFlow(FinalityFlow(signedTx))
+
+        return subFlow(FinalityFlow(signedTx, listOf()))
     }
 }
 
@@ -153,6 +155,6 @@ class StopScheduledSyncFlow : FlowLogic<Unit>() {
                 .addCommand(ScheduledSyncContract.Commands.Stop(), ourIdentity.owningKey)
         builder.verify(serviceHub)
         val signedTx : SignedTransaction = serviceHub.signInitialTransaction(builder)
-        subFlow(FinalityFlow(signedTx))
+        subFlow(FinalityFlow(signedTx, listOf()))
     }
 }

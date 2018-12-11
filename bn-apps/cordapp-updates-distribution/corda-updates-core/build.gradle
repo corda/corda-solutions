@@ -4,6 +4,7 @@ apply plugin: 'net.corda.plugins.quasar-utils'
 
 cordapp {
     info {
+//        targetPlatformVersion 3
         name "corda-updates-core"
         vendor "com.r3"
     }

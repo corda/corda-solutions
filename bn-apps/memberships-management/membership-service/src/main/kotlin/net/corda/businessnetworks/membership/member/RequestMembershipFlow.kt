@@ -7,6 +7,7 @@ import net.corda.businessnetworks.membership.states.MembershipContract
 import net.corda.businessnetworks.membership.states.MembershipState
 import net.corda.core.flows.FlowException
 import net.corda.core.flows.InitiatingFlow
+import net.corda.core.flows.ReceiveFinalityFlow
 import net.corda.core.flows.SignTransactionFlow
 import net.corda.core.flows.StartableByRPC
 import net.corda.core.identity.Party
@@ -68,6 +69,7 @@ class RequestMembershipFlow(bno : Party, private val membershipMetadata : Any) :
             }
         }
         progressTracker.currentStep = ACCEPTING_INCOMING_PENDING_MEMBERSHIP
-        return subFlow(signResponder)
+        subFlow(signResponder)
+        return subFlow(ReceiveFinalityFlow(bnoSession))
     }
 }

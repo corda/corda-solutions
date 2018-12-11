@@ -7,6 +7,7 @@ import net.corda.businessnetworks.membership.states.MembershipContract
 import net.corda.businessnetworks.membership.states.MembershipState
 import net.corda.core.flows.FlowException
 import net.corda.core.flows.InitiatingFlow
+import net.corda.core.flows.ReceiveFinalityFlow
 import net.corda.core.flows.SignTransactionFlow
 import net.corda.core.identity.Party
 import net.corda.core.serialization.CordaSerializable
@@ -52,6 +53,7 @@ class AmendMembershipMetadataFlow(bno : Party, private val newMetadata : Any) : 
                 stx.toLedgerTransaction(serviceHub, false).verify()
             }
         }
-        return subFlow(signTransactionFlow)
+        subFlow(signTransactionFlow)
+        return subFlow(ReceiveFinalityFlow(bnoSession))
     }
 }

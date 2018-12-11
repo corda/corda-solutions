@@ -28,7 +28,7 @@ class MemberConfiguration(private val serviceHub : AppServiceHub) : SingletonSer
         const val DEFAULT_SYNC_INTERVAL = 18000000L
     }
 
-    private var _config = readProps((Paths.get("cordapps") / "config" / PROPERTIES_FILE_NAME).toFile())
+    private var _config = readProps((Paths.get("cordapps").resolve( "config").resolve(PROPERTIES_FILE_NAME)).toFile())
 
     val config : Config
         get() = _config

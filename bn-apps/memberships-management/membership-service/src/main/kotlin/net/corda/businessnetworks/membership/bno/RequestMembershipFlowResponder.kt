@@ -64,7 +64,7 @@ class RequestMembershipFlowResponder(val session : FlowSession) : BusinessNetwor
             builder.verify(serviceHub)
             val selfSignedTx = serviceHub.signInitialTransaction(builder)
             val allSignedTx = subFlow(CollectSignaturesFlow(selfSignedTx, listOf(session)))
-            subFlow(FinalityFlow(allSignedTx))
+            subFlow(FinalityFlow(allSignedTx, listOf(session)))
         } finally {
             try {
                 logger.info("Removing the pending request from the database")

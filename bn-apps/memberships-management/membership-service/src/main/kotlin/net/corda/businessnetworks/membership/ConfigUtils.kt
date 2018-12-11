@@ -12,7 +12,7 @@ import java.nio.file.Paths
 object ConfigUtils {
     fun loadConfig() : Config {
         val propertiesFileName = "membership-service.conf"
-        val defaultLocation = (Paths.get("cordapps") / "config" / propertiesFileName).toFile()
+        val defaultLocation = (Paths.get("cordapps").resolve("config").resolve(propertiesFileName)).toFile()
         return if (defaultLocation.exists()) ConfigFactory.parseFile(defaultLocation)
             else ConfigFactory.parseFile(File(ConfigUtils::class.java.classLoader.getResource(propertiesFileName).toURI()))
     }

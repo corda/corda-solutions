@@ -22,7 +22,7 @@ class RepositoryHosterConfigurationService(private val serviceHub : AppServiceHu
         const val REPOSITORIES = "repositories"
         const val SESSION_FILTER = "sessionFilter"
     }
-    private var _config = readProps((Paths.get("cordapps") / "config" / PROPERTIES_FILE_NAME).toFile())
+    private var _config = readProps((Paths.get("cordapps").resolve("config").resolve(PROPERTIES_FILE_NAME)).toFile())
 
     fun reloadConfigurationFromFile(file : File) {
         _config = readProps(file)

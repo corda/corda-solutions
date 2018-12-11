@@ -9,6 +9,7 @@ import net.corda.businessnetworks.membership.bno.SuspendMembershipForPartyFlow
 import net.corda.businessnetworks.membership.bno.service.DatabaseService
 import net.corda.businessnetworks.membership.member.AmendMembershipMetadataFlow
 import net.corda.businessnetworks.membership.member.GetMembershipsFlow
+import net.corda.businessnetworks.membership.member.NotifyMembersFlowResponder
 import net.corda.businessnetworks.membership.member.RequestMembershipFlow
 import net.corda.businessnetworks.membership.states.MembershipContract
 import net.corda.businessnetworks.membership.states.MembershipState
@@ -159,7 +160,7 @@ fun StartedMockNode.identity() = info.legalIdentities.single()
 fun List<StartedMockNode>.identities() = map { it.identity() }
 
 @InitiatedBy(NotifyMemberFlow::class)
-class NotificationsCounterFlow(private val session : FlowSession) : FlowLogic<Unit>() {
+class NotificationsCounterFlow(private val session : FlowSession) : NotifyMembersFlowResponder(session) {
     companion object {
         val NOTIFICATIONS : MutableSet<NotificationHolder> = mutableSetOf()
     }
