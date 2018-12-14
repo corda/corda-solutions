@@ -5,7 +5,6 @@ apply plugin: 'net.corda.plugins.quasar-utils'
 
 cordapp {
     info {
-//        targetPlatformVersion 3
         name "business-network-membership-service"
         vendor "com.r3"
     }

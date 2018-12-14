@@ -12,7 +12,6 @@ apply plugin: "kotlin-jpa"
 
 cordapp {
     info {
-//        targetPlatformVersion 3
         name = "business-network-membership-service-states"
         vendor = "com.r3"
     }
