@@ -32,7 +32,7 @@ class MavenOverFlowsTests {
     private lateinit var nodeLocalRepoPath : Path
     private lateinit var repoVerifier : RepoVerifier
 
-    fun genericTest(configName : String, testFunction : () -> Unit) {
+    private fun genericTest(configName : String, testFunction : () -> Unit) {
         val user1 = User("test", "test", permissions = setOf("ALL"))
         val repoHosterName = CordaX500Name.parse("O=Repo Hoster,L=New York,C=US")
         val participantName = CordaX500Name("Participant","New York","US")
@@ -61,7 +61,7 @@ class MavenOverFlowsTests {
     }
 
     @Test
-    fun `repository name should default to "default" if not explicitly provided`() {
+    fun `repository name should be set to default if not explicitly provided`() {
         genericTest("corda-updates-app.conf") {
             participantNode.rpc.startFlowDynamic(DownloadVersionFlow::class.java,
                     "corda:O=Repo Hoster,L=New York,C=US",

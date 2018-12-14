@@ -4,10 +4,15 @@ import co.paralleluniverse.fibers.Suspendable
 import net.corda.businessnetworks.cordaupdates.core.ArtifactMetadata
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.StartableByRPC
+import net.corda.core.serialization.CordaSerializable
 import net.corda.core.utilities.ProgressTracker
+import java.time.Instant
+
+@CordaSerializable
+data class SyncedCordappsResponse(val cordapps : List<ArtifactMetadata>, val lastUpdated : Instant?)
 
 @StartableByRPC
-class GetSyncedVersionsFlow : FlowLogic<List<ArtifactMetadata>>() {
+class GetSyncedCordappsFlow : FlowLogic<SyncedCordappsResponse>() {
     companion object {
         object GETTING_VERSIONS : ProgressTracker.Step("Getting versions")
 
@@ -19,9 +24,9 @@ class GetSyncedVersionsFlow : FlowLogic<List<ArtifactMetadata>>() {
     override val progressTracker : ProgressTracker = tracker()
 
     @Suspendable
-    override fun call() : List<ArtifactMetadata> {
+    override fun call() : SyncedCordappsResponse {
         progressTracker.currentStep = GETTING_VERSIONS
         val cache = serviceHub.cordaService(ArtifactsMetadataCache::class.java)
-        return cache.cache
+        return SyncedCordappsResponse(cache.cache, cache.lastUpdated)
     }
 }

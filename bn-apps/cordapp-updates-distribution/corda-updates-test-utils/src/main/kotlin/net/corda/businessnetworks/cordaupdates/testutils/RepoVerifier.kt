@@ -40,7 +40,7 @@ class RepoVerifier(private val repoPath : String, private val fileExtensions : S
     fun verify() {
         val expectedPaths = expectations.flatMap { task ->
             task.versions.flatMap { version ->
-                fileExtensions.map { extension -> "$repoPath/${task.group.replace(":", "/")}/${task.artifact}/$version/${task.artifact}-$version.$extension" }
+                fileExtensions.map { extension -> "$repoPath${File.separator}${task.group.replace(":", File.separator)}${File.separator}${task.artifact}${File.separator}$version${File.separator}${task.artifact}-$version.$extension" }
             }
         }.toSet()
         val actualPaths = buildActualPaths(File(repoPath))

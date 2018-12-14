@@ -10,6 +10,7 @@ import net.corda.core.node.services.CordaService
 import net.corda.core.serialization.SingletonSerializeAsToken
 import net.corda.core.utilities.loggerFor
 import java.io.File
+import java.time.Instant
 import java.util.concurrent.Callable
 import java.util.concurrent.Executors
 
@@ -22,11 +23,16 @@ import java.util.concurrent.Executors
 @CordaService
 class ArtifactsMetadataCache(private val appServiceHub : AppServiceHub) : SingletonSerializeAsToken() {
     private var _cache : List<ArtifactMetadata> = listOf()
+    private var _lastUpdated : Instant? = null
     var cache : List<ArtifactMetadata>
         internal set(value) {
             _cache = value
+            _lastUpdated = Instant.now()
         }
         get() = _cache
+
+    val lastUpdated : Instant?
+        get() = _lastUpdated
 }
 
 /**

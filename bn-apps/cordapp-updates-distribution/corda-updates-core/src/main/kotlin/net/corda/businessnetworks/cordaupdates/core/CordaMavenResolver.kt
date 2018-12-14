@@ -144,6 +144,10 @@ class CordaMavenResolver private constructor(private val remoteRepoUrl : String,
         val session : DefaultRepositorySystemSession = createRepositorySession(configProps)
         val versionRangeResult : VersionRangeResult = repositorySystem.resolveVersionRange(session, versionRangeRequest)!!
 
+        if (versionRangeResult.versions.isEmpty()) {
+            logger.warn("Failed to resolve version for $coordinatesWithRange. Exceptions: ${versionRangeResult.exceptions}")
+        }
+
         return ArtifactMetadata(artifact.groupId,
                 artifact.artifactId,
                 artifact.classifier,
