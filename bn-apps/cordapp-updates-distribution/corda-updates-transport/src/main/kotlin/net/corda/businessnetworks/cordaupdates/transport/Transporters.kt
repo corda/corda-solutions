@@ -116,4 +116,4 @@ class FlowsTransporter(private val session : RepositorySystemSession,
  * Maven Resolver distinguishes between resource_not_found exceptions and everything else.
  */
 @CordaSerializable
-class ResourceNotFoundException : FlowException()
+data class ResourceNotFoundException(val repository : String, val resource : String) : FlowException("Resource $resource has not been found in repository $repository")

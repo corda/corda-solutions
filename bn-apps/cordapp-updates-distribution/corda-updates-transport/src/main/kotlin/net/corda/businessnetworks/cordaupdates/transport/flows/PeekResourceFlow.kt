@@ -67,7 +67,8 @@ class PeekResourceFlowResponder(session : FlowSession) : AbstractRepositoryHoste
         try {
             transporter.peek(PeekTask(URI.create(request.resourceLocation)))
         } catch (ex : Exception) {
-            throw toCordaException(ex, transporter)
+            logger.info("Error peeking resource ${request.resourceLocation} from repository ${request.repositoryName}", ex)
+            throw toCordaException(ex, transporter, request.repositoryName, request.resourceLocation)
         }
         session.send(true)
     }

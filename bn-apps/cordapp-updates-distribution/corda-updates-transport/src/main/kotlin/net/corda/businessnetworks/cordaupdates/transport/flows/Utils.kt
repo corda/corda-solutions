@@ -30,11 +30,11 @@ object Utils {
      * Converts Maven Resolver exception to FlowException. The aim is to let the initiating flow know whether
      * the resource has been found or not in the remote repository
      */
-    fun toCordaException(mavenResolverException : Exception, transporter : Transporter) : FlowException {
+    fun toCordaException(mavenResolverException : Exception, transporter : Transporter, repository : String, resource : String) : FlowException {
         val exType = transporter.classify(mavenResolverException)
         return when (exType) {
-            Transporter.ERROR_NOT_FOUND -> ResourceNotFoundException()
-            else -> FlowException("Error getting resource: ${mavenResolverException.message}")
+            Transporter.ERROR_NOT_FOUND -> ResourceNotFoundException(repository, resource)
+            else -> FlowException("Error getting resource $resource from repository $repository: ${mavenResolverException.message}")
         }
     }
 

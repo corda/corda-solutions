@@ -94,7 +94,8 @@ class GetResourceFlowResponder(session : FlowSession) : AbstractRepositoryHoster
         try {
             transporter.get(getTask)
         } catch (ex : Exception) {
-            throw toCordaException(ex, transporter)
+            logger.info("Error getting resource $location from repository $repositoryName", ex)
+            throw toCordaException(ex, transporter, repositoryName, location)
         }
         return getTask.dataBytes
     }
