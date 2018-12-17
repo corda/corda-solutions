@@ -9,6 +9,7 @@ import net.corda.businessnetworks.membership.bno.SuspendMembershipForPartyFlow
 import net.corda.businessnetworks.membership.bno.service.DatabaseService
 import net.corda.businessnetworks.membership.member.AmendMembershipMetadataFlow
 import net.corda.businessnetworks.membership.member.GetMembershipsFlow
+import net.corda.businessnetworks.membership.member.NotifyMembersFlowResponder
 import net.corda.businessnetworks.membership.member.RequestMembershipFlow
 import net.corda.businessnetworks.membership.states.MembershipContract
 import net.corda.businessnetworks.membership.states.MembershipState

@@ -1,7 +1,7 @@
 buildscript {
     ext {
         corda_release_group = 'net.corda'
-        corda_release_version = '3.2-corda'
+        corda_release_version = '3.3-corda'
         corda_gradle_plugins_version = '4.0.25'
         aetherVersion = '1.0.0.v20140518'
         mavenVersion = '3.1.0'
@@ -32,6 +32,17 @@ plugins {
 allprojects {
     version "1.0-SNAPSHOT"
     group "net.corda.businessnetworks"
+
+    configurations.all {
+        resolutionStrategy {
+            // Force dependencies to use the same version of Kotlin
+            force "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+            force "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+            force "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
+            force "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
+            force "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+        }
+    }
 }
 
 subprojects {
@@ -95,6 +106,7 @@ configure(publishProjects) { subproject ->
         }
     }
 }
+
 
 artifactory {
     publish {

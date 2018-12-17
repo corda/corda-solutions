@@ -2,6 +2,7 @@ package net.corda.businessnetworks.cordaupdates.core
 
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
+import net.corda.core.serialization.CordaSerializable
 import org.eclipse.aether.RepositoryListener
 import org.eclipse.aether.artifact.DefaultArtifact
 import org.eclipse.aether.transfer.TransferListener
@@ -63,6 +64,7 @@ class CordappSyncer(private val syncerConf : SyncerConfiguration,
 /**
  * [CordappSource] allows to associate multiple CorDapps with a remote repository
  */
+@CordaSerializable
 data class CordappSource(
         val remoteRepoUrl : String,
         val cordapps : List<String>,
@@ -72,6 +74,7 @@ data class CordappSource(
 /**
  * Configuration for [CordappSyncer]. Usually is read from settings.conf
  */
+@CordaSerializable
 data class SyncerConfiguration(
         val localRepoPath : String,
         val httpProxyHost : String? = null,
@@ -81,15 +84,17 @@ data class SyncerConfiguration(
         val httpProxyPassword : String? = null,
         val cordappSources : List<CordappSource>) {
     companion object {
-        fun readFromFile(file : File) : SyncerConfiguration {
+        fun readFromFile(file : File) : SyncerConfiguration = readFromConfig(ConfigFactory.parseFile(file)!!)
 
-            val conf = ConfigFactory.parseFile(file)!!
-            val cordapps = conf.getObjectList("cordappSources").asSequence().map { it.toConfig()!! }.map { CordappSource(
-                    it.getString("remoteRepoUrl"),
-                    it.getStringList("cordapps"),
-                    it.getStringOrNull("httpUsername"),
-                    it.getStringOrNull("httpPassword")
-            ) }.toList()
+        fun readFromConfig(conf : Config) : SyncerConfiguration {
+            val cordapps = conf.getObjectList("cordappSources").asSequence().map { it.toConfig()!! }.map {
+                CordappSource(
+                        it.getString("remoteRepoUrl"),
+                        it.getStringList("cordapps"),
+                        it.getStringOrNull("httpUsername"),
+                        it.getStringOrNull("httpPassword")
+                )
+            }.toList()
 
             return SyncerConfiguration(
                     conf.getString("localRepoPath"),

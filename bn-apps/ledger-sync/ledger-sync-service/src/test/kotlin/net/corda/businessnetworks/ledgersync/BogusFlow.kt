@@ -40,7 +40,9 @@ class BogusFlow(
 
         val partiallySigned = serviceHub.signInitialTransaction(txBuilder)
 
-        val fullySigned = subFlow(CollectSignaturesFlow(partiallySigned, setOf(initiateFlow(them))))
+        val session = initiateFlow(them)
+
+        val fullySigned = subFlow(CollectSignaturesFlow(partiallySigned, setOf(session)))
 
         return subFlow(FinalityFlow(fullySigned))
     }
