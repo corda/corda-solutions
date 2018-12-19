@@ -30,7 +30,7 @@ plugins {
 }
 
 allprojects {
-    version "1.0-SNAPSHOT"
+    version "2.0-SNAPSHOT"
     group "net.corda.businessnetworks"
 
     configurations.all {
