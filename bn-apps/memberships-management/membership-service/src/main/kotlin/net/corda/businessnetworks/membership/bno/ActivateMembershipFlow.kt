@@ -37,7 +37,7 @@ class ActivateMembershipFlow(val membership : StateAndRef<Membership.State>) : B
                 .addCommand(Membership.Commands.Activate(), ourIdentity.owningKey)
         builder.verify(serviceHub)
         val selfSignedTx = serviceHub.signInitialTransaction(builder)
-        val stx = subFlow(FinalityFlow(selfSignedTx))
+        val stx = subFlow(FinalityFlow(selfSignedTx, listOf(initiateFlow(membership.state.data.member))))
 
         // if notifications are enabled - notify BN about the new joiner
         if (configuration.areNotificationEnabled()) {

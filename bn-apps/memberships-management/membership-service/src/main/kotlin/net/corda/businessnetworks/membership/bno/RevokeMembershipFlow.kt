@@ -29,7 +29,7 @@ class RevokeMembershipFlow(val membership : StateAndRef<Membership.State>) : Bus
                 .addCommand(Membership.Commands.Revoke(), ourIdentity.owningKey)
         builder.verify(serviceHub)
         val selfSignedTx = serviceHub.signInitialTransaction(builder)
-        val finalisedTx = subFlow(FinalityFlow(selfSignedTx))
+        val finalisedTx = subFlow(FinalityFlow(selfSignedTx,listOf(initiateFlow(membership.state.data.member))))
 
         // notify other members about revocation
         if (configuration.areNotificationEnabled()) {

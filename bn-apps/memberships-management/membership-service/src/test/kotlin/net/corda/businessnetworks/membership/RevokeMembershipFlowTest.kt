@@ -3,6 +3,7 @@ package net.corda.businessnetworks.membership
 import net.corda.businessnetworks.membership.bno.OnMembershipRevoked
 import net.corda.businessnetworks.membership.bno.service.BNOConfigurationService
 import net.corda.businessnetworks.membership.states.Membership
+import net.corda.businessnetworks.membership.testflow.TestNotifyMembersFlowResponder
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals

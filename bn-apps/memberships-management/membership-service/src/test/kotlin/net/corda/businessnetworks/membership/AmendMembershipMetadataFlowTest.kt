@@ -4,6 +4,7 @@ import net.corda.businessnetworks.membership.bno.OnMembershipChanged
 import net.corda.businessnetworks.membership.bno.service.BNOConfigurationService
 import net.corda.businessnetworks.membership.states.Membership
 import net.corda.businessnetworks.membership.states.MembershipMetadata
+import net.corda.businessnetworks.membership.testflow.TestNotifyMembersFlowResponder
 import net.corda.core.flows.FlowException
 import org.junit.Test
 

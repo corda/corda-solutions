@@ -4,10 +4,7 @@ import co.paralleluniverse.fibers.Suspendable
 import net.corda.businessnetworks.membership.member.service.MemberConfigurationService
 import net.corda.businessnetworks.membership.states.MembershipMetadata
 import net.corda.businessnetworks.membership.states.Membership
-import net.corda.core.flows.FlowException
-import net.corda.core.flows.FlowLogic
-import net.corda.core.flows.InitiatingFlow
-import net.corda.core.flows.SignTransactionFlow
+import net.corda.core.flows.*
 import net.corda.core.serialization.CordaSerializable
 import net.corda.core.transactions.SignedTransaction
 
@@ -52,7 +49,8 @@ class AmendMembershipMetadataFlow(private val newMetadata : MembershipMetadata) 
                 stx.toLedgerTransaction(serviceHub, false).verify()
             }
         }
-        return subFlow(signTransactionFlow)
+        subFlow(signTransactionFlow)
+        return subFlow(ReceiveFinalityFlow(bnoSession))
     }
 }
 

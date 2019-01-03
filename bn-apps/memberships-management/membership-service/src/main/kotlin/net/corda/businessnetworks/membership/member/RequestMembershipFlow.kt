@@ -63,7 +63,8 @@ class RequestMembershipFlow(private val membershipMetadata : MembershipMetadata 
             }
         }
         progressTracker.currentStep = ACCEPTING_INCOMING_PENDING_MEMBERSHIP
-        return subFlow(signResponder)
+        subFlow(signResponder)
+        return subFlow(ReceiveFinalityFlow(bnoSession))
     }
 }
 

@@ -17,7 +17,7 @@ import net.corda.core.utilities.unwrap
  * Responder to the [NotifyMemberFlow]. The flow updates memberships cache according to a notification from BNO
  */
 @InitiatedBy(NotifyMemberFlow::class)
-class NotifyMembersFlowResponder(val session : FlowSession) : FlowLogic<Unit>(){
+open class NotifyMembersFlowResponder(val session : FlowSession) : FlowLogic<Unit>(){
 
     @Suspendable
     override fun call() {

@@ -3,6 +3,7 @@ package net.corda.businessnetworks.membership
 import net.corda.businessnetworks.membership.bno.OnMembershipActivated
 import net.corda.businessnetworks.membership.bno.service.BNOConfigurationService
 import net.corda.businessnetworks.membership.states.Membership
+import net.corda.businessnetworks.membership.testflow.TestNotifyMembersFlowResponder
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
