@@ -22,7 +22,7 @@ Please see [FullBNMSFlowDemo](./membership-service/src/test/kotlin/net/corda/bus
 
 ## How to add BNMS to your project
 
-Add the following lines to your `build.gradle` file:
+Add the following lines to `repositories` and `dependencies` blocks of your `build.gradle` file:
 
 ```
     repositories {
@@ -31,8 +31,11 @@ Add the following lines to your `build.gradle` file:
         }
     }
 
-    cordapp "net.corda.businessnetworks:membership-service:1.0"
-    cordapp "net.corda.businessnetworks:membership-service-contracts-and-states:1.0"
+
+    dependencies {
+        cordapp "net.corda.businessnetworks:membership-service:1.0"
+        cordapp "net.corda.businessnetworks:membership-service-contracts-and-states:1.0"
+    }
 ```
 
 ## Structure

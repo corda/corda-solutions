@@ -9,7 +9,7 @@ CorDapp Distribution Service supports conventional HTTP(s) transport as well as 
 
 ## How to add CDS to your project
 
-Add the following lines to your `build.gradle` file:
+Add the following lines to `repositories` and `dependencies` blocks of your `build.gradle` file:
 
 ```
     repositories {
@@ -18,10 +18,12 @@ Add the following lines to your `build.gradle` file:
         }
     }
 
-    cordapp "net.corda.businessnetworks:corda-updates-app:1.0"
-    cordapp "net.corda.businessnetworks:corda-updates-app-states:1.0"
-    cordapp "net.corda.businessnetworks:corda-updates-app-core:1.0"
-    cordapp "net.corda.businessnetworks:corda-updates-app-transport:1.0"
+    dependencies {
+        cordapp "net.corda.businessnetworks:corda-updates-app:1.0"
+        cordapp "net.corda.businessnetworks:corda-updates-app-states:1.0"
+        cordapp "net.corda.businessnetworks:corda-updates-app-core:1.0"
+        cordapp "net.corda.businessnetworks:corda-updates-app-transport:1.0"
+    }
 ```
 
 # Quickstart

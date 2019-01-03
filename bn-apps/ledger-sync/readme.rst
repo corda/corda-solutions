@@ -17,7 +17,7 @@ The flows can be utilised in the following way:
 How to add Ledger Sync Service to your project
 ----------------------------------------------
 
-Add the following lines to your ``build.gradle`` file:
+Add the following lines to ``repositories`` and ``dependencies`` blocks of your ``build.gradle`` file:
 
 .. code-block:: groovy
     repositories {
@@ -26,6 +26,8 @@ Add the following lines to your ``build.gradle`` file:
         }
     }
 
-    cordapp "net.corda.businessnetworks:ledger-sync-service:1.0"
+    dependencies {
+        cordapp "net.corda.businessnetworks:ledger-sync-service:1.0"
+    }
 
 .. image:: design/resources/ledger-sync-service.svg
