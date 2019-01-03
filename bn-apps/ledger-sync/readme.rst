@@ -19,7 +19,8 @@ How to add Ledger Sync Service to your project
 
 Add the following lines to ``repositories`` and ``dependencies`` blocks of your ``build.gradle`` file:
 
-.. code-block:: groovy
+.. code-block::
+
     repositories {
         maven {
           url 'http://ci-artifactory.corda.r3cev.com/artifactory/corda-solutions-releases'
@@ -29,5 +30,6 @@ Add the following lines to ``repositories`` and ``dependencies`` blocks of your 
     dependencies {
         cordapp "net.corda.businessnetworks:ledger-sync-service:1.0"
     }
+
 
 .. image:: design/resources/ledger-sync-service.svg
