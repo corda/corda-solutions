@@ -20,6 +20,21 @@ Please see the [design doc](./design/design.md) for more information about techn
 
 Please see [FullBNMSFlowDemo](./membership-service/src/test/kotlin/net/corda/businessnetworks/membership/FullBNMSFlowDemo.kt) for a detailed how-to-use example.
 
+## How to add BNMS to your project
+
+Add the following lines to your `build.gradle` file:
+
+```
+    repositories {
+        maven {
+          url 'http://ci-artifactory.corda.r3cev.com/artifactory/corda-solutions-releases'
+        }
+    }
+
+    cordapp "net.corda.businessnetworks:membership-service:1.0"
+    cordapp "net.corda.businessnetworks:membership-service-contracts-and-states:1.0"
+```
+
 ## Structure
 
 BNMS contains implementations of flows, states and contracts to model memberships on a Business Network. BNO and members are required to have both of the CorDapps installed.
