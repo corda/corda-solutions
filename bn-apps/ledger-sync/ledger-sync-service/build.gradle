@@ -4,10 +4,13 @@ apply plugin: 'net.corda.plugins.cordformation'
 apply plugin: 'net.corda.plugins.quasar-utils'
 
 cordapp {
+    targetPlatformVersion 3
+    minimumPlatformVersion 3
+
     info {
         name "ledger-sync-service"
         vendor "com.r3"
-        version "1.0"
+        version "1"
     }
 }
 

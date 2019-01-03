@@ -11,10 +11,13 @@ apply plugin: 'net.corda.plugins.quasar-utils'
 apply plugin: "kotlin-jpa"
 
 cordapp {
+    targetPlatformVersion 4
+    minimumPlatformVersion 4
+
     info {
         name = "business-network-membership-service-states"
         vendor = "com.r3"
-        version = "1.0"
+        version = "1"
     }
 }
 
