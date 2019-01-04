@@ -7,6 +7,7 @@
 #Intellij related stuff
 **/.idea/*
 .iml
+.idea
 
 
 # Eclipse, ctags, Mac metadata, log files

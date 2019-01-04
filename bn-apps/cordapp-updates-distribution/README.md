@@ -7,6 +7,25 @@ CorDapp Distribution Service utilises Maven repositories for artifact distributi
 
 CorDapp Distribution Service supports conventional HTTP(s) transport as well as bespoke Corda transports which are described in the further sections. 
 
+## How to add CDS to your project
+
+Add the following lines to `repositories` and `dependencies` blocks of your `build.gradle` file:
+
+```
+    repositories {
+        maven {
+          url 'http://ci-artifactory.corda.r3cev.com/artifactory/corda-solutions-releases'
+        }
+    }
+
+    dependencies {
+        cordapp "net.corda.businessnetworks:corda-updates-app:1.0"
+        cordapp "net.corda.businessnetworks:corda-updates-app-states:1.0"
+        cordapp "net.corda.businessnetworks:corda-updates-app-core:1.0"
+        cordapp "net.corda.businessnetworks:corda-updates-app-transport:1.0"
+    }
+```
+
 # Quickstart
 
 To start using CorDapp Distribution Service please follow the steps below:

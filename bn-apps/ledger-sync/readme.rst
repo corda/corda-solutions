@@ -14,4 +14,22 @@ The flows can be utilised in the following way:
 3. If inconsistencies are flagged, the counter party can be `queried for a more detailed report <ledger-sync-service/src/main/kotlin/net/corda/businessnetworks/ledgersync/RequestLedgersSyncFlow.kt>`_ based on which both the parties can take further action (such as notifying the BNO) or recover the transactions found.
 4. Transaction IDs can then be used in the `transaction recovery flow <ledger-sync-service/src/main/kotlin/net/corda/businessnetworks/ledgersync/TransactionRecoveryFlow.kt>`_ to recover individual transactions from counter parties.
 
+How to add Ledger Sync Service to your project
+----------------------------------------------
+
+Add the following lines to ``repositories`` and ``dependencies`` blocks of your ``build.gradle`` file:
+
+.. code-block::
+
+    repositories {
+        maven {
+          url 'http://ci-artifactory.corda.r3cev.com/artifactory/corda-solutions-releases'
+        }
+    }
+
+    dependencies {
+        cordapp "net.corda.businessnetworks:ledger-sync-service:1.0"
+    }
+
+
 .. image:: design/resources/ledger-sync-service.svg
