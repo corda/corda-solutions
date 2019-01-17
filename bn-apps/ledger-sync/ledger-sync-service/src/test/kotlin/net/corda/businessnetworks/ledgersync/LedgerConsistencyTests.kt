@@ -32,8 +32,6 @@ class LedgerConsistencyTests {
     fun start() {
         mockNetwork = InternalMockNetwork(
                 cordappPackages = listOf(
-                        "net.corda.businessnetworks.membership",
-                        "net.corda.businessnetworks.membership.states",
                         "net.corda.businessnetworks.ledgersync"
                 ),
                 notarySpecs = listOf(MockNetworkNotarySpec(notary))
