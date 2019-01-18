@@ -31,7 +31,7 @@ plugins {
 
 allprojects {
     version "2.0-SNAPSHOT"
-    group "net.corda.businessnetworks"
+    group "com.r3.businessnetworks"
 
     configurations.all {
         resolutionStrategy {
