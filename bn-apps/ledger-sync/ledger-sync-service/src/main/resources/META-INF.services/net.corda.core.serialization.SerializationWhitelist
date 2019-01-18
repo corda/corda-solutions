@@ -1,1 +1,1 @@
-net.corda.businessnetworks.ledgersync.LedgerSyncWhitelist
+com.r3.businessnetworks.ledgersync.LedgerSyncWhitelist
