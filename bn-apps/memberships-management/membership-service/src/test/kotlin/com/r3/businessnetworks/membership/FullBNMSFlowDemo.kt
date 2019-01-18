@@ -40,10 +40,6 @@ class FullBNMSFlowDemo : AbstractFlowTest(
         // Once the participant has gone through the on-boarding, the BNO activates membership via ActivateMembershipFlow
         runActivateMembershipFlow(bnoNode, newJoiner.identity())
 
-        // after the membership has been activated, the participant can start transacting on the Business Network.
-        // If com.r3.businessnetworks.membership.notificationsEnabled is set to false, then the existing members will see the new-joiner on the next cache refresh,
-        // otherwise the BNO will notify the existing members about the new-joiner immediately after membership activation
-
         // now the new-joiner can request memberships from the BNO via GetMembershipsFlow. Memberships list contains just a single party
         val memberships = runGetMembershipsListFlow(bnoNode, newJoiner, false).ofType<SimpleMembershipMetadata>()
         assert(memberships.keys.single() == newJoiner.identity())
