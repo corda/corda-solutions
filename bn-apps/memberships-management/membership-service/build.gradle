@@ -4,7 +4,7 @@ apply plugin: 'net.corda.plugins.cordformation'
 apply plugin: 'net.corda.plugins.quasar-utils'
 
 cordapp {
-    targetPlatformVersion 4
+    targetPlatformVersion 3
     minimumPlatformVersion 1
     workflow {
         name "business-network-membership-service"
@@ -15,7 +15,6 @@ cordapp {
     signing {
         enabled false
     }
-
 }
 
 sourceSets {
@@ -55,4 +54,9 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
         jvmTarget = "1.8"
         javaParameters = true   // Useful for reflection.
     }
+}
+
+task testJar(type: Jar) {
+    classifier = 'tests'
+    from sourceSets.test.output
 }
