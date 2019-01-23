@@ -40,11 +40,11 @@ class MavenOverFlowsTests {
         val notaryName = CordaX500Name("Notary", "London","GB")
 
         driver(DriverParameters(
-//                cordappsForAllNodes = listOf(
-//                        findCordapp("com.r3.businessnetworks.cordaupdates.core"),
-//                        findCordapp("com.r3.businessnetworks.cordaupdates.transport")
-//                        ),
-                extraCordappPackagesToScan = listOf("com.r3.businessnetworks.cordaupdates.core", "com.r3.businessnetworks.cordaupdates.transport"),
+                cordappsForAllNodes = listOf(
+                        findCordapp("com.r3.businessnetworks.cordaupdates.core"),
+                        findCordapp("com.r3.businessnetworks.cordaupdates.transport")
+                        ),
+//                extraCordappPackagesToScan = listOf("com.r3.businessnetworks.cordaupdates.core", "com.r3.businessnetworks.cordaupdates.transport"),
                 startNodesInProcess = true,
                 notarySpecs = listOf(NotarySpec(notaryName )))) {
 
