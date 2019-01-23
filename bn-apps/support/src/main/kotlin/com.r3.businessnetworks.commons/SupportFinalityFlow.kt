@@ -7,8 +7,6 @@ import net.corda.core.flows.FlowException
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.FlowSession
 import net.corda.core.flows.ReceiveFinalityFlow
-import net.corda.core.identity.AbstractParty
-import net.corda.core.identity.Party
 import net.corda.core.node.StatesToRecord
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.utilities.ProgressTracker
@@ -33,12 +31,7 @@ class SupportFinalityFlow(private val signedTransaction : SignedTransaction,
         return if (serviceHub.myInfo.platformVersion < 4) {
             subFlow(FinalityFlow(signedTransaction, progressTracker))
         } else {
-            val existingSessions = sessionsCreator()
-            val existingSessionsParties = existingSessions.map { it.counterparty as AbstractParty }
-            val participants = signedTransaction.tx.outputStates.flatMap { it.participants } - ourIdentity
-            val missingSessions = participants - existingSessionsParties
-            val sessions = missingSessions.map { initiateFlow(it as Party) }
-            subFlow(FinalityFlow(signedTransaction, sessions + existingSessions, progressTracker))
+            subFlow(FinalityFlow(signedTransaction, sessionsCreator(), progressTracker))
         }
     }
 }
