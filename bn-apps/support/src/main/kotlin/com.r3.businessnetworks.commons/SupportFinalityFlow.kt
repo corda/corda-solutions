@@ -14,8 +14,8 @@ import net.corda.core.transactions.SignedTransaction
 import net.corda.core.utilities.ProgressTracker
 
 /**
- * Executes correct version of FinalityFlow depending on the current platform version.
- * The flow aims to make it easier to build backwards compatible CorDapps across different versions of Corda.
+ * Executes the correct version of FinalityFlow depending on the underlying platform version.
+ * The flow aims to make easier to build backwards compatible CorDapps across different versions of Corda.
  *
  * @param signedTransaction transaction to be finalised
  * @param progressTracker progress tracker to use. Defaults to FinalityFlow.tracker()
@@ -43,6 +43,10 @@ class SupportFinalityFlow(private val signedTransaction : SignedTransaction,
     }
 }
 
+/**
+ * Inline responder to [SupportFinalityFlow]. It is supposed to be explicitly invoked from a [InitiatedFlow].
+ * The responder invokes [ReceiveFinalityFlow] if the initiator's platform version is >=4 or does nothing otherwise.
+ */
 class SupportReceiveFinalityFlow(private val otherSideSession: FlowSession,
                                    private val expectedTxId: SecureHash? = null,
                                    private val statesToRecord: StatesToRecord = StatesToRecord.ONLY_RELEVANT) : FlowLogic<SignedTransaction?>(){
