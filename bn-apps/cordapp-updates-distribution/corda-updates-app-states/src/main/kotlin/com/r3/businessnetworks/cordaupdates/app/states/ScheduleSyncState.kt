@@ -1,5 +1,6 @@
 package com.r3.businessnetworks.cordaupdates.app.states
 
+import net.corda.core.contracts.BelongsToContract
 import net.corda.core.contracts.CommandData
 import net.corda.core.contracts.Contract
 import net.corda.core.contracts.SchedulableState
@@ -49,6 +50,7 @@ class ScheduledSyncContract : Contract {
     }
 }
 
+@BelongsToContract(ScheduledSyncContract::class)
 data class ScheduledSyncState(val syncInterval : Long,
                               val owner : Party) : SchedulableState {
     override val participants = listOf(owner)

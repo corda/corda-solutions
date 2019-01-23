@@ -14,10 +14,10 @@ import net.corda.core.utilities.unwrap
  * Responder to the [NotifyMemberFlow]. The flow updates memberships cache with notifications from BNO
  */
 @InitiatedBy(NotifyMemberFlow::class)
-class NotifyMembersFlowResponder(private val session : FlowSession) : FlowLogic<Unit>() {
+open class NotifyMembersFlowResponder(val session : FlowSession) : FlowLogic<Any>() {
 
     @Suspendable
-    override fun call() {
+    override fun call() : Any{
         val bno = session.counterparty
 
         // don't forget to make sure that the messages are actually coming from the accepted BNOs
@@ -38,6 +38,6 @@ class NotifyMembersFlowResponder(private val session : FlowSession) : FlowLogic<
             }
             else -> throw IllegalArgumentException("Unknown notification $notification")
         }
+        return notification
     }
-
 }

@@ -1,5 +1,6 @@
 package com.r3.businessnetworks.membership.states
 
+import net.corda.core.contracts.BelongsToContract
 import net.corda.core.contracts.CommandData
 import net.corda.core.contracts.CommandWithParties
 import net.corda.core.contracts.Contract
@@ -114,6 +115,7 @@ open class MembershipContract : Contract {
  * @param modified timestamp when the state has been modified the last time
  * @param status status of the state, i.e. ACTIVE, SUSPENDED, PENDING etc.
  */
+@BelongsToContract(MembershipContract::class)
 data class MembershipState<out T : Any>(val member : Party,
                                         val bno : Party,
                                         val membershipMetadata : T,

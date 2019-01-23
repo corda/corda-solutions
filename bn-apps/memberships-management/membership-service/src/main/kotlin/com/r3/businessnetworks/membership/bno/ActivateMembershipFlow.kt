@@ -1,6 +1,7 @@
 package com.r3.businessnetworks.membership.bno
 
 import co.paralleluniverse.fibers.Suspendable
+import com.r3.businessnetworks.commons.SupportFinalityFlow
 import com.r3.businessnetworks.membership.bno.service.BNOConfigurationService
 import com.r3.businessnetworks.membership.bno.service.DatabaseService
 import com.r3.businessnetworks.membership.bno.support.BusinessNetworkOperatorFlowLogic
@@ -40,7 +41,9 @@ class ActivateMembershipFlow(val membership : StateAndRef<MembershipState<Any>>)
         builder.verify(serviceHub)
         val selfSignedTx = serviceHub.signInitialTransaction(builder)
 
-        val stx = subFlow(FinalityFlow(selfSignedTx))
+        val stx = subFlow(SupportFinalityFlow(selfSignedTx) {
+            listOf(initiateFlow(membership.state.data.member))
+        })
 
         // We should notify members about changes with the ACTIVATED membership
         val databaseService = serviceHub.cordaService(DatabaseService::class.java)

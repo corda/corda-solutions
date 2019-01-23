@@ -1,6 +1,7 @@
 package com.r3.businessnetworks.membership.member
 
 import co.paralleluniverse.fibers.Suspendable
+import com.r3.businessnetworks.commons.SupportReceiveFinalityFlow
 import com.r3.businessnetworks.membership.member.service.MemberConfigurationService
 import com.r3.businessnetworks.membership.member.support.BusinessNetworkAwareInitiatingFlow
 import com.r3.businessnetworks.membership.states.MembershipContract
@@ -52,6 +53,7 @@ class AmendMembershipMetadataFlow(bno : Party, private val newMetadata : Any) : 
                 stx.toLedgerTransaction(serviceHub, false).verify()
             }
         }
-        return subFlow(signTransactionFlow)
+        val selfSignedTx = subFlow(signTransactionFlow)
+        return subFlow(SupportReceiveFinalityFlow(bnoSession, selfSignedTx.id)) ?: selfSignedTx
     }
 }

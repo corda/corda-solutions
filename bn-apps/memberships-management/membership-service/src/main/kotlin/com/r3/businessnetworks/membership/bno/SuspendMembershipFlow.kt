@@ -1,6 +1,7 @@
 package com.r3.businessnetworks.membership.bno
 
 import co.paralleluniverse.fibers.Suspendable
+import com.r3.businessnetworks.commons.SupportFinalityFlow
 import com.r3.businessnetworks.membership.bno.service.BNOConfigurationService
 import com.r3.businessnetworks.membership.bno.service.DatabaseService
 import com.r3.businessnetworks.membership.bno.support.BusinessNetworkOperatorFlowLogic
@@ -36,7 +37,9 @@ class SuspendMembershipFlow(val membership : StateAndRef<MembershipState<Any>>) 
         builder.verify(serviceHub)
         val selfSignedTx = serviceHub.signInitialTransaction(builder)
 
-        val finalisedTx = subFlow(FinalityFlow(selfSignedTx))
+        val finalisedTx = subFlow(SupportFinalityFlow(selfSignedTx) {
+            listOf(initiateFlow(membership.state.data.member))
+        })
 
         val dbService = serviceHub.cordaService(DatabaseService::class.java)
         val suspendedMembership = dbService.getMembership(membership.state.data.member, ourIdentity, configuration.membershipContractName())!!

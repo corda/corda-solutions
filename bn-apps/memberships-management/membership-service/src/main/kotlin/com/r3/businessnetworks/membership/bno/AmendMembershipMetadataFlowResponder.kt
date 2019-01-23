@@ -1,6 +1,7 @@
 package com.r3.businessnetworks.membership.bno
 
 import co.paralleluniverse.fibers.Suspendable
+import com.r3.businessnetworks.commons.SupportFinalityFlow
 import com.r3.businessnetworks.membership.bno.service.BNOConfigurationService
 import com.r3.businessnetworks.membership.bno.service.DatabaseService
 import com.r3.businessnetworks.membership.bno.support.BusinessNetworkOperatorInitiatedFlow
@@ -10,7 +11,6 @@ import com.r3.businessnetworks.membership.states.MembershipContract
 import com.r3.businessnetworks.membership.states.MembershipState
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.flows.CollectSignaturesFlow
-import net.corda.core.flows.FinalityFlow
 import net.corda.core.flows.FlowSession
 import net.corda.core.flows.InitiatedBy
 import net.corda.core.transactions.TransactionBuilder
@@ -46,7 +46,9 @@ class AmendMembershipMetadataFlowResponder(flowSession : FlowSession) : Business
 
         val selfSignedTx = serviceHub.signInitialTransaction(builder)
         val allSignedTx = subFlow(CollectSignaturesFlow(selfSignedTx, listOf(flowSession)))
-        subFlow(FinalityFlow(allSignedTx))
+        subFlow(SupportFinalityFlow(allSignedTx) {
+            listOf(flowSession)
+        })
 
         // notify members about the changes
         val databaseService = serviceHub.cordaService(DatabaseService::class.java)

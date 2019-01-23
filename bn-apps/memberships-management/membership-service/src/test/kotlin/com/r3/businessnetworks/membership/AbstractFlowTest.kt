@@ -9,6 +9,7 @@ import com.r3.businessnetworks.membership.bno.SuspendMembershipForPartyFlow
 import com.r3.businessnetworks.membership.bno.service.DatabaseService
 import com.r3.businessnetworks.membership.member.AmendMembershipMetadataFlow
 import com.r3.businessnetworks.membership.member.GetMembershipsFlow
+import com.r3.businessnetworks.membership.member.NotifyMembersFlowResponder
 import com.r3.businessnetworks.membership.member.RequestMembershipFlow
 import com.r3.businessnetworks.membership.states.MembershipContract
 import com.r3.businessnetworks.membership.states.MembershipState
@@ -159,14 +160,14 @@ fun StartedMockNode.identity() = info.legalIdentities.single()
 fun List<StartedMockNode>.identities() = map { it.identity() }
 
 @InitiatedBy(NotifyMemberFlow::class)
-class NotificationsCounterFlow(private val session : FlowSession) : FlowLogic<Unit>() {
+class NotificationsCounterFlow(session : FlowSession) : NotifyMembersFlowResponder(session) {
     companion object {
         val NOTIFICATIONS : MutableSet<NotificationHolder> = mutableSetOf()
     }
 
     @Suspendable
     override fun call() {
-        val notification  = session.receive<Any>().unwrap { it }
+        val notification = super.call()
         NOTIFICATIONS.add(NotificationHolder(ourIdentity, session.counterparty, notification))
     }
 }

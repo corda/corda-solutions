@@ -1,6 +1,7 @@
 package com.r3.businessnetworks.membership.bno
 
 import co.paralleluniverse.fibers.Suspendable
+import com.r3.businessnetworks.commons.SupportFinalityFlow
 import com.r3.businessnetworks.membership.member.OnBoardingRequest
 import com.r3.businessnetworks.membership.member.RequestMembershipFlow
 import com.r3.businessnetworks.membership.bno.service.BNOConfigurationService
@@ -9,7 +10,6 @@ import com.r3.businessnetworks.membership.bno.support.BusinessNetworkOperatorFlo
 import com.r3.businessnetworks.membership.states.MembershipContract
 import com.r3.businessnetworks.membership.states.MembershipState
 import net.corda.core.flows.CollectSignaturesFlow
-import net.corda.core.flows.FinalityFlow
 import net.corda.core.flows.FlowException
 import net.corda.core.flows.FlowSession
 import net.corda.core.flows.InitiatedBy
@@ -64,7 +64,9 @@ class RequestMembershipFlowResponder(val session : FlowSession) : BusinessNetwor
             builder.verify(serviceHub)
             val selfSignedTx = serviceHub.signInitialTransaction(builder)
             val allSignedTx = subFlow(CollectSignaturesFlow(selfSignedTx, listOf(session)))
-            subFlow(FinalityFlow(allSignedTx))
+            subFlow(SupportFinalityFlow(allSignedTx) {
+                listOf(session)
+            })
         } finally {
             try {
                 logger.info("Removing the pending request from the database")

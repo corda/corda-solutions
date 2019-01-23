@@ -1,6 +1,7 @@
 package com.r3.businessnetworks.membership.member
 
 import co.paralleluniverse.fibers.Suspendable
+import com.r3.businessnetworks.commons.SupportReceiveFinalityFlow
 import com.r3.businessnetworks.membership.member.service.MemberConfigurationService
 import com.r3.businessnetworks.membership.member.support.BusinessNetworkAwareInitiatingFlow
 import com.r3.businessnetworks.membership.states.MembershipContract
@@ -68,6 +69,8 @@ class RequestMembershipFlow(bno : Party, private val membershipMetadata : Any) :
             }
         }
         progressTracker.currentStep = ACCEPTING_INCOMING_PENDING_MEMBERSHIP
-        return subFlow(signResponder)
+        val selfSignedTx = subFlow(signResponder)
+
+        return subFlow(SupportReceiveFinalityFlow(bnoSession, selfSignedTx.id)) ?: selfSignedTx
     }
 }

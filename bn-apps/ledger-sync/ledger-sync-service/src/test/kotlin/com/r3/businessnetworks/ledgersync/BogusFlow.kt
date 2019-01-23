@@ -1,11 +1,13 @@
 package com.r3.businessnetworks.ledgersync
 
 import co.paralleluniverse.fibers.Suspendable
+import com.r3.businessnetworks.commons.SupportFinalityFlow
+import com.r3.businessnetworks.commons.SupportReceiveFinalityFlow
+import net.corda.core.contracts.BelongsToContract
 import net.corda.core.contracts.Command
 import net.corda.core.contracts.LinearState
 import net.corda.core.contracts.UniqueIdentifier
 import net.corda.core.flows.CollectSignaturesFlow
-import net.corda.core.flows.FinalityFlow
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.FlowSession
 import net.corda.core.flows.InitiatedBy
@@ -44,7 +46,9 @@ class BogusFlow(
 
         val fullySigned = subFlow(CollectSignaturesFlow(partiallySigned, setOf(session)))
 
-        return subFlow(FinalityFlow(fullySigned))
+        return subFlow(SupportFinalityFlow(fullySigned) {
+            listOf(session)
+        })
     }
 }
 
@@ -53,14 +57,15 @@ class BogusFlowFlowResponder(val flowSession: FlowSession) : FlowLogic<Unit>() {
 
     @Suspendable
     override fun call() {
-        subFlow(object : SignTransactionFlow(flowSession) {
+        val selfSignedTx = subFlow(object : SignTransactionFlow(flowSession) {
             override fun checkTransaction(stx: SignedTransaction) {
-                // accept everything. this is a simple test fixture only.
             }
         })
+        subFlow(SupportReceiveFinalityFlow(flowSession, selfSignedTx.id))
     }
 }
 
+@BelongsToContract(BogusContract::class)
 data class BogusState(
         private val us: Party,
         private val them: Party,

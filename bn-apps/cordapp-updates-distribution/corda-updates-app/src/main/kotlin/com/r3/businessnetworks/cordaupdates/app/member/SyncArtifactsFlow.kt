@@ -1,13 +1,13 @@
 package com.r3.businessnetworks.cordaupdates.app.member
 
 import co.paralleluniverse.fibers.Suspendable
+import com.r3.businessnetworks.commons.SupportFinalityFlow
 import com.r3.businessnetworks.cordaupdates.core.ArtifactMetadata
 import com.r3.businessnetworks.cordaupdates.core.SyncerConfiguration
 import com.r3.businessnetworks.cordaupdates.app.states.ScheduledSyncContract
 import com.r3.businessnetworks.cordaupdates.app.states.ScheduledSyncState
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.contracts.StateRef
-import net.corda.core.flows.FinalityFlow
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.SchedulableFlow
 import net.corda.core.flows.StartableByRPC
@@ -113,7 +113,9 @@ class ScheduleSyncFlow @JvmOverloads constructor(private val syncerConfig : Sync
         builder.verify(serviceHub)
         val signedTx : SignedTransaction = serviceHub.signInitialTransaction(builder)
 
-        return subFlow(FinalityFlow(signedTx))
+        return subFlow(SupportFinalityFlow(signedTx) {
+            listOf()
+        })
     }
 }
 
@@ -154,6 +156,8 @@ class StopScheduledSyncFlow : FlowLogic<Unit>() {
                 .addCommand(ScheduledSyncContract.Commands.Stop(), ourIdentity.owningKey)
         builder.verify(serviceHub)
         val signedTx : SignedTransaction = serviceHub.signInitialTransaction(builder)
-        subFlow(FinalityFlow(signedTx))
+        subFlow(SupportFinalityFlow(signedTx) {
+            listOf()
+        })
     }
 }
