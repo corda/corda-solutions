@@ -4,8 +4,8 @@ import co.paralleluniverse.fibers.Suspendable
 import com.r3.businessnetworks.commons.SupportFinalityFlow
 import com.r3.businessnetworks.cordaupdates.core.ArtifactMetadata
 import com.r3.businessnetworks.cordaupdates.core.SyncerConfiguration
-import com.r3.businessnetworks.cordaupdates.app.states.ScheduledSyncContract
-import com.r3.businessnetworks.cordaupdates.app.states.ScheduledSyncState
+import com.r3.businessnetworks.cordaupdates.states.ScheduledSyncContract
+import com.r3.businessnetworks.cordaupdates.states.ScheduledSyncState
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.contracts.StateRef
 import net.corda.core.flows.FlowLogic

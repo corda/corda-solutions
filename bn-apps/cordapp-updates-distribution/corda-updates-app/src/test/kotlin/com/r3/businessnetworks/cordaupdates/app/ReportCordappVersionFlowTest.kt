@@ -10,7 +10,9 @@ import net.corda.core.identity.CordaX500Name
 import net.corda.core.utilities.getOrThrow
 import net.corda.testing.node.MockNetwork
 import net.corda.testing.node.MockNetworkNotarySpec
+import net.corda.testing.node.MockNetworkParameters
 import net.corda.testing.node.StartedMockNode
+import net.corda.testing.node.internal.findCordapp
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -26,11 +28,13 @@ class ReportCordappVersionFlowTest {
 
     @Before
     fun setup() {
-        mockNetwork = MockNetwork(cordappPackages = listOf(
-                "com.r3.businessnetworks.cordaupdates.app.member",
-                "com.r3.businessnetworks.cordaupdates.app.bno",
-                "com.r3.businessnetworks.cordaupdates.transport.flows"),
+        mockNetwork = MockNetwork(MockNetworkParameters(
+                cordappsForAllNodes = listOf(
+                        findCordapp("com.r3.businessnetworks.cordaupdates.app"),
+                        findCordapp("com.r3.businessnetworks.cordaupdates.states"),
+                        findCordapp("com.r3.businessnetworks.cordaupdates.transport")),
                 notarySpecs = listOf(MockNetworkNotarySpec(CordaX500Name.parse("O=Notary,L=London,C=GB"))))
+            )
         participantANode = mockNetwork.createPartyNode(CordaX500Name("ParticipantA", "New York", "US"))
         participantBNode = mockNetwork.createPartyNode(CordaX500Name("ParticipantB", "New York", "US"))
         bnoNode = mockNetwork.createPartyNode(CordaX500Name.parse("O=BNO,L=London,C=GB"))

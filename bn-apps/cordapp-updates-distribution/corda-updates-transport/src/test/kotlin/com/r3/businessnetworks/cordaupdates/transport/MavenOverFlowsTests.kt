@@ -17,6 +17,7 @@ import net.corda.testing.driver.NodeHandle
 import net.corda.testing.driver.NodeParameters
 import net.corda.testing.driver.driver
 import net.corda.testing.node.NotarySpec
+import net.corda.testing.node.TestCordapp.Companion.findCordapp
 import net.corda.testing.node.User
 import org.junit.Test
 import java.lang.Thread.sleep
@@ -39,7 +40,11 @@ class MavenOverFlowsTests {
         val notaryName = CordaX500Name("Notary", "London","GB")
 
         driver(DriverParameters(
-                extraCordappPackagesToScan = listOf("com.r3.businessnetworks.cordaupdates.core"),
+//                cordappsForAllNodes = listOf(
+//                        findCordapp("com.r3.businessnetworks.cordaupdates.core"),
+//                        findCordapp("com.r3.businessnetworks.cordaupdates.transport")
+//                        ),
+                extraCordappPackagesToScan = listOf("com.r3.businessnetworks.cordaupdates.core", "com.r3.businessnetworks.cordaupdates.transport"),
                 startNodesInProcess = true,
                 notarySpecs = listOf(NotarySpec(notaryName )))) {
 
@@ -173,7 +178,6 @@ class DownloadVersionRangeFlow(private val remoteRepoUrl : String, private val l
         executor.downloadVersionRangeAsync(remoteRepoUrl, localRepoPath, versionRange)
     }
 }
-
 
 @CordaService
 class ExecutorService(private val appServiceHub : AppServiceHub) : SingletonSerializeAsToken() {
