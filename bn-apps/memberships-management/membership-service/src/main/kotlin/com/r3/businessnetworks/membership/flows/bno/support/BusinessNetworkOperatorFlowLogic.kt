@@ -2,7 +2,6 @@ package com.r3.businessnetworks.membership.flows.bno.support
 
 import com.r3.businessnetworks.membership.flows.MembershipNotFound
 import com.r3.businessnetworks.membership.flows.NotBNOException
-import com.r3.businessnetworks.membership.flows.bno.service.BNOConfigurationService
 import com.r3.businessnetworks.membership.flows.bno.service.DatabaseService
 import com.r3.businessnetworks.membership.states.MembershipState
 import net.corda.core.contracts.StateAndRef
@@ -21,14 +20,12 @@ abstract class BusinessNetworkOperatorFlowLogic<out T> : FlowLogic<T>() {
     }
 
     protected fun findMembershipStateForParty(party : Party) : StateAndRef<MembershipState<Any>> {
-        val configuration = serviceHub.cordaService(BNOConfigurationService::class.java)
         val databaseService = serviceHub.cordaService(DatabaseService::class.java)
-        return databaseService.getMembership(party, ourIdentity, configuration.membershipContractName()) ?: throw MembershipNotFound(party)
+        return databaseService.getMembership(party, ourIdentity) ?: throw MembershipNotFound(party)
     }
 
     protected fun getActiveMembershipStates() : List<StateAndRef<MembershipState<Any>>> {
-        val configuration = serviceHub.cordaService(BNOConfigurationService::class.java)
         val databaseService = serviceHub.cordaService(DatabaseService::class.java)
-        return databaseService.getActiveMemberships(ourIdentity, configuration.membershipContractName())
+        return databaseService.getActiveMemberships(ourIdentity)
     }
 }

@@ -17,7 +17,7 @@ import net.corda.core.utilities.unwrap
  * Supports [SessionFilter]s to prevent unauthorised access.
  */
 @InitiatedBy(ReportCordappVersionFlow::class)
-class ReportCordappVersionFlowResponder(session : FlowSession) : AbstractRepositoryHosterResponder<Unit>(session) {
+open class ReportCordappVersionFlowResponder(session : FlowSession) : AbstractRepositoryHosterResponder<Unit>(session) {
 
     @Suspendable
     override fun postPermissionCheck() {

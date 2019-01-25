@@ -1,7 +1,6 @@
 package com.r3.businessnetworks.cordaupdates.app
 
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.businessnetworks.commons.SupportFinalityFlow
 import com.r3.businessnetworks.cordaupdates.core.ArtifactMetadata
 import com.r3.businessnetworks.cordaupdates.core.SyncerConfiguration
 import com.r3.businessnetworks.cordaupdates.core.CordappSource
@@ -12,6 +11,7 @@ import com.r3.businessnetworks.cordaupdates.app.member.ScheduleSyncFlow
 import com.r3.businessnetworks.cordaupdates.app.member.SyncArtifactsFlow
 import com.r3.businessnetworks.cordaupdates.states.ScheduledSyncContract
 import com.r3.businessnetworks.cordaupdates.states.ScheduledSyncState
+import net.corda.core.flows.FinalityFlow
 import net.corda.core.flows.FlowLogic
 import net.corda.core.identity.CordaX500Name
 import net.corda.core.node.services.queryBy
@@ -125,9 +125,7 @@ class IssueSomeScheduledStatesFlow(val syncInterval : Long, val statesQty : Int)
                     .addCommand(ScheduledSyncContract.Commands.Start(), ourIdentity.owningKey)
             builder.verify(serviceHub)
             val signedTx = serviceHub.signInitialTransaction(builder)
-            subFlow(SupportFinalityFlow(signedTx) {
-                listOf()
-            })
+            subFlow(FinalityFlow(signedTx, listOf()))
         }
     }
 }

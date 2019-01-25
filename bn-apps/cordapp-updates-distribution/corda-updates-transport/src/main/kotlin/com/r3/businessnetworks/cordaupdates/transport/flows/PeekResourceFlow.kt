@@ -46,7 +46,7 @@ class PeekResourceFlow(private val resourceLocation : String, private val repoHo
  * The flow supports [SessionFilter]s to restrict unauthorised traffic.
  */
 @InitiatedBy(PeekResourceFlow::class)
-class PeekResourceFlowResponder(session : FlowSession) : AbstractRepositoryHosterResponder<Unit>(session) {
+open class PeekResourceFlowResponder(session : FlowSession) : AbstractRepositoryHosterResponder<Unit>(session) {
     @Suspendable
     override fun postPermissionCheck() {
         val request = session.receive<ResourceRequest>().unwrap {

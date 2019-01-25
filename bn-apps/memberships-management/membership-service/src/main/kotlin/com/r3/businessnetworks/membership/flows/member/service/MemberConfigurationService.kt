@@ -19,16 +19,10 @@ class MemberConfigurationService(private val serviceHub : ServiceHub) : Singleto
     companion object {
         // X500 name of the BNO
         const val BNO_WHITELIST = "bnoWhitelist"
-        // Name of the contract class to verify membership transactions with. Exists to let users to provide their own implementations
-        // in the case if they would like to extend MembershipContract functionality to contractually verify membership metadata evolution.
-        // Defaults to MembershipContract.CONTRACT_NAME
-        const val MEMBERSHIP_CONTRACT_NAME = "membershipContractName"
         val logger = loggerFor<MemberConfigurationService>()
     }
 
     private var _config = loadConfig()
-
-    fun membershipContractName() = if (_config.hasPath(MEMBERSHIP_CONTRACT_NAME)) _config.getString(MEMBERSHIP_CONTRACT_NAME)!! else MembershipContract.CONTRACT_NAME
 
     /**
      * BNOs should be explicitly whitelisted. Any attempt to communicate with not whitelisted BNO would fail.

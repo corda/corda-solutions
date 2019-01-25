@@ -14,6 +14,7 @@ import org.junit.Test
 import kotlin.test.fail
 import com.r3.businessnetworks.membership.flows.member.Utils.ofType
 import net.corda.core.identity.CordaX500Name
+import java.lang.Exception
 import kotlin.test.assertEquals
 
 /**
@@ -45,7 +46,7 @@ class FullBNMSFlowDemo : AbstractFlowTest(
         assert(memberships.keys.single() == newJoiner.identity())
         assert(memberships[newJoiner.identity()]!!.state.data.membershipMetadata.role == "My new role")
 
-        // nodes, that are not the members can't request memberships
+        // not members can't see membership list
         try {
             runGetMembershipsListFlow(bnoNode, nonMember, false)
             fail()
@@ -76,7 +77,7 @@ class FullBNMSFlowDemo : AbstractFlowTest(
         try {
             future.getOrThrow()
             fail()
-        } catch (ex : FlowException) {
+        } catch (ex : Exception) {
             assertEquals("Counterparty must be a member", ex.message)
         }
     }

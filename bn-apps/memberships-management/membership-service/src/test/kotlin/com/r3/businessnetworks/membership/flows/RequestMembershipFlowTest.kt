@@ -1,12 +1,11 @@
 package com.r3.businessnetworks.membership.flows
 
 import com.r3.businessnetworks.membership.flows.bno.RequestMembershipFlowResponder
-import com.r3.businessnetworks.membership.flows.bno.service.BNOConfigurationService
 import com.r3.businessnetworks.membership.flows.bno.service.DatabaseService
 import com.r3.businessnetworks.membership.flows.member.service.MemberConfigurationService
 import com.r3.businessnetworks.membership.states.MembershipContract
 import com.r3.businessnetworks.membership.states.MembershipState
-import net.corda.core.contracts.Contract
+import com.r3.businessnetworks.membership.testextensions.RequestMembershipFlowResponderWithMetadataVerification
 import net.corda.core.flows.FlowException
 import org.junit.Test
 import kotlin.test.assertEquals
@@ -77,22 +76,6 @@ class RequestMembershipFlowTest : AbstractFlowTest(numberOfBusinessNetworks = 2,
         }
     }
 
-    @Test
-    fun `membership transaction can be verified by a custom contract`() {
-        val bnoNode = bnoNodes.first()
-        val memberNode = participantsNodes.first()
-
-        // reloading configurations for both the member and the bno
-        bnoNode.services.cordaService(BNOConfigurationService::class.java).reloadConfigurationFromFile(fileFromClasspath("membership-service-with-custom-contract.conf"))
-        memberNode.services.cordaService(MemberConfigurationService::class.java).reloadConfigurationFromFile(fileFromClasspath("membership-service-with-custom-contract.conf"))
-
-        val stx = runRequestMembershipFlow(bnoNode, memberNode)
-
-        val outputWithContract = stx.tx.outputs.single()
-
-        assert(outputWithContract.contract == "com.r3.businessnetworks.membership.flows.DummyMembershipContract")
-    }
-
     @Test(expected = BNONotWhitelisted::class)
     fun `the flow can be run only against whitelisted BNOs`() {
         val bnoNode = bnoNodes.first()
@@ -103,22 +86,17 @@ class RequestMembershipFlowTest : AbstractFlowTest(numberOfBusinessNetworks = 2,
     }
 
     @Test
-    fun `request membership transaction should be rejected if BNO specifies a wrong contract`() {
+    fun `should be able to perform a custom metadata verification`() {
         val bnoNode = bnoNodes.first()
-        val participantNode = participantsNodes.first()
+        bnoNode.registerInitiatedFlow(RequestMembershipFlowResponderWithMetadataVerification::class.java)
 
-        // reloading configuration with a fake contract name
-        participantNode.services.cordaService(MemberConfigurationService::class.java).reloadConfigurationFromFile(fileFromClasspath("membership-service-with-fake-contract-name.conf"))
+        val participantNode = participantsNodes.first()
 
         try {
             runRequestMembershipFlow(bnoNode, participantNode)
             fail()
         } catch (ex : FlowException) {
-            assertEquals("Membership transactions have to be verified with not.existing.contract.Class contract", ex.message)
+            assertEquals("Invalid metadata", ex.message)
         }
     }
-}
-
-class DummyMembershipContract : Contract, MembershipContract() {
-    override fun contractName() = "com.r3.businessnetworks.membership.flows.DummyMembershipContract"
 }

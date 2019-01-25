@@ -85,28 +85,6 @@ class BusinessNetworkAwareInitiatedFlowTest : AbstractFlowTest(numberOfBusinessN
 
         future.getOrThrow()
     }
-
-    @Test(expected = NotAMemberException::class)
-    fun `membership states with wrong membership contract should not be accepted`() {
-        val bnoNode = bnoNodes[0]
-
-        val participant1 = participantsNodes[0]
-        val participant2 = participantsNodes[1]
-
-        participant2.registerInitiatedFlow(BN_1_RespondingFlow::class.java)
-
-        runRequestAndActivateMembershipFlow(bnoNode, participant2)
-        runRequestAndActivateMembershipFlow(bnoNode, participant1)
-
-        // reloading configuration with a wrong contract name. All membership states verified by MembershipContract will be rejected
-        participant2.services.cordaService(MemberConfigurationService::class.java).reloadConfigurationFromFile(fileFromClasspath("membership-service-with-fake-contract-name.conf"))
-
-        val future = participant1.startFlow(BN_1_InitiatingFlow(participant2.identity()))
-
-        mockNetwork.runNetwork()
-
-        future.getOrThrow()
-    }
 }
 
 @InitiatingFlow

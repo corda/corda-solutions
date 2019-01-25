@@ -1,7 +1,6 @@
 package com.r3.businessnetworks.membership.flows.bno
 
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.businessnetworks.commons.SupportFinalityFlow
 import com.r3.businessnetworks.membership.flows.member.OnBoardingRequest
 import com.r3.businessnetworks.membership.flows.member.RequestMembershipFlow
 import com.r3.businessnetworks.membership.flows.bno.service.BNOConfigurationService
@@ -10,11 +9,13 @@ import com.r3.businessnetworks.membership.flows.bno.support.BusinessNetworkOpera
 import com.r3.businessnetworks.membership.states.MembershipContract
 import com.r3.businessnetworks.membership.states.MembershipState
 import net.corda.core.flows.CollectSignaturesFlow
+import net.corda.core.flows.FinalityFlow
 import net.corda.core.flows.FlowException
 import net.corda.core.flows.FlowSession
 import net.corda.core.flows.InitiatedBy
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.unwrap
+import org.hibernate.Transaction
 import java.sql.SQLException
 
 /**
@@ -27,7 +28,7 @@ import java.sql.SQLException
  * TODO: remove MembershipAutoAcceptor in favour of flow overrides when Corda 4 is released
  */
 @InitiatedBy(RequestMembershipFlow::class)
-class RequestMembershipFlowResponder(val session : FlowSession) : BusinessNetworkOperatorFlowLogic<Unit>() {
+open class RequestMembershipFlowResponder(val session : FlowSession) : BusinessNetworkOperatorFlowLogic<Unit>() {
 
     @Suspendable
     override fun call() {
@@ -35,7 +36,7 @@ class RequestMembershipFlowResponder(val session : FlowSession) : BusinessNetwor
         val counterparty = session.counterparty
         val configuration = serviceHub.cordaService(BNOConfigurationService::class.java)
         val databaseService = serviceHub.cordaService(DatabaseService::class.java)
-        val counterpartMembership = databaseService.getMembership(counterparty, ourIdentity, configuration.membershipContractName())
+        val counterpartMembership = databaseService.getMembership(counterparty, ourIdentity)
         if (counterpartMembership != null) {
             throw FlowException("Membership already exists")
         }
@@ -59,14 +60,19 @@ class RequestMembershipFlowResponder(val session : FlowSession) : BusinessNetwor
             // issue pending membership state on the ledger
             membership = MembershipState(counterparty, ourIdentity, request.metadata)
             val builder = TransactionBuilder(notary)
-                    .addOutputState(membership, configuration.membershipContractName())
+                    .addOutputState(membership, MembershipContract.CONTRACT_NAME)
                     .addCommand(MembershipContract.Commands.Request(), counterparty.owningKey, ourIdentity.owningKey)
-            builder.verify(serviceHub)
+
+            verifyTransaction(builder)
+
             val selfSignedTx = serviceHub.signInitialTransaction(builder)
             val allSignedTx = subFlow(CollectSignaturesFlow(selfSignedTx, listOf(session)))
-            subFlow(SupportFinalityFlow(allSignedTx) {
-                listOf(session)
-            })
+
+            if (session.getCounterpartyFlowInfo().flowVersion == 1) {
+                subFlow(FinalityFlow(allSignedTx))
+            } else {
+                subFlow(FinalityFlow(allSignedTx, listOf(session)))
+            }
         } finally {
             try {
                 logger.info("Removing the pending request from the database")
@@ -83,7 +89,21 @@ class RequestMembershipFlowResponder(val session : FlowSession) : BusinessNetwor
         }
     }
 
-    private fun activateRightAway(membershipState : MembershipState<Any>, configuration : BNOConfigurationService) : Boolean {
-        return configuration.getMembershipAutoAcceptor()?.autoActivateThisMembership(membershipState) ?: false
+    /**
+     * Override this method to automatically accept memberships
+     * See: https://docs.corda.net/head/flow-overriding.html
+     */
+    @Suspendable
+    protected open fun activateRightAway(membershipState : MembershipState<Any>, configuration : BNOConfigurationService) : Boolean {
+        return false
+    }
+
+    /**
+     * Override this method to add custom verification membership metadata verifications.
+     * See: https://docs.corda.net/head/flow-overriding.html
+     */
+    @Suspendable
+    protected open fun verifyTransaction(builder : TransactionBuilder) {
+        builder.verify(serviceHub)
     }
 }

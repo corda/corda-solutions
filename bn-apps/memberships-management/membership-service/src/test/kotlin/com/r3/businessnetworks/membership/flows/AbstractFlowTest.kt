@@ -11,7 +11,6 @@ import com.r3.businessnetworks.membership.flows.member.AmendMembershipMetadataFl
 import com.r3.businessnetworks.membership.flows.member.GetMembershipsFlow
 import com.r3.businessnetworks.membership.flows.member.NotifyMembersFlowResponder
 import com.r3.businessnetworks.membership.flows.member.RequestMembershipFlow
-import com.r3.businessnetworks.membership.states.MembershipContract
 import com.r3.businessnetworks.membership.states.MembershipState
 import com.r3.businessnetworks.membership.states.SimpleMembershipMetadata
 import net.corda.core.contracts.StateAndRef
@@ -50,15 +49,14 @@ abstract class AbstractFlowTest(private val numberOfBusinessNetworks : Int,
 
     @Before
     open fun setup() {
-        mockNetwork = MockNetwork(MockNetworkParameters(
-                cordappsForAllNodes = listOf(
-                        findCordapp("com.r3.businessnetworks.membership.flows"),
-                        findCordapp("com.r3.businessnetworks.membership.states")),
+        mockNetwork = MockNetwork(
+                // legacy API is used on purpose as otherwise flows defined in tests are not picked up by the framework
+                cordappPackages = listOf("com.r3.businessnetworks.membership.flows", "com.r3.businessnetworks.membership.states"),
                 notarySpecs = listOf(MockNetworkNotarySpec(notaryName))
-        ))
+        )
         bnoNodes = (0..numberOfBusinessNetworks).mapIndexed { indexOfBN, _ ->
             val bnoName =  CordaX500Name.parse("O=BNO_$indexOfBN,L=New York,C=US")
-            val bnoNode = createNode(bnoName, true)
+            val bnoNode = createNode(bnoName)
             bnoRespondingFlows.forEach { bnoNode.registerInitiatedFlow(it) }
             bnoNode
         }
@@ -72,7 +70,7 @@ abstract class AbstractFlowTest(private val numberOfBusinessNetworks : Int,
         mockNetwork.runNetwork()
     }
 
-    private fun createNode(name : CordaX500Name, isBno : Boolean = false) =
+    private fun createNode(name : CordaX500Name) =
             mockNetwork.createNode(MockNodeParameters(legalName = name))
 
     @After
@@ -145,12 +143,12 @@ abstract class AbstractFlowTest(private val numberOfBusinessNetworks : Int,
 
     fun getMembership(nodeToGetFrom : StartedMockNode, member : Party, bno : Party) : StateAndRef<MembershipState<Any>> = nodeToGetFrom.transaction {
         val dbService = nodeToGetFrom.services.cordaService(DatabaseService::class.java)
-        dbService.getMembership(member, bno, MembershipContract.CONTRACT_NAME)!!
+        dbService.getMembership(member, bno)!!
     }
 
     fun getAllMemberships(nodeToGetFrom : StartedMockNode, bno : Party) : List<StateAndRef<MembershipState<Any>>> = nodeToGetFrom.transaction {
         val dbService = nodeToGetFrom.services.cordaService(DatabaseService::class.java)
-        dbService.getAllMemberships(bno, MembershipContract.CONTRACT_NAME)
+        dbService.getAllMemberships(bno)
     }
 
     fun allTransactions(node : StartedMockNode) = node.transaction {

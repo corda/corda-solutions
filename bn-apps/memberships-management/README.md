@@ -12,9 +12,9 @@ Business Network Membership Service aims to solve the following problems:
 * Participation in multiple business networks by a single node.
 
 BNMS provides the following API extension points:
-* Custom membership metadata. Nodes can associate a custom metadata with their memberships. The metadata might contain such fields as role, address, displayed name, email and etc. The metadata can be different for different business networks. It can be even represented with different classes. Associated metadata gets distributed to other Business Network members as a part of general membership distribution mechanism. 
-* Custom *Membership Contract* implementations. BNOs can extend from `MembershipContract` and add their custom verification logic (for example to verify their custom metadata evolution).  
+* Custom membership metadata. Nodes can associate a custom metadata with their memberships. The metadata might contain such fields as role, address, displayed name, email and etc. The metadata can be different for different business networks. It can be even represented with different classes. Associated metadata gets distributed to other Business Network members as a part of general membership distribution mechanism.  
 * Automatic acceptance of memberships requests. BNOs can implement a custom verification code that would be run against the incoming membership requests to determine whether they are eligible for auto-activation. Auto-activated members will be able to start transacting straight-away (otherwise a separate Activation step is required).
+* Custom membership metadata verification. Custom verifications can be implemented via overriding `RequestedMembershipFlow` and `AmendMembershipMetadataFlow` responders.    
 
 Please see the [design doc](./design/design.md) for more information about technical design considerations.
 
@@ -59,9 +59,7 @@ Memberships are represented with a [MembershipState](./membership-service-contra
 
 `MembershipState` evolution is curated by [MembershipContract](./membership-service-contracts-and-states/src/main/kotlin/net/corda/businessnetworks/membership/states/Membership.kt). By default `MembershipContract` verifies evolution of `MembershipState`s only and doesn't verify an evolution of memberships metadata, as it's a generic parameter.   
 
-Membership metadata evolution can be verified in the following ways:
-* In the responding flows, by overriding them at the BNO's side (_off-ledger verification_). Will be introduced in Corda 4.
-* By extending the `MembershipContract` (_on-ledger verification_). `MembershipContract` is an `open` class and can be extended by users to add a custom verification logic. A custom contract implementation can be provided to the BNMS via `membershipContractName` configuration property.
+Membership metadata evolution can be verified by [overriding responder flows](https://docs.corda.net/head/flow-overriding.html) at the BNO side.  
 
 ### Flows
 

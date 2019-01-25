@@ -69,26 +69,9 @@ Using this transport allow repository hosters to enforce their custom rules onto
 
 Corda transport expects a remote repository URL specified in the format of `corda:x500Name/repositoryName`. `repositoryName` allows a repository hoster to serve artifacts from multiple remote repositories via the same node. `repositoryName` defaults to *"default"* if have not been explicitly provided. For example `corda:O=BNO,L=New York,C=US/default` (just imagine that you specify a Corda X500 name instead of a HTTP hostname).
 
-## Session Filters
+## Access Control
 
-Corda transport allow developers to implement their custom `SessionFilter`s that can be used to reject any unintended download requests. `SessionFilter` is a simple interface that, if implemented, is invoked against every incoming download request. `SessionFilter` returns a boolean that indicates whether the request should be let through or not.
-
-```kotlin
-interface SessionFilter {
-    @Suspendable
-    fun isSessionAllowed(session : FlowSession, flowLogic : FlowLogic<*>) : Boolean
-}
-```
-For example a session filter that would allow only the Business Network traffic through can be implemented in the following way using [Business Network Membership Service](https://github.com/corda/corda-solutions/tree/master/bn-apps/memberships-management):
-
-```kotlin
-class BusinessNetworkSessionFilter : SessionFilter {
-
-    // GetMembershipsFlow is provided as a part of Business Network Membership Service implementation
-    @Suspendable
-    override fun isSessionAllowed(session : FlowSession, flowLogic : FlowLogic<*>) = flowLogic.subFlow(GetMembershipsFlow())[session.counterparty] != null
-}
-```
+Developers can implement their own access control by overriding `isSessionAllowed` method of `GetResourceFlowResponder`, `PeekResourceFlowResponder` and `ReportCordappVersionFlowResponder` classes. For more information about overriding flows please visit [this page](https://docs.corda.net/head/flow-overriding.html).
 
 ### Asynchronous invocations
 
@@ -187,9 +170,6 @@ bno="O=BNO,L=London,C=GB"
 
 Configuration is loaded from `cordapps/config/corda-updates-app.conf` file in the node's folder. Repository hoster node is required only if Corda transport is used.
 ```
-# Class that implements the SessionFilter interface. Optional.
-sessionFilter=com.my.app.MySessionFilter
-
 # List of repositories to serve artifcats from. A requester is supposed to provide a name of repository to serve his request from. 
 repositories {
 

@@ -1,7 +1,6 @@
 package com.r3.businessnetworks.membership.flows.bno
 
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.businessnetworks.commons.SupportFinalityFlow
 import com.r3.businessnetworks.membership.flows.bno.service.BNOConfigurationService
 import com.r3.businessnetworks.membership.flows.bno.service.DatabaseService
 import com.r3.businessnetworks.membership.flows.bno.support.BusinessNetworkOperatorInitiatedFlow
@@ -11,6 +10,7 @@ import com.r3.businessnetworks.membership.states.MembershipContract
 import com.r3.businessnetworks.membership.states.MembershipState
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.flows.CollectSignaturesFlow
+import net.corda.core.flows.FinalityFlow
 import net.corda.core.flows.FlowSession
 import net.corda.core.flows.InitiatedBy
 import net.corda.core.transactions.TransactionBuilder
@@ -22,7 +22,7 @@ import net.corda.core.utilities.unwrap
  * amend their metadata.
  */
 @InitiatedBy(AmendMembershipMetadataFlow::class)
-class AmendMembershipMetadataFlowResponder(flowSession : FlowSession) : BusinessNetworkOperatorInitiatedFlow<Unit>(flowSession) {
+open class AmendMembershipMetadataFlowResponder(flowSession : FlowSession) : BusinessNetworkOperatorInitiatedFlow<Unit>(flowSession) {
 
     @Suspendable
     override fun onCounterpartyMembershipVerified(counterpartyMembership : StateAndRef<MembershipState<Any>>) {
@@ -39,20 +39,32 @@ class AmendMembershipMetadataFlowResponder(flowSession : FlowSession) : Business
         // changes to the metadata should be governed by the contract, not flows
         val builder = TransactionBuilder(notaryParty)
                 .addInputState(counterpartyMembership)
-                .addOutputState(newMembership, configuration.membershipContractName())
+                .addOutputState(newMembership, MembershipContract.CONTRACT_NAME)
                 .addCommand(MembershipContract.Commands.Amend(), flowSession.counterparty.owningKey, ourIdentity.owningKey)
 
-        builder.verify(serviceHub)
+        verifyTransaction(builder)
 
         val selfSignedTx = serviceHub.signInitialTransaction(builder)
         val allSignedTx = subFlow(CollectSignaturesFlow(selfSignedTx, listOf(flowSession)))
-        subFlow(SupportFinalityFlow(allSignedTx) {
-            listOf(flowSession)
-        })
+
+        if (flowSession.getCounterpartyFlowInfo().flowVersion == 1) {
+            subFlow(FinalityFlow(allSignedTx))
+        } else {
+            subFlow(FinalityFlow(allSignedTx, listOf(flowSession)))
+        }
 
         // notify members about the changes
         val databaseService = serviceHub.cordaService(DatabaseService::class.java)
-        val amendedMembership = databaseService.getMembership(flowSession.counterparty, ourIdentity, configuration.membershipContractName())!!
+        val amendedMembership = databaseService.getMembership(flowSession.counterparty, ourIdentity)!!
         subFlow(NotifyActiveMembersFlow(OnMembershipChanged(amendedMembership)))
+    }
+
+    /**
+     * This method can be overridden to add custom verification membership metadata verifications.
+     * See: https://docs.corda.net/head/flow-overriding.html
+     */
+    @Suspendable
+    protected open fun verifyTransaction(builder : TransactionBuilder) {
+        builder.verify(serviceHub)
     }
 }

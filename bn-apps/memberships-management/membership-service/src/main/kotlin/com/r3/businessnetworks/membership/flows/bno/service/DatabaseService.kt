@@ -35,23 +35,22 @@ class DatabaseService(val serviceHub : ServiceHub) : SingletonSerializeAsToken()
         session.prepareStatement(nativeQuery).execute()
     }
 
-    fun getMembership(member : Party, bno : Party, contract : String) : StateAndRef<MembershipState<Any>>? {
+    fun getMembership(member : Party, bno : Party) : StateAndRef<MembershipState<Any>>? {
         val criteria = QueryCriteria.VaultQueryCriteria(Vault.StateStatus.UNCONSUMED)
                 .and(memberCriteria(member))
                 .and(bnoCriteria(bno))
-        // filtering out the states validated by a correct contract
-        val states = serviceHub.vaultService.queryBy<MembershipState<Any>>(criteria).states.filterByContract(contract)
+        val states = serviceHub.vaultService.queryBy<MembershipState<Any>>(criteria).states
         return if (states.isEmpty()) null else (states.sortedBy { it.state.data.modified }.last())
     }
 
-    fun getAllMemberships(bno : Party, contract : String) : List<StateAndRef<MembershipState<Any>>> {
+    fun getAllMemberships(bno : Party) : List<StateAndRef<MembershipState<Any>>> {
         val criteria = QueryCriteria.VaultQueryCriteria(Vault.StateStatus.UNCONSUMED)
                 .and(bnoCriteria(bno))
-        return serviceHub.vaultService.queryBy<MembershipState<Any>>(criteria).states.filterByContract(contract)
+        return serviceHub.vaultService.queryBy<MembershipState<Any>>(criteria).states
     }
 
-    fun getActiveMemberships(bno : Party, contract : String)
-            = getAllMemberships(bno, contract).filter { it.state.data.isActive() }
+    fun getActiveMemberships(bno : Party)
+            = getAllMemberships(bno).filter { it.state.data.isActive() }
 
     /**
      * This method exists to prevent the same member from being able to request a membership multiple times, while their first membership transaction is being processed.
@@ -82,7 +81,6 @@ class DatabaseService(val serviceHub : ServiceHub) : SingletonSerializeAsToken()
         statement.executeUpdate()
     }
 
-    private fun List<StateAndRef<MembershipState<Any>>>.filterByContract(contract : String) = this.filter { it.state.contract == contract }
     private fun memberCriteria(member : Party)
             = QueryCriteria.VaultCustomQueryCriteria(builder { MembershipStateSchemaV1.PersistentMembershipState::member.equal(member) })
     private fun bnoCriteria(bno: Party)

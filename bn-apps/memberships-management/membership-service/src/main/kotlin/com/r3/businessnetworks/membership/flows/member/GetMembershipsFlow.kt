@@ -1,7 +1,6 @@
 package com.r3.businessnetworks.membership.flows.member
 
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.businessnetworks.membership.flows.member.service.MemberConfigurationService
 import com.r3.businessnetworks.membership.flows.member.service.MembershipsCacheHolder
 import com.r3.businessnetworks.membership.flows.member.support.BusinessNetworkAwareInitiatingFlow
 import com.r3.businessnetworks.membership.states.MembershipState
@@ -44,11 +43,10 @@ data class MembershipsListResponse(val memberships : List<StateAndRef<Membership
  */
 @InitiatingFlow
 @StartableByRPC
-class GetMembershipsFlow(bno : Party, private val forceRefresh : Boolean = false, private val filterOutMissingFromNetworkMap : Boolean = true) : BusinessNetworkAwareInitiatingFlow<Map<Party, StateAndRef<MembershipState<Any>>>>(bno) {
+open class GetMembershipsFlow(bno : Party, private val forceRefresh : Boolean = false, private val filterOutMissingFromNetworkMap : Boolean = true) : BusinessNetworkAwareInitiatingFlow<Map<Party, StateAndRef<MembershipState<Any>>>>(bno) {
 
     @Suspendable
     override fun afterBNOIdentityVerified() : Map<Party, StateAndRef<MembershipState<Any>>> {
-        val configuration = serviceHub.cordaService(MemberConfigurationService::class.java)
         val membershipService = serviceHub.cordaService(MembershipsCacheHolder::class.java)
         val cache = membershipService.cache
         val lastRefreshed = cache.getLastRefreshedTime(bno)
@@ -59,10 +57,9 @@ class GetMembershipsFlow(bno : Party, private val forceRefresh : Boolean = false
             cache.applyMembershipsSnapshot(response.memberships)
         }
 
-        // filtering out ACTIVE memberships only verified by the correct contract
+        // filtering out ACTIVE memberships
         val membershipsToReturn : Map<Party, StateAndRef<MembershipState<Any>>> = cache.getMemberships(bno)
                 .filterValues { it.state.data.isActive() }
-                .filterValues { it.state.contract == configuration.membershipContractName() }
 
         // filtering out inactive memberships form the result list (the ones that are missing from the network map)
         return if (filterOutMissingFromNetworkMap) membershipsToReturn.filterOutMissingFromNetworkMap() else membershipsToReturn
@@ -72,7 +69,7 @@ class GetMembershipsFlow(bno : Party, private val forceRefresh : Boolean = false
 }
 
 @StartableByRPC
-class GetMembersFlow(bno : Party, private val forceRefresh : Boolean = false, private val filterOutNotExisting : Boolean = true) : BusinessNetworkAwareInitiatingFlow<List<PartyAndMembershipMetadata<Any>>>(bno) {
+open class GetMembersFlow(bno : Party, private val forceRefresh : Boolean = false, private val filterOutNotExisting : Boolean = true) : BusinessNetworkAwareInitiatingFlow<List<PartyAndMembershipMetadata<Any>>>(bno) {
     companion object {
         object GOING_TO_CACHE_OR_BNO : ProgressTracker.Step("Going to cache or BNO for membership data")
 

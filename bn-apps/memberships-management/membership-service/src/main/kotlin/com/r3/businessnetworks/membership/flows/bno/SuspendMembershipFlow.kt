@@ -1,7 +1,6 @@
 package com.r3.businessnetworks.membership.flows.bno
 
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.businessnetworks.commons.SupportFinalityFlow
 import com.r3.businessnetworks.membership.flows.bno.service.BNOConfigurationService
 import com.r3.businessnetworks.membership.flows.bno.service.DatabaseService
 import com.r3.businessnetworks.membership.flows.bno.support.BusinessNetworkOperatorFlowLogic
@@ -19,9 +18,9 @@ import net.corda.core.utilities.ProgressTracker
  * A flow that is used by BNO to suspend a membership. BNO can unilaterally suspend memberships, for example as a result of the governance
  * action.
  */
-@InitiatingFlow
 @StartableByRPC
-class SuspendMembershipFlow(val membership : StateAndRef<MembershipState<Any>>) : BusinessNetworkOperatorFlowLogic<SignedTransaction>() {
+@InitiatingFlow(version = 2)
+open class SuspendMembershipFlow(val membership : StateAndRef<MembershipState<Any>>) : BusinessNetworkOperatorFlowLogic<SignedTransaction>() {
 
     @Suspendable
     override fun call() : SignedTransaction {
@@ -32,17 +31,21 @@ class SuspendMembershipFlow(val membership : StateAndRef<MembershipState<Any>>) 
         // build suspension transaction
         val builder = TransactionBuilder(notary)
                 .addInputState(membership)
-                .addOutputState(membership.state.data.copy(status = MembershipStatus.SUSPENDED, modified = serviceHub.clock.instant()), configuration.membershipContractName())
+                .addOutputState(membership.state.data.copy(status = MembershipStatus.SUSPENDED, modified = serviceHub.clock.instant()))
                 .addCommand(MembershipContract.Commands.Suspend(), ourIdentity.owningKey)
         builder.verify(serviceHub)
         val selfSignedTx = serviceHub.signInitialTransaction(builder)
 
-        val finalisedTx = subFlow(SupportFinalityFlow(selfSignedTx) {
-            listOf(initiateFlow(membership.state.data.member))
-        })
+        val memberSession = initiateFlow(membership.state.data.member)
+
+        val finalisedTx = if (memberSession.getCounterpartyFlowInfo().flowVersion == 1) {
+            subFlow(FinalityFlow(selfSignedTx))
+        } else {
+            subFlow(FinalityFlow(selfSignedTx, memberSession))
+        }
 
         val dbService = serviceHub.cordaService(DatabaseService::class.java)
-        val suspendedMembership = dbService.getMembership(membership.state.data.member, ourIdentity, configuration.membershipContractName())!!
+        val suspendedMembership = dbService.getMembership(membership.state.data.member, ourIdentity)!!
 
         // notify other members about suspension
         subFlow(NotifyActiveMembersFlow(OnMembershipChanged(suspendedMembership)))
@@ -61,7 +64,7 @@ class SuspendMembershipFlow(val membership : StateAndRef<MembershipState<Any>>) 
  */
 @InitiatingFlow
 @StartableByRPC
-class SuspendMembershipForPartyFlow(val party : Party) : BusinessNetworkOperatorFlowLogic<SignedTransaction>() {
+open class SuspendMembershipForPartyFlow(val party : Party) : BusinessNetworkOperatorFlowLogic<SignedTransaction>() {
 
     companion object {
         object LOOKING_FOR_MEMBERSHIP_STATE : ProgressTracker.Step("Looking for party's membership state")

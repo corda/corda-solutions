@@ -1,7 +1,6 @@
 package com.r3.businessnetworks.membership.flows.bno
 
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.businessnetworks.commons.SupportFinalityFlow
 import com.r3.businessnetworks.membership.flows.bno.service.BNOConfigurationService
 import com.r3.businessnetworks.membership.flows.bno.service.DatabaseService
 import com.r3.businessnetworks.membership.flows.bno.support.BusinessNetworkOperatorFlowLogic
@@ -22,9 +21,9 @@ import net.corda.core.utilities.ProgressTracker
  *
  * @param membership membership state to be activated
  */
-@InitiatingFlow
 @StartableByRPC
-class ActivateMembershipFlow(val membership : StateAndRef<MembershipState<Any>>) : BusinessNetworkOperatorFlowLogic<SignedTransaction>() {
+@InitiatingFlow(version = 2)
+open class ActivateMembershipFlow(val membership : StateAndRef<MembershipState<Any>>) : BusinessNetworkOperatorFlowLogic<SignedTransaction>() {
 
     @Suspendable
     override fun call() : SignedTransaction {
@@ -36,18 +35,21 @@ class ActivateMembershipFlow(val membership : StateAndRef<MembershipState<Any>>)
         val notary = configuration.notaryParty()
         val builder = TransactionBuilder(notary)
                 .addInputState(membership)
-                .addOutputState(membership.state.data.copy(status = MembershipStatus.ACTIVE, modified = serviceHub.clock.instant()), configuration.membershipContractName())
+                .addOutputState(membership.state.data.copy(status = MembershipStatus.ACTIVE, modified = serviceHub.clock.instant()), MembershipContract.CONTRACT_NAME)
                 .addCommand(MembershipContract.Commands.Activate(), ourIdentity.owningKey)
         builder.verify(serviceHub)
         val selfSignedTx = serviceHub.signInitialTransaction(builder)
 
-        val stx = subFlow(SupportFinalityFlow(selfSignedTx) {
-            listOf(initiateFlow(membership.state.data.member))
-        })
+        val memberSession = initiateFlow(membership.state.data.member)
+        val stx = if (memberSession.getCounterpartyFlowInfo().flowVersion == 1) {
+            subFlow(FinalityFlow(selfSignedTx))
+        } else {
+            subFlow(FinalityFlow(selfSignedTx, listOf(memberSession)))
+        }
 
         // We should notify members about changes with the ACTIVATED membership
         val databaseService = serviceHub.cordaService(DatabaseService::class.java)
-        val activatedMembership = databaseService.getMembership(membership.state.data.member, ourIdentity, configuration.membershipContractName())!!
+        val activatedMembership = databaseService.getMembership(membership.state.data.member, ourIdentity)!!
         subFlow(NotifyActiveMembersFlow(OnMembershipChanged(activatedMembership)))
 
         return stx
@@ -61,7 +63,7 @@ class ActivateMembershipFlow(val membership : StateAndRef<MembershipState<Any>>)
  */
 @InitiatingFlow
 @StartableByRPC
-class ActivateMembershipForPartyFlow(val party : Party) : BusinessNetworkOperatorFlowLogic<SignedTransaction>() {
+open class ActivateMembershipForPartyFlow(val party : Party) : BusinessNetworkOperatorFlowLogic<SignedTransaction>() {
 
     companion object {
         object LOOKING_FOR_MEMBERSHIP_STATE : ProgressTracker.Step("Looking for party's membership state")

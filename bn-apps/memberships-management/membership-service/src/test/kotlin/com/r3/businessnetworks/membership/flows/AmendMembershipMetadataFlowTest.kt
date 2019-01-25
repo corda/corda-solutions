@@ -4,9 +4,11 @@ import com.r3.businessnetworks.membership.flows.bno.OnMembershipChanged
 import com.r3.businessnetworks.membership.states.MembershipContract
 import com.r3.businessnetworks.membership.states.MembershipState
 import com.r3.businessnetworks.membership.states.SimpleMembershipMetadata
+import com.r3.businessnetworks.membership.testextensions.AmendMembershipMetadataFlowResponderWithCustomVerification
 import net.corda.core.flows.FlowException
 import org.junit.Test
 import kotlin.test.assertEquals
+import kotlin.test.fail
 
 class AmendMembershipMetadataFlowTest : AbstractFlowTest(
         numberOfBusinessNetworks = 1,
@@ -27,7 +29,7 @@ class AmendMembershipMetadataFlowTest : AbstractFlowTest(
         val newMetadata = (existingMembership.state.data.membershipMetadata as SimpleMembershipMetadata).copy(role = "Some other role")
 
         val partiallySignedTx = runAmendMetadataFlow(bnoNode, participantNode, newMetadata)
-        val allSignedTx = allTransactions(participantNode).single { it.id ==  partiallySignedTx.id}
+        val allSignedTx = allTransactions(participantNode).single { it.id == partiallySignedTx.id }
         allSignedTx.verifyRequiredSignatures()
 
         val outputWithContract = allSignedTx.tx.outputs.single()
@@ -45,7 +47,6 @@ class AmendMembershipMetadataFlowTest : AbstractFlowTest(
         assertEquals(expectedNotifications, NotificationsCounterFlow.NOTIFICATIONS)
     }
 
-
     @Test
     fun `non members should not be able to amend their metadata`() {
         val bnoNode = bnoNodes.first()
@@ -55,9 +56,27 @@ class AmendMembershipMetadataFlowTest : AbstractFlowTest(
         runActivateMembershipFlow(bnoNode, memberNode.identity())
 
         try {
-            runAmendMetadataFlow(bnoNode, memberNode, SimpleMembershipMetadata(role="Some role"))
+            runAmendMetadataFlow(bnoNode, memberNode, SimpleMembershipMetadata(role = "Some role"))
         } catch (e : FlowException) {
             assert("${memberNode.identity()} is not a member" == e.message)
+        }
+    }
+
+    @Test
+    fun `should be able to perform custom metadata verification`() {
+        val bnoNode = bnoNodes.first()
+        bnoNode.registerInitiatedFlow(AmendMembershipMetadataFlowResponderWithCustomVerification::class.java)
+        runRequestAndActivateMembershipFlow(bnoNode, participantsNodes)
+
+        val participantNode = participantsNodes.first()
+        val existingMembership = getMembership(participantNode, participantNode.identity(), bnoNode.identity())
+        val newMetadata = (existingMembership.state.data.membershipMetadata as SimpleMembershipMetadata).copy(role = "Some other role")
+
+        try {
+            runAmendMetadataFlow(bnoNode, participantNode, newMetadata)
+            fail()
+        } catch (ex : FlowException) {
+            assertEquals("Invalid metadata", ex.message)
         }
     }
 }

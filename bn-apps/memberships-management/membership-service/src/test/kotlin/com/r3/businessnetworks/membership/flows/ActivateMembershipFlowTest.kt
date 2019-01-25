@@ -4,6 +4,7 @@ import co.paralleluniverse.fibers.Suspendable
 import com.r3.businessnetworks.membership.flows.bno.ActivateMembershipFlow
 import com.r3.businessnetworks.membership.flows.bno.OnMembershipChanged
 import com.r3.businessnetworks.membership.flows.bno.service.BNOConfigurationService
+import com.r3.businessnetworks.membership.testextensions.AutoApprovingMembershipFlow
 import com.r3.businessnetworks.membership.flows.member.support.BusinessNetworkAwareInitiatedFlow
 import com.r3.businessnetworks.membership.states.MembershipContract
 import net.corda.core.flows.FlowLogic
@@ -79,8 +80,9 @@ class ActivateMembershipFlowTest : AbstractFlowTest(
     @Test
     fun `membership can be auto activated`() {
         val bnoNode = bnoNodes.first()
+        bnoNode.registerInitiatedFlow(AutoApprovingMembershipFlow::class.java)
         val bnoConfiguration = bnoNode.services.cordaService(BNOConfigurationService::class.java)
-        bnoConfiguration.reloadConfigurationFromFile(fileFromClasspath("membership-service-with-auto-approver.conf"))
+        bnoConfiguration.reloadConfigurationFromFile(fileFromClasspath("membership-service.conf"))
         val participantNode = participantsNodes.first()
 
         runRequestMembershipFlow(bnoNode, participantNode)

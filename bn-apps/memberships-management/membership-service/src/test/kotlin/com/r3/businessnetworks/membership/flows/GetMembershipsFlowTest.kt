@@ -72,24 +72,6 @@ class GetMembershipsFlowTest : AbstractFlowTest(
     }
 
     @Test
-    fun `GetMembershipsFlow should not return memberships verified by a wrong contract`() {
-        val bnoNode = bnoNodes[0]
-
-        val participant1 = participantsNodes[0]
-        val participant2 = participantsNodes[1]
-
-        runRequestAndActivateMembershipFlow(bnoNode, listOf(participant2, participant1))
-
-        // reloading configuration with a wrong contract name. All membership states verified by MembershipContract will be rejected
-        participant2.services.cordaService(MemberConfigurationService::class.java).reloadConfigurationFromFile(fileFromClasspath("membership-service-with-fake-contract-name.conf"))
-
-        val memberships = runGetMembershipsListFlow(bnoNode, participant2)
-
-        // participant1's membership shouldn't be on the list as it is validated by a wrong contract
-        assertNull(memberships[participant1.identity()])
-    }
-
-    @Test
     fun `only active members should be able to use this flow`() {
         val bnoNode = bnoNodes.first()
 
@@ -233,10 +215,6 @@ class GetMembershipsFlowTest : AbstractFlowTest(
         // making sure that the cache gets repopulated again
         val memberships = runGetMembershipsListFlow(bnoNode, suspendedMember, true)
         assertEquals(participantsNodes.identities().toSet(), memberships.map { it.value.state.data.member }.toSet())
-
-        // verifying memberships list for each party
-        participantsNodes.forEach { participantNode ->
-        }
     }
 
 }
