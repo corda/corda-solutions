@@ -16,7 +16,7 @@ import net.corda.core.serialization.CordaSerializable
  * @param updated last updated timestamp
  */
 @CordaSerializable
-data class CordappVersionInfo(val group : String, val name : String, val version : String, val updated : Long = 0L)
+data class CordappVersionInfo(val group : String, val name : String, val version : String, val updated : Long = System.currentTimeMillis())
 
 /**
  * Reports a version of a cordapp to the BNO

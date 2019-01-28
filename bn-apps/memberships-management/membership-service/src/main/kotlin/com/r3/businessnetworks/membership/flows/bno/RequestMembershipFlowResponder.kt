@@ -15,8 +15,8 @@ import net.corda.core.flows.FlowSession
 import net.corda.core.flows.InitiatedBy
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.unwrap
-import org.hibernate.Transaction
 import java.sql.SQLException
+import javax.persistence.PersistenceException
 
 /**
  * The flow issues a PENDING membership state onto the ledger. After the state is issued, the BNO is supposed to perform
@@ -44,7 +44,7 @@ open class RequestMembershipFlowResponder(val session : FlowSession) : BusinessN
         // creating a pending request to make sure that no multiple on-boarding request can be in-flight in the same time
         try {
             databaseService.createPendingMembershipRequest(session.counterparty)
-        } catch (e : SQLException) {
+        } catch (e : PersistenceException) {
             logger.warn("Error when trying to create a pending membership request", e)
             throw FlowException("Membership request already exists")
         }
@@ -77,7 +77,7 @@ open class RequestMembershipFlowResponder(val session : FlowSession) : BusinessN
             try {
                 logger.info("Removing the pending request from the database")
                 databaseService.deletePendingMembershipRequest(session.counterparty)
-            } catch (e : SQLException) {
+            } catch (e : PersistenceException) {
                 logger.warn("Error when trying to delete pending membership request", e)
             }
         }
