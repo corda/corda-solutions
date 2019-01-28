@@ -46,23 +46,26 @@ class BillingContract : Contract {
                 "There should be no inputs of type BillingChipState in ChipOff transaction" using (tx.inputsOfType<BillingChipState>().isEmpty())
                 val inputBillingState = tx.inputsOfType<BillingState>().single()
                 val outputBillingState = tx.outputsOfType<BillingState>().single()
-                val outputChipState = tx.outputsOfType<BillingChipState>().single()
-                // equality
+                val outputChipStates = tx.outputsOfType<BillingChipState>()
+
                 "Issued amounts of billing states should be equal" using (inputBillingState.issued == outputBillingState.issued)
                 "Issuer of billing states should be equal" using (inputBillingState.issuer == outputBillingState.issuer)
                 "Linear id of billing states should be equal" using (inputBillingState.linearId == outputBillingState.linearId)
                 "Expiry date of billing states should be equal" using (inputBillingState.expiryDate == outputBillingState.expiryDate)
                 "Owner of billing states should be equal" using (inputBillingState.owner == outputBillingState.owner)
-                "Owner of chip state should be the same as of billing state" using (outputChipState.owner == outputBillingState.owner)
-                "Linear id of the billing state should match the chip state" using (outputBillingState.linearId == outputChipState.billingStateLinearId)
-
-                //amounts
                 "Spent amount of the output billing state should be positive" using (outputBillingState.spent >= 0L)
-                "Amount of the billing chip state should be positive" using (outputChipState.amount > 0L)
-                "Spent amount of the output state should be incremented on chip off value" using (outputBillingState.spent == inputBillingState.spent + outputChipState.amount)
-
-                //signers and participants
                 "ChipOff transaction should be signed only by the owner" using (command.signers.single() == outputBillingState.owner.owningKey)
+
+
+                var totalAmount = 0L
+                outputChipStates.forEach {outputChipState ->
+                    "Owner of chip state should be the same as of billing state" using (outputChipState.owner == outputBillingState.owner)
+                    "Linear id of the billing state should match the chip state" using (outputBillingState.linearId == outputChipState.billingStateLinearId)
+                    "Amount of the billing chip state should be positive" using (outputChipState.amount > 0L)
+                    totalAmount += outputChipState.amount
+                }
+
+                "Spent amount of the output state should be incremented on chip off value" using (outputBillingState.spent == inputBillingState.spent + totalAmount)
 
                 // spent constraint
                 if (outputBillingState.issued > 0L) {
