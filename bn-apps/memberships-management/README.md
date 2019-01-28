@@ -1,6 +1,6 @@
 ![Corda](https://www.corda.net/wp-content/uploads/2016/11/fg005_corda_b.png)
 
-**Please see [corda-v4](https://github.com/corda/corda-solutions/tree/corda-v4) branch for Corda 4.0-ready implementation.**
+**!!! Please see [corda-v4](https://github.com/corda/corda-solutions/tree/corda-v4/bn-apps/memberships-management) branch for Corda 4.0-ready implementation. !!!**
 
 # Business Network Membership Service (BNMS)
 
