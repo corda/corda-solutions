@@ -1,5 +1,7 @@
 ![Corda](https://www.corda.net/wp-content/uploads/2016/11/fg005_corda_b.png)
 
+**!!! Please see [corda-v4](https://github.com/corda/corda-solutions/tree/corda-v4/bn-apps/memberships-management) branch for Corda 4.0-ready implementation. !!!**
+
 # Business Network Membership Service (BNMS)
 
 *Contents of this article assume the reader's familiarity with the concepts of Business Networks and Business Network Operator. Please see [this page](https://solutions.corda.net/business-networks/intro.html) for more information on this topic.*
@@ -18,7 +20,7 @@ BNMS provides the following API extension points:
 
 Please see the [design doc](./design/design.md) for more information about technical design considerations.
 
-Please see [FullBNMSFlowDemo](./membership-service/src/test/kotlin/net/corda/businessnetworks/membership/FullBNMSFlowDemo.kt) for a detailed how-to-use example.
+Please see [FullBNMSFlowDemo](./membership-service/src/test/kotlin/com/r3/businessnetworks/membership/FullBNMSFlowDemo.kt) for a detailed how-to-use example.
 
 ## How to add BNMS to your project
 
@@ -48,7 +50,7 @@ BNMS consists of 2 CorDapps:
 
 ### States
 
-Memberships are represented with a [MembershipState](./membership-service-contracts-and-states/src/main/kotlin/net/corda/businessnetworks/membership/states/Membership.kt). Users can associate a custom metadata with their `MembershipState` via `membershipMetadata` field. `MembershipState` is generic and doesn't enforce any restrictions over the type of the metadata.
+Memberships are represented with a [MembershipState](./membership-service-contracts-and-states/src/main/kotlin/com/r3/businessnetworks/membership/states/Membership.kt). Users can associate a custom metadata with their `MembershipState` via `membershipMetadata` field. `MembershipState` is generic and doesn't enforce any restrictions over the type of the metadata.
 
 `MembershipState` can exist in the following statuses: 
 * `PENDING` - the very first status for all newly issued memberships. To be able to transact on the Business Network `PENDING` memberships need to be activated first.
@@ -57,7 +59,7 @@ Memberships are represented with a [MembershipState](./membership-service-contra
 
 ### Membership contract
 
-`MembershipState` evolution is curated by [MembershipContract](./membership-service-contracts-and-states/src/main/kotlin/net/corda/businessnetworks/membership/states/Membership.kt). By default `MembershipContract` verifies evolution of `MembershipState`s only and doesn't verify an evolution of memberships metadata, as it's a generic parameter.   
+`MembershipState` evolution is curated by [MembershipContract](./membership-service-contracts-and-states/src/main/kotlin/com/r3/businessnetworks/membership/states/Membership.kt). By default `MembershipContract` verifies evolution of `MembershipState`s only and doesn't verify an evolution of memberships metadata, as it's a generic parameter.   
 
 Membership metadata evolution can be verified in the following ways:
 * In the responding flows, by overriding them at the BNO's side (_off-ledger verification_). Will be introduced in Corda 4.
@@ -97,7 +99,7 @@ CorDapp configuration is red from `cordapps/config/membership-service.conf` file
 bnoWhitelist = ["O=BNO,L=New York,C=US", "O=BNO,L=London,C=GB"]
 
 // Name of the contract to validate membership transactions with. 
-// Defaults to "net.corda.businessnetworks.membership.states.MembershipContract" if not specified
+// Defaults to "com.r3.businessnetworks.membership.states.MembershipContract" if not specified
 membershipContractName = "com.app.MyMembershipContract"
 
 ``` 
@@ -108,7 +110,7 @@ membershipContractName = "com.app.MyMembershipContract"
 notaryName = "O=Notary,L=Longon,C=GB"
 
 // Name of the contract to validate membership transactions with. 
-// Defaults to "net.corda.businessnetworks.membership.states.MembershipContract" if not specified
+// Defaults to "com.r3.businessnetworks.membership.states.MembershipContract" if not specified
 membershipContractName = "com.app.MyMembershipContract"
 
 // Name of the class that implements MembershipAutoAcceptor interface. Optional parameter.
