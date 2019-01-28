@@ -2,53 +2,53 @@
 
 # Business Network Membership Service (BNMS)
 
-*Contents of this article assume the reader's familiarity with the concepts of Business Networks and Business Network Operator. Please see [this page](https://solutions.corda.net/business-networks/intro.html) for more information on this topic.*
+*Contents of this article assume the reader's familiarity with the concepts of *Business Networks*. Please see [this page](https://solutions.corda.net/business-networks/intro.html) for more information.*
 
 Business Network Membership Service aims to solve the following problems:
-* On-boarding of new members to a business network. 
-* Suspension of members from a business network.
-* Distribution of a membership list to the business network members.
+* On-boarding of new members to a Business Network. 
+* Suspension of members from a Business Network.
+* Distribution of a membership list to the Business Network members.
 * Association of a custom metadata with a node's identity.
-* Participation in multiple business networks by a single node.
+* Participation in multiple Business Networks by a single node.
 
 BNMS provides the following API extension points:
-* Custom membership metadata. Nodes can associate a custom metadata with their memberships. The metadata might contain such fields as role, address, displayed name, email and etc. The metadata can be different for different business networks. It can be even represented with different classes. Associated metadata gets distributed to other Business Network members as a part of general membership distribution mechanism.  
-* Automatic acceptance of memberships requests. BNOs can implement a custom verification code that would be run against the incoming membership requests to determine whether they are eligible for auto-activation. Auto-activated members will be able to start transacting straight-away (otherwise a separate Activation step is required).
-* Custom membership metadata verification. Custom verifications can be implemented via overriding `RequestedMembershipFlow` and `AmendMembershipMetadataFlow` responders.    
+* Custom Membership Metadata. Nodes can associate a custom metadata with their membership states. Membership Metadata might contain such fields as *role, address, displayed name, email* and other used-defined fields. Membership Metadata can also be represented with different classes for different business networks. Associated metadata is distributed to Business Network members as a part of the *general membership distribution mechanism*.  
+* Automatic acceptance of memberships requests. BNOs can implement a custom verification code that would be run against every incoming membership request to determine whether it's eligible for auto-activation. Auto-activated members can start transacting on the Business Network straight-away without a need for a separate membership activation step. Please see [Membership Auto Approvals](#membership-auto-approval) section.
+* Custom membership metadata verification. Custom verification can be added by [overriding](https://docs.corda.net/head/flow-overriding.html) `RequestMembershipFlowResponder` and `AmendMembershipMetadataFlowResponder` flows (please see further sections). Please see [Custom Membership Metadata Verification](#custom-membership-metadata-verification) section.   
 
-Please see the [design doc](./design/design.md) for more information about technical design considerations.
+Please see the [design doc](./design/design.md) for more information about the technical design considerations.
 
-Please see [FullBNMSFlowDemo](./membership-service/src/test/kotlin/net/corda/businessnetworks/membership/FullBNMSFlowDemo.kt) for a detailed how-to-use example.
+Please see [FullBNMSFlowDemo](./membership-service/src/test/kotlin/com/r3/businessnetworks/membership/flows/FullBNMSFlowDemo.kt) for a detailed how-to-use example.
 
 ## How to add BNMS to your project
 
-Add the following lines to `repositories` and `dependencies` blocks of your `build.gradle` file:
+Add the following lines to the `repositories` and `dependencies` blocks of your `build.gradle` file:
 
 ```
     repositories {
         maven {
-          url 'http://ci-artifactory.corda.r3cev.com/artifactory/corda-solutions-releases'
+          url 'http://ci-artifactory.corda.r3cev.com/artifactory/corda-solutions-dev'
         }
     }
 
 
     dependencies {
-        cordapp "net.corda.businessnetworks:membership-service:1.0"
-        cordapp "net.corda.businessnetworks:membership-service-contracts-and-states:1.0"
+        cordapp "com.r3.businessnetworks:membership-service:2.0-SNAPSHOT"
+        cordapp "com.r3.businessnetworks:membership-service-contracts-and-states:2.0-SNAPSHOT"
     }
 ```
 
 ## Structure
 
-BNMS contains implementations of flows, states and contracts to model memberships on a Business Network. BNO and members are required to have both of the CorDapps installed.
-
-BNMS consists of 2 CorDapps:
+BNMS contains implementations of flows, states and contracts to model memberships on a Business Network. It consists of 2 CorDapps:
 * `membership-service-contracts-and-states` - contracts and states
 * `membership-service` - flows for both BNO and member CorDapps 
 
+*Both CorDapps have to be installed on the nodes of BNOs and members.*
+
 ### States
 
-Memberships are represented with a [MembershipState](./membership-service-contracts-and-states/src/main/kotlin/net/corda/businessnetworks/membership/states/Membership.kt). Users can associate a custom metadata with their `MembershipState` via `membershipMetadata` field. `MembershipState` is generic and doesn't enforce any restrictions over the type of the metadata.
+Memberships are represented with a [MembershipState](./membership-service-contracts-and-states/src/main/kotlin/com/r3/businessnetworks/membership/states/Membership.kt). Users can associate a custom metadata with their `MembershipState` via `membershipMetadata` field. `MembershipState` is generic and doesn't enforce any restrictions over the type of the metadata.
 
 `MembershipState` can exist in the following statuses: 
 * `PENDING` - the very first status for all newly issued memberships. To be able to transact on the Business Network `PENDING` memberships need to be activated first.
@@ -57,13 +57,13 @@ Memberships are represented with a [MembershipState](./membership-service-contra
 
 ### Membership contract
 
-`MembershipState` evolution is curated by [MembershipContract](./membership-service-contracts-and-states/src/main/kotlin/net/corda/businessnetworks/membership/states/Membership.kt). By default `MembershipContract` verifies evolution of `MembershipState`s only and doesn't verify an evolution of memberships metadata, as it's a generic parameter.   
+`MembershipState` evolution is curated by [MembershipContract](./membership-service-contracts-and-states/src/main/kotlin/com/r3/businessnetworks/membership/states/Membership.kt). `MembershipContract` verifies the evolution of `MembershipState`s only without verifying Membership Metadata, as it's a generic parameter.   
 
-Membership metadata evolution can be verified by [overriding responder flows](https://docs.corda.net/head/flow-overriding.html) at the BNO side.  
+Membership Metadata evolution can be verified by [overriding responder flows](https://docs.corda.net/head/flow-overriding.html) at the BNO side. Please see [Custom Membership Metadata Verification](#custom-membership-metadata-verification) section for more information.  
 
 ### Flows
 
-BNMS flows are split into 2 packages: `bno` and `member` (with the flows for BNOs and members respectively).
+BNMS flows are split into two packages: `bno` and `member` (with the flows for BNOs and members respectively).
 
 Flows that can be invoked by members: 
 * `RequestMembershipFlow` - to request a membership. 
@@ -78,11 +78,7 @@ Activation and suspension transactions don't require the member's signature. BNO
 
 ## Multiple Business Networks
 
-BNMS provides a support for multiple business networks. Business Networks are uniquely identified by BNO's `Party` object. All flows that assume any member -> BNO interactions take BNO's identity as a mandatory parameter.   
-
-## Membership Auto Approval
-
-If you don't want to manually activate every membership request and would like to instead automate the process then implement the interface `MembershipAutoAcceptor` and set `membershipAutoAcceptor` property in BNO's configuration file.
+BNMS provides a support for multiple business networks. Business Networks are uniquely identified by BNO's `Party` object. All flows that assume any member -> BNO interactions require BNO's identity as a mandatory parameter.   
 
 ## Configuration 
 
@@ -93,31 +89,18 @@ CorDapp configuration is red from `cordapps/config/membership-service.conf` file
 ```hocon
 // whitelist of accpted BNOs. Attempt to communicate to not whitelisted BNO would result into an exception
 bnoWhitelist = ["O=BNO,L=New York,C=US", "O=BNO,L=London,C=GB"]
-
-// Name of the contract to validate membership transactions with. 
-// Defaults to "net.corda.businessnetworks.membership.states.MembershipContract" if not specified
-membershipContractName = "com.app.MyMembershipContract"
-
 ``` 
 
 ### BNO configuration
 ```hocon
 // Name of the Notary
 notaryName = "O=Notary,L=Longon,C=GB"
-
-// Name of the contract to validate membership transactions with. 
-// Defaults to "net.corda.businessnetworks.membership.states.MembershipContract" if not specified
-membershipContractName = "com.app.MyMembershipContract"
-
-// Name of the class that implements MembershipAutoAcceptor interface. Optional parameter.
-membershipAutoAcceptor = "com.app.MyMembershipAutoAcceptor"
-
 ```
 ## Designing your flows for Business Networks
 
-As Business Networks is an *application level* concept, memberships have to be verified manually inside the flows of your CorDapp. *Corda does not perform any membership checks by itself*.
+As Business Networks is an *application level* concept, memberships *have to* be verified manually inside the flows of your CorDapp. **Corda does not perform any membership checks at the platform level**.
 
-Logic for a counterparty's membership verification can be found in `BusinessNetworkAwareInitiatedFlow`:
+An example of logic for a counterparty's membership verification can be found in [BusinessNetworkAwareInitiatedFlow](./membership-service/src/main/kotlin/com/r3/businessnetworks/membership/flows/member/support/BusinessNetworkAwareInitiatedFlow.kt):
 
 ```kotlin
 /**
@@ -151,15 +134,48 @@ abstract class BusinessNetworkAwareInitiatedFlow<out T>(protected val flowSessio
 }
 ```
 
-When verifying a membership it's important to make sure that:
-* The membership actually exist
-* The membership is active
-* The membership is verified by the expected contract
-
-The easiest way of making your flow *"business network aware"* is to extend from `BusinessNetworkAwareInitiatedFlow`. Otherwise a counterparty's membership verification would have to be performed manually.
-
-> It's important to keep in mind that applications which are designed for Business Networks should be taking the list of available peers from their membership service instead of the Network Map (for example to populate a ComboBox in the UI). 
+The easiest way of making your flow *"business network aware"* is to extend from `BusinessNetworkAwareInitiatedFlow`. 
 
 > Please note that during development you can take an advantage of extending from `BusinessNetworkOperatorFlowLogic` and `BusinessNetworkOperatorInitiatedFlow` if you are developing custom flows for BNO.
 
- 
+## Custom Membership Metadata Verification
+
+To implement custom verification of Membership Metadata: 
+1. Override `RequestMembershipFlowResponder` and `AmendMembershipMetadataFlowResponder` flows.
+2. Add your custom verification logic to the `verifyTransaction` method.
+
+For example:
+```kotlin
+@InitiatedBy(RequestMembershipFlow::class)
+class RequestMembershipFlowResponderWithMetadataVerification(session : FlowSession) : RequestMembershipFlowResponder(session) {
+    @Suspendable
+    override fun verifyTransaction(builder : TransactionBuilder) {
+        super.verifyTransaction(builder)
+        val membership = builder.outputStates().filter { it.data is MembershipState<*> }.single().data as MembershipState<MyMembershipMetadata>
+        if (membership.membershipMetadata.role != "BORROWER") {
+            throw FlowException("Invalid role ${membership.membershipMetadata.role}")
+        }
+    }
+}
+```
+
+## Membership Auto-Approval
+
+To implement automatic membership approvals:
+1. Override `RequestMembershipFlowResponder` flow.
+2. Add your custom verification logic to the `activateRightAway` method.
+
+For example:
+```kotlin
+@InitiatedBy(RequestMembershipFlow::class)
+class RequestMembershipFlowResponderWithAutoApproval(session : FlowSession) : RequestMembershipFlowResponder(session) {
+
+    @Suspendable
+    override fun activateRightAway(membershipState : MembershipState<Any>, configuration : BNOConfigurationService) : Boolean {
+        // Add your custom request verification logic here.
+        // You can call an external system, verify the request against a pre-configured whitelist and etc.
+        // For example to approve *any* incoming membership request - just return *true* from this method.
+        return true
+    }
+}
+``` 
