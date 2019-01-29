@@ -93,6 +93,26 @@ The diagram can show the privacy chains of multiple Parties using different colo
 
   In the same way that we need to shows 'other stuff that happened before this point' we also need to show 'other stuff that happens after this point'. We do this using a 'Privacy Chain Out' marker.
 
+-------------------------------
+Expressing Privacy requirements
+-------------------------------
+
+In order to reason about privacy, we need to be able to express which parties should be able to see which data.
+
+We can do this using a simple mapping between the Actors in a design and the aggregate data set for the Cordapp. taking the example of a syndicated loan, the privacy map might look a bit like this:
+
+
+.. image:: ../resources/privacy/CMN2_P_privacy_map.png
+  :width: 80%
+  :align: center
+
+
+Privacy maps can get a little more complicated when we have to consider the visibility of Actors involved in not only this transaction but prior transactions which gave rise to the input states for this transaction. For example, in the Previous Delivery vs Payment example, the Privacy map might look like this:
+
+
+.. image:: ../resources/privacy/CMN2_P_privacy_map_bond_cash.png
+  :width: 90%
+  :align: center
 
 
 --------------------------------
@@ -103,7 +123,7 @@ In the same way as with a paper contract, nothing stops a Party send any other P
 
 We need to consider both the current Transactions and the resolved chains of Transactions. In current Transaction, we can use visibility constraints to put restrictions on who is allowed to be a participant on the Transaction.
 
-For the Transaction history, 
+For the Transaction history,
 
 -----------------------
 Confidential Identities
