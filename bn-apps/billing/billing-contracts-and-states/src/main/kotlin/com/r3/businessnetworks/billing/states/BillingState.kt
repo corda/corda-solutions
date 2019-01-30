@@ -67,20 +67,20 @@ class BillingContract : Contract {
         val outputChipStates = tx.outputsOfType<BillingChipState>()
 
         "Input and output BillingStates should be equal except the `spent` field" using (inputBillingState == outputBillingState.copy(spent = inputBillingState.spent))
-        "Only owner should be a signer" using (command.signers.single() == outputBillingState.owner.owningKey)
+        "Only owner should be a signer" using (command.signers.size ==1 && command.signers.single() == outputBillingState.owner.owningKey)
 
         var totalAmount = 0L
         outputChipStates.forEach {outputChipState ->
-            "Owner of ChipStates should match the BillingStates" using (outputChipState.owner == outputBillingState.owner)
-            "Linear id ChipStates should match the BillingStates" using (outputBillingState.linearId == outputChipState.billingStateLinearId)
-            "Amount of ChipStates should be positive" using (outputChipState.amount > 0L)
+            "Owner of BillingChips should match the BillingStates" using (outputChipState.owner == outputBillingState.owner)
+            "Issuer of BillingChips should match the BillingStates" using (outputChipState.issuer == outputBillingState.issuer)
+            "Linear id BillingChips should match the BillingStates" using (outputBillingState.linearId == outputChipState.billingStateLinearId)
+            "Amount of BillingChips should be positive" using (outputChipState.amount > 0L)
             val previousAmount = totalAmount
             totalAmount += outputChipState.amount
             "Total chip off value should not exceed Long.MAX_VALUE" using (totalAmount > previousAmount)
         }
 
         "Spent amount of the output BillingState should be incremented on the total of the chip off value" using (outputBillingState.spent == inputBillingState.spent + totalAmount)
-        "Total chip off value should not overflow spent amount" using (outputBillingState.spent > inputBillingState.spent)
 
         // spent constraint
         if (outputBillingState.issued > 0L) {
@@ -92,44 +92,31 @@ class BillingContract : Contract {
         }
     }
 
-
-
-
-
     private fun verifyUseChipTransaction(tx : LedgerTransaction, commands : List<Command<BillingContract.Commands>>) = requireThat {
         "UseChip transaction can contain only UseChip commands" using (commands.find { it.value !is Commands.UseChip } == null)
+        "UseChip transaction should not have BillingStates in inputs" using (tx.inputsOfType<BillingState>().isEmpty())
+        "UseChip transaction should not have BillingStates in outputs" using (tx.outputsOfType<BillingState>().isEmpty())
+        "UseChip transaction should not have BillingChipState in outputs" using (tx.outputsOfType<BillingChipState>().isEmpty())
 
-        val spendCommands = commands.map { Command(it.value as Commands.UseChip, it.signers) }
+        val commandsByOwner = commands.map {
+            val useChipCommand = it.value as Commands.UseChip
+            "UseChip command owner should be the only signer" using (it.signers.size == 1 && useChipCommand.owner.owningKey == it.signers.single())
+            useChipCommand.owner to Command(useChipCommand, it.signers)
+        }.toMap()
 
-        "UseChip transaction should not have BillingStates as inputs" using (tx.inputsOfType<BillingState>().isEmpty())
-        "UseChip transaction should not have BillingStates as outputs" using (tx.outputsOfType<BillingState>().isEmpty())
-        "UseChip transaction should not have BillingChipState as outputs" using (tx.outputsOfType<BillingChipState>().isEmpty())
+        val billingStateByLinearId = tx.referenceInputsOfType<BillingState>().map { it.linearId to it }.toMap()
 
-        val chipStates = tx.inputsOfType<BillingChipState>().sortedBy { it.owner.name.toString() }
-        val billingRefStates = tx.referenceInputsOfType<BillingState>().sortedBy { it.owner.name.toString() }
-
-        "There should be exactly one BillingChipState and reference BillingState for each UseChip command" using (chipStates.size == billingRefStates.size && billingRefStates.size == commands.size)
-        "There should be exactly one UseChip command for each owner" using (spendCommands.map { it.value.owner }.toSet().size == spendCommands.size)
-
-        for (i in 1..spendCommands.size) {
-            val billingState = billingRefStates[i]
-            val chipState = chipStates[i]
-            val spendCommand = spendCommands[i]
-
-            "There should be exactly one BillingChipState and reference BillingState for each UseChip command" using (spendCommand.value.owner == billingState.owner
-                    && spendCommand.value.owner == chipState.owner)
-
-            "UseChip commands should be signed by the owner" using (spendCommand.signers.single() == spendCommand.value.owner.owningKey)
-            "BillingState and BillingCHipState linear ids should match for the same owner" using (billingState.linearId == chipState.billingStateLinearId)
-            if (billingState.expiryDate != null) {
-                val timeWindow = tx.timeWindow!!
-                "Billing state expiry date should be within the specified time window" using (timeWindow.contains(billingState.expiryDate))
+        tx.inputsOfType<BillingChipState>().forEach {
+            "There should be a UseChip command for each BillingChip owner" using (commandsByOwner[it.owner] != null)
+            val billingState = billingStateByLinearId[it.billingStateLinearId]
+            "There should be a reference BillingState for each BillingChip" using (billingState != null
+                    && billingState.isChipValid(it))
+            if (billingState!!.expiryDate != null) {
+                "Billing state expiry date should be within the transaction time window" using
+                        (tx.timeWindow != null && tx.timeWindow!!.contains(billingState.expiryDate!!))
             }
         }
     }
-
-
-
 
     private fun verifyRetireTransaction(tx : LedgerTransaction, command : Command<Commands>) = requireThat {
         "Retire transaction should contain no outputs of type BillingState" using (tx.outputsOfType<BillingState>().isEmpty())
@@ -177,11 +164,17 @@ data class BillingState(
     override val participants = listOf(owner, issuer)
 
     fun chipOff(amount : Long) : Pair<BillingState, BillingChipState>
-            = Pair(copy(spent = spent + amount), BillingChipState(issuer, amount, linearId))
+            = Pair(copy(spent = spent + amount), BillingChipState(issuer, owner, amount, linearId))
+
+    fun isChipValid(chip : BillingChipState) =
+                    owner == chip.owner
+                    && issuer == chip.issuer
+                    && linearId == chip.billingStateLinearId
 }
 
 @BelongsToContract(BillingContract::class)
 data class BillingChipState (
+        val issuer: Party,
         val owner: Party,
         val amount: Long,
         val billingStateLinearId : UniqueIdentifier

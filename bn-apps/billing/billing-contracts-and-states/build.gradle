@@ -4,8 +4,8 @@ apply plugin: 'net.corda.plugins.cordformation'
 apply plugin: 'net.corda.plugins.quasar-utils'
 
 cordapp {
-    targetPlatformVersion 3
-    minimumPlatformVersion 1
+    targetPlatformVersion 4
+    minimumPlatformVersion 4
     workflow {
         name "billing-contracts-and-states"
         vendor "com.r3"

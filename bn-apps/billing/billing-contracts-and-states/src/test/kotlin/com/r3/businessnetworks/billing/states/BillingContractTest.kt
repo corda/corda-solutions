@@ -1,29 +1,38 @@
 package com.r3.businessnetworks.billing.states
 
+import net.corda.core.contracts.UniqueIdentifier
 import net.corda.core.identity.CordaX500Name
 import net.corda.core.identity.Party
+import net.corda.core.utilities.seconds
+import net.corda.testing.common.internal.testNetworkParameters
 import net.corda.testing.core.TestIdentity
+import net.corda.testing.dsl.TransactionDSL
+import net.corda.testing.dsl.TransactionDSLInterpreter
 import net.corda.testing.node.MockServices
 import net.corda.testing.node.ledger
+import net.corda.testing.node.makeTestIdentityService
+import org.apache.commons.lang.RandomStringUtils
+import org.apache.commons.lang.math.RandomUtils
 import org.junit.Test
 import java.time.Instant
 
 class BillingContractTest {
-    private var ledgerServices = MockServices(listOf("com.r3.businessnetworks.billing.states"))
+    private var ledgerServices = MockServices(listOf("com.r3.businessnetworks.billing.states"),
+            CordaX500Name("TestIdentity", "", "GB"),
+            makeTestIdentityService(),
+            testNetworkParameters(minimumPlatformVersion = 4))
     private val owner = TestIdentity(CordaX500Name.parse("O=Owner,L=London,C=GB"))
     private val issuer = TestIdentity(CordaX500Name.parse("O=Issuer,L=London,C=GB"))
+    private val someoneElse = TestIdentity(CordaX500Name.parse("O=Someone Else,L=London,C=GB"))
     private val ownerParty = owner.party
     private val issuerParty = issuer.party
+    private val someoneElsesParty = someoneElse.party
 
     private fun billingState(issuer: Party = issuerParty,
                              owner: Party = ownerParty,
                              issued: Long = 10000L,
                              spent: Long = 0L,
                              expiryDate: Instant? = null) = BillingState(issuer, owner, issued, spent, expiryDate)
-
-    private fun chipState(billingState : BillingState, amount: Long = 1L) = BillingChipState(billingState.owner,
-            amount,
-            billingState.linearId)
 
     @Test
     fun `test issuance`() {
@@ -46,10 +55,6 @@ class BillingContractTest {
                 this.failsWith("Issued amount should not be negative")
             }
             transaction {
-                command(listOf(issuer.publicKey, owner.publicKey), BillingContract.Commands.Issue())
-                this.failsWith("There should be one output of BillingState type")
-            }
-            transaction {
                 output(BillingContract.CONTRACT_NAME,  billingState(spent = 1L))
                 command(listOf(issuer.publicKey, owner.publicKey), BillingContract.Commands.Issue())
                 this.failsWith("Spent amount should be zero")
@@ -67,15 +72,15 @@ class BillingContractTest {
             }
             transaction {
                 val billingState = billingState()
-                output(BillingContract.CONTRACT_NAME,  billingState)
-                input(BillingContract.CONTRACT_NAME,  chipState(billingState))
+                output(BillingContract.CONTRACT_NAME, billingState)
+                input(BillingContract.CONTRACT_NAME, billingState.chipOff(1L).second)
                 command(listOf(owner.publicKey), BillingContract.Commands.Issue())
                 this.failsWith("There should be no inputs of BillingState and BillingChipState types")
             }
             transaction {
                 val billingState = billingState()
-                output(BillingContract.CONTRACT_NAME,  billingState)
-                output(BillingContract.CONTRACT_NAME,  chipState(billingState))
+                output(BillingContract.CONTRACT_NAME, billingState)
+                output(BillingContract.CONTRACT_NAME, billingState.chipOff(1L).second)
                 command(listOf(owner.publicKey), BillingContract.Commands.Issue())
                 this.failsWith("There should be no outputs of BillingChipState type" )
             }
@@ -85,8 +90,7 @@ class BillingContractTest {
     @Test
     fun `test chip off`() {
         val inputBillingState = billingState()
-        val outputChipState = chipState(inputBillingState)
-        val outputBillingState = inputBillingState.copy(spent = inputBillingState.spent + outputChipState.amount)
+        val (outputBillingState, outputChipState) = inputBillingState.chipOff(1L)
         ledgerServices.ledger {
             // Happy path with a pre-allocated billing
             transaction {
@@ -101,6 +105,15 @@ class BillingContractTest {
                 output(BillingContract.CONTRACT_NAME,  outputBillingState.copy(issued = 0L))
                 output(BillingContract.CONTRACT_NAME,  outputChipState)
                 input(BillingContract.CONTRACT_NAME,  inputBillingState.copy(issued = 0L))
+                command(listOf(owner.publicKey), BillingContract.Commands.ChipOff())
+                this.verifies()
+            }
+            // Happy path with multiple chip states
+            transaction {
+                output(BillingContract.CONTRACT_NAME,  outputBillingState.copy(spent = outputBillingState.spent + outputChipState.amount))
+                output(BillingContract.CONTRACT_NAME,  outputChipState)
+                output(BillingContract.CONTRACT_NAME,  outputChipState)
+                input(BillingContract.CONTRACT_NAME,  inputBillingState)
                 command(listOf(owner.publicKey), BillingContract.Commands.ChipOff())
                 this.verifies()
             }
@@ -145,13 +158,168 @@ class BillingContractTest {
                 this.failsWith("There should be at least one output of BillingChipState type")
             }
             transaction {
-                output(BillingContract.CONTRACT_NAME,  outputBillingState)
+                output(BillingContract.CONTRACT_NAME,  outputBillingState.copy(issued = inputBillingState.issued + 1L))
                 output(BillingContract.CONTRACT_NAME,  outputChipState)
                 input(BillingContract.CONTRACT_NAME,  inputBillingState)
                 command(listOf(owner.publicKey), BillingContract.Commands.ChipOff())
                 this.failsWith("Input and output BillingStates should be equal except the `spent` field")
             }
+            transaction {
+                output(BillingContract.CONTRACT_NAME,  outputBillingState)
+                output(BillingContract.CONTRACT_NAME,  outputChipState)
+                input(BillingContract.CONTRACT_NAME,  inputBillingState)
+                command(listOf(issuer.publicKey), BillingContract.Commands.ChipOff())
+                this.failsWith("Only owner should be a signer")
+            }
+            transaction {
+                output(BillingContract.CONTRACT_NAME,  outputBillingState)
+                output(BillingContract.CONTRACT_NAME,  outputChipState.copy(owner = someoneElsesParty))
+                input(BillingContract.CONTRACT_NAME,  inputBillingState)
+                command(listOf(owner.publicKey), BillingContract.Commands.ChipOff())
+                this.failsWith("Owner of BillingChips should match the BillingStates")
+            }
+            transaction {
+                output(BillingContract.CONTRACT_NAME,  outputBillingState)
+                output(BillingContract.CONTRACT_NAME,  outputChipState.copy(billingStateLinearId = UniqueIdentifier()))
+                input(BillingContract.CONTRACT_NAME,  inputBillingState)
+                command(listOf(owner.publicKey), BillingContract.Commands.ChipOff())
+                this.failsWith("Linear id BillingChips should match the BillingStates")
+            }
+            transaction {
+                output(BillingContract.CONTRACT_NAME,  outputBillingState)
+                output(BillingContract.CONTRACT_NAME,  outputChipState.copy(amount = -1L))
+                input(BillingContract.CONTRACT_NAME,  inputBillingState)
+                command(listOf(owner.publicKey), BillingContract.Commands.ChipOff())
+                this.failsWith("Amount of BillingChips should be positive")
+            }
+            transaction {
+                output(BillingContract.CONTRACT_NAME,  outputBillingState)
+                output(BillingContract.CONTRACT_NAME,  outputChipState.copy(amount = Long.MAX_VALUE - 1))
+                output(BillingContract.CONTRACT_NAME,  outputChipState.copy(amount = 10L))
+                input(BillingContract.CONTRACT_NAME,  inputBillingState)
+                command(listOf(owner.publicKey), BillingContract.Commands.ChipOff())
+                this.failsWith("Total chip off value should not exceed Long.MAX_VALUE")
+            }
+            transaction {
+                output(BillingContract.CONTRACT_NAME,  outputBillingState.copy(spent = outputBillingState.spent + 1))
+                output(BillingContract.CONTRACT_NAME,  outputChipState)
+                input(BillingContract.CONTRACT_NAME,  inputBillingState)
+                command(listOf(owner.publicKey), BillingContract.Commands.ChipOff())
+                this.failsWith("Spent amount of the output BillingState should be incremented on the total of the chip off value")
+            }
+            transaction {
+                output(BillingContract.CONTRACT_NAME,  outputBillingState.copy(spent = 10001L))
+                output(BillingContract.CONTRACT_NAME,  outputChipState.copy(amount = 10001L))
+                input(BillingContract.CONTRACT_NAME,  inputBillingState)
+                command(listOf(owner.publicKey), BillingContract.Commands.ChipOff())
+                this.failsWith("Spent amount of the output BillingState should be less or equal to the issued")
+            }
+            transaction {
+                val expiryDate = Instant.now()
+                output(BillingContract.CONTRACT_NAME,  outputBillingState.copy(expiryDate = expiryDate))
+                output(BillingContract.CONTRACT_NAME,  outputChipState)
+                input(BillingContract.CONTRACT_NAME,  inputBillingState.copy(expiryDate = expiryDate))
+                timeWindow(Instant.now().minusMillis(10000000), 1.seconds)
+                command(listOf(owner.publicKey), BillingContract.Commands.ChipOff())
+                this.failsWith("Output BillingState expiry date should be within the specified time window")
+            }
+        }
+    }
 
+    @Test
+    fun `test use chip`() {
+        ledgerServices.ledger {
+            // Happy path
+            transaction {
+                generateUseChipTransaction(this)
+                verifies()
+            }
+            // happy path with time window
+            transaction {
+                generateUseChipTransaction(this, addTimeWindow = true)
+                verifies()
+            }
+            transaction {
+                generateUseChipTransaction(this)
+                command(ownerParty.owningKey, BillingContract.Commands.Issue())
+                failsWith("UseChip transaction can contain only UseChip commands")
+            }
+            transaction {
+                generateUseChipTransaction(this)
+                input(BillingContract.CONTRACT_NAME, billingState())
+                failsWith("UseChip transaction should not have BillingStates in inputs")
+            }
+            transaction {
+                generateUseChipTransaction(this)
+                output(BillingContract.CONTRACT_NAME, billingState())
+                failsWith("UseChip transaction should not have BillingStates in outputs")
+            }
+            transaction {
+                generateUseChipTransaction(this)
+                output(BillingContract.CONTRACT_NAME, billingState().chipOff(1L).second)
+                failsWith("UseChip transaction should not have BillingChipState in outputs")
+            }
+            transaction {
+                generateUseChipTransaction(this)
+                command(ownerParty.owningKey, BillingContract.Commands.UseChip(someoneElsesParty))
+                failsWith("UseChip command owner should be the only signer")
+            }
+            transaction {
+                val billingState = billingState()
+                billingState.chipOff(1L)
+                input(BillingContract.CONTRACT_NAME, billingState.chipOff(1L).second)
+                reference(BillingContract.CONTRACT_NAME, billingState)
+                command(someoneElsesParty.owningKey, BillingContract.Commands.UseChip(someoneElsesParty))
+                failsWith("There should be a UseChip command for each BillingChip owner")
+            }
+            transaction {
+                val billingState = billingState()
+                billingState.chipOff(1L)
+                input(BillingContract.CONTRACT_NAME, billingState.chipOff(1L).second)
+                command(ownerParty.owningKey, BillingContract.Commands.UseChip(ownerParty))
+                failsWith("There should be a reference BillingState for each BillingChip")
+            }
+            transaction {
+                val billingState = billingState(expiryDate = Instant.now())
+                billingState.chipOff(1L)
+                input(BillingContract.CONTRACT_NAME, billingState.chipOff(1L).second)
+                command(ownerParty.owningKey, BillingContract.Commands.UseChip(ownerParty))
+                reference(BillingContract.CONTRACT_NAME, billingState)
+                timeWindow(Instant.now().minusMillis(10000000))
+                failsWith("Billing state expiry date should be within the transaction time window")
+            }
+        }
+    }
+
+    private fun randomTestIdentity() = TestIdentity(CordaX500Name.parse("O=${RandomStringUtils.randomAlphabetic(10)},L=London,C=GB"))
+
+
+    private fun generateUseChipTransaction(dsl : TransactionDSL<TransactionDSLInterpreter>,
+                                           numberOfOwners: Int = 10,
+                                           chipsPerOwner: Int = 3,
+                                           addTimeWindow : Boolean = true) {
+        dsl.apply {
+            (0..numberOfOwners).forEach {
+                val owner = randomTestIdentity()
+                // generating a billing state for each owner with a unique issuer
+                val issuer = randomTestIdentity()
+
+                val billingStateForOwner = if (addTimeWindow)
+                    billingState(issuer = issuer.party, owner = owner.party)
+                else
+                    billingState(issuer = issuer.party, owner = owner.party, expiryDate = Instant.now())
+
+                // generating and adding 3 billing chips for each billing state
+                (0..chipsPerOwner).forEach {
+                    input(BillingContract.CONTRACT_NAME, billingStateForOwner.chipOff(RandomUtils.nextInt() % 3L).second)
+                }
+                // adding billing state as a reference input
+                reference(BillingContract.CONTRACT_NAME, billingStateForOwner)
+                // adding a command for each owner
+                command( owner.party.owningKey, BillingContract.Commands.UseChip(owner.party))
+                if (addTimeWindow)
+                    timeWindow(Instant.now())
+            }
         }
     }
 }
