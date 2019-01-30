@@ -44,9 +44,8 @@ class BillingContract : Contract {
     }
 
     private fun verifyIssueTransaction(tx: LedgerTransaction, command : Command<Commands>) = requireThat {
-        "There should be no inputs of BillingState and BillingChipState types" using (tx.inputsOfType<BillingState>().isEmpty() && tx.inputsOfType<BillingChipState>().isEmpty())
-        "There should be no outputs of BillingChipState type" using (tx.outputsOfType<BillingChipState>().isEmpty())
-        "There should be one output of BillingState type" using (tx.outputsOfType<BillingState>().size == 1)
+        "There should be no inputs" using (tx.inputs.isEmpty())
+        "There should be a single output of BillingState type" using (tx.outputs.size == 1 && tx.outputStates.single() is BillingState)
 
         val billingState = tx.outputsOfType<BillingState>().single()
 
@@ -57,10 +56,11 @@ class BillingContract : Contract {
 
 
     private fun verifyChipOffTransaction(tx : LedgerTransaction, command : Command<Commands>) = requireThat {
-        "There should be no inputs of BillingChipState type" using (tx.inputsOfType<BillingChipState>().isEmpty())
-        "There should be one input of BillingState type" using (tx.inputsOfType<BillingState>().size == 1)
+        "There should be a single input of BillingState type" using (tx.inputs.size == 1 && tx.inputs.single().state.data is BillingState)
         "There should be one output of BillingState type" using (tx.outputsOfType<BillingState>().size == 1)
         "There should be at least one output of BillingChipState type" using (tx.outputsOfType<BillingChipState>().isNotEmpty())
+        "There should be no other outputs but BillingState and BillingChipState types" using
+                (tx.outputStates.count { it !is BillingState && it !is BillingChipState } == 0)
 
         val inputBillingState = tx.inputsOfType<BillingState>().single()
         val outputBillingState = tx.outputsOfType<BillingState>().single()
@@ -119,14 +119,16 @@ class BillingContract : Contract {
     }
 
     private fun verifyRetireTransaction(tx : LedgerTransaction, command : Command<Commands>) = requireThat {
-        "Retire transaction should contain no outputs of type BillingState" using (tx.outputsOfType<BillingState>().isEmpty())
-        "Retire transaction should contain no outputs of type BillingChipState" using (tx.outputsOfType<BillingChipState>().isEmpty())
-        "Retire transaction should contain no inputs of type BillingChipState" using (tx.inputsOfType<BillingChipState>().isEmpty())
+        "There should be no outputs" using (tx.outputStates.isEmpty())
+        "There should be a single input of BillingState type" using (tx.inputs.size == 1 && tx.inputStates.single() is BillingState)
         val billingStateInput = tx.inputsOfType<BillingState>().single()
         "The issuer of billing state should be a signer" using (command.signers.single() == billingStateInput.issuer.owningKey)
     }
 
     private fun verifyAttachBackTransaction(tx : LedgerTransaction, command : Command<Commands>) = requireThat {
+        "Should have a single output of BillingState type" using (tx.outputs.size == 1 && tx.outputStates.single() is BillingState)
+
+
         val inputBillingState = tx.inputsOfType<BillingState>().single()
         val outputBillingState = tx.outputsOfType<BillingState>().single()
         val chips = tx.inputsOfType<BillingChipState>()

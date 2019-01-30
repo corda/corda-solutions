@@ -68,21 +68,14 @@ class BillingContractTest {
                 output(BillingContract.CONTRACT_NAME,  billingState())
                 input(BillingContract.CONTRACT_NAME,  billingState())
                 command(listOf(owner.publicKey), BillingContract.Commands.Issue())
-                this.failsWith("There should be no inputs of BillingState and BillingChipState types")
-            }
-            transaction {
-                val billingState = billingState()
-                output(BillingContract.CONTRACT_NAME, billingState)
-                input(BillingContract.CONTRACT_NAME, billingState.chipOff(1L).second)
-                command(listOf(owner.publicKey), BillingContract.Commands.Issue())
-                this.failsWith("There should be no inputs of BillingState and BillingChipState types")
+                this.failsWith("There should be no inputs")
             }
             transaction {
                 val billingState = billingState()
                 output(BillingContract.CONTRACT_NAME, billingState)
                 output(BillingContract.CONTRACT_NAME, billingState.chipOff(1L).second)
                 command(listOf(owner.publicKey), BillingContract.Commands.Issue())
-                this.failsWith("There should be no outputs of BillingChipState type" )
+                this.failsWith("There should be a single output of BillingState type" )
             }
         }
     }
@@ -133,15 +126,7 @@ class BillingContractTest {
                 input(BillingContract.CONTRACT_NAME,  inputBillingState)
                 input(BillingContract.CONTRACT_NAME, outputChipState)
                 command(listOf(owner.publicKey), BillingContract.Commands.ChipOff())
-                this.failsWith("There should be no inputs of BillingChipState type")
-            }
-            transaction {
-                output(BillingContract.CONTRACT_NAME,  outputBillingState)
-                output(BillingContract.CONTRACT_NAME,  outputChipState)
-                input(BillingContract.CONTRACT_NAME,  inputBillingState)
-                input(BillingContract.CONTRACT_NAME,  inputBillingState)
-                command(listOf(owner.publicKey), BillingContract.Commands.ChipOff())
-                this.failsWith("There should be one input of BillingState type")
+                this.failsWith("There should be a single input of BillingState type")
             }
             transaction {
                 output(BillingContract.CONTRACT_NAME,  outputBillingState)
@@ -287,6 +272,35 @@ class BillingContractTest {
                 reference(BillingContract.CONTRACT_NAME, billingState)
                 timeWindow(Instant.now().minusMillis(10000000))
                 failsWith("Billing state expiry date should be within the transaction time window")
+            }
+        }
+    }
+
+    @Test
+    fun `test retire`() {
+        ledgerServices.ledger {
+            // happy path
+            transaction {
+                input(BillingContract.CONTRACT_NAME, billingState())
+                command(issuerParty.owningKey, BillingContract.Commands.Retire())
+                verifies()
+            }
+            transaction {
+                input(BillingContract.CONTRACT_NAME, billingState())
+                output(BillingContract.CONTRACT_NAME, billingState())
+                command(issuerParty.owningKey, BillingContract.Commands.Retire())
+                failsWith("There should be no outputs")
+            }
+            transaction {
+                input(BillingContract.CONTRACT_NAME, billingState())
+                input(BillingContract.CONTRACT_NAME, billingState())
+                command(issuerParty.owningKey, BillingContract.Commands.Retire())
+                failsWith("There should be a single input of BillingState type")
+            }
+            transaction {
+                input(BillingContract.CONTRACT_NAME, billingState())
+                command(ownerParty.owningKey, BillingContract.Commands.Retire())
+                failsWith("The issuer of billing state should be a signer")
             }
         }
     }
