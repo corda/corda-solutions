@@ -3,7 +3,6 @@ package com.r3.businessnetworks.billing.states
 import net.corda.core.contracts.UniqueIdentifier
 import net.corda.core.identity.CordaX500Name
 import net.corda.core.identity.Party
-import net.corda.core.utilities.seconds
 import net.corda.testing.common.internal.testNetworkParameters
 import net.corda.testing.core.TestIdentity
 import net.corda.testing.dsl.TransactionDSL
@@ -117,7 +116,7 @@ class BillingContractTest {
                 output(BillingContract.CONTRACT_NAME,  outputChipState)
                 input(BillingContract.CONTRACT_NAME,  inputBillingState.copy(expiryDate = expiryDate))
                 command(listOf(owner.publicKey), BillingContract.Commands.ChipOff())
-                timeWindow(expiryDate)
+                timeWindow(expiryDate.minusSeconds(50))
                 this.verifies()
             }
             transaction {
@@ -204,7 +203,7 @@ class BillingContractTest {
                 output(BillingContract.CONTRACT_NAME,  outputBillingState.copy(expiryDate = expiryDate))
                 output(BillingContract.CONTRACT_NAME,  outputChipState)
                 input(BillingContract.CONTRACT_NAME,  inputBillingState.copy(expiryDate = expiryDate))
-                timeWindow(Instant.now().minusMillis(10000000), 1.seconds)
+                timeWindow(Instant.now())
                 command(listOf(owner.publicKey), BillingContract.Commands.ChipOff())
                 this.failsWith("Output BillingState expiry date should be within the specified time window")
             }
@@ -270,8 +269,8 @@ class BillingContractTest {
                 input(BillingContract.CONTRACT_NAME, billingState.chipOff(1L).second)
                 command(ownerParty.owningKey, BillingContract.Commands.UseChip(ownerParty))
                 reference(BillingContract.CONTRACT_NAME, billingState)
-                timeWindow(Instant.now().minusMillis(10000000))
-                failsWith("Billing state expiry date should be within the transaction time window")
+                timeWindow(Instant.now())
+                failsWith("Output BillingState expiry date should be within the specified time window")
             }
         }
     }
@@ -305,6 +304,135 @@ class BillingContractTest {
         }
     }
 
+    @Test
+    fun `test attach back`() {
+        val inputBillingState = billingState(spent = 10L)
+        val outputBillingState = inputBillingState.copy(spent = 8L)
+        val inputChipStates = listOf(inputBillingState.chipOff(1L).second, inputBillingState.chipOff(1L).second)
+        ledgerServices.ledger {
+            // happy path
+            transaction {
+                input(BillingContract.CONTRACT_NAME, inputBillingState)
+                inputChipStates.forEach {
+                    input(BillingContract.CONTRACT_NAME, it)
+                }
+                output(BillingContract.CONTRACT_NAME, outputBillingState)
+                command(ownerParty.owningKey, BillingContract.Commands.AttachBack())
+                verifies()
+            }
+            // happy path with time window
+            transaction {
+                val expiryDate = Instant.now()
+                input(BillingContract.CONTRACT_NAME, inputBillingState.copy(expiryDate = expiryDate))
+                inputChipStates.forEach {
+                    input(BillingContract.CONTRACT_NAME, it)
+                }
+                output(BillingContract.CONTRACT_NAME, outputBillingState.copy(expiryDate = expiryDate))
+                command(ownerParty.owningKey, BillingContract.Commands.AttachBack())
+                timeWindow(expiryDate.minusSeconds(50))
+                verifies()
+            }
+            transaction {
+                input(BillingContract.CONTRACT_NAME, inputBillingState)
+                input(BillingContract.CONTRACT_NAME, inputBillingState)
+                inputChipStates.forEach {
+                    input(BillingContract.CONTRACT_NAME, it)
+                }
+                output(BillingContract.CONTRACT_NAME, outputBillingState)
+                command(ownerParty.owningKey, BillingContract.Commands.AttachBack())
+                failsWith("Should have one input of BillingState type")
+            }
+            transaction {
+                input(BillingContract.CONTRACT_NAME, inputBillingState)
+                output(BillingContract.CONTRACT_NAME, outputBillingState)
+                command(ownerParty.owningKey, BillingContract.Commands.AttachBack())
+                failsWith("Should have at least one input of BillingChipState type")
+            }
+            transaction {
+                input(BillingContract.CONTRACT_NAME, inputBillingState)
+                inputChipStates.forEach {
+                    input(BillingContract.CONTRACT_NAME, it)
+                }
+                command(ownerParty.owningKey, BillingContract.Commands.AttachBack())
+                failsWith("Should have a single output of BillingState type")
+            }
+            transaction {
+                input(BillingContract.CONTRACT_NAME, inputBillingState)
+                inputChipStates.forEach {
+                    input(BillingContract.CONTRACT_NAME, it)
+                }
+                output(BillingContract.CONTRACT_NAME, outputBillingState.copy(issued = outputBillingState.issued + 1))
+                command(ownerParty.owningKey, BillingContract.Commands.AttachBack())
+                failsWith("Input and output BillingStates should be equal except the `spent` field")
+            }
+            transaction {
+                input(BillingContract.CONTRACT_NAME, inputBillingState)
+                inputChipStates.forEach {
+                    input(BillingContract.CONTRACT_NAME, it)
+                }
+                output(BillingContract.CONTRACT_NAME, outputBillingState.copy(spent = -1L))
+                command(ownerParty.owningKey, BillingContract.Commands.AttachBack())
+                failsWith("Spent amount of the output BillingState should be not negative")
+            }
+            transaction {
+                input(BillingContract.CONTRACT_NAME, inputBillingState)
+                inputChipStates.forEach {
+                    input(BillingContract.CONTRACT_NAME, it)
+                }
+                output(BillingContract.CONTRACT_NAME, outputBillingState)
+                command(listOf(ownerParty.owningKey, issuerParty.owningKey), BillingContract.Commands.AttachBack())
+                failsWith("AttachBack transaction should be signed only by the owner")
+            }
+            transaction {
+                input(BillingContract.CONTRACT_NAME, inputBillingState)
+                inputChipStates.forEach {
+                    input(BillingContract.CONTRACT_NAME, it.copy(billingStateLinearId = UniqueIdentifier()))
+                }
+                output(BillingContract.CONTRACT_NAME, outputBillingState)
+                command(ownerParty.owningKey, BillingContract.Commands.AttachBack())
+                failsWith("BillingChipStates should match BillingStates")
+            }
+            transaction {
+                input(BillingContract.CONTRACT_NAME, inputBillingState)
+                inputChipStates.forEach {
+                    input(BillingContract.CONTRACT_NAME, it.copy(amount = -1L))
+                }
+                output(BillingContract.CONTRACT_NAME, outputBillingState)
+                command(ownerParty.owningKey, BillingContract.Commands.AttachBack())
+                failsWith("BillingChipState amount should be positive")
+            }
+            transaction {
+                input(BillingContract.CONTRACT_NAME, inputBillingState)
+                inputChipStates.forEach {
+                    input(BillingContract.CONTRACT_NAME, it.copy(amount = Long.MAX_VALUE - 1))
+                }
+                output(BillingContract.CONTRACT_NAME, outputBillingState)
+                command(ownerParty.owningKey, BillingContract.Commands.AttachBack())
+                failsWith("Total AttachBack value should not exceed Long.MAX_VALUE")
+            }
+            transaction {
+                input(BillingContract.CONTRACT_NAME, inputBillingState)
+                inputChipStates.forEach {
+                    input(BillingContract.CONTRACT_NAME, it)
+                }
+                output(BillingContract.CONTRACT_NAME, outputBillingState.copy(spent = outputBillingState.spent + 1L))
+                command(ownerParty.owningKey, BillingContract.Commands.AttachBack())
+                failsWith("Spent amount of the output BillingState should be decremented on the total of the chip off value")
+            }
+            transaction {
+                val expiryDate = Instant.now()
+                input(BillingContract.CONTRACT_NAME, inputBillingState.copy(expiryDate = expiryDate))
+                inputChipStates.forEach {
+                    input(BillingContract.CONTRACT_NAME, it)
+                }
+                output(BillingContract.CONTRACT_NAME, outputBillingState.copy(expiryDate = expiryDate))
+                command(ownerParty.owningKey, BillingContract.Commands.AttachBack())
+                timeWindow(expiryDate)
+                failsWith("Output BillingState expiry date should be within the specified time window")
+            }
+        }
+    }
+
     private fun randomTestIdentity() = TestIdentity(CordaX500Name.parse("O=${RandomStringUtils.randomAlphabetic(10)},L=London,C=GB"))
 
 
@@ -312,8 +440,10 @@ class BillingContractTest {
                                            numberOfOwners: Int = 10,
                                            chipsPerOwner: Int = 3,
                                            addTimeWindow : Boolean = true) {
+        val expiryDate = Instant.now()
+
         dsl.apply {
-            (0..numberOfOwners).forEach {
+            (0..numberOfOwners).forEach { _ ->
                 val owner = randomTestIdentity()
                 // generating a billing state for each owner with a unique issuer
                 val issuer = randomTestIdentity()
@@ -321,7 +451,7 @@ class BillingContractTest {
                 val billingStateForOwner = if (addTimeWindow)
                     billingState(issuer = issuer.party, owner = owner.party)
                 else
-                    billingState(issuer = issuer.party, owner = owner.party, expiryDate = Instant.now())
+                    billingState(issuer = issuer.party, owner = owner.party, expiryDate = expiryDate)
 
                 // generating and adding 3 billing chips for each billing state
                 (0..chipsPerOwner).forEach {
@@ -331,8 +461,9 @@ class BillingContractTest {
                 reference(BillingContract.CONTRACT_NAME, billingStateForOwner)
                 // adding a command for each owner
                 command( owner.party.owningKey, BillingContract.Commands.UseChip(owner.party))
-                if (addTimeWindow)
-                    timeWindow(Instant.now())
+                if (addTimeWindow) {
+                    timeWindow(expiryDate.minusSeconds(50))
+                }
             }
         }
     }

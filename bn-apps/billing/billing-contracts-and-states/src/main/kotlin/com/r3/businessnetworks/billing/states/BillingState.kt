@@ -19,8 +19,6 @@ class BillingContract : Contract {
         class Retire : Commands, TypeOnlyCommandData()
     }
 
-
-
     override fun verify(tx : LedgerTransaction) {
         val commands = tx.commandsOfType<Commands>()
 
@@ -54,7 +52,6 @@ class BillingContract : Contract {
         "Spent amount should be zero" using (billingState.spent == 0L)
     }
 
-
     private fun verifyChipOffTransaction(tx : LedgerTransaction, command : Command<Commands>) = requireThat {
         "There should be a single input of BillingState type" using (tx.inputs.size == 1 && tx.inputs.single().state.data is BillingState)
         "There should be one output of BillingState type" using (tx.outputsOfType<BillingState>().size == 1)
@@ -87,8 +84,7 @@ class BillingContract : Contract {
             "Spent amount of the output BillingState should be less or equal to the issued" using (outputBillingState.spent <= outputBillingState.issued)
         }
         if (outputBillingState.expiryDate != null) {
-            val timeWindow = tx.timeWindow!!
-            "Output BillingState expiry date should be within the specified time window" using (timeWindow.contains(outputBillingState.expiryDate))
+            verifyTimeWindow(outputBillingState.expiryDate, tx)
         }
     }
 
@@ -112,8 +108,7 @@ class BillingContract : Contract {
             "There should be a reference BillingState for each BillingChip" using (billingState != null
                     && billingState.isChipValid(it))
             if (billingState!!.expiryDate != null) {
-                "Billing state expiry date should be within the transaction time window" using
-                        (tx.timeWindow != null && tx.timeWindow!!.contains(billingState.expiryDate!!))
+                verifyTimeWindow(billingState.expiryDate!!, tx)
             }
         }
     }
@@ -126,31 +121,41 @@ class BillingContract : Contract {
     }
 
     private fun verifyAttachBackTransaction(tx : LedgerTransaction, command : Command<Commands>) = requireThat {
+        "Should have one input of BillingState type" using (tx.inputsOfType<BillingState>().size == 1)
+        "Should have at least one input of BillingChipState type" using (tx.inputsOfType<BillingChipState>().isNotEmpty())
         "Should have a single output of BillingState type" using (tx.outputs.size == 1 && tx.outputStates.single() is BillingState)
-
+        "Should have inputs only of BillingState and BillingChipState types" using (tx.inputStates.count { it !is BillingState && it !is BillingChipState } == 0)
 
         val inputBillingState = tx.inputsOfType<BillingState>().single()
-        val outputBillingState = tx.outputsOfType<BillingState>().single()
+        val outputBillingState = tx.outputStates.single() as BillingState
         val chips = tx.inputsOfType<BillingChipState>()
 
-        "AttachBack transaction should not have BillingChipState in outputs" using (tx.outputsOfType<BillingChipState>().isEmpty())
+        "Input and output BillingStates should be equal except the `spent` field" using (inputBillingState == outputBillingState.copy(spent = inputBillingState.spent))
+        "Spent amount of the output BillingState should be not negative" using (outputBillingState.spent >= 0)
+        "AttachBack transaction should be signed only by the owner" using (command.signers.size == 1 && command.signers.single() == outputBillingState.owner.owningKey)
 
-        "Issued amounts of billing states should be equal" using (inputBillingState.issued == outputBillingState.issued)
-        "Issuer of billing states should be equal" using (inputBillingState.issuer == outputBillingState.issuer)
-        "Linear id of billing states should be equal" using (inputBillingState.linearId == outputBillingState.linearId)
-        "Expiry date of billing states should be equal" using (inputBillingState.expiryDate == outputBillingState.expiryDate)
-        "Owner of billing states should be equal" using (inputBillingState.owner == outputBillingState.owner)
-        "Spent amount of the output billing state should be positive" using (outputBillingState.spent >= 0L)
-        "AttachBack transaction should be signed only by the owner" using (command.signers.single() == outputBillingState.owner.owningKey)
-
-        var totalAttach = 0L
+        var totalAmount = 0L
         chips.forEach {
-            "Owner of BillingChipState should be the same as of BillingStates" using (it.owner == outputBillingState.owner)
-            "Linear id of BillingChipState should be the same as of BillingState" using (it.billingStateLinearId == outputBillingState.linearId)
-            totalAttach += it.amount
+            "BillingChipStates should match BillingStates" using (outputBillingState.isChipValid(it))
+            "BillingChipState amount should be positive" using (it.amount > 0L)
+            val previousAmount = totalAmount
+            totalAmount += it.amount
+            "Total AttachBack value should not exceed Long.MAX_VALUE" using (totalAmount > previousAmount)
         }
 
-        "Attached amounts should match" using (inputBillingState.spent - totalAttach == outputBillingState.spent)
+        "Spent amount of the output BillingState should be decremented on the total of the chip off value" using (inputBillingState.spent - totalAmount == outputBillingState.spent)
+
+        if (outputBillingState.expiryDate != null) {
+            verifyTimeWindow(outputBillingState.expiryDate, tx)
+        }
+    }
+
+    private fun verifyTimeWindow(expiryDate : Instant, tx: LedgerTransaction) = requireThat {
+        // expiry date should be less than the upper boundary of the transaction time window
+        "Output BillingState expiry date should be within the specified time window" using (tx.timeWindow != null
+                && tx.timeWindow!!.untilTime != null
+                && tx.timeWindow!!.untilTime!! <= expiryDate)
+
     }
 }
 
