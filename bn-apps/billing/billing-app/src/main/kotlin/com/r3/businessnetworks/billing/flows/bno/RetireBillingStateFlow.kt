@@ -6,11 +6,15 @@ import com.r3.businessnetworks.billing.states.BillingState
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.flows.FinalityFlow
 import net.corda.core.flows.FlowLogic
+import net.corda.core.flows.InitiatingFlow
+import net.corda.core.flows.StartableByRPC
 import net.corda.core.identity.Party
 import net.corda.core.node.services.queryBy
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 
+@StartableByRPC
+@InitiatingFlow
 class RetireBillingStateFlow(private val billingState : StateAndRef<BillingState>) : FlowLogic<SignedTransaction>() {
     @Suspendable
     override fun call() : SignedTransaction {
@@ -29,6 +33,7 @@ class RetireBillingStateFlow(private val billingState : StateAndRef<BillingState
     }
 }
 
+@StartableByRPC
 class RetireBillinStateForPartyFlow(private val party : Party) : FlowLogic<List<SignedTransaction>>() {
     @Suspendable
     override fun call() : List<SignedTransaction> {

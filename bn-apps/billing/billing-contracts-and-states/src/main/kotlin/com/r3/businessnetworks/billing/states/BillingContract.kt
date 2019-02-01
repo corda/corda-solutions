@@ -2,6 +2,9 @@ package com.r3.businessnetworks.billing.states
 
 import net.corda.core.contracts.*
 import net.corda.core.identity.Party
+import net.corda.core.schemas.MappedSchema
+import net.corda.core.schemas.PersistentState
+import net.corda.core.schemas.QueryableState
 import net.corda.core.transactions.LedgerTransaction
 import java.lang.IllegalArgumentException
 import java.time.Instant
@@ -167,7 +170,15 @@ data class BillingState(
         val spent: Long,
         val expiryDate : Instant? = null,
         override val linearId : UniqueIdentifier = UniqueIdentifier()
-) : LinearState {
+) : LinearState, QueryableState {
+    override fun generateMappedObject(schema : MappedSchema) : PersistentState {
+        return when (schema) {
+            is BillingStateSchemaV1 -> BillingStateSchemaV1.PersistentBillingState(issuer)
+            else -> throw IllegalArgumentException("Unrecognised schema $schema")
+        }
+    }
+    override fun supportedSchemas() = listOf(BillingStateSchemaV1)
+
     override val participants = listOf(owner, issuer)
 
     fun chipOff(amount : Long) : Pair<BillingState, BillingChipState>
