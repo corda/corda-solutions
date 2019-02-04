@@ -9,17 +9,26 @@ import net.corda.core.flows.*
 import net.corda.core.node.services.queryBy
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
+import net.corda.core.utilities.seconds
+import java.time.Duration
+import java.time.Instant
 
 @StartableByRPC
 @InitiatingFlow
 class AttachUnspentChipsFlow(private val billingState : StateAndRef<BillingState>,
-                             private val unspentChips : List<StateAndRef<BillingChipState>>) : FlowLogic<Pair<BillingState, SignedTransaction>>() {
+                             private val unspentChips : List<StateAndRef<BillingChipState>>,
+                             private val tolerance : Duration = 30.seconds) : FlowLogic<Pair<BillingState, SignedTransaction>>() {
     @Suspendable
     override fun call() : Pair<BillingState, SignedTransaction> {
         val notary = serviceHub.networkMapCache.notaryIdentities.single()
         val builder = TransactionBuilder(notary)
                 .addInputState(billingState)
                 .addCommand(BillingContract.Commands.AttachBack(), ourIdentity.owningKey)
+
+        if (billingState.state.data.expiryDate != null) {
+            builder.setTimeWindow(Instant.now(), tolerance)
+        }
+
         var totalUnspent = 0L
         unspentChips.forEach {
             builder.addInputState(it)

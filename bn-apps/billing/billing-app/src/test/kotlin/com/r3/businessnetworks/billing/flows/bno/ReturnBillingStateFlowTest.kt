@@ -9,7 +9,7 @@ import java.time.Instant
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class RetireBillingStateFlowTest : AbstractBusinessNetworksFlowTest(1, 1,
+class ReturnBillingStateFlowTest : AbstractBusinessNetworksFlowTest(1, 1,
         listOf("com.r3.businessnetworks.billing.flows", "com.r3.businessnetworks.billing.states")) {
     private fun bnoNode() = bnoNodes.single()
     private fun participantNode() = participantsNodes.single()
@@ -28,7 +28,7 @@ class RetireBillingStateFlowTest : AbstractBusinessNetworksFlowTest(1, 1,
         runFlowAndReturn(bnoNode(), IssueBillingStateFlow(participantNode().identity(), 1000L, Instant.now()))
         assertEquals(2, participantNode().services.vaultService.queryBy<BillingState>().states.size)
 
-        runFlowAndReturn(bnoNode(), RetireBillinStateForPartyFlow(participantNode().identity()))
+        runFlowAndReturn(bnoNode(), RetireBillingStateForPartyFlow(participantNode().identity()))
         assertTrue(participantNode().services.vaultService.queryBy<BillingState>().states.isEmpty())
     }
 }

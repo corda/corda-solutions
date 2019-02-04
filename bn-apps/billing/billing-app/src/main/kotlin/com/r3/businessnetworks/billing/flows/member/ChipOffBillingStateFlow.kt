@@ -13,6 +13,9 @@ import net.corda.core.flows.InitiatingFlow
 import net.corda.core.flows.StartableByRPC
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
+import net.corda.core.utilities.seconds
+import java.time.Duration
+import java.time.Instant
 
 /**
  * Chips off one or more states from the BillingState
@@ -25,7 +28,8 @@ import net.corda.core.transactions.TransactionBuilder
 @InitiatingFlow
 class ChipOffBillingStateFlow(private val billingState : StateAndRef<BillingState>,
                               private val chipAmount : Long,
-                              private val numberOfChips : Int = 1) : FlowLogic<Pair<List<BillingChipState>, SignedTransaction>>() {
+                              private val numberOfChips : Int = 1,
+                              private val tolerance : Duration = 30.seconds) : FlowLogic<Pair<List<BillingChipState>, SignedTransaction>>() {
     @Suspendable
     override fun call() : Pair<List<BillingChipState>, SignedTransaction> {
         val configuration = serviceHub.cordaService(MemberConfigurationService::class.java)
@@ -33,6 +37,11 @@ class ChipOffBillingStateFlow(private val billingState : StateAndRef<BillingStat
         val builder = TransactionBuilder(notary)
                 .addInputState(billingState)
                 .addCommand(BillingContract.Commands.ChipOff(), billingState.state.data.owner.owningKey)
+
+        // if expiry date is present - adding a time window
+        if (billingState.state.data.expiryDate != null) {
+            builder.setTimeWindow(Instant.now(), tolerance)
+        }
 
         // generating enough of chip off states
         var outputBillingState = billingState.state.data

@@ -21,7 +21,7 @@ class RetireBillingStateFlow(private val billingState : StateAndRef<BillingState
         val notary = serviceHub.networkMapCache.notaryIdentities.single()
         val builder = TransactionBuilder(notary)
                 .addInputState(billingState)
-                .addCommand(BillingContract.Commands.Retire(), ourIdentity.owningKey)
+                .addCommand(BillingContract.Commands.Return(), ourIdentity.owningKey)
 
         builder.verify(serviceHub)
 
@@ -34,7 +34,7 @@ class RetireBillingStateFlow(private val billingState : StateAndRef<BillingState
 }
 
 @StartableByRPC
-class RetireBillinStateForPartyFlow(private val party : Party) : FlowLogic<List<SignedTransaction>>() {
+class RetireBillingStateForPartyFlow(private val party : Party) : FlowLogic<List<SignedTransaction>>() {
     @Suspendable
     override fun call() : List<SignedTransaction> {
         return serviceHub.vaultService.queryBy<BillingState>().states.filter { it.state.data.owner == party }

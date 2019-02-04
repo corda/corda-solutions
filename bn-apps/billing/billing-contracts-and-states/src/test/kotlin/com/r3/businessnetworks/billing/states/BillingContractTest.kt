@@ -281,24 +281,24 @@ class BillingContractTest {
             // happy path
             transaction {
                 input(BillingContract.CONTRACT_NAME, billingState())
-                command(issuerParty.owningKey, BillingContract.Commands.Retire())
+                command(issuerParty.owningKey, BillingContract.Commands.Return())
                 verifies()
             }
             transaction {
                 input(BillingContract.CONTRACT_NAME, billingState())
                 output(BillingContract.CONTRACT_NAME, billingState())
-                command(issuerParty.owningKey, BillingContract.Commands.Retire())
+                command(issuerParty.owningKey, BillingContract.Commands.Return())
                 failsWith("There should be no outputs")
             }
             transaction {
                 input(BillingContract.CONTRACT_NAME, billingState())
                 input(BillingContract.CONTRACT_NAME, billingState())
-                command(issuerParty.owningKey, BillingContract.Commands.Retire())
+                command(issuerParty.owningKey, BillingContract.Commands.Return())
                 failsWith("There should be a single input of BillingState type")
             }
             transaction {
                 input(BillingContract.CONTRACT_NAME, billingState())
-                command(ownerParty.owningKey, BillingContract.Commands.Retire())
+                command(ownerParty.owningKey, BillingContract.Commands.Return())
                 failsWith("The issuer of billing state should be a signer")
             }
         }

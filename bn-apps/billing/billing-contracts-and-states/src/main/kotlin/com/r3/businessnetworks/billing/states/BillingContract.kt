@@ -15,11 +15,15 @@ class BillingContract : Contract {
     }
 
     interface Commands : CommandData {
+        // billing state-related commands
         class Issue : Commands, TypeOnlyCommandData()
+        class Return : Commands, TypeOnlyCommandData()
+        class Revoke : Commands, TypeOnlyCommandData()
+        class Close : Commands, TypeOnlyCommandData()
+        // chip related commands
         class ChipOff : Commands, TypeOnlyCommandData() //  split
         class AttachBack : Commands, TypeOnlyCommandData() // combine
         data class UseChip(val owner : Party) : Commands // use
-        class Retire : Commands, TypeOnlyCommandData()
     }
 
     override fun verify(tx : LedgerTransaction) {
@@ -30,15 +34,19 @@ class BillingContract : Contract {
         }
 
         // UseChip command requires different handling as there could be multiple instances of those inside one transaction
+        // Note: at this point [commands] list contains only commands that are related to the [BillingContract]
+        // as everything else has been filtered ut in the very beginning
         if (commands.first().value is Commands.UseChip) {
             verifyUseChipTransaction(tx, commands)
         } else {
             val command = commands.single()
             when (command.value) {
                 is Commands.Issue -> verifyIssueTransaction(tx, command)
+                is Commands.Return -> verifyReturnTransaction(tx, command)
+                is Commands.Revoke -> verifyRevokeTransaction(tx, command)
+                is Commands.Close -> verifyCloseTransaction(tx, command)
                 is Commands.ChipOff -> verifyChipOffTransaction(tx, command)
                 is Commands.AttachBack -> verifyAttachBackTransaction(tx, command)
-                is Commands.Retire -> verifyRetireTransaction(tx, command)
                 else -> throw IllegalArgumentException("Unsupported command ${command.value}")
             }
         }
@@ -53,6 +61,7 @@ class BillingContract : Contract {
         "Both the owner and the issuer should be signers" using (command.signers.toSet() == setOf(billingState.issuer.owningKey, billingState.owner.owningKey))
         "Issued amount should not be negative" using (billingState.issued >= 0L)
         "Spent amount should be zero" using (billingState.spent == 0L)
+        "BillingState status should be ACTIVE" using (billingState.status == BillingStateStatus.ACTIVE)
     }
 
     private fun verifyChipOffTransaction(tx : LedgerTransaction, command : Command<Commands>) = requireThat {
@@ -66,6 +75,7 @@ class BillingContract : Contract {
         val outputBillingState = tx.outputsOfType<BillingState>().single()
         val outputChipStates = tx.outputsOfType<BillingChipState>()
 
+        "Input BillingState status should be ACTIVE" using (inputBillingState.status == BillingStateStatus.ACTIVE)
         "Input and output BillingStates should be equal except the `spent` field" using (inputBillingState == outputBillingState.copy(spent = inputBillingState.spent))
         "Only owner should be a signer" using (command.signers.size ==1 && command.signers.single() == outputBillingState.owner.owningKey)
 
@@ -110,17 +120,11 @@ class BillingContract : Contract {
             val billingState = billingStateByLinearId[it.billingStateLinearId]
             "There should be a reference BillingState for each BillingChip" using (billingState != null
                     && billingState.isChipValid(it))
-            if (billingState!!.expiryDate != null) {
-                verifyTimeWindow(billingState.expiryDate!!, tx)
+            "Reference BillingState status should be ACTIVE" using (billingState!!.status == BillingStateStatus.ACTIVE)
+            if (billingState.expiryDate != null) {
+                verifyTimeWindow(billingState.expiryDate, tx)
             }
         }
-    }
-
-    private fun verifyRetireTransaction(tx : LedgerTransaction, command : Command<Commands>) = requireThat {
-        "There should be no outputs" using (tx.outputStates.isEmpty())
-        "There should be a single input of BillingState type" using (tx.inputs.size == 1 && tx.inputStates.single() is BillingState)
-        val billingStateInput = tx.inputsOfType<BillingState>().single()
-        "The issuer of billing state should be a signer" using (command.signers.single() == billingStateInput.issuer.owningKey)
     }
 
     private fun verifyAttachBackTransaction(tx : LedgerTransaction, command : Command<Commands>) = requireThat {
@@ -153,6 +157,36 @@ class BillingContract : Contract {
         }
     }
 
+    private fun verifyReturnTransaction(tx : LedgerTransaction, command : Command<Commands>) = requireThat {
+        "There should be a single output of BillingState type" using (tx.outputs.size == 1 && tx.outputStates.single() is BillingState)
+        "There should be a single input of BillingState type" using (tx.inputs.size == 1 && tx.inputStates.single() is BillingState)
+        val inputBillingState = tx.inputsOfType<BillingState>().single()
+        val outputBillingState = tx.outputsOfType<BillingState>().single()
+        "Both issuer and owner should be signers" using (command.signers.toSet() == setOf(inputBillingState.issuer.owningKey, inputBillingState.owner.owningKey))
+        "Input BillingsState status should be ACTIVE" using (inputBillingState.status == BillingStateStatus.ACTIVE)
+        "Output BillingsState status should be RETURNED" using (outputBillingState.status == BillingStateStatus.RETURNED)
+    }
+
+    private fun verifyRevokeTransaction(tx : LedgerTransaction, command : Command<Commands>) = requireThat {
+        "There should be a single output of BillingState type" using (tx.outputs.size == 1 && tx.outputStates.single() is BillingState)
+        "There should be a single input of BillingState type" using (tx.inputs.size == 1 && tx.inputStates.single() is BillingState)
+        val inputBillingState = tx.inputsOfType<BillingState>().single()
+        val outputBillingState = tx.outputsOfType<BillingState>().single()
+        "The issuer of billing state should be a signer" using (command.signers.toSet() == setOf(inputBillingState.issuer.owningKey))
+        "Input BillingsState status should be ACTIVE" using (inputBillingState.status == BillingStateStatus.ACTIVE)
+        "Output BillingsState status should be REVOKED" using (outputBillingState.status == BillingStateStatus.REVOKED)
+    }
+
+    private fun verifyCloseTransaction(tx : LedgerTransaction, command : Command<Commands>) = requireThat {
+        "There should be a single output of BillingState type" using (tx.outputs.size == 1 && tx.outputStates.single() is BillingState)
+        "There should be a single input of BillingState type" using (tx.inputs.size == 1 && tx.inputStates.single() is BillingState)
+        val inputBillingState = tx.inputsOfType<BillingState>().single()
+        val outputBillingState = tx.outputsOfType<BillingState>().single()
+        "The issuer of billing state should be a signer" using (command.signers.toSet() == setOf(inputBillingState.issuer.owningKey))
+        "Input BillingsState status should be RETURNED or REVOKED" using (inputBillingState.status in setOf(BillingStateStatus.RETURNED, BillingStateStatus.REVOKED))
+        "Output BillingsState status should be CLOSED" using (outputBillingState.status == BillingStateStatus.CLOSED)
+    }
+
     private fun verifyTimeWindow(expiryDate : Instant, tx: LedgerTransaction) = requireThat {
         // expiry date should be less than the upper boundary of the transaction time window
         "Output BillingState expiry date should be within the specified time window" using (tx.timeWindow != null
@@ -168,6 +202,7 @@ data class BillingState(
         val owner: Party,
         val issued: Long,
         val spent: Long,
+        val status : BillingStateStatus = BillingStateStatus.ACTIVE,
         val expiryDate : Instant? = null,
         override val linearId : UniqueIdentifier = UniqueIdentifier()
 ) : LinearState, QueryableState {
@@ -188,6 +223,10 @@ data class BillingState(
                     owner == chip.owner
                     && issuer == chip.issuer
                     && linearId == chip.billingStateLinearId
+}
+
+enum class BillingStateStatus {
+    ACTIVE, RETURNED, REVOKED, CLOSED
 }
 
 @BelongsToContract(BillingContract::class)

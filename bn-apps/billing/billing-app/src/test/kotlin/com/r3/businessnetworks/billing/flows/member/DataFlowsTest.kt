@@ -1,8 +1,10 @@
 package com.r3.businessnetworks.billing.flows.member
 
 import com.r3.businessnetworks.billing.flows.bno.IssueBillingStateFlow
+import com.r3.businessnetworks.billing.states.BillingState
 import com.r3.businessnetworks.testutilities.AbstractBusinessNetworksFlowTest
 import com.r3.businessnetworks.testutilities.identity
+import net.corda.core.node.services.queryBy
 import org.junit.Test
 import java.time.Instant
 import kotlin.test.assertEquals
@@ -29,5 +31,14 @@ class DataFlowsTest : AbstractBusinessNetworksFlowTest(2, 1,
         val (state, _) = runFlowAndReturn(bno1Node(), IssueBillingStateFlow(participantNode().identity(), 1L, Instant.now()))
         val stateFromFlow = runFlowAndReturn(participantNode(), GetBillingStateByLinearId(state.linearId))!!
         assertEquals(state, stateFromFlow.state.data)
+    }
+
+    @Test
+    fun `test get billing chip states by billingStateLinearId`() {
+        runFlowAndReturn(bno1Node(), IssueBillingStateFlow(participantNode().identity(), 10L, Instant.now()))
+        val billingState = participantNode().services.vaultService.queryBy<BillingState>().states.single()
+        runFlowAndReturn(participantNode(), ChipOffBillingStateFlow(billingState, 1L, 5))
+        val chips = runFlowAndReturn(participantNode(), GetChipsByBillingState(billingState.state.data.linearId))
+        assertEquals(5, chips.size)
     }
 }
