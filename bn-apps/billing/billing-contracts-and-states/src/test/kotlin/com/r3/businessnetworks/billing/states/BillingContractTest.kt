@@ -31,7 +31,8 @@ class BillingContractTest {
                              owner: Party = ownerParty,
                              issued: Long = 10000L,
                              spent: Long = 0L,
-                             expiryDate: Instant? = null) = BillingState(issuer, owner, issued, spent, expiryDate)
+                             status: BillingStateStatus = BillingStateStatus.ACTIVE,
+                             expiryDate: Instant? = null) = BillingState(issuer, owner, issued, spent, status, expiryDate)
 
     @Test
     fun `test issuance`() {
@@ -76,6 +77,12 @@ class BillingContractTest {
                 command(listOf(owner.publicKey), BillingContract.Commands.Issue())
                 this.failsWith("There should be a single output of BillingState type" )
             }
+            transaction {
+                output(BillingContract.CONTRACT_NAME,  billingState(status = BillingStateStatus.RETURNED))
+                command(listOf(issuer.publicKey, owner.publicKey), BillingContract.Commands.Issue())
+                this.failsWith("BillingState status should be ACTIVE")
+            }
+
         }
     }
 
@@ -207,6 +214,13 @@ class BillingContractTest {
                 command(listOf(owner.publicKey), BillingContract.Commands.ChipOff())
                 this.failsWith("Output BillingState expiry date should be within the specified time window")
             }
+            transaction {
+                output(BillingContract.CONTRACT_NAME,  outputBillingState.copy(status = BillingStateStatus.RETURNED))
+                output(BillingContract.CONTRACT_NAME,  outputChipState)
+                input(BillingContract.CONTRACT_NAME,  inputBillingState.copy(status = BillingStateStatus.RETURNED))
+                command(listOf(owner.publicKey), BillingContract.Commands.ChipOff())
+                this.failsWith("Input BillingState status should be ACTIVE")
+            }
         }
     }
 
@@ -272,35 +286,16 @@ class BillingContractTest {
                 timeWindow(Instant.now())
                 failsWith("Output BillingState expiry date should be within the specified time window")
             }
-        }
-    }
 
-    @Test
-    fun `test retire`() {
-        ledgerServices.ledger {
-            // happy path
             transaction {
-                input(BillingContract.CONTRACT_NAME, billingState())
-                command(issuerParty.owningKey, BillingContract.Commands.Return())
-                verifies()
+                val billingState = billingState()
+                billingState.chipOff(1L)
+                input(BillingContract.CONTRACT_NAME, billingState.chipOff(1L).second)
+                reference(BillingContract.CONTRACT_NAME, billingState.copy(status = BillingStateStatus.RETURNED))
+                command(ownerParty.owningKey, BillingContract.Commands.UseChip(ownerParty))
+                failsWith("Reference BillingState status should be ACTIVE")
             }
-            transaction {
-                input(BillingContract.CONTRACT_NAME, billingState())
-                output(BillingContract.CONTRACT_NAME, billingState())
-                command(issuerParty.owningKey, BillingContract.Commands.Return())
-                failsWith("There should be no outputs")
-            }
-            transaction {
-                input(BillingContract.CONTRACT_NAME, billingState())
-                input(BillingContract.CONTRACT_NAME, billingState())
-                command(issuerParty.owningKey, BillingContract.Commands.Return())
-                failsWith("There should be a single input of BillingState type")
-            }
-            transaction {
-                input(BillingContract.CONTRACT_NAME, billingState())
-                command(ownerParty.owningKey, BillingContract.Commands.Return())
-                failsWith("The issuer of billing state should be a signer")
-            }
+
         }
     }
 
@@ -430,8 +425,104 @@ class BillingContractTest {
                 timeWindow(expiryDate)
                 failsWith("Output BillingState expiry date should be within the specified time window")
             }
+            transaction {
+                input(BillingContract.CONTRACT_NAME, inputBillingState.copy(status = BillingStateStatus.RETURNED))
+                inputChipStates.forEach {
+                    input(BillingContract.CONTRACT_NAME, it)
+                }
+                output(BillingContract.CONTRACT_NAME, outputBillingState.copy(status = BillingStateStatus.RETURNED))
+                command(ownerParty.owningKey, BillingContract.Commands.AttachBack())
+                failsWith("BillingState status should be ACTIVE")
+            }
+
         }
     }
+
+    @Test
+    fun `test return`() = verifyReturnRevokeClose(
+                listOf(BillingStateStatus.ACTIVE),
+                BillingStateStatus.RETURNED,
+                BillingContract.Commands.Return(),
+                listOf(issuerParty, ownerParty))
+
+    @Test
+    fun `test revoke`() = verifyReturnRevokeClose(listOf(BillingStateStatus.ACTIVE),
+                BillingStateStatus.REVOKED,
+                BillingContract.Commands.Revoke(),
+                listOf(issuerParty))
+
+    @Test
+    fun `test close`() = verifyReturnRevokeClose(listOf(BillingStateStatus.RETURNED, BillingStateStatus.REVOKED),
+                BillingStateStatus.CLOSED,
+                BillingContract.Commands.Close(),
+                listOf(issuerParty))
+
+    private fun verifyReturnRevokeClose(inputStateStatuses : List<BillingStateStatus>,
+                                        outputStateStatus : BillingStateStatus,
+                                        command : BillingContract.Commands,
+                                        signers : List<Party>) {
+        val signingKeys = signers.map { it.owningKey }
+        val inputBillingState = billingState(expiryDate = Instant.now(), status = inputStateStatuses.first())
+        val outputBillingState = inputBillingState.copy(status = outputStateStatus)
+        ledgerServices.ledger {
+            inputStateStatuses.forEach {
+                // happy path
+                transaction {
+                    input(BillingContract.CONTRACT_NAME, inputBillingState.copy(status = it))
+                    output(BillingContract.CONTRACT_NAME, outputBillingState)
+                    command(signingKeys, command)
+                    verifies()
+                }
+                // revocations should be accepted past expiry date
+                transaction {
+                    input(BillingContract.CONTRACT_NAME, inputBillingState)
+                    output(BillingContract.CONTRACT_NAME, outputBillingState)
+                    timeWindow(Instant.now().minusSeconds(10000))
+                    command(signingKeys, command)
+                    verifies()
+                }
+            }
+            transaction {
+                input(BillingContract.CONTRACT_NAME, inputBillingState)
+                output(BillingContract.CONTRACT_NAME, outputBillingState)
+                output(BillingContract.CONTRACT_NAME, outputBillingState)
+                command(signingKeys, command)
+                failsWith("There should be a single output of BillingState type")
+            }
+            transaction {
+                input(BillingContract.CONTRACT_NAME, inputBillingState)
+                input(BillingContract.CONTRACT_NAME, inputBillingState)
+                output(BillingContract.CONTRACT_NAME, outputBillingState)
+                command(signingKeys, command)
+                failsWith("There should be a single input of BillingState type")
+            }
+            transaction {
+                input(BillingContract.CONTRACT_NAME, inputBillingState)
+                output(BillingContract.CONTRACT_NAME, outputBillingState)
+                command(someoneElsesParty.owningKey, command)
+                failsWith("$signers should be transaction signers")
+            }
+            transaction {
+                input(BillingContract.CONTRACT_NAME, inputBillingState)
+                output(BillingContract.CONTRACT_NAME, outputBillingState.copy(issuer = someoneElsesParty))
+                command(signingKeys, command)
+                failsWith("Input and output BillingsState should be equal but the `status` field")
+            }
+            transaction {
+                input(BillingContract.CONTRACT_NAME, inputBillingState.copy(status = BillingStateStatus.CLOSED))
+                output(BillingContract.CONTRACT_NAME, outputBillingState)
+                command(signingKeys, command)
+                failsWith("Input BillingsState status should be one of $inputStateStatuses")
+            }
+            transaction {
+                input(BillingContract.CONTRACT_NAME, inputBillingState)
+                output(BillingContract.CONTRACT_NAME, outputBillingState.copy(status = BillingStateStatus.ACTIVE))
+                command(signingKeys, command)
+                failsWith("Output BillingsState status should be $outputStateStatus")
+            }
+        }
+    }
+
 
     private fun randomTestIdentity() = TestIdentity(CordaX500Name.parse("O=${RandomStringUtils.randomAlphabetic(10)},L=London,C=GB"))
 

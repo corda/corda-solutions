@@ -1,12 +1,16 @@
 package com.r3.businessnetworks.billing.states
 
+import com.sun.org.apache.xpath.internal.operations.Bool
 import net.corda.core.contracts.*
+import net.corda.core.contracts.Requirements.using
 import net.corda.core.identity.Party
 import net.corda.core.schemas.MappedSchema
 import net.corda.core.schemas.PersistentState
 import net.corda.core.schemas.QueryableState
+import net.corda.core.serialization.CordaSerializable
 import net.corda.core.transactions.LedgerTransaction
 import java.lang.IllegalArgumentException
+import java.security.PublicKey
 import java.time.Instant
 
 class BillingContract : Contract {
@@ -140,6 +144,7 @@ class BillingContract : Contract {
         "Input and output BillingStates should be equal except the `spent` field" using (inputBillingState == outputBillingState.copy(spent = inputBillingState.spent))
         "Spent amount of the output BillingState should be not negative" using (outputBillingState.spent >= 0)
         "AttachBack transaction should be signed only by the owner" using (command.signers.size == 1 && command.signers.single() == outputBillingState.owner.owningKey)
+        "BillingState status should be ACTIVE" using (inputBillingState.status == BillingStateStatus.ACTIVE)
 
         var totalAmount = 0L
         chips.forEach {
@@ -157,34 +162,36 @@ class BillingContract : Contract {
         }
     }
 
-    private fun verifyReturnTransaction(tx : LedgerTransaction, command : Command<Commands>) = requireThat {
-        "There should be a single output of BillingState type" using (tx.outputs.size == 1 && tx.outputStates.single() is BillingState)
-        "There should be a single input of BillingState type" using (tx.inputs.size == 1 && tx.inputStates.single() is BillingState)
-        val inputBillingState = tx.inputsOfType<BillingState>().single()
-        val outputBillingState = tx.outputsOfType<BillingState>().single()
-        "Both issuer and owner should be signers" using (command.signers.toSet() == setOf(inputBillingState.issuer.owningKey, inputBillingState.owner.owningKey))
-        "Input BillingsState status should be ACTIVE" using (inputBillingState.status == BillingStateStatus.ACTIVE)
-        "Output BillingsState status should be RETURNED" using (outputBillingState.status == BillingStateStatus.RETURNED)
-    }
+    private fun verifyReturnTransaction(tx : LedgerTransaction, command : Command<Commands>) = verifyReturnRevokeClose(
+            tx, command, listOf(BillingStateStatus.ACTIVE), BillingStateStatus.RETURNED, true, true
+    )
 
-    private fun verifyRevokeTransaction(tx : LedgerTransaction, command : Command<Commands>) = requireThat {
-        "There should be a single output of BillingState type" using (tx.outputs.size == 1 && tx.outputStates.single() is BillingState)
-        "There should be a single input of BillingState type" using (tx.inputs.size == 1 && tx.inputStates.single() is BillingState)
-        val inputBillingState = tx.inputsOfType<BillingState>().single()
-        val outputBillingState = tx.outputsOfType<BillingState>().single()
-        "The issuer of billing state should be a signer" using (command.signers.toSet() == setOf(inputBillingState.issuer.owningKey))
-        "Input BillingsState status should be ACTIVE" using (inputBillingState.status == BillingStateStatus.ACTIVE)
-        "Output BillingsState status should be REVOKED" using (outputBillingState.status == BillingStateStatus.REVOKED)
-    }
+    private fun verifyRevokeTransaction(tx : LedgerTransaction, command : Command<Commands>) = verifyReturnRevokeClose(
+            tx, command, listOf(BillingStateStatus.ACTIVE), BillingStateStatus.REVOKED, true, false
+    )
 
-    private fun verifyCloseTransaction(tx : LedgerTransaction, command : Command<Commands>) = requireThat {
+    private fun verifyCloseTransaction(tx : LedgerTransaction, command : Command<Commands>) = verifyReturnRevokeClose(
+            tx, command, listOf(BillingStateStatus.RETURNED, BillingStateStatus.REVOKED), BillingStateStatus.CLOSED, true, false
+    )
+
+    private fun verifyReturnRevokeClose(tx : LedgerTransaction,
+                                        command : Command<Commands>,
+                                        inputStateStatuses : List<BillingStateStatus>,
+                                        outputStateStatus : BillingStateStatus,
+                                        issuerIsSigner : Boolean,
+                                        ownerIsSigner : Boolean) = requireThat {
         "There should be a single output of BillingState type" using (tx.outputs.size == 1 && tx.outputStates.single() is BillingState)
         "There should be a single input of BillingState type" using (tx.inputs.size == 1 && tx.inputStates.single() is BillingState)
         val inputBillingState = tx.inputsOfType<BillingState>().single()
         val outputBillingState = tx.outputsOfType<BillingState>().single()
-        "The issuer of billing state should be a signer" using (command.signers.toSet() == setOf(inputBillingState.issuer.owningKey))
-        "Input BillingsState status should be RETURNED or REVOKED" using (inputBillingState.status in setOf(BillingStateStatus.RETURNED, BillingStateStatus.REVOKED))
-        "Output BillingsState status should be CLOSED" using (outputBillingState.status == BillingStateStatus.CLOSED)
+        val signers = mutableListOf<Party>()
+        if (issuerIsSigner) signers.add(inputBillingState.issuer)
+        if (ownerIsSigner) signers.add(inputBillingState.owner)
+        "$signers should be transaction signers" using (command.signers.toSet() == signers.map { it.owningKey }.toSet())
+        "Input and output BillingsState should be equal but the `status` field" using (inputBillingState == outputBillingState.copy(status = inputBillingState.status))
+        "Input BillingsState status should be one of $inputStateStatuses" using (inputBillingState.status in inputStateStatuses)
+        "Output BillingsState status should be $outputStateStatus" using (outputBillingState.status == outputStateStatus)
+
     }
 
     private fun verifyTimeWindow(expiryDate : Instant, tx: LedgerTransaction) = requireThat {
@@ -225,6 +232,7 @@ data class BillingState(
                     && linearId == chip.billingStateLinearId
 }
 
+@CordaSerializable
 enum class BillingStateStatus {
     ACTIVE, RETURNED, REVOKED, CLOSED
 }
