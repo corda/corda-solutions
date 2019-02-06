@@ -15,7 +15,9 @@ import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 
 /**
- * Closes [billingState]
+ * Closes the [billingState]. A BillingStates is supposed to be closed at the end of its lifetime, after it has been fully settled.
+ *
+ * @param billingState BillingState to close. Must be in either REVOKED or RETURNED status
  */
 @StartableByRPC
 @InitiatingFlow

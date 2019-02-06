@@ -11,7 +11,7 @@ import net.corda.core.flows.StartableByRPC
 import net.corda.core.identity.Party
 
 /**
- * This file contains wrapper flows around [MemberDatabaseService] to be called via RPC
+ * This file contains convenience flows-wrappers around [MemberDatabaseService].
  */
 @StartableByRPC
 class GetBillingStateByLinearId(private val linearId : UniqueIdentifier) : FlowLogic<StateAndRef<BillingState>?>() {

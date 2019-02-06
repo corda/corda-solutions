@@ -12,9 +12,6 @@ import net.corda.core.flows.ReceiveFinalityFlow
 import net.corda.core.flows.SignTransactionFlow
 import net.corda.core.transactions.SignedTransaction
 
-/**
- * Responder to the [IssueBillingStateFlow]
- */
 @InitiatedBy(IssueBillingStateFlow::class)
 open class IssueBillingStateFlowResponder(private val session : FlowSession) : FlowLogic<Unit>() {
 

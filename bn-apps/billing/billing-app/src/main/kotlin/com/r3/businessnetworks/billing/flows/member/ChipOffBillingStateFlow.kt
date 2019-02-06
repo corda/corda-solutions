@@ -18,11 +18,13 @@ import java.time.Duration
 import java.time.Instant
 
 /**
- * Chips off one or more states from the BillingState
+ * Chips off one or more chips from the BillingState. Chipping of multiple chips in one transaction might be useful for performance optimisation.
  *
  * @param billingState state to chip off from
  * @param chipAmount amount of each cheap off state
  * @param numberOfChips number of states to chip off
+ * @param timeTolerance time tolerance to be used for the transaction time window if billing state expiry date is provided
+ * @return a list of chipped of states with the associated signed transaction
  */
 @StartableByRPC
 @InitiatingFlow
@@ -60,13 +62,19 @@ class ChipOffBillingStateFlow(private val billingState : StateAndRef<BillingStat
 }
 
 /**
- * Tries to chip off the rest of the unspent amount from the [billingState].
- * Let's say if [billingState] unspent amount is 5 and [chipAmount] is 2 then the flow would chip off 2x2 chips and leave 1 unspent.
- * The flow is applicable only to Pre-paid billing states, with positive issued amount
+ * Chips off the rest of the unspent amount from the [billingState].
+ * Example: if [billingState] unspent amount is 5 and [chipAmount] is 2 then the flow would chip off 2x2 chips and leave 1 unspent.
+ * The flow is applicable only to pre-paid billing states (i.e. with positive issued amount)
+ *
+ * @param billingState billing state to chip off from
+ * @param chipAmount amount of each billing chip
+ * @param timeTolerance time tolerance to be used for the transaction time window if billing state expiry date is provided
+ * @return a list of chipped of states with the associated signed transaction
  */
 @StartableByRPC
 class ChipOffRemainingAmountFlow(private val billingState : StateAndRef<BillingState>,
-                                 private val chipAmount : Long) : FlowLogic<Pair<List<BillingChipState>, SignedTransaction>?>() {
+                                 private val chipAmount : Long,
+                                 private val timeTolerance : Duration = TIME_TOLERANCE) : FlowLogic<Pair<List<BillingChipState>, SignedTransaction>?>() {
     @Suspendable
     override fun call() : Pair<List<BillingChipState>, SignedTransaction>? {
         if (billingState.state.data.issued == 0L) {
@@ -76,7 +84,7 @@ class ChipOffRemainingAmountFlow(private val billingState : StateAndRef<BillingS
         if (numberOfChips <= 0) {
             return null
         }
-        return subFlow(ChipOffBillingStateFlow(billingState, chipAmount, numberOfChips.toInt()))
+        return subFlow(ChipOffBillingStateFlow(billingState, chipAmount, numberOfChips.toInt(), timeTolerance))
 
     }
 }

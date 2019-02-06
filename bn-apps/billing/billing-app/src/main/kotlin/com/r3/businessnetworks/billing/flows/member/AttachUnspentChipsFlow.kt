@@ -17,7 +17,13 @@ import java.time.Duration
 import java.time.Instant
 
 /**
- * Attaches [unspentChips] to the [billingState]
+ * Attaches [unspentChips] to the [billingState]. Unspent chips are required to be attached before the [billingState] is returned,
+ * otherwise the state owner would be billed for the chips they have not spent.
+ *
+ * @param billingState billing state to attach chips to
+ * @param unspentChips unspent chips to be attached to the billing state
+ * @param timeTolerance time tolerance for the transaction time window. It's used only if billingState has an expiry date defined.
+ * @return a pair of billing state with the chips attached and A respective signed transaction
  */
 @StartableByRPC
 @InitiatingFlow
@@ -35,6 +41,7 @@ class AttachUnspentChipsFlow(private val billingState : StateAndRef<BillingState
             builder.setTimeWindow(Instant.now(), timeTolerance)
         }
 
+        // adding each chip as an input and calculating the total unspent amount
         var totalUnspent = 0L
         unspentChips.forEach {
             builder.addInputState(it)
@@ -55,7 +62,9 @@ class AttachUnspentChipsFlow(private val billingState : StateAndRef<BillingState
 
 /**
  * Fetches all unspent chips for [billingState] and attaches them to the state.
- * Returns null if there are no unspent chips.
+ *
+ * @param billingState billing state to attach chips to
+ * @return a pair of billing state with the chips attached and A respective signed transaction or null if there are no unspent chips left.
  */
 @StartableByRPC
 class AttachAllUnspentChipsFlow(private val billingState : StateAndRef<BillingState>): FlowLogic<Pair<BillingState, SignedTransaction>?>()  {

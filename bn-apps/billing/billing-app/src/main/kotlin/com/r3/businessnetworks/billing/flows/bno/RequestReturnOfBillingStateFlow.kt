@@ -17,7 +17,11 @@ import net.corda.core.serialization.CordaSerializable
 data class ReturnRequest(val billingStateLinearId : UniqueIdentifier)
 
 /**
- * Requests a party to return their billing state
+ * Requests a party to return their billing state. Before returning the state, the party wold attach all unspent chips to it.
+ * RETURNed billing states and associated chips can not be state owners anymore.
+ *
+ * @param billingState BillingState to return. Must be in ACTIVE status.
+ *
  */
 @InitiatingFlow
 @StartableByRPC
@@ -31,7 +35,9 @@ class RequestReturnOfBillingStateFlow(private val billingState : StateAndRef<Bil
 }
 
 /**
- * Requests a party to return all of their active billing states
+ * Requests a party to return all of their active billing states.
+ *
+ * @param party the party who needs to return all of their billing states
  */
 @StartableByRPC
 class RequestReturnOfBillingStateForPartyFlow(private val party : Party) : FlowLogic<Unit>() {
