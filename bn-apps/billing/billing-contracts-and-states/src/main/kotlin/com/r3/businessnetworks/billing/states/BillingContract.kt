@@ -110,7 +110,7 @@ class BillingContract : Contract {
     }
 
     private fun verifyUseChipTransaction(tx : LedgerTransaction, commands : List<Command<BillingContract.Commands>>) = requireThat {
-        "UseChip transaction can contain only UseChip commands" using (commands.find { it.value !is Commands.UseChip } == null)
+        "UseChip transaction can contain only UseChip Billing commands" using (commands.find { it.value !is Commands.UseChip } == null)
         "UseChip transaction should not have BillingStates in inputs" using (tx.inputsOfType<BillingState>().isEmpty())
         "UseChip transaction should not have BillingStates in outputs" using (tx.outputsOfType<BillingState>().isEmpty())
         "UseChip transaction should not have BillingChipState in outputs" using (tx.outputsOfType<BillingChipState>().isEmpty())
@@ -126,7 +126,7 @@ class BillingContract : Contract {
         tx.inputsOfType<BillingChipState>().forEach {
             "There should be a UseChip command for each BillingChip owner" using (commandsByOwner[it.owner] != null)
             val billingState = billingStateByLinearId[it.billingStateLinearId]
-            "There should be a reference BillingState for each BillingChip" using (billingState != null
+            "There should be a valid reference BillingState for each BillingChip" using (billingState != null
                     && billingState.isChipValid(it))
             "Reference BillingState status should be ACTIVE" using (billingState!!.status == BillingStateStatus.ACTIVE)
             if (billingState.expiryDate != null) {
