@@ -8,6 +8,7 @@ import com.r3.businessnetworks.testutilities.identity
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.node.services.queryBy
 import org.junit.Test
+import java.time.Instant
 import kotlin.test.assertEquals
 
 class ChipOffBillingStateFlowTest : AbstractBusinessNetworksFlowTest(1, 1,
@@ -16,9 +17,9 @@ class ChipOffBillingStateFlowTest : AbstractBusinessNetworksFlowTest(1, 1,
     private fun bnoNode() = bnoNodes.single()
     private fun participantNode() = participantsNodes.single()
 
-    private fun genericTest(billingStateAmount : Long, chipOffFunction : (billingState : StateAndRef<BillingState>) -> Pair<Long, Int>) {
+    private fun genericTest(billingStateAmount : Long, expiryDate : Instant? = null, chipOffFunction : (billingState : StateAndRef<BillingState>) -> Pair<Long, Int>) {
 
-        runFlowAndReturn(bnoNode(), IssueBillingStateFlow(participantNode().identity(), billingStateAmount))
+        runFlowAndReturn(bnoNode(), IssueBillingStateFlow(participantNode().identity(), billingStateAmount, expiryDate))
         val billingState = participantNode().services.vaultService.queryBy<BillingState>().states.single()
 
         val (chipOffAmount, numberOfChips) = chipOffFunction(billingState)
@@ -39,6 +40,12 @@ class ChipOffBillingStateFlowTest : AbstractBusinessNetworksFlowTest(1, 1,
 
     @Test
     fun `should chip off multiple states`()  = genericTest(10L) {billingState ->
+        runFlowAndReturn(participantNode(), ChipOffBillingStateFlow(billingState, 2L, 3))
+        Pair(2L, 3)
+    }
+
+    @Test
+    fun `should chip off multiple states with time window`()  = genericTest(10L, Instant.now().plusSeconds(10000)) { billingState ->
         runFlowAndReturn(participantNode(), ChipOffBillingStateFlow(billingState, 2L, 3))
         Pair(2L, 3)
     }

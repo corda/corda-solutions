@@ -14,7 +14,11 @@ object BillingStateSchemaV1 : MappedSchema(schemaFamily = BillingState::class.ja
     @Table(name = "billing_states")
     class PersistentBillingState (
             @Column(name = "issuer")
-            var issuer: Party) : PersistentState()
+            var issuer: Party,
+            @Column(name = "owner")
+            var owner : Party,
+            @Column(name = "status")
+            var status : BillingStateStatus) : PersistentState()
 }
 
 @CordaSerializable

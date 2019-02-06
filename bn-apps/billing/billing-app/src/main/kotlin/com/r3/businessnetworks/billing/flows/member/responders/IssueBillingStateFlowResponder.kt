@@ -1,4 +1,4 @@
-package com.r3.businessnetworks.billing.flows.member
+package com.r3.businessnetworks.billing.flows.member.responders
 
 import co.paralleluniverse.fibers.Suspendable
 import com.r3.businessnetworks.billing.flows.bno.IssueBillingStateFlow
@@ -16,19 +16,22 @@ import net.corda.core.transactions.SignedTransaction
  * Responder to the [IssueBillingStateFlow]
  */
 @InitiatedBy(IssueBillingStateFlow::class)
-class IssueBillingStateFlowResponder(private val session : FlowSession) : FlowLogic<Unit>() {
+open class IssueBillingStateFlowResponder(private val session : FlowSession) : FlowLogic<Unit>() {
 
     @Suspendable
     override fun call() {
         val signResponder = object : SignTransactionFlow(session) {
             @Suspendable
-            override fun checkTransaction(stx : SignedTransaction) {
-                val billingState = stx.tx.outputStates.single() as BillingState
-                if (billingState.owner != ourIdentity) throw FlowException("Wrong owner")
-                if (stx.tx.commands.single().value !is BillingContract.Commands.Issue) throw FlowException("Wrong command")
-            }
+            override fun checkTransaction(stx : SignedTransaction) = verifyTransaction(stx)
         }
         val stx = subFlow(signResponder)
         subFlow(ReceiveFinalityFlow(session, stx.id))
+    }
+
+    protected open fun verifyTransaction(stx : SignedTransaction) {
+        stx.toLedgerTransaction(serviceHub, checkSufficientSignatures = false).verify()
+        val billingState = stx.tx.outputStates.single() as BillingState
+        if (billingState.owner != ourIdentity) throw FlowException("Wrong owner")
+        if (stx.tx.commands.single().value !is BillingContract.Commands.Issue) throw FlowException("Wrong command")
     }
 }

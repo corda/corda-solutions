@@ -14,8 +14,11 @@ import net.corda.core.node.services.vault.Builder.equal
 import net.corda.core.node.services.vault.QueryCriteria
 import net.corda.core.serialization.SingletonSerializeAsToken
 
+/**
+ * Convenience class to get BillingStates and BillingChipStates from the database
+ */
 @CordaService
-class DatabaseService(private val appServiceHub : AppServiceHub) : SingletonSerializeAsToken() {
+class MemberDatabaseService(private val appServiceHub : AppServiceHub) : SingletonSerializeAsToken() {
 
     fun getBillingStateByLinearId(linearId : UniqueIdentifier) : StateAndRef<BillingState>? {
         val states = appServiceHub.vaultService
@@ -29,7 +32,8 @@ class DatabaseService(private val appServiceHub : AppServiceHub) : SingletonSeri
     }
 
     fun getChipsByBillingState(billingStateLinearId : UniqueIdentifier) : List<StateAndRef<BillingChipState>> {
-        val linearIdCriteria = BillingChipStateSchemaV1.PersistentBillingChipState::billingStateLinearId.equal(billingStateLinearId)
+        val linearIdCriteria
+                = BillingChipStateSchemaV1.PersistentBillingChipState::billingStateLinearId.equal(billingStateLinearId.toString())
         return appServiceHub.vaultService.queryBy<BillingChipState>(QueryCriteria.VaultCustomQueryCriteria(linearIdCriteria)).states
     }
 

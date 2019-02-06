@@ -22,7 +22,7 @@ class IssueBillingStateFlowTest : AbstractBusinessNetworksFlowTest(
     private fun participantNode() = participantsNodes.single()
 
     @Test
-    fun `should issue BillingState`() {
+    fun `test issue`() {
         val amount = 100L
         val expiryDate = Instant.now()
 

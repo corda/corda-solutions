@@ -24,11 +24,10 @@ abstract class AbstractConfigurationService(val appServiceHub : AppServiceHub, v
         _config = ConfigFactory.parseFile(file)
     }
 
-    fun bnoName() = CordaX500Name.parse(_config.getString(BNO_NAME))
-    fun bnoParty() = getPartyOrThrowException(bnoName())
-    fun notaryName() = CordaX500Name.parse(_config.getString(NOTARY_NAME))
-    fun notaryParty() = getPartyOrThrowException(notaryName())
-
+    open fun bnoName() = CordaX500Name.parse(_config.getString(BNO_NAME))
+    open fun bnoParty() = getPartyOrThrowException(bnoName())
+    open fun notaryName() = CordaX500Name.parse(_config.getString(NOTARY_NAME))
+    open fun notaryParty() = getPartyOrThrowException(notaryName())
 
     fun getPartyOrThrowException(name : CordaX500Name) : Party {
         return appServiceHub.networkMapCache.getPeerByLegalName(name)

@@ -35,7 +35,7 @@ class DataFlowsTest : AbstractBusinessNetworksFlowTest(2, 1,
 
     @Test
     fun `test get billing chip states by billingStateLinearId`() {
-        runFlowAndReturn(bno1Node(), IssueBillingStateFlow(participantNode().identity(), 10L, Instant.now()))
+        runFlowAndReturn(bno1Node(), IssueBillingStateFlow(participantNode().identity(), 10L))
         val billingState = participantNode().services.vaultService.queryBy<BillingState>().states.single()
         runFlowAndReturn(participantNode(), ChipOffBillingStateFlow(billingState, 1L, 5))
         val chips = runFlowAndReturn(participantNode(), GetChipsByBillingState(billingState.state.data.linearId))

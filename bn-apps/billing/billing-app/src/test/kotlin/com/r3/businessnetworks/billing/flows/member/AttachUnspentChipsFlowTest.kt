@@ -30,11 +30,16 @@ class AttachUnspentChipsFlowTest : AbstractBusinessNetworksFlowTest(1, 1,
 
     @Test
     fun `test attach all unspent chips`() {
+        // issuing some chips
         val (billingState, billingStateAfterChipOff, _) = issueSomeChips()
+
+        // spending some chips
+
         runFlowAndReturn(participantNode(), AttachAllUnspentChipsFlow(billingStateAfterChipOff))
 
         val billingStateAfterAttach = participantNode().services.vaultService.queryBy<BillingState>().states.single()
         val chipsAfterAttach = participantNode().services.vaultService.queryBy<BillingChipState>().states
+
         assertTrue(chipsAfterAttach.isEmpty())
         assertEquals(billingState.state.data, billingStateAfterAttach.state.data)
     }

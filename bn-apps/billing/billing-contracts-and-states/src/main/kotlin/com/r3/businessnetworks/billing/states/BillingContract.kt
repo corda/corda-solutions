@@ -1,16 +1,20 @@
 package com.r3.businessnetworks.billing.states
 
-import com.sun.org.apache.xpath.internal.operations.Bool
-import net.corda.core.contracts.*
-import net.corda.core.contracts.Requirements.using
+import net.corda.core.contracts.BelongsToContract
+import net.corda.core.contracts.Command
+import net.corda.core.contracts.CommandData
+import net.corda.core.contracts.Contract
+import net.corda.core.contracts.ContractState
+import net.corda.core.contracts.LinearState
+import net.corda.core.contracts.TypeOnlyCommandData
+import net.corda.core.contracts.UniqueIdentifier
+import net.corda.core.contracts.requireThat
 import net.corda.core.identity.Party
 import net.corda.core.schemas.MappedSchema
 import net.corda.core.schemas.PersistentState
 import net.corda.core.schemas.QueryableState
 import net.corda.core.serialization.CordaSerializable
 import net.corda.core.transactions.LedgerTransaction
-import java.lang.IllegalArgumentException
-import java.security.PublicKey
 import java.time.Instant
 
 class BillingContract : Contract {
@@ -215,7 +219,7 @@ data class BillingState(
 ) : LinearState, QueryableState {
     override fun generateMappedObject(schema : MappedSchema) : PersistentState {
         return when (schema) {
-            is BillingStateSchemaV1 -> BillingStateSchemaV1.PersistentBillingState(issuer)
+            is BillingStateSchemaV1 -> BillingStateSchemaV1.PersistentBillingState(issuer, owner, status)
             else -> throw IllegalArgumentException("Unrecognised schema $schema")
         }
     }
@@ -243,6 +247,15 @@ data class BillingChipState (
         val owner: Party,
         val amount: Long,
         val billingStateLinearId : UniqueIdentifier
-) : ContractState {
+) : ContractState, QueryableState {
     override val participants = listOf(owner)
+
+    override fun generateMappedObject(schema : MappedSchema) : PersistentState {
+        return when (schema) {
+            is BillingChipStateSchemaV1 -> BillingChipStateSchemaV1.PersistentBillingChipState(issuer, amount, billingStateLinearId.toString())
+            else -> throw IllegalArgumentException("Unrecognised schema $schema")
+        }
+    }
+    override fun supportedSchemas() = listOf(BillingChipStateSchemaV1)
+
 }

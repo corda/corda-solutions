@@ -1,6 +1,7 @@
 package com.r3.businessnetworks.billing.flows.member
 
 import co.paralleluniverse.fibers.Suspendable
+import com.r3.businessnetworks.billing.flows.Constants.TIME_TOLERANCE
 import com.r3.businessnetworks.billing.flows.member.service.MemberConfigurationService
 import com.r3.businessnetworks.billing.states.BillingChipState
 import com.r3.businessnetworks.billing.states.BillingContract
@@ -13,7 +14,6 @@ import net.corda.core.flows.InitiatingFlow
 import net.corda.core.flows.StartableByRPC
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
-import net.corda.core.utilities.seconds
 import java.time.Duration
 import java.time.Instant
 
@@ -21,7 +21,7 @@ import java.time.Instant
  * Chips off one or more states from the BillingState
  *
  * @param billingState state to chip off from
- * @param amount amount of each cheap off state
+ * @param chipAmount amount of each cheap off state
  * @param numberOfChips number of states to chip off
  */
 @StartableByRPC
@@ -29,7 +29,7 @@ import java.time.Instant
 class ChipOffBillingStateFlow(private val billingState : StateAndRef<BillingState>,
                               private val chipAmount : Long,
                               private val numberOfChips : Int = 1,
-                              private val tolerance : Duration = 30.seconds) : FlowLogic<Pair<List<BillingChipState>, SignedTransaction>>() {
+                              private val timeTolerance : Duration = TIME_TOLERANCE) : FlowLogic<Pair<List<BillingChipState>, SignedTransaction>>() {
     @Suspendable
     override fun call() : Pair<List<BillingChipState>, SignedTransaction> {
         val configuration = serviceHub.cordaService(MemberConfigurationService::class.java)
@@ -40,7 +40,7 @@ class ChipOffBillingStateFlow(private val billingState : StateAndRef<BillingStat
 
         // if expiry date is present - adding a time window
         if (billingState.state.data.expiryDate != null) {
-            builder.setTimeWindow(Instant.now(), tolerance)
+            builder.setTimeWindow(Instant.now(), timeTolerance)
         }
 
         // generating enough of chip off states

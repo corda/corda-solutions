@@ -4,6 +4,7 @@ import co.paralleluniverse.fibers.Suspendable
 import com.r3.businessnetworks.billing.flows.bno.service.BNOConfigurationService
 import com.r3.businessnetworks.billing.states.BillingContract
 import com.r3.businessnetworks.billing.states.BillingState
+import com.r3.businessnetworks.billing.states.BillingStateStatus
 import net.corda.core.flows.CollectSignaturesFlow
 import net.corda.core.flows.FinalityFlow
 import net.corda.core.flows.FlowLogic
@@ -12,8 +13,6 @@ import net.corda.core.flows.StartableByRPC
 import net.corda.core.identity.Party
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
-import net.corda.core.utilities.seconds
-import java.time.Duration
 import java.time.Instant
 
 /**
@@ -35,7 +34,7 @@ class IssueBillingStateFlow(private val owner : Party,
         val configuration = serviceHub.cordaService(BNOConfigurationService::class.java)
         val notary = configuration.notaryParty()
 
-        val billingState = BillingState(ourIdentity, owner, amount, 0L, expiryDate)
+        val billingState = BillingState(ourIdentity, owner, amount, 0L, BillingStateStatus.ACTIVE, expiryDate)
         val builder = TransactionBuilder(notary)
                 .addOutputState(billingState, BillingContract.CONTRACT_NAME)
                 .addCommand(BillingContract.Commands.Issue(), ourIdentity.owningKey, owner.owningKey)
