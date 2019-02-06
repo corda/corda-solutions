@@ -17,21 +17,27 @@ import net.corda.core.serialization.CordaSerializable
 import net.corda.core.transactions.LedgerTransaction
 import java.time.Instant
 
+/**
+ * Governing contract for BillingStates and BillingChipStates
+ */
 class BillingContract : Contract {
     companion object {
         const val CONTRACT_NAME = "com.r3.businessnetworks.billing.states.BillingContract"
     }
 
     interface Commands : CommandData {
-        // billing state-related commands
-        class Issue : Commands, TypeOnlyCommandData()
-        class Return : Commands, TypeOnlyCommandData()
-        class Revoke : Commands, TypeOnlyCommandData()
-        class Close : Commands, TypeOnlyCommandData()
-        // chip related commands
-        class ChipOff : Commands, TypeOnlyCommandData() //  split
-        class AttachBack : Commands, TypeOnlyCommandData() // combine
-        data class UseChip(val owner : Party) : Commands // use
+        // BillingState-related commands
+        class Issue : Commands, TypeOnlyCommandData() // issues BillingState on the ledger
+        class Return : Commands, TypeOnlyCommandData() // returns BillingState to the issuer in the end of billing period
+        class Revoke : Commands, TypeOnlyCommandData() // revoked BillingState as a result of a governance action
+        class Close : Commands, TypeOnlyCommandData() // closes BillingState after its obligations are settled
+        // BillingChipState-related commands
+        class ChipOff : Commands, TypeOnlyCommandData() // chips off BillingChipStates from a BillingState
+        class AttachBack : Commands, TypeOnlyCommandData() // attaches back unspent BillingChipStates to their BillingState
+        data class UseChip(
+                // owner of the billing state that must match the UseChip command signer
+                val owner : Party
+        ) : Commands // should be included to the paid-for transactions
     }
 
     override fun verify(tx : LedgerTransaction) {
@@ -41,7 +47,7 @@ class BillingContract : Contract {
             throw IllegalArgumentException("Transaction must contain at least one of the BillingContract commands")
         }
 
-        // UseChip command requires different handling as there could be multiple instances of those inside one transaction
+        // UseChip command requires different handling as there could be multiple instances of those inside a single transaction
         // Note: at this point [commands] list contains only commands that are related to the [BillingContract]
         // as everything else has been filtered ut in the very beginning
         if (commands.first().value is Commands.UseChip) {
@@ -178,6 +184,9 @@ class BillingContract : Contract {
             tx, command, listOf(BillingStateStatus.RETURNED, BillingStateStatus.REVOKED), BillingStateStatus.CLOSED, true, false
     )
 
+    /**
+     * Return, Revoke and Close cases are very similar and hence can be generically handled by a single verification function
+     */
     private fun verifyReturnRevokeClose(tx : LedgerTransaction,
                                         command : Command<Commands>,
                                         inputStateStatuses : List<BillingStateStatus>,
@@ -198,6 +207,9 @@ class BillingContract : Contract {
 
     }
 
+    /**
+     * Verifies that untilTime of the [tx] timewindow is less that the expiryDate of the billing state
+     */
     private fun verifyTimeWindow(expiryDate : Instant, tx: LedgerTransaction) = requireThat {
         // expiry date should be less than the upper boundary of the transaction time window
         "Output BillingState expiry date should be within the specified time window" using (tx.timeWindow != null
@@ -207,14 +219,18 @@ class BillingContract : Contract {
     }
 }
 
+/**
+ * Represents billing states on the ledger
+ */
 @BelongsToContract(BillingContract::class)
 data class BillingState(
-        val issuer: Party,
-        val owner: Party,
-        val issued: Long,
-        val spent: Long,
-        val status : BillingStateStatus = BillingStateStatus.ACTIVE,
-        val expiryDate : Instant? = null,
+        val issuer: Party, // issuer of the billing state
+        val owner: Party, // owner of the billing state
+        val issued: Long, // issued amount. Can be 0L for unlimited sending
+        val spent: Long, // spent amount. BillingContract prevents spent amount from becoming greater than issued if issued is not 0L.
+        val status : BillingStateStatus = BillingStateStatus.ACTIVE, // billing state status
+        val expiryDate : Instant? = null, // billing state expiry date. If the expiry date is null then state is considered to be unexpirable.
+                                          // Transactions involving expirable states require TimeWindow to be provided.
         override val linearId : UniqueIdentifier = UniqueIdentifier()
 ) : LinearState, QueryableState {
     override fun generateMappedObject(schema : MappedSchema) : PersistentState {
@@ -227,25 +243,54 @@ data class BillingState(
 
     override val participants = listOf(owner, issuer)
 
+    /**
+     * Chips off a BillingChipState of the provided amount
+     */
     fun chipOff(amount : Long) : Pair<BillingState, BillingChipState>
             = Pair(copy(spent = spent + amount), BillingChipState(issuer, owner, amount, linearId))
 
+    /**
+     * Verifies that the BillingChip matches this BillingState
+     */
     fun isChipValid(chip : BillingChipState) =
                     owner == chip.owner
                     && issuer == chip.issuer
                     && linearId == chip.billingStateLinearId
 }
 
+/**
+ * Enum that represents BillinState status
+ */
 @CordaSerializable
 enum class BillingStateStatus {
-    ACTIVE, RETURNED, REVOKED, CLOSED
+    // Active billing states can be chipped off and can be used to pay for transactions
+    ACTIVE,
+    // In the end of the billing period, billing states are returned to the issuer.
+    // Neither returned billing states nor their chips can't be used to pay for transactions. Its important to
+    // attach all unspent chips before returning the state to avoid being billed for unused resources.
+    RETURNED,
+    // Billing states can be revoked as a result of a governance action. Revocation can be done unilaterally by BNO and
+    // doesn't require the owner's signature. Neither revoked billing states nor their chips can't be used to pay for transactions.
+    REVOKED,
+    // After the obligations are settled, billing state is supposed to be closed. Closing can be done unilaterally by BNO
+    // and doesn't require owner's signature. Neither revoked billing states nor their chips can't be used to pay for transactions.
+    // Billing Service doesn't provide settlement functionality. Please use different framework such as Corda Settler
+    // https://github.com/corda/corda-settler to settle the obligations.
+    CLOSED
 }
 
+/**
+ * Represents billing chips that can be included to paid-for transactions
+ */
 @BelongsToContract(BillingContract::class)
 data class BillingChipState (
+        // Must match the issuer of the BillingState.
         val issuer: Party,
+        // Must match the owner of the BillingState.
         val owner: Party,
+        // Chipped off amount.
         val amount: Long,
+        // Linear id of the associated BillingState
         val billingStateLinearId : UniqueIdentifier
 ) : ContractState, QueryableState {
     override val participants = listOf(owner)
