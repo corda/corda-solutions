@@ -5,11 +5,13 @@ Billing Service
 
 *Billing Service requires Corda 4 as a minimum version, as it heavily relies on the Reference States.*
 
-Billing Service can be used for billing and metering on Business Networks. Billing Service has a notion of *Billing Chips* that can be included into Corda transactions that participants need to pay for. *Billing Chips* never cross a single transaction boundaries and hence never cause privacy leaks. All *Billing Chips* are attached to their respective *Billing States*, that accumulate the total *spent* amount and can be safely reported back to the BNO without leaking the transaction history where the *Billing Chips* have been involved into. *Billing States Evolution* is depicted on the diagram below:
+Billing Service can be used for billing and metering on Business Networks. Billing Service has a notion of *Billing Chips* that can be included into Corda transactions that participants need to pay for. *Billing Chips* never cross a single transaction boundaries (when created, *Billing Chips* can be consumed in exactly one transaction) and hence never cause privacy leaks. All *Billing Chips* are attached to their respective *Billing States*, that accumulate the total *spent* amount and can be safely reported back to the BNO without leaking the transaction history where the *Billing Chips* have been involved into. 
+
+> We felt that there is a need for a dedicated billing pattern as many suggested approaches we have encountered leak privacy. For example if you were to use tokens to implement billing on Business Networks, then there would be no way for a member to report the actual spent amount, without leaking the transactions where the tokens have been used in. 
+
+*Billing States Evolution* is depicted on the diagram below. The diagram is created in *Corda Modelling Notation*. Please see [this link](https://solutions.corda.net/corda-modelling-notation/overview/overview-overview.html) for more details.
 
 ![Billing State Evolution](./resources/billing_state_evolution.png) 
-
-*Please see [Corda Modelling Notation](https://solutions.corda.net/corda-modelling-notation/overview/overview-overview.html) for more information about modeling for Corda.* 
 
 Billing workflow consists of the following steps:
 1. The BNO issues *Billing States* to their Business Network members. The BNO can either pre-allocate an amount that a member can spent (bounded state), or leave it empty which would effectively allow a member to spent an unlimited number of *Billing Chips* (unbounded state, can be used for transaction metering). *Billing States* might have an *expiry date*, after which the states become unusable.
@@ -19,13 +21,13 @@ Billing workflow consists of the following steps:
 5. The BNO bills the members based on the reported *spent* amounts. After all obligations are settled, the BNO unilaterally *closes* all returned states. *Billing Service doesn't solve the settlement problem - explained below.*
 6. The BNO can also unilaterally (a member's signature is not required) *revoke Billing States* as a result of a governance action. Revoked *Billing States* and their *Billing Chips* can not be used to pay for transactions anymore.
 
-*Billing State Machine* is depicted on the diagram below:
+*Billing State Machine* is depicted on the diagram below. The diagram is created in *Corda Modelling Notation*. Please see [this link](https://solutions.corda.net/corda-modelling-notation/overview/overview-overview.html) for more details.
 
 ![Billing State Machine](./resources/billing_state_machine.png)
 
 What Billing Service is **not**:
 * Billing Service is not a tokens framework. The service was designed to solve billing and metering problems in particular and is not intended to be used beyond these areas. Consider using [Corda Tokens SDK](https://github.com/corda/token-sdk) as a general tokens framework. 
-* Billing Service doesn't solve teh settlement problem. Consider using [Corda Settler](https://github.com/corda/corda-settler) for settlement of obligations.
+* Billing Service doesn't solve the settlement problem. Consider using [Corda Settler](https://github.com/corda/corda-settler) for settlement of obligations.
 
 # How It Works
 
