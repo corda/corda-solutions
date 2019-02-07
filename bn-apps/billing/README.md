@@ -43,10 +43,10 @@ The data model is represented with `BillingState`, `BillingChipState` and `Billi
 * `UseChip` - to use `BillingChipState` inside a business transaction.
  
 `BillingState` can exist in one of the following statuses:
-`ACTIVE` - states that can be used to pay for transactions
-`RETURNED` - states that are returned to BNO in the end of billing period. Can not be used to pay for transactions.
-`REVOKED` - states that have been revoked by BNO as a result of a governance action. Can not be used to pay for transactions.
-`CLOSED` - states that have been revoked by BNO as a result of a governance action. Can not be used to pay for transactions.
+* `ACTIVE` - states that can be used to pay for transactions
+* `RETURNED` - states that are returned to BNO in the end of billing period. Can not be used to pay for transactions.
+* `REVOKED` - states that have been revoked by BNO as a result of a governance action. Can not be used to pay for transactions.
+* `CLOSED` - states that have been revoked by BNO as a result of a governance action. Can not be used to pay for transactions.
 
 All `BillingChipStates` are linked to their `BillingStates` via linear ids.
 
