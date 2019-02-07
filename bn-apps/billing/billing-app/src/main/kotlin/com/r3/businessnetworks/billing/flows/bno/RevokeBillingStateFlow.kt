@@ -17,10 +17,10 @@ import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 
 /**
- * Revokes [billingState]. BillingStates are supposed to be revoked as result of a governance action. REVOKED billing states
- * and associated chips can not be transacted by state owners anymore.
+ * Revokes [billingState]. [BillingState]s are supposed to be revoked as result of a governance action. [BillingStateStatus.REVOKED] [BillingState]s
+ * and associated [BillingChipState]s can not be used by the state owners anymore.
  *
- * @param billingState BillingState to revoke
+ * @param billingState the [BillingState] to revoke
  */
 @StartableByRPC
 @InitiatingFlow
@@ -49,9 +49,9 @@ class RevokeBillingStateFlow(private val billingState : StateAndRef<BillingState
 }
 
 /**
- * Revokes all billing state for the given party
+ * Revokes all [BillingState]s for the given party
  *
- * @param party party to revoke billing states of
+ * @param party the party to revoke [BillingState]s of
  */
 @StartableByRPC
 class RevokeBillingStatesForPartyFlow(val party : Party) : FlowLogic<List<Pair<BillingState, SignedTransaction>>>() {

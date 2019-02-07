@@ -14,7 +14,7 @@ import net.corda.core.utilities.unwrap
 
 /**
  * Responder to [RequestReturnOfBillingStateFlow].
- * Verifies received return request, attaches all unspent chips and returns the billing state to the owner
+ * Verifies received return request, attaches all unspent [BillingChipState]s and returns the [BillingState] to the issuer.
  */
 @InitiatedBy(RequestReturnOfBillingStateFlow::class)
 class RequestReturnOfBillingStateFlowResponder(private val session : FlowSession) : FlowLogic<Unit>() {

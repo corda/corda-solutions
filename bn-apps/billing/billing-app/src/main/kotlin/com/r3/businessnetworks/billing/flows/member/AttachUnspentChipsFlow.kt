@@ -17,13 +17,13 @@ import java.time.Duration
 import java.time.Instant
 
 /**
- * Attaches [unspentChips] to the [billingState]. Unspent chips are required to be attached before the [billingState] is returned,
- * otherwise the state owner would be billed for the chips they have not spent.
+ * Attaches [unspentChips] to the [billingState]. Unspent [BillingChipState]s are required to be attached before the [billingState] is returned,
+ * otherwise the state owner would be billed for the amount they have not spent.
  *
- * @param billingState billing state to attach chips to
- * @param unspentChips unspent chips to be attached to the billing state
- * @param timeTolerance time tolerance for the transaction time window. It's used only if billingState has an expiry date defined.
- * @return a pair of billing state with the chips attached and A respective signed transaction
+ * @param billingState the [BillingState] to attach [BillingChipState]s to
+ * @param unspentChips the unspent [BillingChipState]s to be attached to the [BillingState]
+ * @param timeTolerance time tolerance for the transaction time window. It's used only if the [billingState] has an expiry date.
+ * @return a pair of the [BillingState] and a respective [SignedTransaction]
  */
 @StartableByRPC
 @InitiatingFlow
@@ -61,10 +61,10 @@ class AttachUnspentChipsFlow(private val billingState : StateAndRef<BillingState
 }
 
 /**
- * Fetches all unspent chips for [billingState] and attaches them to the state.
+ * Fetches all unspent [BillingChipState]s for the [billingState] and attaches them to it.
  *
- * @param billingState billing state to attach chips to
- * @return a pair of billing state with the chips attached and A respective signed transaction or null if there are no unspent chips left.
+ * @param billingState the [BillingState] to attach [BillingChipState]s to
+ * @return a pair of the [BillingState] and a respective [SignedTransaction]
  */
 @StartableByRPC
 class AttachAllUnspentChipsFlow(private val billingState : StateAndRef<BillingState>): FlowLogic<Pair<BillingState, SignedTransaction>?>()  {

@@ -15,11 +15,11 @@ import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 
 /**
- * Returns [billingState] to the state issuer. RETURNED states and associated chips can not be used anymore.
- * It's important to attach all unspent chips before returning the state.
+ * Returns [billingState] to the state issuer. [BillingStateStatus.RETURNED] [BillingState]s and associated [BillingChipState]s can not be used anymore.
+ * It's important to attach all unspent [BillingChipState]s before returning the [BillingState].
  *
- * @param billingState billing state to be returned
- * @return billing state with the associated signed transaction
+ * @param billingState the [BillingState] to be returned
+ * @return returned [BillingState] with the associated [SignedTransaction]
  */
 @StartableByRPC
 @InitiatingFlow
@@ -46,10 +46,10 @@ class ReturnBillingStateFlow(private val billingState : StateAndRef<BillingState
 }
 
 /**
- * Attaches all unspent chips and returns the [billingState] to the issuer.
+ * Attaches all of unspent [BillingChipState]s and returns the [billingState] to the issuer.
  *
- * @param billingState billing state to attach chips to
- * @return billing state with the associated signed transaction
+ * @param billingState the billing state to attach the [BillingChipState]s to
+ * @return the [BillingState] with the associated [SignedTransaction]
  */
 @StartableByRPC
 class AttachUnspentChipsAndReturnBillingStateFlow(private val billingState : StateAndRef<BillingState>) : FlowLogic<Pair<BillingState, SignedTransaction>>() {

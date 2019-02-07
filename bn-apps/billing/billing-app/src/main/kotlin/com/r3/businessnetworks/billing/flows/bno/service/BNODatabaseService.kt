@@ -12,6 +12,9 @@ import net.corda.core.node.services.vault.Builder.equal
 import net.corda.core.node.services.vault.QueryCriteria
 import net.corda.core.serialization.SingletonSerializeAsToken
 
+/**
+ * Service that simplifies vault queries
+ */
 @CordaService
 class BNODatabaseService(private val appServiceHub : AppServiceHub) : SingletonSerializeAsToken(){
     fun getBillingStatesByOwnerAndStatus(owner : Party, status : BillingStateStatus) : List<StateAndRef<BillingState>> {

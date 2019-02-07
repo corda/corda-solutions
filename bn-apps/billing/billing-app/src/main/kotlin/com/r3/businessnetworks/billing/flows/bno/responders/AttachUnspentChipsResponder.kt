@@ -11,6 +11,7 @@ import net.corda.core.flows.ReceiveFinalityFlow
 class AttachUnspentChipsResponder(private val session: FlowSession) : FlowLogic<Unit>() {
     @Suspendable
     override fun call() {
+        // nothing to verify here
         subFlow(ReceiveFinalityFlow(session))
     }
 }

@@ -18,7 +18,7 @@ import net.corda.core.transactions.LedgerTransaction
 import java.time.Instant
 
 /**
- * Governing contract for BillingStates and BillingChipStates
+ * Governing contract for [BillingState]s and [BillingChipState]s
  */
 class BillingContract : Contract {
     companion object {
@@ -244,13 +244,13 @@ data class BillingState(
     override val participants = listOf(owner, issuer)
 
     /**
-     * Chips off a BillingChipState of the provided amount
+     * Chips off a [BillingChipState] of the provided amount
      */
     fun chipOff(amount : Long) : Pair<BillingState, BillingChipState>
             = Pair(copy(spent = spent + amount), BillingChipState(issuer, owner, amount, linearId))
 
     /**
-     * Verifies that the BillingChip matches this BillingState
+     * Verifies that the [BillingChipState] matches this [BillingState]
      */
     fun isChipValid(chip : BillingChipState) =
                     owner == chip.owner
@@ -259,7 +259,7 @@ data class BillingState(
 }
 
 /**
- * Enum that represents BillinState status
+ * Enum that represents [BillingState] status
  */
 @CordaSerializable
 enum class BillingStateStatus {

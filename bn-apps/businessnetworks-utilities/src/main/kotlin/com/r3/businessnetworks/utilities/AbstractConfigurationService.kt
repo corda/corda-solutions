@@ -9,6 +9,12 @@ import net.corda.core.serialization.SingletonSerializeAsToken
 import java.io.File
 import java.nio.file.Paths
 
+/**
+ * Abstract configuration service that attempts to read CorDapp config from "file:./cordapps/config/$configName.conf" with a fallback
+ * to "classpath:./$configName.conf".
+ *
+ * Provides convenience methods to read BNO name and Notary name configuration parameters as they are very common to use.
+ */
 abstract class AbstractConfigurationService(val appServiceHub : AppServiceHub, val configName : String) : SingletonSerializeAsToken() {
     companion object {
         private const val BNO_NAME = "bnoName"

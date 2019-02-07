@@ -18,13 +18,14 @@ import java.time.Duration
 import java.time.Instant
 
 /**
- * Chips off one or more chips from the BillingState. Chipping of multiple chips in one transaction might be useful for performance optimisation.
+ * Chips off one or more [BillingChipState]s from the [billingState]. Chipping off multiple [BillingChipState]s in one transaction
+ * might be useful for performance optimisation.
  *
- * @param billingState state to chip off from
- * @param chipAmount amount of each cheap off state
+ * @param billingState the state to chip off from
+ * @param chipAmount the amount of each [BillingChipState]
  * @param numberOfChips number of states to chip off
- * @param timeTolerance time tolerance to be used for the transaction time window if billing state expiry date is provided
- * @return a list of chipped of states with the associated signed transaction
+ * @param timeTolerance the time tolerance to be used for the transaction time window if the [billingState] has an expiry date
+ * @return a list of chipped off states with the associated [SignedTransaction]
  */
 @StartableByRPC
 @InitiatingFlow
@@ -63,13 +64,13 @@ class ChipOffBillingStateFlow(private val billingState : StateAndRef<BillingStat
 
 /**
  * Chips off the rest of the unspent amount from the [billingState].
- * Example: if [billingState] unspent amount is 5 and [chipAmount] is 2 then the flow would chip off 2x2 chips and leave 1 unspent.
- * The flow is applicable only to pre-paid billing states (i.e. with positive issued amount)
+ * Example: if a [BillingState]'s unspent amount is 5 and [chipAmount] is 2 then the flow would chip off 2x2 [BillingChipState]s and leave 1 unspent.
+ * The flow is applicable only to bounded billing states (i.e. with the positive issued amount)
  *
- * @param billingState billing state to chip off from
- * @param chipAmount amount of each billing chip
- * @param timeTolerance time tolerance to be used for the transaction time window if billing state expiry date is provided
- * @return a list of chipped of states with the associated signed transaction
+ * @param billingState the [BillingState] to chip off from
+ * @param chipAmount the amount of each of the [BillingChipState]s
+ * @param timeTolerance the time tolerance to be used for the transaction time window if the [BillingState] has an expiry date
+ * @return a list of chipped off states with the associated [SignedTransaction]
  */
 @StartableByRPC
 class ChipOffRemainingAmountFlow(private val billingState : StateAndRef<BillingState>,

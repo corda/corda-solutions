@@ -16,13 +16,11 @@ import net.corda.core.transactions.TransactionBuilder
 import java.time.Instant
 
 /**
- * The flow is meant to be used by BNO to issue [BillingState] on the ledger.
+ * The flow is meant to be used by BNOs to issue [BillingState]s on the ledger.
  *
- * @param owner member of Business Network to issue states to
- * @param amount amount of the token to be issued
- * @param expiryDate expiry date of the billing state. Can be null, in which case the billing state will be unexpirable.
- *       Transactions involving billing states with the expiry dates set require time window to be provided.
- *
+ * @param owner the party to issue the [BillingState] to
+ * @param amount the maximum amount of the [BillingChipState]s that can be chipped off
+ * @param expiryDate the expiry date of the [BillingState]. Can be null, in which case the [BillingState] will be unexpirable. Transactions that involve [BillingState]s with the expiry dates set must contain time windows.
  * @returns issued [BillingState] with the [SignedTransaction]
  */
 @StartableByRPC

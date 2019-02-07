@@ -37,13 +37,13 @@ class BillingContractTest {
     @Test
     fun `test issuance`() {
         ledgerServices.ledger {
-            // Happy path with a pre-allocated metering
+            // Happy path with bounded state
             transaction {
                 output(BillingContract.CONTRACT_NAME,  billingState())
                 command(listOf(issuer.publicKey, owner.publicKey), BillingContract.Commands.Issue())
                 this.verifies()
             }
-            // Happy path with a post-allocated metering
+            // Happy path with unbounded state
             transaction {
                 output(BillingContract.CONTRACT_NAME,  billingState(issued = 0L))
                 command(listOf(issuer.publicKey, owner.publicKey), BillingContract.Commands.Issue())
@@ -91,7 +91,7 @@ class BillingContractTest {
         val inputBillingState = billingState()
         val (outputBillingState, outputChipState) = inputBillingState.chipOff(1L)
         ledgerServices.ledger {
-            // Happy path with a pre-allocated billing
+            // Happy path with bounded state
             transaction {
                 output(BillingContract.CONTRACT_NAME,  outputBillingState)
                 output(BillingContract.CONTRACT_NAME,  outputChipState)
@@ -99,7 +99,7 @@ class BillingContractTest {
                 command(listOf(owner.publicKey), BillingContract.Commands.ChipOff())
                 this.verifies()
             }
-            // Happy path with a post billing
+            // Happy path with unbounded state
             transaction {
                 output(BillingContract.CONTRACT_NAME,  outputBillingState.copy(issued = 0L))
                 output(BillingContract.CONTRACT_NAME,  outputChipState)

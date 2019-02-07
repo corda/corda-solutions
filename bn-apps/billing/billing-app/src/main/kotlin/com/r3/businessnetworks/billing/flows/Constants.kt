@@ -4,7 +4,7 @@ import net.corda.core.utilities.seconds
 
 object Constants {
     /**
-     * Default tim tolerance that is used for transaction time windows
+     * Default time tolerance that is used for transaction time windows
      */
     val TIME_TOLERANCE = 60.seconds
 }

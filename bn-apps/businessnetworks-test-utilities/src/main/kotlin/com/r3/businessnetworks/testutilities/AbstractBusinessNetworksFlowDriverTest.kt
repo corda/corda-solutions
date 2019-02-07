@@ -11,9 +11,9 @@ import net.corda.testing.node.NotarySpec
 import net.corda.testing.node.TestCordapp
 
 /**
- * @param numberOfBusinessNetworks number of BNOs to create. BNOs name is represented with O=BNO_{index of bno},L=New York,C=US, starting from 0
- *      i.e. O=BNO_0,L=New York,C=US, O=BNO_1,L=New York,C=US .... O=BNO_N,L=New York,C=US
- * @param numberOfParticipants *total* number of participants to create. Participants don't have business network membership initially
+ * Instantiates [numberOfBusinessNetworks] Business Networks and creates [numberOfParticipants] participant nodes using DriverDSL.
+ * Sets up a notary with [notaryName] name. Registers [bnoFlowOverrides] flow overrides for BNO nodes and [participantFlowOverrides] flow overrides
+ * for participant nodes.
  */
 abstract class AbstractBusinessNetworksFlowDriverTest(private val numberOfBusinessNetworks : Int,
                                                       private val numberOfParticipants : Int,

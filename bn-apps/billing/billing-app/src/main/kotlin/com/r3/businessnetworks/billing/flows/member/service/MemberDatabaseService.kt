@@ -15,7 +15,7 @@ import net.corda.core.node.services.vault.QueryCriteria
 import net.corda.core.serialization.SingletonSerializeAsToken
 
 /**
- * Convenience class to get BillingStates and BillingChipStates from the database
+ * Convenience class to query [BillingState]s and [BillingChipState]s from the vault.
  */
 @CordaService
 class MemberDatabaseService(private val appServiceHub : AppServiceHub) : SingletonSerializeAsToken() {

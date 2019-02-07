@@ -11,11 +11,9 @@ import org.junit.After
 import org.junit.Before
 
 /**
- * @param numberOfBusinessNetworks number of BNOs to create. BNOs name is represented with O=BNO_{index of bno},L=New York,C=US, starting from 0
- *      i.e. O=BNO_0,L=New York,C=US, O=BNO_1,L=New York,C=US .... O=BNO_N,L=New York,C=US
- * @param numberOfParticipants *total* number of participants to create. Participants don't have business network membership initially
- * @param participantRespondingFlows responding flows to register for participant nodes
- * @param bnoRespondingFlows responding flows to register for BNO nodes
+ * Instantiates [numberOfBusinessNetworks] Business Networks and creates [numberOfParticipants] participant nodes using [MockNetwork].
+ * Registers CorDapps from [cordappPackages] for all of the nodes. Sets up a notary with [notaryName] name.
+ * Registers [bnoRespondingFlows] responding flows for BNO nodes and [participantRespondingFlows] flow participant nodes.
  */
 abstract class AbstractBusinessNetworksFlowTest(private val numberOfBusinessNetworks : Int,
                                                 private val numberOfParticipants : Int,
