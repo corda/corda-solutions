@@ -5,19 +5,19 @@ Billing Service
 
 *Billing Service requires Corda 4 as a minimum version, as it heavily relies on the reference states.*
 
-Billing Service can be used for billing and metering on Business Networks. Billing Service has a notion of *Billing Chips* that can be included into Corda transactions that participants need to pay for. *Billing Chips* never cross a single transaction boundaries and hence never cause privacy leaks. All *Billing Chips* are attached to their respective *Billing States*, that accumulate total *spent* amount and can be safely reported back to the BNO without leaking any private information about the actual transactions where the *Billing Chips* have been used in. *Billing States Evolution* is depicted on the diagram below:
+Billing Service can be used for billing and metering on Business Networks. Billing Service has a notion of *Billing Chips* that can be included into Corda transactions that participants need to pay for. *Billing Chips* never cross a single transaction boundaries and hence never cause privacy leaks. All *Billing Chips* are attached to their respective *Billing States*, that accumulate the total *spent* amount and can be safely reported back to the BNO without leaking the transaction history where the *Billing Chips* have been involved into. *Billing States Evolution* is depicted on the diagram below:
 
 ![Billing State Evolution](./resources/billing_state_evolution.png) 
 
 *Please see [Corda Modelling Notation](https://solutions.corda.net/corda-modelling-notation/overview/overview-overview.html) for more information about modeling for Corda.* 
 
 Billing workflow consists of the following steps:
-1. BNO issues *Billing States* to their Business Network members. BNO can either pre-allocate an amount that a member can spent (bounded state), or leave it empty that would effectively allow a member to spent an unlimited number of *Billing Chips* (unbounded state, can be used for transaction metering). *Billing States* might have an *expiry date*, after which the states become unusable.
-2. A member unilaterally (BNO's signature is not required) *chips offs* one or multiple *Billing Chips* from their *Billing State*. Chipping off increments the *spent* amount of the associated *Billing State*. 
-3. A member includes *Billing Chips* as inputs to the transactions that they need to pay for. Paid-for transactions never contain *Billing States* as an inputs and hence *Billing States* don't carry any private transaction history. However, valid *Billing States* must be included as *reference inputs* to guarantee that expired, revoked or returned states can not be used (explained in the further steps). *Developers are required to add a logic to their contracts code that verifies that each of the required participants has added enough of the Billing Chips*.  
-4. In the end of the billing period BNO requests members to return their *Billing States*. Members attach back all *unspent Billing Chips* to their *Billing States*, which decrements *spent* amount. After that, members *return Billing State* to the BNO. Returned *Billing States* and their *Billing Chips* can not be used to pay for transactions anymore.  
-5. BNO bills members based on the reported *spent* amounts. After all obligations are settled, BNO unilaterally *closes* all returned states. *Billing Service doesn't solve settlement problem - explained below.*
-6. BNO can also unilaterally (member's signature is not required) *revoke Billing States* as a result of a governance action. Revoked *Billing States* and their *Billing Chips* can not be used to pay for transactions anymore.
+1. The BNO issues *Billing States* to their Business Network members. The BNO can either pre-allocate an amount that a member can spent (bounded state), or leave it empty which would effectively allow a member to spent an unlimited number of *Billing Chips* (unbounded state, can be used for transaction metering). *Billing States* might have an *expiry date*, after which the states become unusable.
+2. A member unilaterally (the BNO's signature is not required) *chips offs* one or multiple *Billing Chips* from their *Billing State*. Chipping off increments the *spent* amount of the associated *Billing State*. 
+3. A member includes *Billing Chips* as inputs to the transactions that they need to pay for. Paid-for transactions never contain *Billing States* as an inputs and hence *Billing States* don't carry any private transaction history. However, valid *Billing States* must be included as *reference inputs* to guarantee that expired, revoked or returned states can not be used (explained in the further steps). *Developers must have a logic in their contracts code that verifies that each of the required participants had included enough of the Billing Chips*.  
+4. In the end of the billing period the BNO requests the members to return their *Billing States*. The members attach back all *unspent Billing Chips* to their *Billing States*, which decrements the *spent* amount. After that, the members *return Billing States* to the BNO. Returned *Billing States* and their *Billing Chips* can not be used to pay for transactions anymore.  
+5. The BNO bills the members based on the reported *spent* amounts. After all obligations are settled, the BNO unilaterally *closes* all returned states. *Billing Service doesn't solve the settlement problem - explained below.*
+6. The BNO can also unilaterally (a member's signature is not required) *revoke Billing States* as a result of a governance action. Revoked *Billing States* and their *Billing Chips* can not be used to pay for transactions anymore.
 
 *Billing State Machine* is depicted on the diagram below:
 
@@ -25,7 +25,7 @@ Billing workflow consists of the following steps:
 
 What Billing Service is **not**:
 * Billing Service is not a tokens framework. The service was designed to solve billing and metering problems in particular and is not intended to be used beyond these areas. Consider using [Corda Tokens SDK](https://github.com/corda/token-sdk) as a general tokens framework. 
-* Billing Service doesn't solve settlement problem. Consider using [Corda Settler](https://github.com/corda/corda-settler) for settlement of obligations.
+* Billing Service doesn't solve teh settlement problem. Consider using [Corda Settler](https://github.com/corda/corda-settler) for settlement of obligations.
 
 # How It Works
 
