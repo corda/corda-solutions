@@ -18,7 +18,7 @@ class MultipleBusinessNetworksTest : AbstractFlowTest(numberOfBusinessNetworks =
         val bn3ParticipantNode = participantsNodes[3] // participates in BN3 only
         val bn4ParticipantNode = participantsNodes[4] // participates in BN4 only
 
-        // registering BN-specific responders flows
+        // registering BN-specific initiated flows
         bn1ParticipantNode.registerInitiatedFlow(BN_1_RespondingFlow::class.java)
         bn2ParticipantNode.registerInitiatedFlow(BN_2_RespondingFlow::class.java)
         bn3ParticipantNode.registerInitiatedFlow(BN_3_RespondingFlow::class.java)
