@@ -3,7 +3,7 @@ Billing Service
 
 *Contents of this article assume reader's familiarity with the concepts of *Business Networks*. Please see [Corda Solutions website](https://solutions.corda.net/business-networks/intro.html) for more information.*
 
-*Billing Service requires Corda 4 as a minimum version, as it heavily relies on the reference states.*
+*Billing Service requires Corda 4 as a minimum version, as it heavily relies on the Reference States.*
 
 Billing Service can be used for billing and metering on Business Networks. Billing Service has a notion of *Billing Chips* that can be included into Corda transactions that participants need to pay for. *Billing Chips* never cross a single transaction boundaries and hence never cause privacy leaks. All *Billing Chips* are attached to their respective *Billing States*, that accumulate the total *spent* amount and can be safely reported back to the BNO without leaking the transaction history where the *Billing Chips* have been involved into. *Billing States Evolution* is depicted on the diagram below:
 
