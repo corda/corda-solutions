@@ -12,4 +12,4 @@ Contents:
     * Participate in multiple business networks for a single node.
 * [Ledger Sync Service](./ledger-sync) is a collection of flows, designed to check ledger integrity and to recover lost data from counterparts.
 * [CorDapp Distribution Service](./cordapp-updates-distribution) allows Business Network Operators to distribute CorDapp updates to their network participants. 
-
+* [Billing Service](./billing) can be used to implement billing and metering on Business Networks.
