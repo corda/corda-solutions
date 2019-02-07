@@ -28,6 +28,8 @@ object BillingChipStateSchemaV1 : MappedSchema(schemaFamily = BillingChipState::
     class PersistentBillingChipState (
             @Column(name = "issuer")
             var issuer: Party,
+            @Column(name = "owner")
+            var owner: Party,
             @Column(name = "amount")
             var amount: Long,
             @Column(name = "billing_state_linear_id")

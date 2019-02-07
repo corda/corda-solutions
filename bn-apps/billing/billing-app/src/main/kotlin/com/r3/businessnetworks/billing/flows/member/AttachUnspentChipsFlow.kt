@@ -2,7 +2,7 @@ package com.r3.businessnetworks.billing.flows.member
 
 import co.paralleluniverse.fibers.Suspendable
 import com.r3.businessnetworks.billing.flows.Constants.TIME_TOLERANCE
-import com.r3.businessnetworks.billing.flows.member.service.MemberDatabaseService
+import com.r3.businessnetworks.billing.flows.member.service.MemberBillingDatabaseService
 import com.r3.businessnetworks.billing.states.BillingChipState
 import com.r3.businessnetworks.billing.states.BillingContract
 import com.r3.businessnetworks.billing.states.BillingState
@@ -70,9 +70,9 @@ class AttachUnspentChipsFlow(private val billingState : StateAndRef<BillingState
 class AttachAllUnspentChipsFlow(private val billingState : StateAndRef<BillingState>): FlowLogic<Pair<BillingState, SignedTransaction>?>()  {
     @Suspendable
     override fun call() : Pair<BillingState, SignedTransaction>? {
-        val databaseService = serviceHub.cordaService(MemberDatabaseService::class.java)
+        val databaseService = serviceHub.cordaService(MemberBillingDatabaseService::class.java)
         // fetching all unspent chips from vault
-        val unspentChips = databaseService.getChipsByBillingState(billingState.state.data.linearId)
+        val unspentChips = databaseService.getBillingChipStatesByBillingStateLinearId(billingState.state.data.linearId)
         return if (!unspentChips.isEmpty()) subFlow(AttachUnspentChipsFlow(billingState, unspentChips))
         else null
     }

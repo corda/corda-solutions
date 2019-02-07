@@ -16,7 +16,7 @@ import net.corda.core.serialization.SingletonSerializeAsToken
  * Service that simplifies vault queries
  */
 @CordaService
-class BNODatabaseService(private val appServiceHub : AppServiceHub) : SingletonSerializeAsToken(){
+class BNOBillingDatabaseService(private val appServiceHub : AppServiceHub) : SingletonSerializeAsToken(){
     fun getBillingStatesByOwnerAndStatus(owner : Party, status : BillingStateStatus) : List<StateAndRef<BillingState>> {
         val ownerCriteria =
                 BillingStateSchemaV1.PersistentBillingState::owner.equal(owner)

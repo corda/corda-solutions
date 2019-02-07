@@ -240,7 +240,7 @@ class BillingContractTest {
             transaction {
                 generateUseChipTransaction(this)
                 command(ownerParty.owningKey, BillingContract.Commands.Issue())
-                failsWith("UseChip transaction can contain only UseChip commands")
+                failsWith("UseChip transaction can contain only UseChip Billing commands")
             }
             transaction {
                 generateUseChipTransaction(this)
@@ -275,7 +275,7 @@ class BillingContractTest {
                 billingState.chipOff(1L)
                 input(BillingContract.CONTRACT_NAME, billingState.chipOff(1L).second)
                 command(ownerParty.owningKey, BillingContract.Commands.UseChip(ownerParty))
-                failsWith("There should be a reference BillingState for each BillingChip")
+                failsWith(" There should be a valid reference BillingState for each BillingChip")
             }
             transaction {
                 val billingState = billingState(expiryDate = Instant.now())

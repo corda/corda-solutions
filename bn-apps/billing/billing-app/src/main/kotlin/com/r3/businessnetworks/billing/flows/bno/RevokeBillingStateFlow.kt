@@ -2,7 +2,7 @@ package com.r3.businessnetworks.billing.flows.bno
 
 import co.paralleluniverse.fibers.Suspendable
 import com.r3.businessnetworks.billing.flows.bno.service.BNOConfigurationService
-import com.r3.businessnetworks.billing.flows.bno.service.BNODatabaseService
+import com.r3.businessnetworks.billing.flows.bno.service.BNOBillingDatabaseService
 import com.r3.businessnetworks.billing.states.BillingContract
 import com.r3.businessnetworks.billing.states.BillingState
 import com.r3.businessnetworks.billing.states.BillingStateStatus
@@ -57,7 +57,7 @@ class RevokeBillingStateFlow(private val billingState : StateAndRef<BillingState
 class RevokeBillingStatesForPartyFlow(val party : Party) : FlowLogic<List<Pair<BillingState, SignedTransaction>>>() {
     @Suspendable
     override fun call() : List<Pair<BillingState, SignedTransaction>> {
-        val dbService = serviceHub.cordaService(BNODatabaseService::class.java)
+        val dbService = serviceHub.cordaService(BNOBillingDatabaseService::class.java)
         return dbService.getBillingStatesByOwnerAndStatus(party, BillingStateStatus.ACTIVE).map {
             subFlow(RevokeBillingStateFlow(it))
         }

@@ -1,7 +1,7 @@
 package com.r3.businessnetworks.billing.flows.bno
 
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.businessnetworks.billing.flows.bno.service.BNODatabaseService
+import com.r3.businessnetworks.billing.flows.bno.service.BNOBillingDatabaseService
 import com.r3.businessnetworks.billing.states.BillingState
 import com.r3.businessnetworks.billing.states.BillingStateStatus
 import net.corda.core.contracts.StateAndRef
@@ -42,7 +42,7 @@ class RequestReturnOfBillingStateFlow(private val billingState : StateAndRef<Bil
 class RequestReturnOfBillingStateForPartyFlow(private val party : Party) : FlowLogic<Unit>() {
     @Suspendable
     override fun call() {
-        val databaseService = serviceHub.cordaService(BNODatabaseService::class.java)
+        val databaseService = serviceHub.cordaService(BNOBillingDatabaseService::class.java)
         databaseService.getBillingStatesByOwnerAndStatus(party, BillingStateStatus.ACTIVE).forEach {
             subFlow(RequestReturnOfBillingStateFlow(it))
         }

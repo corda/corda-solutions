@@ -291,13 +291,14 @@ data class BillingChipState (
         // Chipped off amount.
         val amount: Long,
         // Linear id of the associated BillingState
-        val billingStateLinearId : UniqueIdentifier
-) : ContractState, QueryableState {
+        val billingStateLinearId : UniqueIdentifier,
+        override val linearId : UniqueIdentifier = UniqueIdentifier()
+) : LinearState, QueryableState {
     override val participants = listOf(owner)
 
     override fun generateMappedObject(schema : MappedSchema) : PersistentState {
         return when (schema) {
-            is BillingChipStateSchemaV1 -> BillingChipStateSchemaV1.PersistentBillingChipState(issuer, amount, billingStateLinearId.toString())
+            is BillingChipStateSchemaV1 -> BillingChipStateSchemaV1.PersistentBillingChipState(issuer, owner, amount, billingStateLinearId.toString())
             else -> throw IllegalArgumentException("Unrecognised schema $schema")
         }
     }

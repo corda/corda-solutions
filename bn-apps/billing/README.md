@@ -29,6 +29,8 @@ What Billing Service is **not**:
 * Billing Service is not a tokens framework. The service was designed to solve billing and metering problems in particular and is not intended to be used beyond these areas. Consider using [Corda Tokens SDK](https://github.com/corda/token-sdk) as a general tokens framework. 
 * Billing Service doesn't solve the settlement problem. Consider using [Corda Settler](https://github.com/corda/corda-settler) for settlement of obligations.
 
+*Please see* [Billing Demo App](./billing-demo) *for an example of how to integrate Billing Service into your CorDapp.*
+
 # How It Works
 
 ## DataModel
@@ -83,18 +85,16 @@ class ChipOffBillingStateFlow(private val billingState : StateAndRef<BillingStat
 
 ## Using Chips
 
-`MemberDatabaseService` is a convenience `@CordaService` that helps to query `BillingChipsStates` from the vault:
+`MemberBillingDatabaseService` is a convenience `@CordaService` that helps to query `BillingChipsStates` from the vault:
 
 ```kotlin
 class MemberDatabaseService {
-    // returns BillingState by its linear id
-    fun getBillingStateByLinearId(linearId : UniqueIdentifier) : StateAndRef<BillingState>?
-    // returns all ACTIVE BillingStates for the issuer 
-    fun getBillingStatesByIssuer(issuer : Party) : List<StateAndRef<BillingState>>
-    // returns all unspent Billing Chips for the Billing State  
-    fun getChipsByBillingState(billingStateLinearId : UniqueIdentifier) : List<StateAndRef<BillingChipState>>
-    // returns all unspent Billing Chips for the issuer 
-    fun getChipsByIssuer(issuer : Party) : List<StateAndRef<BillingChipState>> 
+    fun getBillingStateByLinearId(linearId : UniqueIdentifier) : StateAndRef<BillingState>? 
+    fun getOurActiveBillingStates() : List<StateAndRef<BillingState>> 
+    fun getOurActiveBillingStatesByIssuer(issuer : Party) : List<StateAndRef<BillingState>> 
+    fun getBillingChipStatesByBillingStateLinearId(billingStateLinearId : UniqueIdentifier) : List<StateAndRef<BillingChipState>> 
+    fun getBillingChipStateByLinearId(chipLinearId : UniqueIdentifier) : StateAndRef<BillingChipState>? 
+    fun getOurBillingChipStatesByIssuer(issuer : Party) : List<StateAndRef<BillingChipState>> 
 }
 ```
 

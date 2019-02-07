@@ -1,7 +1,7 @@
 package com.r3.businessnetworks.billing.flows.member
 
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.businessnetworks.billing.flows.member.service.MemberDatabaseService
+import com.r3.businessnetworks.billing.flows.member.service.MemberBillingDatabaseService
 import com.r3.businessnetworks.billing.states.BillingContract
 import com.r3.businessnetworks.billing.states.BillingState
 import com.r3.businessnetworks.billing.states.BillingStateStatus
@@ -56,7 +56,7 @@ class AttachUnspentChipsAndReturnBillingStateFlow(private val billingState : Sta
     @Suspendable
     override fun call() : Pair<BillingState, SignedTransaction> {
         val result = subFlow(AttachAllUnspentChipsFlow(billingState))
-        val databaseService = serviceHub.cordaService(MemberDatabaseService::class.java)
+        val databaseService = serviceHub.cordaService(MemberBillingDatabaseService::class.java)
         val billingState = if (result == null) billingState else databaseService.getBillingStateByLinearId(billingState.state.data.linearId)!!
         return subFlow(ReturnBillingStateFlow(billingState))
     }

@@ -3,8 +3,10 @@ package com.r3.businessnetworks.testutilities
 import net.corda.core.flows.FlowLogic
 import net.corda.core.identity.CordaX500Name
 import net.corda.core.utilities.getOrThrow
+import net.corda.testing.common.internal.testNetworkParameters
 import net.corda.testing.node.MockNetwork
 import net.corda.testing.node.MockNetworkNotarySpec
+import net.corda.testing.node.MockNetworkParameters
 import net.corda.testing.node.MockNodeParameters
 import net.corda.testing.node.StartedMockNode
 import org.junit.After
@@ -20,7 +22,8 @@ abstract class AbstractBusinessNetworksFlowTest(private val numberOfBusinessNetw
                                                 private val cordappPackages : List<String>,
                                                 private val notaryName : String = "O=Notary,L=London,C=GB",
                                                 private val participantRespondingFlows : List<Class<out FlowLogic<Any>>> = listOf(),
-                                                private val bnoRespondingFlows : List<Class<out FlowLogic<Any>>> = listOf()) {
+                                                private val bnoRespondingFlows : List<Class<out FlowLogic<Any>>> = listOf(),
+                                                private val minimumPlatformVersion : Int = 4) {
     lateinit var bnoNodes : List<StartedMockNode>
     lateinit var participantsNodes : List<StartedMockNode>
     lateinit var mockNetwork : MockNetwork
@@ -30,7 +33,8 @@ abstract class AbstractBusinessNetworksFlowTest(private val numberOfBusinessNetw
         mockNetwork = MockNetwork(
                 // legacy API is used on purpose as otherwise flows defined in tests are not picked up by the framework
                 cordappPackages = cordappPackages,
-                notarySpecs = listOf(MockNetworkNotarySpec(CordaX500Name.parse(notaryName)))
+                notarySpecs = listOf(MockNetworkNotarySpec(CordaX500Name.parse(notaryName))),
+                networkParameters = testNetworkParameters(minimumPlatformVersion = minimumPlatformVersion)
         )
         bnoNodes = (1..numberOfBusinessNetworks).mapIndexed { indexOfBN, _ ->
             val bnoName =  CordaX500Name.parse("O=BNO_$indexOfBN,L=New York,C=US")
