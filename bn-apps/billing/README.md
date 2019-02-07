@@ -5,6 +5,8 @@ Billing Service
 
 *Billing Service requires Corda 4 as a minimum version, as it heavily relies on the Reference States.*
 
+*Please see* [Billing Demo App](./billing-demo) *for an example of how to integrate Billing Service into your CorDapp.*
+
 Billing Service can be used for billing and metering on Business Networks. Billing Service has a notion of *Billing Chips* that can be included into Corda transactions that participants need to pay for. *Billing Chips* never cross a single transaction boundaries (when created, *Billing Chips* can be consumed in exactly one transaction) and hence never cause privacy leaks. All *Billing Chips* are attached to their respective *Billing States*, that accumulate the total *spent* amount and can be safely reported back to the BNO without leaking the transaction history where the *Billing Chips* have been involved into. 
 
 > We felt that there is a need for a dedicated billing pattern as many suggested approaches we have encountered leak privacy. For example if you were to use tokens to implement billing on Business Networks, then there would be no way for a member to report the actual spent amount, without leaking the transactions where the tokens have been used in. 
@@ -28,8 +30,6 @@ Billing workflow consists of the following steps:
 What Billing Service is **not**:
 * Billing Service is not a tokens framework. The service was designed to solve billing and metering problems in particular and is not intended to be used beyond these areas. Consider using [Corda Tokens SDK](https://github.com/corda/token-sdk) as a general tokens framework. 
 * Billing Service doesn't solve the settlement problem. Consider using [Corda Settler](https://github.com/corda/corda-settler) for settlement of obligations.
-
-*Please see* [Billing Demo App](./billing-demo) *for an example of how to integrate Billing Service into your CorDapp.*
 
 # How It Works
 
