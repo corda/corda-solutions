@@ -52,17 +52,18 @@ class BillingContract : Contract {
         // as everything else has been filtered ut in the very beginning
         if (commands.first().value is Commands.UseChip) {
             verifyUseChipTransaction(tx, commands)
-        } else {
-            val command = commands.single()
-            when (command.value) {
-                is Commands.Issue -> verifyIssueTransaction(tx, command)
-                is Commands.Return -> verifyReturnTransaction(tx, command)
-                is Commands.Revoke -> verifyRevokeTransaction(tx, command)
-                is Commands.Close -> verifyCloseTransaction(tx, command)
-                is Commands.ChipOff -> verifyChipOffTransaction(tx, command)
-                is Commands.AttachBack -> verifyAttachBackTransaction(tx, command)
-                else -> throw IllegalArgumentException("Unsupported command ${command.value}")
-            }
+            return
+        }
+
+        val command = commands.single()
+        when (command.value) {
+            is Commands.Issue -> verifyIssueTransaction(tx, command)
+            is Commands.Return -> verifyReturnTransaction(tx, command)
+            is Commands.Revoke -> verifyRevokeTransaction(tx, command)
+            is Commands.Close -> verifyCloseTransaction(tx, command)
+            is Commands.ChipOff -> verifyChipOffTransaction(tx, command)
+            is Commands.AttachBack -> verifyAttachBackTransaction(tx, command)
+            else -> throw IllegalArgumentException("Unsupported command ${command.value}")
         }
     }
 
@@ -204,7 +205,6 @@ class BillingContract : Contract {
         "Input and output BillingsState should be equal but the `status` field" using (inputBillingState == outputBillingState.copy(status = inputBillingState.status))
         "Input BillingsState status should be one of $inputStateStatuses" using (inputBillingState.status in inputStateStatuses)
         "Output BillingsState status should be $outputStateStatus" using (outputBillingState.status == outputStateStatus)
-
     }
 
     /**
@@ -215,7 +215,6 @@ class BillingContract : Contract {
         "Output BillingState expiry date should be within the specified time window" using (tx.timeWindow != null
                 && tx.timeWindow!!.untilTime != null
                 && tx.timeWindow!!.untilTime!! <= expiryDate)
-
     }
 }
 
@@ -296,12 +295,12 @@ data class BillingChipState (
 ) : LinearState, QueryableState {
     override val participants = listOf(owner)
 
-    override fun generateMappedObject(schema : MappedSchema) : PersistentState {
+    override fun generateMappedObject(schema: MappedSchema): PersistentState {
         return when (schema) {
             is BillingChipStateSchemaV1 -> BillingChipStateSchemaV1.PersistentBillingChipState(issuer, owner, amount, billingStateLinearId.toString())
             else -> throw IllegalArgumentException("Unrecognised schema $schema")
         }
     }
-    override fun supportedSchemas() = listOf(BillingChipStateSchemaV1)
 
+    override fun supportedSchemas() = listOf(BillingChipStateSchemaV1)
 }

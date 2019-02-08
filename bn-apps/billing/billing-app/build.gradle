@@ -45,7 +45,6 @@ dependencies {
     testCompile project(":bn-apps:businessnetworks-test-utilities")
 
     cordapp project(":bn-apps:billing:billing-contracts-and-states")
-
 }
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
