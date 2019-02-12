@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <bytecodeTargetLevel>
+      <module name="com.r3.businessnetworks.billing-app.main" target="1.8" />
+      <module name="com.r3.businessnetworks.billing-app.test" target="1.8" />
+      <module name="com.r3.businessnetworks.billing-contracts-and-states.main" target="1.8" />
+      <module name="com.r3.businessnetworks.billing-contracts-and-states.test" target="1.8" />
+      <module name="com.r3.businessnetworks.billing-demo.main" target="1.8" />
+      <module name="com.r3.businessnetworks.billing-demo.test" target="1.8" />
+      <module name="com.r3.businessnetworks.billing.main" target="1.8" />
+      <module name="com.r3.businessnetworks.billing.test" target="1.8" />
+      <module name="com.r3.businessnetworks.bn-apps.main" target="1.8" />
+      <module name="com.r3.businessnetworks.bn-apps.test" target="1.8" />
+      <module name="com.r3.businessnetworks.businessnetworks-test-utilities.main" target="1.8" />
+      <module name="com.r3.businessnetworks.businessnetworks-test-utilities.test" target="1.8" />
+      <module name="com.r3.businessnetworks.businessnetworks-utilities.main" target="1.8" />
+      <module name="com.r3.businessnetworks.businessnetworks-utilities.test" target="1.8" />
+      <module name="com.r3.businessnetworks.corda-updates-app-states.main" target="1.8" />
+      <module name="com.r3.businessnetworks.corda-updates-app-states.test" target="1.8" />
+      <module name="com.r3.businessnetworks.corda-updates-app.main" target="1.8" />
+      <module name="com.r3.businessnetworks.corda-updates-app.test" target="1.8" />
+      <module name="com.r3.businessnetworks.corda-updates-core.main" target="1.8" />
+      <module name="com.r3.businessnetworks.corda-updates-core.test" target="1.8" />
+      <module name="com.r3.businessnetworks.corda-updates-test-utils.main" target="1.8" />
+      <module name="com.r3.businessnetworks.corda-updates-test-utils.test" target="1.8" />
+      <module name="com.r3.businessnetworks.corda-updates-transport.main" target="1.8" />
+      <module name="com.r3.businessnetworks.corda-updates-transport.test" target="1.8" />
+      <module name="com.r3.businessnetworks.cordapp-updates-distribution.main" target="1.8" />
+      <module name="com.r3.businessnetworks.cordapp-updates-distribution.test" target="1.8" />
+      <module name="com.r3.businessnetworks.docs.main" target="1.8" />
+      <module name="com.r3.businessnetworks.docs.test" target="1.8" />
+      <module name="com.r3.businessnetworks.ledger-sync-service.main" target="1.8" />
+      <module name="com.r3.businessnetworks.ledger-sync-service.test" target="1.8" />
+      <module name="com.r3.businessnetworks.ledger-sync.main" target="1.8" />
+      <module name="com.r3.businessnetworks.ledger-sync.test" target="1.8" />
+      <module name="com.r3.businessnetworks.membership-service-contracts-and-states.main" target="1.8" />
+      <module name="com.r3.businessnetworks.membership-service-contracts-and-states.test" target="1.8" />
+      <module name="com.r3.businessnetworks.membership-service.main" target="1.8" />
+      <module name="com.r3.businessnetworks.membership-service.test" target="1.8" />
+      <module name="com.r3.businessnetworks.memberships-management.main" target="1.8" />
+      <module name="com.r3.businessnetworks.memberships-management.test" target="1.8" />
+      <module name="net.corda.businessnetworks.bn-apps.main" target="1.8" />
+      <module name="net.corda.businessnetworks.bn-apps.test" target="1.8" />
+      <module name="net.corda.businessnetworks.corda-updates-app-states.main" target="1.8" />
+      <module name="net.corda.businessnetworks.corda-updates-app-states.test" target="1.8" />
+      <module name="net.corda.businessnetworks.corda-updates-app.main" target="1.8" />
+      <module name="net.corda.businessnetworks.corda-updates-app.test" target="1.8" />
+      <module name="net.corda.businessnetworks.corda-updates-core.main" target="1.8" />
+      <module name="net.corda.businessnetworks.corda-updates-core.test" target="1.8" />
+      <module name="net.corda.businessnetworks.corda-updates-test-utils.main" target="1.8" />
+      <module name="net.corda.businessnetworks.corda-updates-test-utils.test" target="1.8" />
+      <module name="net.corda.businessnetworks.cordapp-updates-distribution.main" target="1.8" />
+      <module name="net.corda.businessnetworks.cordapp-updates-distribution.test" target="1.8" />
+      <module name="net.corda.businessnetworks.docs.main" target="1.8" />
+      <module name="net.corda.businessnetworks.docs.test" target="1.8" />
+      <module name="net.corda.businessnetworks.ledger-sync-service.main" target="1.8" />
+      <module name="net.corda.businessnetworks.ledger-sync-service.test" target="1.8" />
+      <module name="net.corda.businessnetworks.ledger-sync.main" target="1.8" />
+      <module name="net.corda.businessnetworks.ledger-sync.test" target="1.8" />
+      <module name="net.corda.businessnetworks.membership-service-contracts-and-states.main" target="1.8" />
+      <module name="net.corda.businessnetworks.membership-service-contracts-and-states.test" target="1.8" />
+      <module name="net.corda.businessnetworks.membership-service.main" target="1.8" />
+      <module name="net.corda.businessnetworks.membership-service.test" target="1.8" />
+      <module name="net.corda.businessnetworks.memberships-management.main" target="1.8" />
+      <module name="net.corda.businessnetworks.memberships-management.test" target="1.8" />
+    </bytecodeTargetLevel>
+  </component>
+</project>

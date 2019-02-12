@@ -31,6 +31,12 @@ finished application, are about to deploy, or are already in production.
    corda-modelling-notation/complexity/complexity-overview.rst
 
 .. toctree::
+  :caption: Design Patterns
+  :maxdepth: 1
+
+  patterns/patterns_wip.rst
+
+.. toctree::
    :caption: FAQ
    :maxdepth: 1
 
