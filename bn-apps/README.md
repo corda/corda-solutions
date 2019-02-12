@@ -1,6 +1,8 @@
 Business Networks Toolkit
 ==================================
 
+**!!! Please see [corda-v4](https://github.com/corda/corda-solutions/tree/corda-v4/bn-apps) branch for Corda 4.0-ready implementation. !!!**
+
 This repository contains software to enable Business Networks on Corda. 
 
 Contents:

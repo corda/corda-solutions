@@ -2,6 +2,8 @@
 Ledger Sync Service
 ===================
 
+**!!! Please see** `corda-v4 <https://github.com/corda/corda-solutions/tree/corda-v4/bn-apps/cordapp-updates-distribution>`_ **branch for Corda 4.0-ready implementation. !!!**
+
 The ledger sync service is a collection of three flows, designed to recover contract transactions shared with nodes in a `business network <../memberships-management>`_.
 The intended use case is to validate the integrity of a node for monitoring and reporting purposes mainly.
 The actual recovery of transaction should be a last resort if other resiliency techniques are exhausted, particularity taking into account the fact the types of transactions that are recoverable are a subset of all possible types of transactions.
