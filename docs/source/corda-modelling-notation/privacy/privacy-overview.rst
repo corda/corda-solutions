@@ -2,8 +2,6 @@
 Modelling Privacy
 =================
 
-Coming soon
-
 .. toctree::
    :maxdepth: 1
 
