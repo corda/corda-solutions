@@ -3,6 +3,4 @@ Design Patterns
 ===============
 
 
----------------
-Billing Pattern
----------------
+Design Patterns library coming soon.
