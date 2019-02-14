@@ -31,6 +31,16 @@ finished application, are about to deploy, or are already in production.
    corda-modelling-notation/complexity/complexity-overview.rst
 
 .. toctree::
+   :caption: Corda Control Language
+   :maxdepth: 1
+
+   corda-control-language/overview/overview-intro.rst
+   corda-control-language/runtime-environment.rst
+   corda-control-language/language/language-reference.rst
+   corda-control-language/zones-networks-and-nodes.rst
+   corda-control-language/terminology.rst
+
+.. toctree::
    :caption: FAQ
    :maxdepth: 1
 
