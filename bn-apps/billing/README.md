@@ -28,7 +28,7 @@ The billing / metering workflow consists of the following steps:
 ![Billing State Machine](./resources/billing_state_machine.png)
 
 What Billing Service is **not**:
-* Billing Service is not a tokens framework. The service was designed to solve billing and metering problems specifically and is not intended to be used beyond these areas. Consider using [Corda Tokens SDK](https://github.com/corda/token-sdk) as a general purpose tokens framework. 
+* Billing Service is not a tokens framework. The service was designed to solve the billing and the metering problems specifically and is not intended to be used beyond these areas. Consider using [Corda Tokens SDK](https://github.com/corda/token-sdk) as a general purpose tokens framework. 
 * Billing Service doesn't solve the settlement problem. Consider using [Corda Settler](https://github.com/corda/corda-settler) for settlement of obligations.
 
 # How It Works
