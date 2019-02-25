@@ -11,9 +11,7 @@ import net.corda.core.flows.ReceiveFinalityFlow
 open class ActivateMembershipFlowResponder(private val session : FlowSession) : FlowLogic<Unit>() {
     @Suspendable
     override fun call() {
-        if (session.getCounterpartyFlowInfo().flowVersion == 1) {
-            // do nothing
-        } else {
+        if (session.getCounterpartyFlowInfo().flowVersion != 1) {
             subFlow(ReceiveFinalityFlow(session))
         }
     }

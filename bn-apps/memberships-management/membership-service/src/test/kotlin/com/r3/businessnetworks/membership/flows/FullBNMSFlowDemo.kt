@@ -46,7 +46,7 @@ class FullBNMSFlowDemo : AbstractFlowTest(
         assert(memberships.keys.single() == newJoiner.identity())
         assert(memberships[newJoiner.identity()]!!.state.data.membershipMetadata.role == "My new role")
 
-        // not members can't see membership list
+        // non-members can't see membership list
         try {
             runGetMembershipsListFlow(bnoNode, nonMember, false)
             fail()

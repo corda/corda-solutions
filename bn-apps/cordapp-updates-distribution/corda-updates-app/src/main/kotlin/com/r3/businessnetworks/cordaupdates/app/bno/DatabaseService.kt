@@ -77,12 +77,12 @@ class DatabaseService(private val serviceHub : AppServiceHub) : SingletonSeriali
 
     private fun tryUpdateCordappVersionInfo(party : Party, cordappVersionInfo : CordappVersionInfo) : Int {
         return serviceHub.withEntityManager {
-            val updateQuery = """
+            val hqlUpdateQuery = """
                 update PersistentCordappVersionInfo
                 set cordappVersion = :cordappVersion, lastUpdated = :lastUpdated
                 where party = :party AND cordappGroup = :cordappGroup AND cordappName = :cordappName
             """
-            val query = createQuery(updateQuery)
+            val query = createQuery(hqlUpdateQuery)
             query.setParameter("cordappVersion", cordappVersionInfo.version)
                     .setParameter("lastUpdated", System.currentTimeMillis())
                     .setParameter("party", party.name.toString())
@@ -122,11 +122,11 @@ class DatabaseService(private val serviceHub : AppServiceHub) : SingletonSeriali
      */
     fun getCordappVersionInfos(party : Party) : List<CordappVersionInfo> {
         return serviceHub.withEntityManager {
-            val nativeQuery = """
+            val hqlQuery = """
                 from PersistentCordappVersionInfo where party=:party
             """
 
-            createQuery(nativeQuery)
+            createQuery(hqlQuery)
                     .setParameter("party", party.toString())
                     .resultList.map {
                 (it as PersistentCordappVersionInfo).toCordappVersionInfo()

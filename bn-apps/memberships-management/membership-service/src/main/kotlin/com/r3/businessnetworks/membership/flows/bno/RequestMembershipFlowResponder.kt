@@ -15,7 +15,6 @@ import net.corda.core.flows.FlowSession
 import net.corda.core.flows.InitiatedBy
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.unwrap
-import java.sql.SQLException
 import javax.persistence.PersistenceException
 
 /**
