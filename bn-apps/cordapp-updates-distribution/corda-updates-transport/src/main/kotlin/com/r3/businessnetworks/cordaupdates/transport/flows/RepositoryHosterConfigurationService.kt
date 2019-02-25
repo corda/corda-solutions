@@ -19,7 +19,6 @@ class RepositoryHosterConfigurationService(private val serviceHub : AppServiceHu
     companion object {
         const val PROPERTIES_FILE_NAME = "corda-updates-app.conf"
         const val REPOSITORIES = "repositories"
-        const val SESSION_FILTER = "sessionFilter"
     }
     private var _config = readProps((Paths.get("cordapps").resolve("config").resolve(PROPERTIES_FILE_NAME)).toFile())
 
@@ -42,19 +41,6 @@ class RepositoryHosterConfigurationService(private val serviceHub : AppServiceHu
             throw FlowException("Repository $repoName does not exist")
         }
         return repoConfig.getString(repoName)!!
-    }
-
-    /**
-     * Returns a session filter to filter out an unauthorised traffic
-     */
-    fun getSessionFilter() : SessionFilter? {
-        val className = if (_config.hasPath(SESSION_FILTER)) _config.getString(SESSION_FILTER) else null
-        return if (className == null) {
-            null
-        } else {
-            val clazz = Class.forName(className)
-            clazz.newInstance() as SessionFilter
-        }
     }
 
     private fun readProps(file : File) : Config = ConfigFactory.parseFile(file)

@@ -4,11 +4,18 @@ apply plugin: 'net.corda.plugins.cordformation'
 apply plugin: 'net.corda.plugins.quasar-utils'
 
 cordapp {
-    info {
+    targetPlatformVersion 4
+    minimumPlatformVersion 1
+    workflow {
         name "ledger-sync-service"
         vendor "com.r3"
-        version "1.0"
+        licence "http://www.apache.org/licenses/LICENSE-2.0"
+        versionId 1
     }
+    signing {
+        enabled false
+    }
+
 }
 
 sourceSets {

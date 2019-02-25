@@ -11,10 +11,18 @@ apply plugin: 'net.corda.plugins.quasar-utils'
 apply plugin: "kotlin-jpa"
 
 cordapp {
-    info {
-        name = "business-network-membership-service-states"
-        vendor = "com.r3"
+    targetPlatformVersion 4
+    minimumPlatformVersion 1
+    contract {
+        name "business-network-membership-service-states"
+        vendor "com.r3"
+        licence "http://www.apache.org/licenses/LICENSE-2.0"
+        versionId 1
     }
+    signing {
+        enabled false
+    }
+
 }
 
 sourceSets {
@@ -41,7 +49,6 @@ dependencies {
     cordaCompile "$corda_release_group:corda-node-api:$corda_release_version"
     cordaRuntime "$corda_release_group:corda:$corda_release_version"
     testCompile "$corda_release_group:corda-node-driver:$corda_release_version"
-
 }
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {

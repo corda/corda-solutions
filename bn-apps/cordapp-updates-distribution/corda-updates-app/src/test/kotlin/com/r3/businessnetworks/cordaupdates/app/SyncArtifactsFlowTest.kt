@@ -9,8 +9,8 @@ import com.r3.businessnetworks.cordaupdates.testutils.RepoVerifier
 import com.r3.businessnetworks.cordaupdates.app.member.ArtifactsMetadataCache
 import com.r3.businessnetworks.cordaupdates.app.member.ScheduleSyncFlow
 import com.r3.businessnetworks.cordaupdates.app.member.SyncArtifactsFlow
-import com.r3.businessnetworks.cordaupdates.app.states.ScheduledSyncContract
-import com.r3.businessnetworks.cordaupdates.app.states.ScheduledSyncState
+import com.r3.businessnetworks.cordaupdates.states.ScheduledSyncContract
+import com.r3.businessnetworks.cordaupdates.states.ScheduledSyncState
 import net.corda.core.flows.FinalityFlow
 import net.corda.core.flows.FlowLogic
 import net.corda.core.identity.CordaX500Name
@@ -19,7 +19,9 @@ import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.getOrThrow
 import net.corda.testing.node.MockNetwork
 import net.corda.testing.node.MockNetworkNotarySpec
+import net.corda.testing.node.MockNetworkParameters
 import net.corda.testing.node.StartedMockNode
+import net.corda.testing.node.internal.findCordapp
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -46,8 +48,14 @@ class SyncArtifactsFlowTest {
         val participantName = CordaX500Name("Participant", "New York", "US")
         val notaryName = CordaX500Name.parse("O=Notary,L=London,C=GB")
 
-        mockNetwork = MockNetwork(cordappPackages = listOf("com.r3.businessnetworks.cordaupdates.app", "com.r3.businessnetworks.cordaupdates.states"),
-                notarySpecs = listOf(MockNetworkNotarySpec(notaryName)))
+        mockNetwork = MockNetwork(
+                MockNetworkParameters(
+                        cordappsForAllNodes = listOf(
+                                findCordapp("com.r3.businessnetworks.cordaupdates.app"),
+                                findCordapp("com.r3.businessnetworks.cordaupdates.states")),
+                        notarySpecs = listOf(MockNetworkNotarySpec(notaryName))
+                    )
+                )
         node = mockNetwork.createPartyNode(participantName)
 
         node.startFlow(ReloadMemberConfigurationFlow("corda-updates-app.conf")).getOrThrow()
@@ -117,7 +125,7 @@ class IssueSomeScheduledStatesFlow(val syncInterval : Long, val statesQty : Int)
                     .addCommand(ScheduledSyncContract.Commands.Start(), ourIdentity.owningKey)
             builder.verify(serviceHub)
             val signedTx = serviceHub.signInitialTransaction(builder)
-            subFlow(FinalityFlow(signedTx))
+            subFlow(FinalityFlow(signedTx, listOf()))
         }
     }
 }

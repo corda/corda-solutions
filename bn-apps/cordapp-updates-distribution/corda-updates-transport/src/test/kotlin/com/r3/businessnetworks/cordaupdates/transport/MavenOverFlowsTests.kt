@@ -17,6 +17,7 @@ import net.corda.testing.driver.NodeHandle
 import net.corda.testing.driver.NodeParameters
 import net.corda.testing.driver.driver
 import net.corda.testing.node.NotarySpec
+import net.corda.testing.node.TestCordapp.Companion.findCordapp
 import net.corda.testing.node.User
 import org.junit.Test
 import java.lang.Thread.sleep
@@ -32,14 +33,17 @@ class MavenOverFlowsTests {
     private lateinit var nodeLocalRepoPath : Path
     private lateinit var repoVerifier : RepoVerifier
 
-    private fun genericTest(configName : String, testFunction : () -> Unit) {
+    private fun genericTest(configName : String,
+                            packagesToScan: List<String> = listOf("com.r3.businessnetworks.cordaupdates.core", "com.r3.businessnetworks.cordaupdates.transport"),
+                            testFunction : () -> Unit) {
         val user1 = User("test", "test", permissions = setOf("ALL"))
         val repoHosterName = CordaX500Name.parse("O=Repo Hoster,L=New York,C=US")
         val participantName = CordaX500Name("Participant","New York","US")
         val notaryName = CordaX500Name("Notary", "London","GB")
 
         driver(DriverParameters(
-                extraCordappPackagesToScan = listOf("com.r3.businessnetworks.cordaupdates.core"),
+                // intentionally using a legacy api as new API doesn't pick up @CordaServices that are defined in tests
+                extraCordappPackagesToScan = packagesToScan,
                 startNodesInProcess = true,
                 notarySpecs = listOf(NotarySpec(notaryName )))) {
 
@@ -101,8 +105,12 @@ class MavenOverFlowsTests {
 
     @Test
     fun `should fail with deny all session filter`() {
+
         // should fail with deny filter
-        genericTest ("corda-updates-with-deny-filter.conf") {
+        genericTest ("corda-updates-app.conf",
+                listOf("com.r3.businessnetworks.cordaupdates.core",
+                        "com.r3.businessnetworks.cordaupdates.transport",
+                        "com.r3.businessnetworks.cordaupdates.testextensions.denyfilter")) {
             try {
                 participantNode.rpc.startFlowDynamic(GetResourceFlow::class.java,
                         "net/example/test-artifact/1.5/test-artifact-1.5.pom",
@@ -117,7 +125,10 @@ class MavenOverFlowsTests {
 
     @Test
     fun `should pass with allow all session filter`() {
-        genericTest ("corda-updates-with-allow-filter.conf") {
+        genericTest ("corda-updates-app.conf",
+                listOf("com.r3.businessnetworks.cordaupdates.core",
+                        "com.r3.businessnetworks.cordaupdates.transport",
+                        "com.r3.businessnetworks.cordaupdates.testextensions.allowfilter")) {
             participantNode.rpc.startFlowDynamic(GetResourceFlow::class.java,
                     "net/example/test-artifact/1.5/test-artifact-1.5.pom",
                     "O=Repo Hoster,L=New York,C=US",
@@ -173,7 +184,6 @@ class DownloadVersionRangeFlow(private val remoteRepoUrl : String, private val l
         executor.downloadVersionRangeAsync(remoteRepoUrl, localRepoPath, versionRange)
     }
 }
-
 
 @CordaService
 class ExecutorService(private val appServiceHub : AppServiceHub) : SingletonSerializeAsToken() {

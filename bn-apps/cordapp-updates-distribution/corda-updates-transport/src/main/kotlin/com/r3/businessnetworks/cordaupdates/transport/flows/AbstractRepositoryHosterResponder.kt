@@ -17,9 +17,7 @@ import net.corda.core.serialization.CordaSerializable
 abstract class AbstractRepositoryHosterResponder<T>(val session : FlowSession) : FlowLogic<T>() {
     @Suspendable
     override fun call() : T {
-        val configuration = serviceHub.cordaService(RepositoryHosterConfigurationService::class.java)
-        val sessionFilter = configuration.getSessionFilter()
-        if (sessionFilter != null && !sessionFilter.isSessionAllowed(session, this)) {
+        if (!isSessionAllowed(session)) {
             throw FlowException("Counterparty ${session.counterparty} is not allowed to access repository")
         }
         return postPermissionCheck()
@@ -27,6 +25,13 @@ abstract class AbstractRepositoryHosterResponder<T>(val session : FlowSession) :
 
     @Suspendable
     protected abstract fun postPermissionCheck() : T
+
+    /**
+     * Override this method to implement session filtering
+     * See: https://docs.corda.net/head/flow-overriding.html
+     */
+    @Suspendable
+    protected open fun isSessionAllowed(session : FlowSession) = true
 }
 
 /**

@@ -68,7 +68,7 @@ class GetResourceFlow(private val resourceLocation : String, private val reposit
  * The flow supports [SessionFilter]s to restrict unauthorised traffic.
  */
 @InitiatedBy(GetResourceFlow::class)
-class GetResourceFlowResponder(session : FlowSession) : AbstractRepositoryHosterResponder<Unit>(session) {
+open class GetResourceFlowResponder(session : FlowSession) : AbstractRepositoryHosterResponder<Unit>(session) {
     @Suspendable
     override fun postPermissionCheck() {
         val request = session.receive<ResourceRequest>().unwrap {

@@ -3,10 +3,18 @@ apply plugin: 'net.corda.plugins.cordapp'
 apply plugin: 'net.corda.plugins.quasar-utils'
 
 cordapp {
-    info {
+    targetPlatformVersion 4
+    minimumPlatformVersion 1
+    workflow {
         name "corda-updates-core"
         vendor "com.r3"
+        licence "http://www.apache.org/licenses/LICENSE-2.0"
+        versionId 1
     }
+    signing {
+        enabled false
+    }
+
 }
 
 sourceSets {
