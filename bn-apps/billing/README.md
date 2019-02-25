@@ -41,10 +41,10 @@ The data model is represented with `BillingState`, `BillingChipState` and `Billi
 * `Issue` - to issue a `BillingState`.
 * `Return` - to return a `BillingState` in the end of the billing period.
 * `Revoke` - to revoke a `BillingState` as a result of a governance action.
-* `Close` - to close a `BillingState` when obligations are settled.
+* `Close` - to close a `BillingState` when its obligations are settled.
 * `ChipOff` - to chip off `BillingChipState` from a `BillingState`.
 * `AttachBack` - to attach back *unspent* `BillingChipStates` to their `BillingState`.
-* `UseChip` - to use `BillingChipState` inside a business transaction.
+* `UseChip` - to use `BillingChipStates` inside a business transaction.
  
 A `BillingState` can exist in one of the following statuses:
 * `ACTIVE` - the states that can be used to pay for transactions
@@ -56,12 +56,12 @@ A `BillingChipState` is linked to its `BillingStates` via the linear id.
 
 ## Billing State Issuance
 
-A `BillingState` can be issued via `IssueBillingStateFlow`. The flow is supposed ot be called by the BNO.
+A `BillingState` can be issued via `IssueBillingStateFlow`. The flow is supposed to be called by the BNO.
 
 ```kotlin
 class IssueBillingStateFlow(
     private val owner : Party, // a party to issue the BillingState to
-    private val amount : Long, // the maximum amount of the Billing Chips that can be chipped off from this Billing State. Can be 0 for unbounded spending.
+    private val amount : Long, // the maximum amount of the Billing Chips that can be chipped off from this Billing State. Can be 0 for an unbounded spending.
     private val expiryDate : Instant? = null // the Billing State's expiry date. All transactions that include Billing States with an expiry date set must also include a Time Window. 
 )
 ```
@@ -70,13 +70,13 @@ class IssueBillingStateFlow(
 
 Actual business transactions should never contain `BillingStates` as inputs to prevent the private transaction history from being leaked.  
 
-`BillingChipStates` can be chipped off via `ChipOffBillingStateFlow`. The flow has to be invoked by a member who owns the Billing State. Chipping off doesn't require the BNO's signature.  
+`BillingChipStates` can be chipped off from `BillingStates` via `ChipOffBillingStateFlow`. The flow has to be invoked by a member who owns the `BillingState`. Chipping off doesn't require the BNO's signature.  
 
 ```kotlin
 class ChipOffBillingStateFlow(private val billingState : StateAndRef<BillingState>, // a reference to the Billing State to chip off from
-                              private val chipAmount : Long, // an actual amount of the Billing Chips. ChipOffBillingStateFlow can chip off multiple BillingStateChips of the same amount in one go. 
-                              private val numberOfChips : Int = 1, // a number of states to chip off. The total chipping-off amount is equal to numberOfChips * chipOffAmount.
-                              private val timeTolerance : Duration = TIME_TOLERANCE // a time tolerance for the transaction Time window. Used only if the [billingState] has an expiry date.
+                              private val chipAmount : Long, // an amount of each of the Billing Chips. ChipOffBillingStateFlow can chip off multiple BillingStateChips of the same amount in one go. 
+                              private val numberOfChips : Int = 1, // a number of states to chip off. The total chipping-off amount is equal to numberOfChips * chipAmount.
+                              private val timeTolerance : Duration = TIME_TOLERANCE // a time tolerance for the transaction Time window. Used only if the [billingState] defines an expiry date.
                               ) 
 ```
 
@@ -96,14 +96,14 @@ class MemberDatabaseService {
 ```
 
 To start using billing / metering you would need to:
-1. Add a verification logic to your contract code, that verifies that each of the transaction participants has provided enough of the Billing Chips as transaction inputs.
+1. Add a logic to your contract code, that verifies that each of the transaction participants has provided enough of the Billing Chips as transaction inputs.
 2. When building a transaction in your flows, add `BillingChipStates` as transaction inputs with the respective `BillingStates` as reference inputs.
 3. Add a `UseChip` command for each of the billable participants.
-4. Add transaction time window if any of the Billing States define an expiry date.
+4. Add transaction time window if any of the Billing States defines an expiry date.
 
 ## Returning BillingState
 
-In the end of the billing period, the BNO can request a member to return the `BillingState` via `RequestReturnOfBillingStateFlow`:
+In the end of the billing period, the BNO can request a member to return their `BillingState` via `RequestReturnOfBillingStateFlow`:
 
 ```kotlin
 class RequestReturnOfBillingStateFlow(
@@ -142,7 +142,7 @@ class RevokeBillingStatesForPartyFlow(
 
 ## Closing BillingState
 
-After `BillingState`'s obligations are settled, the `BillingState` can be closed via `CloseBillingStateFlow`.
+After a `BillingState`'s obligations are settled, the `BillingState` can be closed via `CloseBillingStateFlow`.
 
 ```kotlin
 class CloseBillingStateFlow(
