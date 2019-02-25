@@ -1,8 +1,6 @@
 CorDapp Distribution Service
 ============================
 
-**!!! Please see [corda-v4](https://github.com/corda/corda-solutions/tree/corda-v4/bn-apps/cordapp-updates-distribution) branch for Corda 4.0-ready implementation. !!!**
-
 CorDapp Distribution Service allows Corda network operators to distribute CorDapp updates to their network participants. Please see [this](./design/design.md) design doc for more details on the technical implementation.
 
 CorDapp Distribution Service utilises Maven repositories for artifact distribution (as CorDapps are effectively fat-jars). Network participants periodically query a remote repository for updates and download them locally. Installation of updates is not automated yet. Corda node administrators need to stop / update / restart their nodes manually.  
