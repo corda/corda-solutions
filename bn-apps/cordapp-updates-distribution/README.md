@@ -14,15 +14,15 @@ Add the following lines to `repositories` and `dependencies` blocks of your `bui
 ```
     repositories {
         maven {
-          url 'http://ci-artifactory.corda.r3cev.com/artifactory/corda-solutions-dev'
+          url 'https://ci-artifactory.corda.r3cev.com/artifactory/corda-solutions-releases'
         }
     }
 
     dependencies {
-        cordapp "com.r3.businessnetworks:corda-updates-app:1.0"
-        cordapp "com.r3.businessnetworks:corda-updates-app-states:1.0"
-        cordapp "com.r3.businessnetworks:corda-updates-app-core:1.0"
-        cordapp "com.r3.businessnetworks:corda-updates-app-transport:1.0"
+        cordapp "net.corda.businessnetworks:corda-updates-app:1.0"
+        cordapp "net.corda.businessnetworks:corda-updates-app-states:1.0"
+        cordapp "net.corda.businessnetworks:corda-updates-app-core:1.0"
+        cordapp "net.corda.businessnetworks:corda-updates-app-transport:1.0"
     }
 ```
 
