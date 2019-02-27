@@ -27,7 +27,7 @@ Add the following lines to the `repositories` and `dependencies` blocks of your 
 ```
     repositories {
         maven {
-          url 'http://ci-artifactory.corda.r3cev.com/artifactory/corda-solutions-releases'
+          url 'https://ci-artifactory.corda.r3cev.com/artifactory/corda-solutions-releases'
         }
     }
 
