@@ -1,32 +1,28 @@
 package com.r3.businessnetworks.membership.flows
 
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.businessnetworks.membership.flows.bno.ActivateMembershipFlow
-import com.r3.businessnetworks.membership.flows.bno.ActivateMembershipForPartyFlow
-import com.r3.businessnetworks.membership.flows.bno.NotifyMemberFlow
-import com.r3.businessnetworks.membership.flows.bno.SuspendMembershipFlow
-import com.r3.businessnetworks.membership.flows.bno.SuspendMembershipForPartyFlow
+import com.r3.bno.testing.SimpleMembershipMetadata
+import com.r3.businessnetworks.membership.flows.bno.*
 import com.r3.businessnetworks.membership.flows.bno.service.DatabaseService
 import com.r3.businessnetworks.membership.flows.member.AmendMembershipMetadataFlow
 import com.r3.businessnetworks.membership.flows.member.GetMembershipsFlow
 import com.r3.businessnetworks.membership.flows.member.NotifyMembersFlowResponder
 import com.r3.businessnetworks.membership.flows.member.RequestMembershipFlow
 import com.r3.businessnetworks.membership.states.MembershipState
-import com.r3.businessnetworks.membership.states.SimpleMembershipMetadata
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.FlowSession
 import net.corda.core.flows.InitiatedBy
 import net.corda.core.identity.CordaX500Name
 import net.corda.core.identity.Party
+import net.corda.core.internal.location
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.utilities.getOrThrow
+import net.corda.node.services.persistence.NodeAttachmentService
 import net.corda.testing.node.MockNetwork
 import net.corda.testing.node.MockNetworkNotarySpec
-import net.corda.testing.node.MockNetworkParameters
 import net.corda.testing.node.MockNodeParameters
 import net.corda.testing.node.StartedMockNode
-import net.corda.testing.node.internal.findCordapp
 import org.junit.After
 import org.junit.Before
 import java.io.File
@@ -65,6 +61,15 @@ abstract class AbstractFlowTest(private val numberOfBusinessNetworks : Int,
             val node = createNode(CordaX500Name.parse("O=Participant $indexOfParticipant,L=London,C=GB"))
             participantRespondingFlows.forEach { node.registerInitiatedFlow(it) }
             node
+        }
+
+        //manually register the cordapp which provides SimpleMembershipMetadata to simulate it being located within the cordapps folder and implementing at least ONE contract
+        bnoNodes.forEach {
+            (it.services.attachments as NodeAttachmentService).privilegedImportAttachment(
+                SimpleMembershipMetadata::class.java.location.openStream(),
+                net.corda.core.internal.DEPLOYED_CORDAPP_UPLOADER,
+                null
+            )
         }
 
         mockNetwork.runNetwork()

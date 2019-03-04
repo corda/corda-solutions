@@ -1,5 +1,6 @@
 package com.r3.businessnetworks.membership.states
 
+import com.r3.bno.testing.SimpleMembershipMetadata
 import net.corda.core.contracts.Contract
 import net.corda.core.contracts.UniqueIdentifier
 import net.corda.core.identity.CordaX500Name

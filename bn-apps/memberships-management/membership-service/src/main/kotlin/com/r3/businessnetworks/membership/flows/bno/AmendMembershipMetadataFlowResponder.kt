@@ -4,6 +4,7 @@ import co.paralleluniverse.fibers.Suspendable
 import com.r3.businessnetworks.membership.flows.bno.service.BNOConfigurationService
 import com.r3.businessnetworks.membership.flows.bno.service.DatabaseService
 import com.r3.businessnetworks.membership.flows.bno.support.BusinessNetworkOperatorInitiatedFlow
+import com.r3.businessnetworks.membership.flows.getAttachmentIdForGenericParam
 import com.r3.businessnetworks.membership.flows.member.AmendMembershipMetadataFlow
 import com.r3.businessnetworks.membership.flows.member.AmendMembershipMetadataRequest
 import com.r3.businessnetworks.membership.states.MembershipContract
@@ -22,25 +23,26 @@ import net.corda.core.utilities.unwrap
  * amend their metadata.
  */
 @InitiatedBy(AmendMembershipMetadataFlow::class)
-open class AmendMembershipMetadataFlowResponder(flowSession : FlowSession) : BusinessNetworkOperatorInitiatedFlow<Unit>(flowSession) {
+open class AmendMembershipMetadataFlowResponder(flowSession: FlowSession) : BusinessNetworkOperatorInitiatedFlow<Unit>(flowSession) {
 
     @Suspendable
-    override fun onCounterpartyMembershipVerified(counterpartyMembership : StateAndRef<MembershipState<Any>>) {
+    override fun onCounterpartyMembershipVerified(counterpartyMembership: StateAndRef<MembershipState<Any>>) {
         // await for a message with a proposed metadata change
-        val metadataChangeRequest = flowSession.receive<AmendMembershipMetadataRequest>().unwrap{ it }
+        val metadataChangeRequest = flowSession.receive<AmendMembershipMetadataRequest>().unwrap { it }
 
         // build transaction
         val configuration = serviceHub.cordaService(BNOConfigurationService::class.java)
         val notaryParty = configuration.notaryParty()
 
         val newMembership = counterpartyMembership.state.data
-                .copy(membershipMetadata = metadataChangeRequest.metadata, modified = serviceHub.clock.instant())
+            .copy(membershipMetadata = metadataChangeRequest.metadata, modified = serviceHub.clock.instant())
 
         // changes to the metadata should be governed by the contract, not flows
         val builder = TransactionBuilder(notaryParty)
-                .addInputState(counterpartyMembership)
-                .addOutputState(newMembership, MembershipContract.CONTRACT_NAME)
-                .addCommand(MembershipContract.Commands.Amend(), flowSession.counterparty.owningKey, ourIdentity.owningKey)
+            .addInputState(counterpartyMembership)
+            .addOutputState(newMembership, MembershipContract.CONTRACT_NAME)
+            .addCommand(MembershipContract.Commands.Amend(), flowSession.counterparty.owningKey, ourIdentity.owningKey)
+            .addAttachment(counterpartyMembership.getAttachmentIdForGenericParam())
 
         verifyTransaction(builder)
 
@@ -64,7 +66,7 @@ open class AmendMembershipMetadataFlowResponder(flowSession : FlowSession) : Bus
      * See: https://docs.corda.net/head/flow-overriding.html
      */
     @Suspendable
-    protected open fun verifyTransaction(builder : TransactionBuilder) {
+    protected open fun verifyTransaction(builder: TransactionBuilder) {
         builder.verify(serviceHub)
     }
 }

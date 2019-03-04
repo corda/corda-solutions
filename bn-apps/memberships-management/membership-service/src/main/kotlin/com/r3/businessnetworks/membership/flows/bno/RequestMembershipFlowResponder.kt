@@ -1,18 +1,15 @@
 package com.r3.businessnetworks.membership.flows.bno
 
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.businessnetworks.membership.flows.member.OnBoardingRequest
-import com.r3.businessnetworks.membership.flows.member.RequestMembershipFlow
 import com.r3.businessnetworks.membership.flows.bno.service.BNOConfigurationService
 import com.r3.businessnetworks.membership.flows.bno.service.DatabaseService
 import com.r3.businessnetworks.membership.flows.bno.support.BusinessNetworkOperatorFlowLogic
+import com.r3.businessnetworks.membership.flows.getAttachmentIdForGenericParam
+import com.r3.businessnetworks.membership.flows.member.OnBoardingRequest
+import com.r3.businessnetworks.membership.flows.member.RequestMembershipFlow
 import com.r3.businessnetworks.membership.states.MembershipContract
 import com.r3.businessnetworks.membership.states.MembershipState
-import net.corda.core.flows.CollectSignaturesFlow
-import net.corda.core.flows.FinalityFlow
-import net.corda.core.flows.FlowException
-import net.corda.core.flows.FlowSession
-import net.corda.core.flows.InitiatedBy
+import net.corda.core.flows.*
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.unwrap
 import javax.persistence.PersistenceException
@@ -27,7 +24,7 @@ import javax.persistence.PersistenceException
  * TODO: remove MembershipAutoAcceptor in favour of flow overrides when Corda 4 is released
  */
 @InitiatedBy(RequestMembershipFlow::class)
-open class RequestMembershipFlowResponder(val session : FlowSession) : BusinessNetworkOperatorFlowLogic<Unit>() {
+open class RequestMembershipFlowResponder(val session: FlowSession) : BusinessNetworkOperatorFlowLogic<Unit>() {
 
     @Suspendable
     override fun call() {
@@ -43,12 +40,12 @@ open class RequestMembershipFlowResponder(val session : FlowSession) : BusinessN
         // creating a pending request to make sure that no multiple on-boarding request can be in-flight in the same time
         try {
             databaseService.createPendingMembershipRequest(session.counterparty)
-        } catch (e : PersistenceException) {
+        } catch (e: PersistenceException) {
             logger.warn("Error when trying to create a pending membership request", e)
             throw FlowException("Membership request already exists")
         }
 
-        val membership : MembershipState<Any>
+        val membership: MembershipState<Any>
         // Issuing PENDING membership state onto the ledger
         try {
             // receive an on-boarding request
@@ -59,8 +56,9 @@ open class RequestMembershipFlowResponder(val session : FlowSession) : BusinessN
             // issue pending membership state on the ledger
             membership = MembershipState(counterparty, ourIdentity, request.metadata)
             val builder = TransactionBuilder(notary)
-                    .addOutputState(membership, MembershipContract.CONTRACT_NAME)
-                    .addCommand(MembershipContract.Commands.Request(), counterparty.owningKey, ourIdentity.owningKey)
+                .addOutputState(membership, MembershipContract.CONTRACT_NAME)
+                .addCommand(MembershipContract.Commands.Request(), counterparty.owningKey, ourIdentity.owningKey)
+                .addAttachment(membership.getAttachmentIdForGenericParam())
 
             verifyTransaction(builder)
 
@@ -76,7 +74,7 @@ open class RequestMembershipFlowResponder(val session : FlowSession) : BusinessN
             try {
                 logger.info("Removing the pending request from the database")
                 databaseService.deletePendingMembershipRequest(session.counterparty)
-            } catch (e : PersistenceException) {
+            } catch (e: PersistenceException) {
                 logger.warn("Error when trying to delete pending membership request", e)
             }
         }
@@ -93,7 +91,7 @@ open class RequestMembershipFlowResponder(val session : FlowSession) : BusinessN
      * See: https://docs.corda.net/head/flow-overriding.html
      */
     @Suspendable
-    protected open fun activateRightAway(membershipState : MembershipState<Any>, configuration : BNOConfigurationService) : Boolean {
+    protected open fun activateRightAway(membershipState: MembershipState<Any>, configuration: BNOConfigurationService): Boolean {
         return false
     }
 
@@ -102,7 +100,7 @@ open class RequestMembershipFlowResponder(val session : FlowSession) : BusinessN
      * See: https://docs.corda.net/head/flow-overriding.html
      */
     @Suspendable
-    protected open fun verifyTransaction(builder : TransactionBuilder) {
+    protected open fun verifyTransaction(builder: TransactionBuilder) {
         builder.verify(serviceHub)
     }
 }

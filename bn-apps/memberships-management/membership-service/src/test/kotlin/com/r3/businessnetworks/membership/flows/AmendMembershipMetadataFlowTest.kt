@@ -1,9 +1,9 @@
 package com.r3.businessnetworks.membership.flows
 
+import com.r3.bno.testing.SimpleMembershipMetadata
 import com.r3.businessnetworks.membership.flows.bno.OnMembershipChanged
 import com.r3.businessnetworks.membership.states.MembershipContract
 import com.r3.businessnetworks.membership.states.MembershipState
-import com.r3.businessnetworks.membership.states.SimpleMembershipMetadata
 import com.r3.businessnetworks.membership.testextensions.AmendMembershipMetadataFlowResponderWithCustomVerification
 import net.corda.core.flows.FlowException
 import org.junit.Test

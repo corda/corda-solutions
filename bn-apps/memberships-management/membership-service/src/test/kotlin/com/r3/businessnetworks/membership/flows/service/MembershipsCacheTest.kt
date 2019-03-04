@@ -1,10 +1,10 @@
 package com.r3.businessnetworks.membership.flows.service
 
+import com.r3.bno.testing.SimpleMembershipMetadata
 import com.r3.businessnetworks.membership.flows.member.service.MembershipsCache
 import com.r3.businessnetworks.membership.states.MembershipContract
 import com.r3.businessnetworks.membership.states.MembershipState
 import com.r3.businessnetworks.membership.states.MembershipStatus
-import com.r3.businessnetworks.membership.states.SimpleMembershipMetadata
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.contracts.StateRef
 import net.corda.core.contracts.TransactionState
@@ -13,7 +13,6 @@ import net.corda.core.identity.CordaX500Name
 import net.corda.core.identity.Party
 import net.corda.testing.core.TestIdentity
 import org.junit.Test
-import java.lang.IllegalArgumentException
 import java.time.Instant
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
