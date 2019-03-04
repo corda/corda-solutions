@@ -1,18 +1,8 @@
 package com.r3.businessnetworks.membership.states
 
-import com.r3.businessnetworks.membership.states.MembershipStatus.ACTIVE
-import com.r3.businessnetworks.membership.states.MembershipStatus.PENDING
-import com.r3.businessnetworks.membership.states.MembershipStatus.SUSPENDED
-import net.corda.core.contracts.BelongsToContract
-import net.corda.core.contracts.CommandData
-import net.corda.core.contracts.CommandWithParties
-import net.corda.core.contracts.Contract
-import net.corda.core.contracts.LinearState
+import com.r3.businessnetworks.membership.states.MembershipStatus.*
+import net.corda.core.contracts.*
 import net.corda.core.contracts.Requirements.using
-import net.corda.core.contracts.TypeOnlyCommandData
-import net.corda.core.contracts.UniqueIdentifier
-import net.corda.core.contracts.requireSingleCommand
-import net.corda.core.contracts.requireThat
 import net.corda.core.identity.Party
 import net.corda.core.schemas.MappedSchema
 import net.corda.core.schemas.PersistentState
@@ -154,9 +144,3 @@ data class MembershipState<out T : Any>(val member : Party,
 enum class MembershipStatus {
     PENDING, ACTIVE, SUSPENDED
 }
-
-/**
- * Simple metadata example.
- */
-@CordaSerializable
-data class SimpleMembershipMetadata(val role : String = "", val displayedName : String = "")

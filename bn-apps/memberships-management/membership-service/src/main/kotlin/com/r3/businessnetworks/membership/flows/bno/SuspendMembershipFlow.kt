@@ -4,11 +4,15 @@ import co.paralleluniverse.fibers.Suspendable
 import com.r3.businessnetworks.membership.flows.bno.service.BNOConfigurationService
 import com.r3.businessnetworks.membership.flows.bno.service.DatabaseService
 import com.r3.businessnetworks.membership.flows.bno.support.BusinessNetworkOperatorFlowLogic
+import com.r3.businessnetworks.membership.flows.getAttachmentIdForGenericParam
 import com.r3.businessnetworks.membership.states.MembershipContract
 import com.r3.businessnetworks.membership.states.MembershipState
 import com.r3.businessnetworks.membership.states.MembershipStatus
 import net.corda.core.contracts.StateAndRef
-import net.corda.core.flows.*
+import net.corda.core.flows.FinalityFlow
+import net.corda.core.flows.FlowException
+import net.corda.core.flows.InitiatingFlow
+import net.corda.core.flows.StartableByRPC
 import net.corda.core.identity.Party
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
@@ -20,19 +24,20 @@ import net.corda.core.utilities.ProgressTracker
  */
 @StartableByRPC
 @InitiatingFlow(version = 2)
-open class SuspendMembershipFlow(val membership : StateAndRef<MembershipState<Any>>) : BusinessNetworkOperatorFlowLogic<SignedTransaction>() {
+open class SuspendMembershipFlow(val membership: StateAndRef<MembershipState<Any>>) : BusinessNetworkOperatorFlowLogic<SignedTransaction>() {
 
     @Suspendable
-    override fun call() : SignedTransaction {
+    override fun call(): SignedTransaction {
         verifyThatWeAreBNO(membership.state.data)
         val configuration = serviceHub.cordaService(BNOConfigurationService::class.java)
         val notary = configuration.notaryParty()
 
         // build suspension transaction
         val builder = TransactionBuilder(notary)
-                .addInputState(membership)
-                .addOutputState(membership.state.data.copy(status = MembershipStatus.SUSPENDED, modified = serviceHub.clock.instant()))
-                .addCommand(MembershipContract.Commands.Suspend(), ourIdentity.owningKey)
+            .addInputState(membership)
+            .addOutputState(membership.state.data.copy(status = MembershipStatus.SUSPENDED, modified = serviceHub.clock.instant()))
+            .addCommand(MembershipContract.Commands.Suspend(), ourIdentity.owningKey)
+            .addAttachment(membership.getAttachmentIdForGenericParam())
         builder.verify(serviceHub)
         val selfSignedTx = serviceHub.signInitialTransaction(builder)
 
@@ -45,8 +50,8 @@ open class SuspendMembershipFlow(val membership : StateAndRef<MembershipState<An
         }
 
         val dbService = serviceHub.cordaService(DatabaseService::class.java)
-        val suspendedMembership = dbService.getMembership(membership.state.data.member, ourIdentity) ?:
-            throw FlowException("Membership for ${membership.state.data.member} has not been found")
+        val suspendedMembership =
+            dbService.getMembership(membership.state.data.member, ourIdentity) ?: throw FlowException("Membership for ${membership.state.data.member} has not been found")
 
         // notify other members about suspension
         subFlow(NotifyActiveMembersFlow(OnMembershipChanged(suspendedMembership)))
@@ -65,22 +70,22 @@ open class SuspendMembershipFlow(val membership : StateAndRef<MembershipState<An
  */
 @InitiatingFlow
 @StartableByRPC
-open class SuspendMembershipForPartyFlow(val party : Party) : BusinessNetworkOperatorFlowLogic<SignedTransaction>() {
+open class SuspendMembershipForPartyFlow(val party: Party) : BusinessNetworkOperatorFlowLogic<SignedTransaction>() {
 
     companion object {
         object LOOKING_FOR_MEMBERSHIP_STATE : ProgressTracker.Step("Looking for party's membership state")
         object SUSPENDING_THE_MEMBERSHIP_STATE : ProgressTracker.Step("Suspending the membership state")
 
         fun tracker() = ProgressTracker(
-                LOOKING_FOR_MEMBERSHIP_STATE,
-                SUSPENDING_THE_MEMBERSHIP_STATE
+            LOOKING_FOR_MEMBERSHIP_STATE,
+            SUSPENDING_THE_MEMBERSHIP_STATE
         )
     }
 
     override val progressTracker = tracker()
 
     @Suspendable
-    override fun call() : SignedTransaction {
+    override fun call(): SignedTransaction {
         progressTracker.currentStep = LOOKING_FOR_MEMBERSHIP_STATE
         val stateToActivate = findMembershipStateForParty(party)
 

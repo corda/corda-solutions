@@ -1,13 +1,14 @@
 package com.r3.businessnetworks.membership.flows
 
 import co.paralleluniverse.fibers.Suspendable
+import com.r3.bno.testing.SimpleMembershipMetadata
+import com.r3.bno.testing.SomeCustomMembershipMetadata
 import com.r3.businessnetworks.membership.flows.bno.GetMembershipsFlowResponder
 import com.r3.businessnetworks.membership.flows.member.service.MemberConfigurationService
 import com.r3.businessnetworks.membership.flows.member.service.MembershipsCacheHolder
 import com.r3.businessnetworks.membership.states.MembershipContract
 import com.r3.businessnetworks.membership.states.MembershipState
 import com.r3.businessnetworks.membership.states.MembershipStatus
-import com.r3.businessnetworks.membership.states.SimpleMembershipMetadata
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.contracts.StateRef
 import net.corda.core.contracts.TransactionState
@@ -15,15 +16,10 @@ import net.corda.core.crypto.SecureHash
 import net.corda.core.flows.FlowLogic
 import net.corda.core.identity.CordaX500Name
 import net.corda.core.identity.Party
-import net.corda.core.serialization.CordaSerializable
 import net.corda.core.utilities.getOrThrow
 import net.corda.testing.core.TestIdentity
 import org.junit.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
-import kotlin.test.fail
+import kotlin.test.*
 
 class GetMembershipsFlowTest : AbstractFlowTest(
         numberOfBusinessNetworks = 2,
@@ -227,6 +223,3 @@ class AddNotExistingPartyToMembershipsCache(val bno : Party, val membership : Me
         cacheHolder.cache.updateMembership(stateAndRef)
     }
 }
-
-@CordaSerializable
-data class SomeCustomMembershipMetadata(val someCustomField : String)
