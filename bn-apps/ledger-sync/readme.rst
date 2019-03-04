@@ -28,7 +28,7 @@ Add the following lines to ``repositories`` and ``dependencies`` blocks of your 
     }
 
     dependencies {
-        cordapp "net.corda.businessnetworks:ledger-sync-service:1.0"
+        cordapp "com.r3.businessnetworks:ledger-sync-service:2.0"
     }
 
 

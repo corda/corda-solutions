@@ -148,3 +148,21 @@ class CloseBillingStateFlow(
     )
 ```
 
+## How to add Billing Service to your project
+
+Add the following lines to the `repositories` and `dependencies` blocks of your `build.gradle` file:
+
+```
+    repositories {
+        maven {
+          url 'https://ci-artifactory.corda.r3cev.com/artifactory/corda-solutions-releases'
+        }
+    }
+
+
+    dependencies {
+        cordapp "com.r3.businessnetworks:billing-app:2.0"
+        cordapp "com.r3.businessnetworks:billing-contracts-and-states:2.0"
+    }
+```
+

@@ -19,10 +19,10 @@ Add the following lines to `repositories` and `dependencies` blocks of your `bui
     }
 
     dependencies {
-        cordapp "net.corda.businessnetworks:corda-updates-app:1.0"
-        cordapp "net.corda.businessnetworks:corda-updates-app-states:1.0"
-        cordapp "net.corda.businessnetworks:corda-updates-app-core:1.0"
-        cordapp "net.corda.businessnetworks:corda-updates-app-transport:1.0"
+        cordapp "com.r3.businessnetworks:corda-updates-app:2.0"
+        cordapp "com.r3.businessnetworks:corda-updates-states:2.0"
+        cordapp "com.r3.businessnetworks:corda-updates-core:2.0"
+        cordapp "com.r3.businessnetworks:corda-updates-transport:2.0"
     }
 ```
 

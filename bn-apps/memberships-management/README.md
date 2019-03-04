@@ -33,8 +33,8 @@ Add the following lines to the `repositories` and `dependencies` blocks of your 
 
 
     dependencies {
-        cordapp "net.corda.businessnetworks:membership-service:1.0"
-        cordapp "net.corda.businessnetworks:membership-service-contracts-and-states:1.0"
+        cordapp "com.r3.businessnetworks:membership-service:2.0"
+        cordapp "com.r3.businessnetworks:membership-service-contracts-and-states:2.0"
     }
 ```
 
