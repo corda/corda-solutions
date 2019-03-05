@@ -82,12 +82,12 @@ class DatabaseService(val serviceHub : ServiceHub) : SingletonSerializeAsToken()
 
     fun deletePendingMembershipRequest(party : Party) {
         serviceHub.withEntityManager {
-            val nativeQuery = """
+            val hqlQuery = """
                 delete from PersistentPendingMembershipRequest
                 where pendingMember = :pendingMember
             """
 
-            createQuery(nativeQuery)
+            createQuery(hqlQuery)
                     .setParameter("pendingMember", party.name.toString())
                     .executeUpdate()
         }

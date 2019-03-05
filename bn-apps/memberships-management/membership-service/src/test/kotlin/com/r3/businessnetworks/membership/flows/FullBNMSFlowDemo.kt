@@ -1,21 +1,16 @@
 package com.r3.businessnetworks.membership.flows
 
 import co.paralleluniverse.fibers.Suspendable
+import com.r3.bno.testing.SimpleMembershipMetadata
 import com.r3.businessnetworks.membership.flows.member.GetMembershipsFlow
-import com.r3.businessnetworks.membership.states.SimpleMembershipMetadata
-import net.corda.core.flows.FlowException
-import net.corda.core.flows.FlowLogic
-import net.corda.core.flows.FlowSession
-import net.corda.core.flows.InitiatedBy
-import net.corda.core.flows.InitiatingFlow
+import com.r3.businessnetworks.membership.flows.member.Utils.ofType
+import net.corda.core.flows.*
+import net.corda.core.identity.CordaX500Name
 import net.corda.core.identity.Party
 import net.corda.core.utilities.getOrThrow
 import org.junit.Test
-import kotlin.test.fail
-import com.r3.businessnetworks.membership.flows.member.Utils.ofType
-import net.corda.core.identity.CordaX500Name
-import java.lang.Exception
 import kotlin.test.assertEquals
+import kotlin.test.fail
 
 /**
  * This is a demo of the Business Network Membership Service. The test demonstrates how a participant can request to join a Business Network
@@ -46,7 +41,7 @@ class FullBNMSFlowDemo : AbstractFlowTest(
         assert(memberships.keys.single() == newJoiner.identity())
         assert(memberships[newJoiner.identity()]!!.state.data.membershipMetadata.role == "My new role")
 
-        // not members can't see membership list
+        // non-members can't see membership list
         try {
             runGetMembershipsListFlow(bnoNode, nonMember, false)
             fail()

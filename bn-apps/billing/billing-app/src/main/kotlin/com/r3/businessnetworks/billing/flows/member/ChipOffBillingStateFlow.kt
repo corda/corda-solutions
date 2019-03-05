@@ -41,7 +41,7 @@ class ChipOffBillingStateFlow(private val billingState : StateAndRef<BillingStat
                 .addInputState(billingState)
                 .addCommand(BillingContract.Commands.ChipOff(), billingState.state.data.owner.owningKey)
 
-        // if expiry date is present - adding a time window
+        // if expiry date is present - add a time window
         if (billingState.state.data.expiryDate != null) {
             builder.setTimeWindow(Instant.now(), timeTolerance)
         }

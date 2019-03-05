@@ -27,14 +27,14 @@ Add the following lines to the `repositories` and `dependencies` blocks of your 
 ```
     repositories {
         maven {
-          url 'http://ci-artifactory.corda.r3cev.com/artifactory/corda-solutions-dev'
+          url 'https://ci-artifactory.corda.r3cev.com/artifactory/corda-solutions-releases'
         }
     }
 
 
     dependencies {
-        cordapp "com.r3.businessnetworks:membership-service:2.0-SNAPSHOT"
-        cordapp "com.r3.businessnetworks:membership-service-contracts-and-states:2.0-SNAPSHOT"
+        cordapp "com.r3.businessnetworks:membership-service:2.0"
+        cordapp "com.r3.businessnetworks:membership-service-contracts-and-states:2.0"
     }
 ```
 

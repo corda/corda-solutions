@@ -4,11 +4,14 @@ import co.paralleluniverse.fibers.Suspendable
 import com.r3.businessnetworks.membership.flows.bno.service.BNOConfigurationService
 import com.r3.businessnetworks.membership.flows.bno.service.DatabaseService
 import com.r3.businessnetworks.membership.flows.bno.support.BusinessNetworkOperatorFlowLogic
+import com.r3.businessnetworks.membership.flows.getAttachmentIdForGenericParam
 import com.r3.businessnetworks.membership.states.MembershipContract
 import com.r3.businessnetworks.membership.states.MembershipState
 import com.r3.businessnetworks.membership.states.MembershipStatus
 import net.corda.core.contracts.StateAndRef
-import net.corda.core.flows.*
+import net.corda.core.flows.FinalityFlow
+import net.corda.core.flows.InitiatingFlow
+import net.corda.core.flows.StartableByRPC
 import net.corda.core.identity.Party
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
@@ -23,10 +26,10 @@ import net.corda.core.utilities.ProgressTracker
  */
 @StartableByRPC
 @InitiatingFlow(version = 2)
-open class ActivateMembershipFlow(val membership : StateAndRef<MembershipState<Any>>) : BusinessNetworkOperatorFlowLogic<SignedTransaction>() {
+open class ActivateMembershipFlow(val membership: StateAndRef<MembershipState<Any>>) : BusinessNetworkOperatorFlowLogic<SignedTransaction>() {
 
     @Suspendable
-    override fun call() : SignedTransaction {
+    override fun call(): SignedTransaction {
         verifyThatWeAreBNO(membership.state.data)
 
         val configuration = serviceHub.cordaService(BNOConfigurationService::class.java)
@@ -34,9 +37,10 @@ open class ActivateMembershipFlow(val membership : StateAndRef<MembershipState<A
         // create membership activation transaction
         val notary = configuration.notaryParty()
         val builder = TransactionBuilder(notary)
-                .addInputState(membership)
-                .addOutputState(membership.state.data.copy(status = MembershipStatus.ACTIVE, modified = serviceHub.clock.instant()), MembershipContract.CONTRACT_NAME)
-                .addCommand(MembershipContract.Commands.Activate(), ourIdentity.owningKey)
+            .addInputState(membership)
+            .addOutputState(membership.state.data.copy(status = MembershipStatus.ACTIVE, modified = serviceHub.clock.instant()), MembershipContract.CONTRACT_NAME)
+            .addCommand(MembershipContract.Commands.Activate(), ourIdentity.owningKey)
+            .addAttachment(membership.getAttachmentIdForGenericParam())
         builder.verify(serviceHub)
         val selfSignedTx = serviceHub.signInitialTransaction(builder)
 
@@ -63,22 +67,22 @@ open class ActivateMembershipFlow(val membership : StateAndRef<MembershipState<A
  */
 @InitiatingFlow
 @StartableByRPC
-open class ActivateMembershipForPartyFlow(val party : Party) : BusinessNetworkOperatorFlowLogic<SignedTransaction>() {
+open class ActivateMembershipForPartyFlow(val party: Party) : BusinessNetworkOperatorFlowLogic<SignedTransaction>() {
 
     companion object {
         object LOOKING_FOR_MEMBERSHIP_STATE : ProgressTracker.Step("Looking for party's membership state")
         object ACTIVATING_THE_MEMBERSHIP_STATE : ProgressTracker.Step("Activating the membership state")
 
         fun tracker() = ProgressTracker(
-                LOOKING_FOR_MEMBERSHIP_STATE,
-                ACTIVATING_THE_MEMBERSHIP_STATE
+            LOOKING_FOR_MEMBERSHIP_STATE,
+            ACTIVATING_THE_MEMBERSHIP_STATE
         )
     }
 
     override val progressTracker = tracker()
 
     @Suspendable
-    override fun call() : SignedTransaction {
+    override fun call(): SignedTransaction {
         progressTracker.currentStep = LOOKING_FOR_MEMBERSHIP_STATE
         val stateToActivate = findMembershipStateForParty(party)
 

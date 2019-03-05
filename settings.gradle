@@ -13,3 +13,5 @@ include ':bn-apps:billing:billing-demo'
 include ':bn-apps:businessnetworks-utilities'
 include ':bn-apps:businessnetworks-test-utilities'
 include ':bn-apps:garbagecollector'
+include 'test-utils'
+

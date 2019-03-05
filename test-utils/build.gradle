@@ -14,7 +14,7 @@ cordapp {
     targetPlatformVersion 4
     minimumPlatformVersion 1
     contract {
-        name "business-network-membership-service-states"
+        name "solutions-testing-cordapp"
         vendor "com.r3"
         licence "http://www.apache.org/licenses/LICENSE-2.0"
         versionId 1
@@ -22,27 +22,12 @@ cordapp {
     signing {
         enabled false
     }
-
-}
-
-sourceSets {
-    main {
-        resources {
-            srcDir "config/dev"
-        }
-    }
-    test {
-        resources {
-            srcDir "config/test"
-        }
-    }
 }
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     testCompile "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
     testCompile "junit:junit:$junit_version"
-    testCompile project(":test-utils")
 
     // Corda integration dependencies
     cordaCompile "$corda_release_group:corda-core:$corda_release_version"
