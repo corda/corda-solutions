@@ -27,6 +27,9 @@ On the Float VM run:
 
 /usr/bin/java -Xmx2048m -jar /opt/corda/corda-3.2.jar
 
+.. literalinclude:: ./nodestart.conf
+    :language: javascript
+
 
 
 
