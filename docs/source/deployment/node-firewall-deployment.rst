@@ -38,10 +38,10 @@ Java 8 Installation on VM
 
 First of all you will need to install Java 8 on your Virtual Machine
 
- >corda@myserver:~$ sudo add-apt-repository ppa:webupd8team/java
- >corda@myserver:~$ sudo apt update
- >corda@myserver:~$ sudo apt install oracle-java8-installer
-
+.. parsed-literal::
+    > sudo add-apt-repository ppa:webupd8team/java
+    > sudo apt update
+    > sudo apt install oracle-java8-installer
 
 These are the configuration files that will be created during the process:
 
