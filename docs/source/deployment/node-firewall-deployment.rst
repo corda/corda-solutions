@@ -111,6 +111,34 @@ Bridge to Float Connection
 
 *bridge.jks* & *float.jks* contain TLS certificates their associated private keys. By convention they should be referred to as keystores. These TLS certificates are unrelated to any of the certificates issued by the node. In our example documentation the bridge & float keys are issued by a stand-alone root certificate. This root certificate is stored in trust.jks. This is required for the bridge and float to authenticate each other
 
+Generate Bridge and Float Keystores
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- In the root of your Corda node directory cd to /opt/corda/temp
+
+- Create a script called keygen.sh and copy the keytool commands from the code block below.
+
+- In /opt/corda/temp run chmod 755 keygen.sh 
+
+- In /opt/corda/temp run ./keygen.sh 
+
+The following keys will be generated:
+
+bridge.jks
+bridge.pem
+bridgechain.pem
+float.jks
+float.pem
+floatca.jks
+floatchain.pem
+root.pem
+trust.jks
+
+The important keys are bridge.jks, float.jks, trust.jks. 
+
+.. literalinclude:: ./pki-keys.conf
+    :language: javascript
+
 
 
 Bridge Installation 
