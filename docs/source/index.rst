@@ -37,7 +37,7 @@ finished application, are about to deploy, or are already in production.
   patterns/patterns_wip.rst
 
 .. toctree::
-  :caption: Corda Bank Deployment 
+  :caption:  Deployment Patterns
   :maxdepth: 1
 
   deployment/intro.rst
