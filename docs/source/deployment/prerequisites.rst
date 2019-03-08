@@ -14,7 +14,10 @@ There are a few prerequisites to consider prior to deployment & onboarding to th
 #. Request your DBA team to provide a database for the Corda Vault in one of the supported platforms.
 
 #. Request your Network Engineers open connections thru the firewall to the following R3 Network components. 
+
 #. Request your Network Engineers provide a HTTP Proxy (connection to Doorman & Network Map) and a SOCKS Proxy for connection to peers on the Corda Network. 
+
+#. Complete the Corda UAT Network Agreement https://fs22.formsite.com/r3cev/CordaUATAgreement2019/index.html
 
 UAT Customer Access Details
 
