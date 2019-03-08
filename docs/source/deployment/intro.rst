@@ -1,4 +1,4 @@
-Corda Deployment 
+Bank Deployment 
 ================
 
 These are guidlines for deploying Corda Enterprise and the Corda Enterprise Firewall with a typical bank environment.
