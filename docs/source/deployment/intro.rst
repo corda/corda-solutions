@@ -17,4 +17,5 @@ These are guidlines for deploying Corda Enterprise and the Corda Enterprise Fire
    node-firewall-deployment
    node-registration
    bridge-node-float
+   corda-vault
    concepts-background-information
