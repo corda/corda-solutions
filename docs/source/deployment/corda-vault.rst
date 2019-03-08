@@ -52,6 +52,6 @@ JDBC Connectivity to the Corda Vault is handled in the Corda Enterprise node.con
 
 The diagram below outlines the relations between tables in the Vault.
 
-.. image:: vault.png
+.. image:: vault-relations.png
    :scale: 60%
    :align: center
