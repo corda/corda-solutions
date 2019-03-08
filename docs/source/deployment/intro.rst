@@ -7,6 +7,7 @@ These are guidlines for deploying Corda Enterprise and the Corda Enterprise Fire
 .. toctree::
    :maxdepth: 1
 
+   prerequisites
    corda-node-architecture-components 
    corda-deployment-in-bank-environment
    supported-software-components
