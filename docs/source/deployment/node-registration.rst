@@ -26,4 +26,10 @@ corda@myserver:/opt/corda$ java -Dhttps.proxyHost=PROXYSERVER -Dhttps.proxyPort=
 
 6. Once received, your node will acknowledge receipt and shut down. 
 
+7. You can then restart your Corda Node as follows:
+
+corda@myserver:/opt/corda$ java -Dhttps.proxyHost=PROXYSERVER -Dhttps.proxyPort=8080 -jar corda.jar and you will see output like this:
+
+
+
 
