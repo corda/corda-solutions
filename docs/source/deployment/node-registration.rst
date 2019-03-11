@@ -31,5 +31,6 @@ corda@myserver:/opt/corda$ java -Dhttps.proxyHost=PROXYSERVER -Dhttps.proxyPort=
 corda@myserver:/opt/corda$ java -Dhttps.proxyHost=PROXYSERVER -Dhttps.proxyPort=8080 -jar corda.jar and you will see output like this:
 
 
-
+.. literalinclude:: ./nodestart.conf
+    :language: javascript
 
