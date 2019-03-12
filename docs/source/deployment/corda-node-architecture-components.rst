@@ -24,12 +24,14 @@ The diagram below illustrates the basic components that are typically deployed:
    :scale: 60%
    :align: center
 
-The Corda Firewall is actually made up of two separate programs, called the bridge and the float. These handle outbound and inbound connections respectively, and allow a node administrator to minimise the amount of code running in a network’s DMZ. 
+The Corda Firewall is actually made up of two separate programs, called the Bridge and the Float. These handle outbound and inbound connections respectively, and allow a node administrator to minimise the amount of code running in a network’s DMZ. 
 
 The primary function of the Corda Firewall is to act as an application level firewall and protocol break on all internet facing endpoints. 
 
-The Float is effectively an inbound socket listener which provides packet filtering and is a DMZ compatible component.  The Float exposes a public IP address and port to which other peers on the network can connect. This prevents the Node from being exposed to peers. The Floats primary function is to bundle messages and send them to the Bridge across a DMZ internal firewall. The Bridge in turn runs some additional health checks on the message prior to sending to the Node Artemis queue. 
+The Float is effectively an inbound socket listener which provides packet filtering and is a DMZ compatible component.  The Float exposes a public IP address and port to which other peers on the network can connect. This prevents the Node from being exposed to peers. 
 
-The Corda Node advertises the Float public IP address for P2P communications, as this is the IP address that is listening for peer Node communications.
+The Floats primary function is to bundle messages and send them to the Bridge across a DMZ internal firewall. The Bridge in turn runs some additional health checks on the message prior to sending to the Corda Node Artemis queue. 
 
-The Corda Node public IP address is used for RPC client connections.
+The Corda Node advertises the Float's Public IP address for P2P communications, as this is the IP address that is listening for peer Node communications. The Float's Public IP address must be configured on the outer Firewall such that peers can connect to it. 
+
+The Corda Node VM Public IP address is used for RPC client connections.
