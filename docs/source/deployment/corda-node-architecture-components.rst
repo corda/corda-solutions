@@ -13,3 +13,9 @@ This diagram illustrates the communication protocols used by the Corda Node comm
 - Deployed in DMZ
 - Terminates TLS Connections
 - Does not connect into the internal network, connection initiated from the Node. 
+
+This diagram illustrates the basic components to be deployed:
+
+.. image:: nodebridgefloat.png
+   :scale: 100%
+   :align: center
