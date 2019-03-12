@@ -63,7 +63,7 @@ Node Installation
 
 This is a sample node.conf which connects to the Corda UAT Network.
 
-.. literalinclude:: ./node.conf
+.. literalinclude:: ./nodefull.conf
     :language: javascript
 
 
