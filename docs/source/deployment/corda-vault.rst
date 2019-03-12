@@ -18,7 +18,7 @@ Corda stores information about several aspects of the Corda Node and Network in 
 During deployment the following tables will be created in the Vault database:
 
 
-- dbo.DATABASECHANGELOG
+- dbo.DATABASECHANGELOG 
 - dbo.DATABASECHANGELOGLOCK
 - dbo.node_attachments
 - dbo.node_attachments_contracts
@@ -44,6 +44,11 @@ During deployment the following tables will be created in the Vault database:
 - dbo.vault_linear_states
 - dbo.vault_states
 - dbo.vault_transaction_notes
+
+Detailed information on the Corda Vault can be found here: 
+
+https://docs.corda.r3.com/releases/master/node-database.html
+
 
 JDBC Connectivity to the Corda Vault is handled in the Corda Enterprise node.conf file in /opt/corda. Here are examples for each supported RDBMS.
 
