@@ -5,7 +5,7 @@ This diagram illustrates the communication protocols used by the Corda Node comm
 
 
 .. image:: overview.png
-   :scale: 60%
+   :scale: 40%
    :align: center
 
 - Corda uniquely enables P2P Corda Networking within security constraints of corporate networking architectures. 
