@@ -24,7 +24,11 @@ The Corda Firewall is actually made up of two separate programs, called the brid
 
 The primary function of the Corda Firewall is to act as an application level firewall and protocol break on all internet facing endpoints. 
 
-The Float is effectively an nbound socket listener which provides packet filtering and is a DMZ compatible component.  The Float exposes a public IP address and port to which other peers on the network can connect. This prevents the Node from being exposed to peers. The Floats primary function is to bundle messages and send them to the Bridge across a DMZ internal firewall. The Bridge in turn runs some additional health checks on the message prior to sending to the Node Artemis queue. 
+The Float is effectively an inbound socket listener which provides packet filtering and is a DMZ compatible component.  The Float exposes a public IP address and port to which other peers on the network can connect. This prevents the Node from being exposed to peers. The Floats primary function is to bundle messages and send them to the Bridge across a DMZ internal firewall. The Bridge in turn runs some additional health checks on the message prior to sending to the Node Artemis queue. 
+
+The Corda Node advertises the Float public IP address for P2P communications, as this is the IP address that is listening for peer Node communications.
+
+The Corda Node public IP address is used for RPC client connections.
 
 
 .. image:: nodebridgefloat.png
