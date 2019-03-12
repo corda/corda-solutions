@@ -1,4 +1,4 @@
-package com.r3.businessnetworks.garbagecollector
+package com.r3.businessnetworks.vaultrecycler
 
 import net.corda.core.contracts.BelongsToContract
 import net.corda.core.contracts.CommandData
@@ -10,7 +10,7 @@ import net.corda.core.transactions.LedgerTransaction
 
 class SimpleContract : Contract {
     companion object {
-        const val CONTRACT_ID = "com.r3.businessnetworks.garbagecollector.SimpleContract"
+        const val CONTRACT_ID = "com.r3.businessnetworks.vaultrecycler.SimpleContract"
     }
 
     class SimpleCommand : CommandData, TypeOnlyCommandData()

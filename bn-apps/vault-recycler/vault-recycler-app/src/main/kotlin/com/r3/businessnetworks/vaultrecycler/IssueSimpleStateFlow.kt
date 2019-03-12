@@ -1,4 +1,4 @@
-package com.r3.businessnetworks.garbagecollector
+package com.r3.businessnetworks.vaultrecycler
 
 import co.paralleluniverse.fibers.Suspendable
 import net.corda.core.contracts.StateAndRef
@@ -19,7 +19,6 @@ class IssueSimpleStateFlow(
         statesToConsume.forEach { builder.addInputState(it) }
         statesToIssue.forEach { builder.addOutputState(it, SimpleContract.CONTRACT_ID) }
         builder.addCommand(SimpleContract.SimpleCommand(), ourIdentity.owningKey)
-
         val stx = serviceHub.signInitialTransaction(builder)
         return subFlow(FinalityFlow(stx, listOf()))
     }
