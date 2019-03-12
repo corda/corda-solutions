@@ -5,7 +5,7 @@ The diagram above illustrates the process of joining the Corda Network in UAT & 
 
 Whitelist IP & Trust Cert
 
-1. Send email to doorman@r3.cmo using email address representing the enterprise whose Legal Identity will be registered, providing IP address of machine that will listen for traffic (Float).
+1. Send email to doorman@r3.com using email address representing the enterprise whose Legal Identity will be registered, providing IP address of machine that will listen for traffic (Float).
 #. R3 will whitelist your IP address.
 #. You will receive a network-root-truststore.jks file containing the public key certificate from the Corda compatibility zone to which you are registering, e.g., Corda Network UAT or Corda Network. This is the file you will use later in the process to register your Corda Node once it is configured. This file is required to setup SSL connections with the Doorman. The network-root-truststore.jks file contains the Doorman's public certificates
 #. Configure your node.conf with the required entries to join the Corda UAT Network.
