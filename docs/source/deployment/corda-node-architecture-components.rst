@@ -16,9 +16,13 @@ This diagram illustrates the communication protocols used by the Corda Node comm
 
 The diagram below illustrates the basic components that are typically deployed:
 
-Corda Enterprise Node
-Corda Enterprise Vault
-Corda Enterprise Firewall
+- Corda Enterprise Node
+- Corda Enterprise Vault
+- Corda Enterprise Firewall
+
+.. image:: nodebridgefloat.png
+   :scale: 60%
+   :align: center
 
 The Corda Firewall is actually made up of two separate programs, called the bridge and the float. These handle outbound and inbound connections respectively, and allow a node administrator to minimise the amount of code running in a network’s DMZ. 
 
@@ -29,8 +33,3 @@ The Float is effectively an inbound socket listener which provides packet filter
 The Corda Node advertises the Float public IP address for P2P communications, as this is the IP address that is listening for peer Node communications.
 
 The Corda Node public IP address is used for RPC client connections.
-
-
-.. image:: nodebridgefloat.png
-   :scale: 60%
-   :align: center
