@@ -20,9 +20,11 @@ The diagram below illustrates the basic components that are typically deployed:
 - Corda Enterprise Vault
 - Corda Enterprise Firewall
 
+
 .. image:: nodebridgefloat.png
    :scale: 60%
    :align: center
+
 
 The Corda Firewall is actually made up of two separate programs, called the Bridge and the Float. These handle outbound and inbound connections respectively, and allow a node administrator to minimise the amount of code running in a network’s DMZ. 
 
