@@ -14,7 +14,9 @@ The following RDBMS are supported with Corda Enterprise
 - Oracle 12cR2/Oracle JDBC 8
 - Postgres 9.6/PostgreSQL JDBC Driver 42.1.4
 
-Corda stores information about several aspects of the Corda Node and Network in tables in the vault. 
+Corda stores information about several aspects of the Corda Node and Network in tables in the vault.
+Reference: https://docs.corda.r3.com/node-database.html#node-database
+
 During deployment the following tables will be created in the Vault database:
 
 
