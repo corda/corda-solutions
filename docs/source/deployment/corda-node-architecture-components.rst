@@ -17,5 +17,5 @@ This diagram illustrates the communication protocols used by the Corda Node comm
 This diagram illustrates the basic components to be deployed:
 
 .. image:: nodebridgefloat.png
-   :scale: 100%
+   :scale: 60%
    :align: center
