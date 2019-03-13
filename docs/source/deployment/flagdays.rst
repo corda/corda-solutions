@@ -102,7 +102,7 @@ The diagram below outlines the the overview of SSZ.
 
 .. image:: subzone.png
    :scale: 60%
-   :align: centero
+   :align: center
 
 Constraints
 ^^^^^^^^^^^
