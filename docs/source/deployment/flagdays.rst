@@ -64,7 +64,7 @@ The Corda Network Operator will ensure customers are fully aware of impending an
 
 - Forward Calendars
 
-1.Publicise 12 month forward calendar and explanatory notes for next update:
+1. Publicise 12 month forward calendar and explanatory notes for next update:
 #. Production calendar on https://corda.network 
 #. UAT calendar on https://docs.corda.net 
 
@@ -72,9 +72,9 @@ The Corda Network Operator will ensure customers are fully aware of impending an
 
 1. Announcement day explanatory email to:
 
-Customer node operators (contact email address as supplied in original Certificate Signing Request or as amended by email to doorman@r3.com or uatdoorman@r3.com. 
-Customer business operations contacts (advised during implementation projects)
-Business network operator key contact (as defined in service agreement).
+- Customer node operators (contact email address as supplied in original Certificate Signing Request or as amended by email to doorman@r3.com or uatdoorman@r3.com. 
+- Customer business operations contacts (advised during implementation projects)
+- Business network operator key contact (as defined in service agreement).
 
 #. Pre-execution email to the same contacts 3 business days ahead of update to confirm go ahead.
 
