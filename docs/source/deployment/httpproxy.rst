@@ -8,7 +8,8 @@ Corda facilitates the use of an HTTP Proxy to access the Doorman & Network map v
 The following is an example of how to set up a Squid Proxy Server and start the Corda Node to point to it as a "tunnel" to connect to Doorman and Network Map.
 
 1. Prerequisite is a VM 2 CPU Core & 2 GB RAM running Ubuntu 18.x.
-2. ssh into the VM and run the following:
+
+2. ssh into the VM where you want to install the Proxy Server and run the following:
 
 - sudo apt update
 - sudo apt -y install squid
