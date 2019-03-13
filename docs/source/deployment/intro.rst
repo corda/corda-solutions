@@ -15,6 +15,7 @@ These are guidlines for deploying Corda Enterprise and the Corda Enterprise Fire
    network-policy-requirements
    node-registration-overview
    node-firewall-deployment
+   httpproxy
    node-registration
    bridge-node-float
    monitoring
