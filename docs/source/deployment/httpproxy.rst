@@ -10,8 +10,8 @@ The following is an example of how to set up a Squid Proxy Server and start the 
 1. Prerequisite is VM running Ubuntu
 #. ssh into the VM and run the following
 
-> sudo apt update
-> sudo apt -y install squid
+- sudo apt update
+- sudo apt -y install squid
 
 You should edit /etc/squid/squid.conf and add the following entries
 
@@ -22,9 +22,9 @@ You should edit /etc/squid/squid.conf and add the following entries
 
 Once Squid is successfully installed run:
 
-> sudo systemctl start squid
-> sudo systemctl enable squid
-> sudo systemctl status squid
+- sudo systemctl start squid
+- sudo systemctl enable squid
+- sudo systemctl status squid
 
 If Squid starts successfully you will see an output similar to this
 
@@ -34,7 +34,7 @@ If Squid starts successfully you will see an output similar to this
 
 At this point you can ssh to the VM where the Corda Node is installed and run the following:
 
-java -Dhttps.proxyHost=your-firewall-proxy -Dhttps.proxyPort=8080 -jar corda.jar 
+- java -Dhttps.proxyHost=your-firewall-proxy -Dhttps.proxyPort=8080 -jar corda.jar 
 
 If the Corda Node starts up sucessfully you can then check /var/log/squid/access.log and you should see output as follows:
 
