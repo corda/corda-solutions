@@ -1,4 +1,4 @@
-package com.r3.businessnetworks.vaultrecycler
+package com.r3.businessnetworks.vaultrecycler.aux
 
 import co.paralleluniverse.fibers.Suspendable
 import net.corda.core.contracts.StateAndRef

@@ -1,4 +1,4 @@
-package com.r3.businessnetworks.vaultrecycler
+package com.r3.businessnetworks.vaultrecycler.aux
 
 import net.corda.core.contracts.BelongsToContract
 import net.corda.core.contracts.CommandData
