@@ -189,9 +189,13 @@ Suggested Work flow for Corda Node & Corda Firewall Installation
 #. In Bridge.conf bridgeInnerConfig put IP address of 3, or ask infrastructure team what address is presented by firewall between Bridge and Float.
 #. In Float.conf floatOuterConfig put IP address from 3 which will be routed to from node. If machine has one NIC use that address, if it has two then use the card that has permission for access from bridge network.
 #. In Float.conf inboundConfig use IP address from 3 which faces the internet. If there is only one NIC use that value, if there are two check with Infrastructure which one is accessed from the load balancer.
+#. In Float.conf floatOuterConfig put IP address from 3 which will be routed to from node. If machine has one NIC use that address, if it has two then use the card that has permission for access from bridge network.
 
 The following image may be helpful in ensuring alignment between the Node, Bridge and Float configuration files.
 
 .. image:: ./resources/CordaFirewallConfigAlign.png
    :scale: 100%
    :align: center
+
+* Note: **p2pAddress** reflects the **publicly accessible address**, which may or may not be the Float inboundConfig.listeningAddress. If there is an internet firewall configured in front of the float then ask the Network Administrator for the public address that routes to the Float's listeningAddress, and use that public address for your p2pAddres.
+
