@@ -19,8 +19,8 @@ You should see the following output:
 
 .. sourcecode:: shell
 
-FloatSupervisorService: active = false
-FloatSupervisorService: active = true
+    FloatSupervisorService: active = false
+    FloatSupervisorService: active = true
 
 ..
 
