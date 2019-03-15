@@ -17,8 +17,13 @@ On the Float VM run:
 
 You should see the following output:
 
+.. sourcecode:: shell
+
 FloatSupervisorService: active = false
 FloatSupervisorService: active = true
+
+..
+
 
 Starting Corda Node
 ^^^^^^^^^^^^^^^^^^^
