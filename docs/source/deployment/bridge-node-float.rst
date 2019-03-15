@@ -13,7 +13,7 @@ Starting Float
 
 On the Float VM run:
 
-/usr/bin/java -Xmx2048m -jar /opt/corda/corda-bridgeserver-3.2.jar
+/usr/bin/java -Xmx2048m -jar /opt/corda/corda-bridgeserver-3.2.jar --config-file float.conf
 
 You should see the following output:
 
@@ -23,7 +23,7 @@ FloatSupervisorService: active = true
 Starting Corda Node
 ^^^^^^^^^^^^^^^^^^^
 
-On the Float VM run:
+On the Node VM run:
 
 /usr/bin/java -Xmx2048m -jar /opt/corda/corda-3.2.jar
 
