@@ -191,6 +191,7 @@ Suggested Work flow for Corda Node & Corda Firewall Installation
 #. In Float.conf inboundConfig use IP address from 3 which faces the internet. If there is only one NIC use that value, if there are two check with Infrastructure which one is accessed from the load balancer.
 
 The following image may be helpful in ensuring alignment between the Node, Bridge and Float configuration files.
+
 .. image:: ./resources/CordaFirewallConfigAlign.png
-   :scale: 60%
+   :scale: 100%
    :align: center
