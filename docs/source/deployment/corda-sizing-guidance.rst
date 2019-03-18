@@ -25,7 +25,7 @@ Recommended Specification (PROD) Multiple Nodes 1 on 1 VM
 - Corda Bridge(s) 4 CPU Core, 4 GB Memory
 - Corda Float(s) 2 CPU Core, 4 GB Memory
 
-Reference: Corda Enterprise Sizing and Performance
+Reference: Corda Enterprise Sizing and Performance https://docs.corda.r3.com/releases/3.2/sizing-and-performance.html
 
 Specification for Vault RDBMS
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
