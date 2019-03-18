@@ -29,10 +29,12 @@ make html
 
 ## Installing tools on Windows 10
 
-1. Install “make” for Windows http://gnuwin32.sourceforge.net/packages/make.htm
-2. Choose a tool to install Python such as https://chocolatey.org/install
-3. For the example above when choco is successfully installed from Command Promp run:> choco install python
-4. Install pip using C:\Python37>python.exe -m pip install -U pip
+1. Install Githup for Desktop Windows 64
+2. Launch Github Desktop and select corda/corda-solutions repo and clone it.
+3. Install “make” for Windows http://gnuwin32.sourceforge.net/packages/make.htm
+4. Choose a tool to install Python such as https://chocolatey.org/install
+5. For the example above when choco is successfully installed from Command Promp run:> choco install python
+6. Install pip using C:\Python37>python.exe -m pip install -U pip
 
 ```
 
@@ -47,9 +49,21 @@ Successfully installed pip-19.0.3
 
 ```
 
-5. Install sphinx as follows: C:\Python37\Scripts>pip.exe install -U sphinx
-6. Install sphinx theme for documents as follows : C:\Python37\Scripts>pip.exe install sphinx_rtd_theme
-7. Run the script to build the documents as follows : C:\Users\USER\Documents\GitHub\corda-solutions\docs>C:\Python37\Scripts\sphinx-build.exe -b html -d build\doctrees source build/html and you should see this output:
+7. Install sphinx as follows: C:\Python37\Scripts>pip.exe install -U sphinx
+8. Install sphinx theme for documents as follows : 
+
+```
+C:\Python37\Scripts>pip.exe install sphinx_rtd_theme
+
+```
+
+9. Run the script to build the documents as follows : 
+
+```
+C:\Users\USER\Documents\GitHub\corda-solutions\docs>C:\Python37\Scripts\sphinx-build.exe -b html -d build\doctrees source build/html
+```
+
+You should see this output below:
 
 ```
 
@@ -64,10 +78,6 @@ pickling environment... done
 checking consistency... done
 preparing documents... done
 writing output... [100%] patterns/patterns_wip                                 ncerements_process
-C:\Users\USER\Documents\GitHub\corda-solutions\docs\source\deployment\bridge-node-float.rst:35: WARNING: Could not lex literal_block as "javascript". Highlighting skipped.
-C:\Users\USER\Documents\GitHub\corda-solutions\docs\source\deployment\httpproxy.rst:19: WARNING: Could not lex literal_block as "javascript". Highlighting skipped.
-C:\Users\Simon Webster\Documents\GitHub\corda-solutions\docs\source\deployment\httpproxy.rst:31: WARNING: Could not lex literal_block as "javascript". Highlighting skipped.
-C:\Users\USER\Documents\GitHub\corda-solutions\docs\source\deployment\node-registration.rst:34: WARNING: Could not lex literal_block as "javascript". Highlighting skipped.
 generating indices... genindex
 writing additional pages... search
 copying images... [  7%] corda-modelling-notation\complexity\../resources/complexity/CMN2_C_Linearid-coupling-attachmentcopying images... [  9%] corda-modelling-notation\complexity\../resources/complexity/CMN2_C_Linearid_coupling_state_instcopying images... [ 12%] corda-modelling-notation\high-level-architecture\../resources/arch/CMN2_HLA_High_level_process.copying images... [100%] designs\./resources/ledger_sync.png                   ngI_Transaction_example.pngs.pngngpng
