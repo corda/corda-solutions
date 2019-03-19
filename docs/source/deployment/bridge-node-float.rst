@@ -45,5 +45,19 @@ On the Bridge VM run:
 
 /usr/bin/java -Xmx2048m -jar /opt/corda/corda-bridgeserver-3.2.jar
 
+You should see the following output in the Bridge:
 
+.. sourcecode:: shell
 
+BridgeSupervisorService: active = false
+BridgeSupervisorService: active = true
+
+..
+
+You should see the following output in the Float log:
+
+.. sourcecode:: shell
+
+Now listening for incoming connections on VM-Of-Float-Public-IP:10010
+
+..
