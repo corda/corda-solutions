@@ -21,7 +21,7 @@ You should see the following output:
 
     FloatSupervisorService: active = false
     FloatSupervisorService: active = true
-
+    
 ..
 
 
@@ -37,7 +37,6 @@ On the Node VM run:
 
 
 
-
 Starting Bridge
 ^^^^^^^^^^^^^^^
 
@@ -49,8 +48,8 @@ You should see the following output in the Bridge:
 
 .. sourcecode:: shell
 
-BridgeSupervisorService: active = false
-BridgeSupervisorService: active = true
+    BridgeSupervisorService: active = false
+    BridgeSupervisorService: active = true
 
 ..
 
@@ -58,6 +57,6 @@ You should see the following output in the Float log:
 
 .. sourcecode:: shell
 
-Now listening for incoming connections on VM-Of-Float-Public-IP:10010
+    Now listening for incoming connections on VM-Of-Float-Public-IP:10010
 
 ..
