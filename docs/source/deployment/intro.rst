@@ -7,16 +7,16 @@ These are guidlines for deploying Corda Enterprise and the Corda Enterprise Fire
 .. toctree::
    :maxdepth: 1
 
-   prerequisites
    corda-node-architecture-components 
    corda-deployment-in-bank-environment
    supported-software-components
    corda-sizing-guidance
-   network-policy-requirements
-   node-registration-overview
    node-firewall-deployment
    httpproxy
    socksproxy
+   network-policy-requirements
+   prerequisites
+   node-registration-overview
    node-registration
    bridge-node-float
    monitoring
