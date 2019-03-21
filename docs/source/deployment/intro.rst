@@ -1,25 +1,19 @@
-Bank Deployment 
+Bank Deployment
 ================
-
-These are guidlines for deploying Corda Enterprise and the Corda Enterprise Firewall with a typical bank environment.
+From the perspective of a bank, these are guidelines for deploying Corda Enterprise and the Corda Enterprise Firewall for use in the Corda Network.
+Corda uniquely enables P2P Corda Networking within security constraints of corporate networking architectures. Corda restricts access to Corda Nodes
+from other Corda Nodes by way of valid identity certificates that are known in a Corda Network Map that is shared among accepted Nodes.
 
 
 .. toctree::
    :maxdepth: 1
 
-   corda-node-architecture-components 
-   corda-deployment-in-bank-environment
-   supported-software-components
-   corda-sizing-guidance
+   bank-deploy-overview
+   corda-node-architecture-components
+   prerequisites-sizing
    node-firewall-deployment
-   httpproxy
-   socksproxy
-   network-policy-requirements
-   prerequisites
-   node-registration-overview
    node-registration
-   bridge-node-float
+   start-components
    monitoring
-   corda-vault
-   concepts-background-information
-   flagdays
+   corda-network-access-details
+   additional-info

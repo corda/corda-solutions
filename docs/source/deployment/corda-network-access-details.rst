@@ -1,25 +1,10 @@
-Prerequisites to Deploy Corda & join the  Corda Network
-=======================================================
+Important Corda Network Details
+===============================
 
-There are a few prerequisites to consider prior to deployment & onboarding to the Corda Network.
-
-1. Request the latest versions of Corda & Corda Firewall Jar Files from R3.
-
-#. Provision the Virtual Machines on which the Corda & Corda JVM's will run. 
-
-#. Provide the Public IP Address of the VM on which your Corda Node will reside.
-
-#. Provide the Public IP Address of the VM on which the Corda Float will reside. 
-
-#. Request your DBA team to provide a database for the Corda Vault in one of the supported platforms.
-
-#. Request your Network Engineers open connections thru the firewall to the following R3 Network components. 
-
-#. Request your Network Engineers provide a HTTP Proxy (connection to Doorman & Network Map) and a SOCKS Proxy for connection to peers on the Corda Network. 
-
-#. Complete the Corda UAT Network Agreement https://fs22.formsite.com/r3cev/CordaUATAgreement2019/index.html
+The following sections provide access guidance for the Corda Network UAT and Production.
 
 UAT Customer Access Details
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - Doorman: uat-doorman1-01.uat.corda.network (51.140.179.54); 80 & 443
 - Network Map: uat-netmap1-01.uat.corda.network (51.140.164.141); 80 & 443
@@ -30,7 +15,9 @@ UAT Customer Access Details
 - Notary Instance 5: uat-notary1-05.uat.corda.network (168.63.21.151); 10002
 - CRL: crl.uat.corda.network (51.140.179.54); 80
 
+
 PROD Customer Access Details
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - Doorman:  prod-doorman2-01.corda.network (52.151.82.134); Port 80 & 443
 - Network Map: prod-netmap2-01.corda.network (52.151.84.51); Port 80 & 443

@@ -1,5 +1,5 @@
-Starting Your Node, Bridge and Float
-====================================
+Start Components
+================
 
 The components should be started in the following order:
 
@@ -9,7 +9,7 @@ The components should be started in the following order:
 
 
 Starting Float
-^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~
 
 On the Float VM run:
 
@@ -21,24 +21,24 @@ You should see the following output:
 
     FloatSupervisorService: active = false
     FloatSupervisorService: active = true
-    
+
 ..
 
 
 Starting Corda Node
-^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~
 
 On the Node VM run:
 
 /usr/bin/java -Xmx2048m -jar /opt/corda/corda-3.2.jar
 
-.. literalinclude:: ./nodestart.conf
+.. literalinclude:: ./resources/nodestart.conf
     :language: javascript
 
 
 
 Starting Bridge
-^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~
 
 On the Bridge VM run:
 

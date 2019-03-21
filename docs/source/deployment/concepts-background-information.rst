@@ -41,4 +41,3 @@ Corda’s use of AMQP and the firewall float means that there is no possibility 
 Corda requires that all TLS sessions are mutually authenticated by both endpoints, and a requirement to participate within a Corda network is that both derive their root identity from a well-defined certificate issuer (root of trust). Actors outside of the Corda network will not have this and will thus see incoming connections rejected. Should an actor inside of the Corda network misbehave in a way that has DoS-like characteristics then it will quickly be detected, and the originator of the problem will rapidly be known by virtue of logging events. As each identity is issued by a common authority, then it is easy to determine which node, and thus which legal entity, is responsible.
 
 For further details on the Corda Threat Model please use this link https://docs.corda.net/head/design/threat-model/corda-threat-model.html
-
