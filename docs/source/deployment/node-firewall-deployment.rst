@@ -23,9 +23,22 @@ Non HA Corda Node, Bridge, Float
    :scale: 100%
    :align: center
 
-
 HA Corda Node, Bridge, Float
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+1. Corda Nodes run in a Hot/Cold Setup.
+#. The Corda node communicates with the Doorman (authentication) and Network Map (peer addresses) over HTTPS typically thru an HTTP Proxy Server.
+#. The Corda node communicates with peers on the Corda network communicating with Corda Firewall which has 2 parts, Bridge & Float.
+#. The Float’s job is to act as an inbound socket listener, capture messages from peers and send them to the Bridge. The Float prevents the Node and Artemis server from being exposed to Peer Nodes.
+#. The Bridge captures the inbound messages and sends them to the shared Artemis queue.  The Bridge is typically configured to route thru a SOCKS5 Proxy Server and also manages outgoing messages from the Node to Peers on the Network.
+#. In the HA configuration Node A and Node B use a shared Artemis queue configured on an NFS mountpoint shared between VM A and VM B.
+#. R3 have tested Zookeeper to provide an election mechanism to determine which Bridge is up and chooses a Bridge to send messages to the shared Artemis queue.
+#. The Bridge can select an Active and Alternative Artemis queue for incoming messages and an Active and Alternative Float for outgoing messages based on a configuration file setting.
+#. R3 customers have tested F5 Load Balancer presenting 1 Float IP to the external world for incoming Peer to Peer Traffic.
+#. R3 customers have also deployed Azure/F5 Load Balancers presenting 1 Node IP for RPC client connections.
+#. Customers could use a solution like VCS cluster for Node A to Node B failover, though this configuration has not been tested by R3.
+
+
 
 
 .. image:: ./resources/ha.png
@@ -36,7 +49,7 @@ HA Corda Node, Bridge, Float
 Java 8 Installation on VM
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-First of all you will need to install Java 8 on your Virtual Machine
+Java 8 should be installed on your Virtual Machine. Here is an example of how this would be done in Azure/AWS.
 
 .. parsed-literal::
     > sudo add-apt-repository ppa:webupd8team/java
@@ -52,14 +65,36 @@ These are the configuration files that will be created during the process:
 Node Installation
 ~~~~~~~~~~~~~~~~~
 
-1. Upload the {{corda-3.2.jar}} to the node root directory.
-#. In the root of your node directory, create a folder called {{certificates}}.  Upload the network-root-truststore.jks file to this directory.
-#. In the root of your node directory, create a folder called {{cordapps}}.  Upload your CorDapps to this folder.
+1. Upload the corda-3.2.jar to the node root directory.
+#. In the root of your node directory, create a folder called /certificates.  
+#. R3 Operations team will provide you with a network-root-truststore.jks which will be used for authentication. 
+#. Upload the network-root-truststore.jks file to this directory.
+#. In the root of your node directory, create a folder called cordapps.  Upload your CorDapps to this folder.
 #. Check that your node directory is structured as follows:
 
 .. image:: ./resources/cordadir.png
    :scale: 60%
    :align: center
+   
+   
+Once your /opt/corda directory is fully created it will contain the following files & directories
+
+.. sourcecode:: shell
+
+   additional-node-infos/            
+   artemis/                          
+   brokers/                            
+   certificates/                  
+   cordapps/ 
+   drivers/  
+   logs/   
+   plugins -> drivers/
+   corda-3.2.jar 
+   network-parameters
+   node.conf
+   nodeInfo-XXXXXXXXX
+
+..
 
 This is a sample node.conf which connects to the Corda UAT Network.
 
