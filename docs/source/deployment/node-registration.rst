@@ -49,8 +49,9 @@ The Node will download and install the certificate and shut down.
       
 and you will see output like this:
 
-.. literalinclude:: ./resources/nodestart.conf
-   :language: javascript
+.. image:: ./resources/nodestart.png
+   :scale: 100%
+   :align: center
 
 \8. The Network Map service will validate the Node NodeInfo-* and add it to the Network Map, and the Network Map will then be downloaded by other Nodes on the network within approximately 10 mins.
 
