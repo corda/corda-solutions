@@ -1,14 +1,14 @@
 Considerations
 ~~~~~~~~~~~~~~
 
-Deploying on-premises within a bank presents a number of specific security challenges There is typically a strongly-layered approach to defense. At a minimum there will be 3 separate zones:
+Deploying on-premises presents a number of specific security challenges There is typically a strongly-layered approach to defense. At a minimum there will be 3 separate zones:
 
 - DMZ (directly addressable from the Internet)
 - Application (not addressable from the Internet)
 - Data (no access to the Internet).
 - DLT/Blockchain platforms present a significant new deployment challenge because they exhibit behavior similar to a peer-to-peer network; they both initiate and terminate connections with external hosts on the same port. This type of behavior is new in many enterprise deployments. This document summarizes the thinking around deploying R3 Corda within a Bank environment and provides detailed deployment recommendations.
 
-In order to mitigate the security challenges of banks that are mentioned above Corda Enterprise includes the following Firewall components:
+In order to mitigate the security challenges that are mentioned above Corda Enterprise includes the following Firewall components:
 
 - Node (Flow Worker)
 - Bridge
@@ -19,7 +19,7 @@ Given that the instructions here are intended for deploying Corda Node in the Co
 - UAT
 - PROD
 
-Following are the high level steps to deploying and on-boarding Corda Nodes to the Corda Network:
+Following are the preparation steps prior to deploying and on-boarding Corda Nodes to the Corda Network:
 
 1. Request the latest versions of Corda & Corda Firewall Jar Files from R3.
 
