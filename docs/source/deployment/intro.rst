@@ -1,6 +1,6 @@
-Bank Deployment
-================
-From the perspective of a bank, these are guidelines for deploying Corda Enterprise and the Corda Enterprise Firewall for use in the Corda Network.
+On-Premises Deployment
+======================
+These are guidelines for deploying Corda Enterprise and the Corda Enterprise Firewall for use in the Corda Network from an on-premises perspective.
 Corda uniquely enables P2P Corda Networking within security constraints of corporate networking architectures. Corda restricts access to Corda Nodes
 from other Corda Nodes by way of valid identity certificates that are known in a Corda Network Map that is shared among accepted Nodes.
 
