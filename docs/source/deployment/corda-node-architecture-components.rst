@@ -1,20 +1,23 @@
 Architecture Overview
 =====================
 
-This diagram illustrates the communication protocols used by the Corda Node communicating with peers on the Corda Network.
+It is useful to take a high level perspective of the Corda components, especially where it comes to the various communication protocols that Corda employs in its operations. The diagram below illustrates the various communication protocols used by the Corda Node communicating with peers on the Corda Network.
 
 
 .. image:: ./resources/overview.png
    :scale: 40%
    :align: center
 
+Note that Corda Nodes communicate with each other using an asynchronous protocol, AMQP/TLS. The only HTTP communication is for the initial registration of each Corda Node, and for sharing of the Corda Node address locations by way of the Network Map. Each client application communicates with Corda Nodes using RPC calls. Also, the Corda Vault is a database that relies on JDBC connection from the Corda Node.
+
+The salient points regarding hosting a Corda Node on-premises are:
 - Corda uniquely enables P2P Corda Networking within security constraints of corporate networking architectures.
 - Restricts access to Corda node from the internet only to nodes with valid identity certificates.
 - Deployed in DMZ
 - Terminates TLS Connections
 - Does not connect into the internal network, connection initiated from the Node.
 
-The diagram below illustrates the basic components that are typically deployed:
+To aid deeper understanding, the diagram below illustrates in more detail the basic components that are typically deployed:
 
 - Corda Enterprise Node
 - Corda Enterprise Vault
