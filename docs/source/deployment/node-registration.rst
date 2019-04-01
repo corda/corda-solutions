@@ -29,7 +29,6 @@ Registration Actions
 
    c. If successful you will see the following output in your terminal:
 
-
 .. image:: ./resources/nodereg.png
    :scale: 50%
    :align: left
@@ -43,7 +42,6 @@ Registration Actions
 #. Upon restarting the Node after initial registration the node will create and send its Network Map entry (NodeInfo-*) and also download all of the evailable entries for other Corda Nodes in the Network Map. The NodeInfo-* file is a data structure which contains IP Address, Identity and Platform Version. You can then restart your Corda Node as follows:
 
 corda@myserver:/opt/corda$ java -Dhttps.proxyHost=PROXYSERVER -Dhttps.proxyPort=8080 -jar corda.jar and you will see output like this:
-
 
 .. literalinclude:: ./resources/nodestart.conf
     :language: javascript
