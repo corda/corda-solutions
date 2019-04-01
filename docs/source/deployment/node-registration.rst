@@ -31,11 +31,7 @@ Registration Actions
 
    corda@myserver:/opt/corda$ java -Dhttps.proxyHost=PROXYSERVER -Dhttps.proxyPort=8080 -jar corda.jar. --initial-registration --network-root-truststore-password trustpass
 
-   c. If successful you will see the following output in your terminal:
-
-.. image:: ./resources/nodereg.png
-   :scale: 50%
-   :align: left
+   c. If successful you will see the following |node registration| output in your terminal:
 
    d. Corda Operations Report will receive a CSR JIRA ticket acknowledging that a registration request has been made. The Operations team will seek to identify which legal entity is making the request prior to approval.
 
@@ -45,13 +41,17 @@ Registration Actions
 
 7. Upon restarting the Node after initial registration the node will create and send its Network Map entry (NodeInfo-*) and also download all of the evailable entries for other Corda Nodes in the Network Map. The NodeInfo-* file is a data structure which contains IP Address, Identity and Platform Version. You can then restart your Corda Node as follows:
 
-corda@myserver:/opt/corda$ java -Dhttps.proxyHost=PROXYSERVER -Dhttps.proxyPort=8080 -jar corda.jar and you will see output like this:
-
-.. literalinclude:: ./resources/nodestart.conf
-    :language: javascript
+corda@myserver:/opt/corda$ java -Dhttps.proxyHost=PROXYSERVER -Dhttps.proxyPort=8080 -jar corda.jar and you will see |node startup| output like this:
 
 8. The Network Map service will validate the Node NodeInfo-* and add it to the Network Map, and the Network Map will then be downloaded by other Nodes on the network within approximately 10 mins.
 
 9. Once this process is complete your Corda Node can now transact with others in the Corda Network.
+
+.. |node registration| image:: ./resources/nodereg.png
+   :scale: 50%
+   :align: left
+   
+.. |node startup| literalinclude:: ./resources/nodestart.conf
+    :language: javascript
 
 
