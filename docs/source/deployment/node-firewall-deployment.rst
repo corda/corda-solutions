@@ -115,13 +115,13 @@ In a bank environment there will typically be several layers of security protect
    :scale: 60%
    :align: center
 
-Network Authentication
+*Network Authentication*
 
 - The Corda Node may be deployed behind the inner DMZ (no access to the Internet)
 - The Bridge Server may reside on a VM in front of the inner DMZ  (not addressable from the Internet)
 - The Corda Float may reside on a VM in the Outer DMZ (directly addressable from the Internet)
 
-PKI Authentication
+*PKI Authentication*
 
 - Corda PKI Authentication issued by Corda Network can link the Node and Bridge i.e. the red keys indicated below truststore and sslkeystore
 - Local PKI Authentication issued by separate CA will link the Bridge and Float i.e the purple keys indicated below trust and bridge.
