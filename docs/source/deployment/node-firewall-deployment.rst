@@ -21,7 +21,7 @@ Non HA Corda Node, Bridge, Float
 
 .. image:: ./resources/nonha.png
    :scale: 120%
-   :align: left
+   :align: center
    
 
 HA Corda Node, Bridge, Float
@@ -43,7 +43,7 @@ HA Corda Node, Bridge, Float
 
 .. image:: ./resources/ha.png
    :scale: 120%
-   :align: left
+   :align: center
 
 
 Java 8 Installation on VM
