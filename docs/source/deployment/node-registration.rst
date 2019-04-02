@@ -3,7 +3,7 @@ Node Registration
 
 Overview
 ~~~~~~~~
-The diagram above illustrates the process of joining the Corda Network in UAT & PROD. The first few steps may happen any time before the actual Corda Node registration in order to retrieve the public key. All new joiners to the network must supply their node host public IP address to be whitelisted against the UAT 3.2 Network Map.
+The diagram illustrates the process of joining one of the Corda Network environments, e.g., UAT or PROD. The first few steps may happen any time before the actual Corda Node registration in order to retrieve the public key. 
 
 
 .. image:: ./resources/registration.png
@@ -15,7 +15,7 @@ Registration Actions
 
 \1. Send email to doorman@r3.com using email address representing the enterprise whose Legal Identity will be registered, providing IP address of machine that will listen for traffic (Float).
 
-\2. R3 does not need whitelist your Node or Float IP address for connectivity to our network. 
+\2. R3 performs a basic verification of the requestor, ensuring the legal identity they wish to register aligns with the email domain from which they are making the request. 
 
 \3. You will receive a network-root-truststore.jks file containing the public key certificate from the Corda compatibility zone to which you are registering, e.g., Corda Network UAT or Corda Network. This is the file you will use later in the process to register your Corda Node once it is configured.
 
