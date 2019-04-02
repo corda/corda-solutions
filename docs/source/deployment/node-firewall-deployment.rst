@@ -213,6 +213,15 @@ This is a sample float.conf:
     :language: javascript
 
 
+A full list of the parameters that can be utilized in these configuration files can be found here : https://docs.corda.r3.com/releases/master/corda-firewall-configuration-file.html
+
+
+Corda 3.x vs Corda 4.x Firewall Upgrade
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In Corda 4.x it is possible to for multiple nodes representing multiple identities to reside behind the same Corda Firewall. Details on setup can be found here : https://docs.corda.r3.com/releases/master/corda-firewall-upgrade.html
+
+
 Port Policy and Network Configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Connections with the Corda Network Doorman and Network Map services (inbound and outbound traffic) will be over HTTP/HTTPS on ports 80 and 443.
