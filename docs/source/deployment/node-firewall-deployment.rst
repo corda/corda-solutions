@@ -246,7 +246,7 @@ The following image may be helpful in ensuring alignment between the Node, Bridg
 
 Proxy Configurations
 ~~~~~~~~~~~~~~~~~~~~
-You will likely need to establish proxy servers, one for HTTP connection to the Doorman and Network Map services, and Socks proxy to be used with the Corda Firewall for P2P communication Corda Nodes.
+You will likely need to establish proxy servers, one for HTTP connection to the Doorman and Network Map services, and Socks proxy to be used with the Corda Firewall for P2P communication Corda Nodes. Please note the examples below are for demonstration purposes only, it is assumed most financial institutions will already have Enterprise Proxy Server deployments in place and available for use by the Corda Firewall.
 
 Using HTTP Proxy with Corda
 ---------------------------
