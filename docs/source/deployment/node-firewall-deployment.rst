@@ -177,6 +177,7 @@ The important keys are bridge.jks, float.jks, trust.jks.
 .. literalinclude:: ./resources/pki-keys.conf
     :language: javascript
 
+A full guide to the creation and deployment of these keys can be found here : https://docs.corda.r3.com/bridge-configuration-file.html
 
 
 Bridge Installation
