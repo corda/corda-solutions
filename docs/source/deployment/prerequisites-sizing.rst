@@ -9,9 +9,11 @@ Prerequisite and sizing information for the Corda Node, Bridge and Float compone
 Prerequisite on UAT
 ~~~~~~~~~~~~~~~~~~~
 
+
 .. image:: ./resources/platform.png
-   :scale: 80%
+   :scale: 60%
    :align: left
+
 
 Reference: Corda Platform Support Matrix https://docs.corda.r3.com/platform-support-matrix.html
 
