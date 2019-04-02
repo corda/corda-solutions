@@ -11,7 +11,7 @@ Prerequisite Platform Requirements
 
 
 .. image:: ./resources/platform.png
-   :scale: 60%
+   :scale: 100%
    :align: left
 
 
@@ -48,7 +48,7 @@ Prerequisite and sizing information for the Corda Vault (database).
 
 
 .. image:: ./resources/vault.png
-   :scale: 100%
+   :scale: 60%
    :align: center
 
 Reference: Corda Platform Support Matrix https://docs.corda.r3.com/platform-support-matrix.html
