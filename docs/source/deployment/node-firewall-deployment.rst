@@ -49,7 +49,7 @@ HA Corda Node, Bridge, Float
 Java 8 Installation on VM
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Java 8 should be installed on your Virtual Machine. Here is an example of how this would be done in Azure/AWS.
+Java 8 should be installed on your Virtual Machine. Here is an example of how this would be done in Azure/AWS on Ubuntu.
 
 .. parsed-literal::
     > sudo add-apt-repository ppa:webupd8team/java
