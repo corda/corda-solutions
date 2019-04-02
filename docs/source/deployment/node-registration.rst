@@ -15,7 +15,7 @@ Registration Actions
 
 \1. Send email to doorman@r3.com using email address representing the enterprise whose Legal Identity will be registered, providing IP address of machine that will listen for traffic (Float).
 
-\2. R3 will whitelist your IP address.
+\2. R3 does not need whitelist your Node or Float IP address for connectivity to our network. 
 
 \3. You will receive a network-root-truststore.jks file containing the public key certificate from the Corda compatibility zone to which you are registering, e.g., Corda Network UAT or Corda Network. This is the file you will use later in the process to register your Corda Node once it is configured.
 
