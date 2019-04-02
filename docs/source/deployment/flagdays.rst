@@ -52,7 +52,7 @@ From time to time the Corda Network Operator (R3) will need to update parameters
 The current update process is a 3 step operation.
 
 - Day 1 Publicise the intended changes
-- Day 1-N N Collect node acceptances
+- Day 1-N Collect node acceptances
 - Day N* Update the central file and distribute
 
 On distribution of the updated parameters, Corda 3.X design forces all nodes to stop and restart to accommodate them. Restarting the node is conditional upon acceptance.
@@ -79,7 +79,6 @@ The Corda Network Operator will ensure customers are fully aware of impending an
 #. Pre-execution email to the same contacts 3 business days ahead of update to confirm go ahead.
 
 #. Publicise on Support Service Desk and cascade to customer support contacts.
-
 
 Segregated Zones
 
