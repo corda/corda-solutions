@@ -20,8 +20,9 @@ Non HA Corda Node, Bridge, Float
 
 
 .. image:: ./resources/nonha.png
-   :scale: 100%
-   :align: center
+   :scale: 120%
+   :align: left
+   
 
 HA Corda Node, Bridge, Float
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -40,10 +41,9 @@ HA Corda Node, Bridge, Float
 
 
 
-
 .. image:: ./resources/ha.png
-   :scale: 100%
-   :align: center
+   :scale: 120%
+   :align: left
 
 
 Java 8 Installation on VM
@@ -61,6 +61,7 @@ These are the configuration files that will be created during the process:
 .. image:: ./resources/config.png
    :scale: 60%
    :align: center
+
 
 You can find examples of configuration files available here : https://docs.corda.r3.com/corda-bridge-component.html?highlight=node%20conf
 
