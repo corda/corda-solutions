@@ -111,7 +111,7 @@ Corda Firewall PKI Implementation
 
 In a bank environment there will typically be several layers of security protecting the firms data.
 
-.. image:: ./resources/cordaarch.png
+.. image:: ./resources/cordarch.png
    :scale: 60%
    :align: center
 
