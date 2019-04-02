@@ -7,6 +7,7 @@ The components should be started in the following order:
 #. Node
 #. Bridge
 
+Please note that corda-bridgeserver.jar is used by both Bridge and Float. The JAR file  assumes its input is bridge.conf however this may be overridden with the --config-file parameter so you can designate whatever config file name you wish to use.
 
 Starting Float
 ~~~~~~~~~~~~~~
