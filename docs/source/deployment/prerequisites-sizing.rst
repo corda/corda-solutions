@@ -6,8 +6,8 @@ Corda Node, Bridge and Float
 ----------------------------
 Prerequisite and sizing information for the Corda Node, Bridge and Float components.
 
-Prerequisite on UAT
-~~~~~~~~~~~~~~~~~~~
+Prerequisite Platform Requirements
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 .. image:: ./resources/platform.png
@@ -46,9 +46,6 @@ Vault - Database
 ----------------
 Prerequisite and sizing information for the Corda Vault (database).
 
-
-Prerequisite
-~~~~~~~~~~~~
 
 .. image:: ./resources/vault.png
    :scale: 100%
