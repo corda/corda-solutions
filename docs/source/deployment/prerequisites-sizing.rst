@@ -13,6 +13,7 @@ Prerequisite on UAT
    :scale: 80%
    :align: left
 
+Reference: Corda Platform Support Matrix https://docs.corda.r3.com/platform-support-matrix.html
 
 Sizing Specification
 ~~~~~~~~~~~~~~~~~~~~
@@ -51,13 +52,16 @@ Prerequisite
    :scale: 100%
    :align: center
 
+Reference: Corda Platform Support Matrix https://docs.corda.r3.com/platform-support-matrix.html
 
 Sizing
 ~~~~~~
 
-As with the Corda node, the use case determines the sizing needs for the database. The operator needs to take account of the CorDapp data structure design i.e. the complexity of a transaction and the use of any relational tables used by the corDapp e.g. attachments, as well as volumetrics. As a guide, a simple issue and pay transaction with two parties requires approximately 25-30KB per transaction. Some guidance on this is provided in the Corda Enterprise doc, Sizing and Performance: Database server configuration. Refer to the selected ­RDBMS documentation for guidelines on deploying the database.
+Recommended Minimum Vault Database Size is 2 GB
 
 It is recommended that a separate database instance, deployed in a high availability configuration, is used for each production Corda node. However, it is possible to create separate schema for each node within a single database instance subject to performance, availability and security constraints (the schema to be used is defined in the node config file).
+
+As with the Corda node, the use case determines the sizing needs for the database. The operator needs to take account of the CorDapp data structure design i.e. the complexity of a transaction and the use of any relational tables used by the corDapp e.g. attachments, as well as volumetrics. As a guide, a simple issue and pay transaction with two parties requires approximately 25-30KB per transaction. Some guidance on this is provided in the Corda Enterprise doc, Sizing and Performance: Database server configuration. Refer to the selected ­RDBMS documentation for guidelines on deploying the database.
 
 Note that Corda Enterprise generates the requisite data structures for the Corda Node AND the CorDapps the node has in its cordapps folder. There is a parameter "runMigration" when set to true will do this work automatically. For development and maybe test environments that's fine. FYI, Corda Enterprise uses Liquibase under the covers to do this work.
 
@@ -73,7 +77,7 @@ JDBC Connectivity from the Corda Node to the Corda Vault is required to create C
 Corda stores information about several aspects of the Corda Node and Network in tables in the vault.
 Reference: https://docs.corda.r3.com/node-database.html#node-database
 
-During deployment the following tables will be created in the Vault database:
+During deployment the following system (not user) tables will be created in the Vault database:
 
 
 - dbo.DATABASECHANGELOG
