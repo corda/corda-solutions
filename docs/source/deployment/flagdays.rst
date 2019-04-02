@@ -86,14 +86,18 @@ Detail on the thinking and concepts around what a segregated sub-zone is can be 
 
 Here are the basis goals of a Segregated Sub Zone:
 
-- The ability to hive off members of the business network into a private enclave.
-- The ability to cloak the members of the business network.
-- The ability to operate "exclusive" notary services.
-- That is where the notary is not whitelisted globally and is operated to the standard deemed acceptable by the BNO, not the Zone operator and members (as per those in the global whitelist)
-- The ability to operate "private" notary service.
-That is where the notary can exist in the global whitelist but is restricted to notarisation of specific State types
-The ability to operate non whitelisted, "less universally trusted", notaries.
-The ability to operate their own Compatibility Zone.
+- The ability to hive off members of the business network into a private enclave
+
+- The ability to cloak the members of the business network
+
+- The ability to operate "exclusive" notary services
+   That is where the notary is not whitelisted globally and is operated to the standard deemed acceptable by the BNO, not the Zone operator and members (as per those in the global whitelist)
+
+- The ability to operate "private" notary service
+
+   That is where the notary can exist in the global whitelist but is restricted to notarisation of specific State types
+   The ability to operate non whitelisted, "less universally trusted", notaries.
+   The ability to operate their own Compatibility Zone.
 
 - Segregated sub-zones only share the Identity Operator service. Each sub-zone therefore has its own independent network map and set of network parameters
 
