@@ -83,9 +83,18 @@ The Corda Network Operator will ensure customers are fully aware of impending an
 
 Segregated Zones
 
-- Segregated sub-zones capability is estimated to be available in Corda Network UAT in the March / April timeframe
+Detail on the thinking and concepts around what a segregated sub-zone is can be found here : https://groups.io/g/corda-network/topic/design_proposal_for/28792765?p=,,,20,0,0,0::recentpostdate%2Fsticky,,,20,2,0,28792765
 
-- Production will follow after successful customer test in UAT
+Here are the basis goals of a Segregated Sub Zone:
+
+- The ability to hive off members of the business network into a private enclave.
+- The ability to cloak the members of the business network.
+- The ability to operate "exclusive" notary services.
+- That is where the notary is not whitelisted globally and is operated to the standard deemed acceptable by the BNO, not the Zone operator and members (as per those in the global whitelist)
+- The ability to operate "private" notary service.
+That is where the notary can exist in the global whitelist but is restricted to notarisation of specific State types
+The ability to operate non whitelisted, "less universally trusted", notaries.
+The ability to operate their own Compatibility Zone.
 
 - Segregated sub-zones only share the Identity Operator service. Each sub-zone therefore has its own independent network map and set of network parameters
 
@@ -97,6 +106,10 @@ Segregated Zones
 #. Opting-out does not compromise the sub-zone’s long term plan to join the public zone
 
 - It should be noted however, the more sub-zones diverge in parameter settings over time the harder it will be to merge back in to the public zone in future
+
+- Segregated sub-zones capability is estimated to be available in Corda Network Q3 2018
+
+- Production will follow after successful customer test in UAT
 
 The diagram below outlines the the overview of SSZ.
 
