@@ -14,7 +14,7 @@ Starting Float
 
 On the Float VM run:
 
-/usr/bin/java -Xmx2048m -jar /opt/corda/corda-bridgeserver-3.2.jar --config-file float.conf
+/usr/bin/java -Xmx1024m -jar /opt/corda/corda-bridgeserver-3.2.jar --config-file float.conf
 
 You should see the following output:
 
@@ -31,7 +31,7 @@ Starting Corda Node
 
 On the Node VM run:
 
-/usr/bin/java -Xmx2048m -jar /opt/corda/corda-3.2.jar
+/usr/bin/java -Xmx2048m -jar /opt/corda/corda-3.2.jar --config-file node.conf
 
 .. literalinclude:: ./resources/nodestart.conf
     :language: javascript
@@ -43,7 +43,7 @@ Starting Bridge
 
 On the Bridge VM run:
 
-/usr/bin/java -Xmx2048m -jar /opt/corda/corda-bridgeserver-3.2.jar
+/usr/bin/java -Xmx1024m -jar /opt/corda/corda-bridgeserver-3.2.jar
 
 You should see the following output in the Bridge:
 
@@ -58,6 +58,6 @@ You should see the following output in the Float log:
 
 .. sourcecode:: shell
 
-    Now listening for incoming connections on VM-Of-Float-Public-IP:10010
+    Now listening for incoming connections on VM-Of-Float-Public-IP:Port
 
 ..
