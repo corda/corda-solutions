@@ -14,5 +14,6 @@ from other Corda Nodes by way of valid identity certificates that are known in a
    node-firewall-deployment
    node-registration
    start-components
+   monitoring
    corda-network-access-details
    additional-info
