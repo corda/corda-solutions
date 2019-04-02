@@ -62,6 +62,9 @@ These are the configuration files that will be created during the process:
    :scale: 60%
    :align: center
 
+You can find examples of configuration files available here : https://docs.corda.r3.com/corda-bridge-component.html?highlight=node%20conf
+
+
 Node Installation
 ~~~~~~~~~~~~~~~~~
 
