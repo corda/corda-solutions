@@ -37,6 +37,12 @@ finished application, are about to deploy, or are already in production.
   patterns/patterns_wip.rst
 
 .. toctree::
+  :caption:  Deployment Patterns
+  :maxdepth: 1
+
+  deployment/intro.rst
+
+.. toctree::
    :caption: FAQ
    :maxdepth: 1
 
