@@ -25,22 +25,22 @@ To aid deeper understanding, the diagram below illustrates in more detail the ba
 - Corda Enterprise Firewall
 
 
-.. image:: ./resources/nodebridgefloat.png
+.. image:: ./resources/nodebridgefloat_nbrs.png
    :scale: 60%
    :align: center
 
 
 The diagram highlights that:
 
-- **CorDapps** are the functional aspect of Corda that allows Corda Nodes to reach agreement on updates to the **Vault** (DLT ledger/database) for given use cases.
-- Corda Nodes persist the shared results of CorDapps in a database (vault) using **JDBC**.
-- **Corda Nodes** communicate in peer-to-peer fashion using **AMQP/TLS**.
-- **Corda Firewall** is an optional reverse proxy extension of the Corda Node intended to reside in the DMZ, enabling secure **AMQP/TLS** interaction with peer Corda Nodes.
-- Client applications interact with Corda Nodes using **RPC/TLS**.
-- Administrators interact with Corda Nodes over **SSH**.
-- Corda Nodes attain an identity certificate via a Doorman service using **HTTPS**.
-- Corda Nodes learn about other trusted Corda Nodes and their addresses via a Network Map service using **HTTPS**.
-- Corda Nodes check a Certificate Revocation List using **HTTPS**.
+1. **CorDapps** are the functional aspect of Corda that allows Corda Nodes to reach agreement on updates to the **Vault** (DLT ledger/database) for given use cases.
+#. Corda Nodes persist the shared results of CorDapps in a database (vault) using **JDBC**.
+#. **Corda Nodes** communicate in peer-to-peer fashion using **AMQP/TLS**.
+#. **Corda Firewall** is an optional reverse proxy extension of the Corda Node intended to reside in the DMZ, enabling secure **AMQP/TLS** interaction with peer Corda Nodes.
+#. Client applications interact with Corda Nodes using **RPC/TLS**.
+#. Administrators interact with Corda Nodes over **SSH**.
+#. Corda Nodes attain an identity certificate via a Doorman service using **HTTPS**.
+#. Corda Nodes learn about other trusted Corda Nodes and their addresses via a Network Map service using **HTTPS**.
+#. Corda Nodes check a Certificate Revocation List using **HTTPS**.
 
 The Corda Firewall is actually made up of two separate programs, called the Bridge and the Float. These handle outbound and inbound connections respectively, and allow a node administrator to minimise the amount of code running in a network’s DMZ.
 
