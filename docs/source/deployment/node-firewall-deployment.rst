@@ -105,6 +105,10 @@ This is a sample node.conf which connects to the Corda UAT Network.
 .. literalinclude:: ./resources/nodefull.conf
     :language: javascript
 
+Customers who deploy CE 4.0 will be able to utilize the Configuration Obfuscator tool for the purpose of hiding usernames and passwords in configuration files. 
+ 
+https://docs.corda.r3.com/releases/master/tools-config-obfuscator.html
+ 
 
 Corda Firewall PKI Implementation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
