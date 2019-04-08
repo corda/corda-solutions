@@ -23,11 +23,11 @@ Following are the preparation steps prior to deploying and on-boarding Corda Nod
 
 1. Request the latest versions of Corda & Corda Firewall Jar Files from R3.
 
-#. Provision either the Physical the Virtual Machines on which the Corda & Corda JVM's will run.
+#. Provision either Physical or Virtual Machines on which the Corda & Corda JVM's will run.
 
-#. Provide the Public IP Address of the PM/VM on which your Corda Node will reside.
+#. Provide the Public IP Address of the Machine on which your Corda Node will reside.
 
-#. Provide the Public IP Address of the PMVM on which the Corda Float will reside.
+#. Provide the Public IP Address of the Machine on which the Corda Float will reside.
 
 #. Request your DBA team to provide a database for the Corda Vault in one of the supported platforms.
 
