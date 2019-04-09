@@ -26,7 +26,7 @@ To aid deeper understanding, the diagram below illustrates in more detail the ba
 
 
 .. image:: ./resources/nodebridgefloat_nbrs.png
-   :scale: 60%
+   :scale: 100%
    :align: center
 
 
