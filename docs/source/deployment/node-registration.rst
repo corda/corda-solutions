@@ -3,7 +3,9 @@ Node Registration
 
 Overview
 ~~~~~~~~
-The diagram illustrates the process of joining one of the Corda Network environments, e.g., UAT or PROD. The first few steps may happen any time before the actual Corda Node registration in order to retrieve the public key. 
+The diagram illustrates the process of joining one of the Corda Network environments, e.g., UAT or PROD. The first few steps may happen any time before the actual Corda Node registration in order to retrieve the public key.  Prior to registering customers should fill out the Corda Network Agreement which can be found here:
+
+https://fs22.formsite.com/r3cev/CordaUATAgreement2019/index.html
 
 
 .. image:: ./resources/registration.png
