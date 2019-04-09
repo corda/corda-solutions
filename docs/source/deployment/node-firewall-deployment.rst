@@ -1,7 +1,7 @@
 Installation and Configuration
 ==============================
 
-These instructions will guide the user through the UAT & PROD configuration to deploy the following components.
+These instructions will guide the user through the UAT & PROD configuration to deploy the following components. They are intended for firms deploying Corda Enterprise 3.2 and 3.3. There are some differences in Corda 4.0 deployment which introduces the concept of a shared Corda Firewall with multiple nodes behind it. 
 
 - Corda Node
 - Corda Vault
