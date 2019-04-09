@@ -43,7 +43,7 @@ The Corda JVM process will be suspended until R3 Operations approve the CSR and 
 
 The Node will download and install the certificate and shut down.
 
-\7. Upon restarting the Node after initial registration the node will create and send its Network Map entry (NodeInfo-*) and also download all of the evailable entries for other Corda Nodes in the Network Map. The NodeInfo-* file is a data structure which contains IP Address, Identity and Platform Version. You can then restart your Corda Node as follows:
+\7. Upon restarting the Node after initial registration the node will create and send its Network Map entry, which will have the name formatted like NodeInfo-* and also download all of the available entries for other Corda Nodes in the Network Map. The NodeInfo-* file is a data structure which contains IP Address, Identity and Platform Version. You can then restart your Corda Node as follows:
 
       corda@myserver:/opt/corda$ java -Dhttps.proxyHost=PROXYSERVER -Dhttps.proxyPort=8080 -jar corda.jar 
       
