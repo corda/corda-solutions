@@ -87,7 +87,7 @@ class ChipOffBillingStateFlow(private val billingState : StateAndRef<BillingStat
 class MemberDatabaseService {
     fun getBillingStateByLinearId(linearId : UniqueIdentifier) : StateAndRef<BillingState>? 
     fun getOurActiveBillingStates() : List<StateAndRef<BillingState>> 
-    fun getOurActiveBillingStatesForCategory() : List<StateAndRef<BillingState>>
+    fun getOurActiveBillingStatesForCategory(category: String) : List<StateAndRef<BillingState>>
     fun getOurActiveBillingStatesByIssuer(issuer : Party) : List<StateAndRef<BillingState>> 
     fun getBillingChipStatesByBillingStateLinearId(billingStateLinearId : UniqueIdentifier) : List<StateAndRef<BillingChipState>> 
     fun getBillingChipStateByLinearId(chipLinearId : UniqueIdentifier) : StateAndRef<BillingChipState>? 
