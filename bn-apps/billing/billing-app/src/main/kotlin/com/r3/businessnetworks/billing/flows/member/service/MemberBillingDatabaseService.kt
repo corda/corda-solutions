@@ -1,10 +1,6 @@
 package com.r3.businessnetworks.billing.flows.member.service
 
-import com.r3.businessnetworks.billing.states.BillingChipState
-import com.r3.businessnetworks.billing.states.BillingChipStateSchemaV1
-import com.r3.businessnetworks.billing.states.BillingState
-import com.r3.businessnetworks.billing.states.BillingStateSchemaV1
-import com.r3.businessnetworks.billing.states.BillingStateStatus
+import com.r3.businessnetworks.billing.states.*
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.contracts.UniqueIdentifier
 import net.corda.core.identity.Party
@@ -33,6 +29,16 @@ class MemberBillingDatabaseService(private val appServiceHub : AppServiceHub) : 
         val statusCriteria = BillingStateSchemaV1.PersistentBillingState::status.equal(BillingStateStatus.ACTIVE)
         return appServiceHub.vaultService.queryBy<BillingState>(QueryCriteria.VaultCustomQueryCriteria(ownerCriteria)
                 .and(QueryCriteria.VaultCustomQueryCriteria(statusCriteria))).states
+    }
+
+    fun getOurActiveBillingStatesForCategory(category: String) : List<StateAndRef<BillingState>> {
+        val ownerCriteria = BillingStateSchemaV2.PersistentBillingState::owner.equal(me)
+        val statusCriteria = BillingStateSchemaV2.PersistentBillingState::status.equal(BillingStateStatus.ACTIVE)
+        val categoryCriteria = BillingStateSchemaV2.PersistentBillingState::category.equal(category)
+
+        return appServiceHub.vaultService.queryBy<BillingState>(QueryCriteria.VaultCustomQueryCriteria(ownerCriteria)
+                .and(QueryCriteria.VaultCustomQueryCriteria(statusCriteria))
+                .and(QueryCriteria.VaultCustomQueryCriteria(categoryCriteria))).states
     }
 
     fun getOurActiveBillingStatesByIssuer(issuer : Party) : List<StateAndRef<BillingState>> {

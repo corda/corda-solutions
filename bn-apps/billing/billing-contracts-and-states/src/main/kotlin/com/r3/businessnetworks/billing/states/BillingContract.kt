@@ -230,15 +230,17 @@ data class BillingState(
         val status : BillingStateStatus = BillingStateStatus.ACTIVE, // billing state status
         val expiryDate : Instant? = null, // billing state expiry date. If the expiry date is null then state is considered to be unexpirable.
                                           // Transactions involving expirable states require TimeWindow to be provided.
+        val category : String? = null, // an optional billing category to differentiate multiple active billing states
         override val linearId : UniqueIdentifier = UniqueIdentifier()
 ) : LinearState, QueryableState {
     override fun generateMappedObject(schema : MappedSchema) : PersistentState {
         return when (schema) {
             is BillingStateSchemaV1 -> BillingStateSchemaV1.PersistentBillingState(issuer, owner, status)
+            is BillingStateSchemaV2 -> BillingStateSchemaV2.PersistentBillingState(issuer, owner, status, category)
             else -> throw IllegalArgumentException("Unrecognised schema $schema")
         }
     }
-    override fun supportedSchemas() = listOf(BillingStateSchemaV1)
+    override fun supportedSchemas() = listOf(BillingStateSchemaV1, BillingStateSchemaV2)
 
     override val participants = listOf(owner, issuer)
 
