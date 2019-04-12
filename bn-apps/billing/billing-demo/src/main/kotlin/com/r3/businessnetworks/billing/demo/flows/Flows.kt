@@ -121,7 +121,7 @@ class TransferSampleStateFlowResponder(val session : FlowSession) : FlowLogic<Un
 private fun chipOff(flowLogic : FlowLogic<*>) : Pair<StateAndRef<BillingState>, StateAndRef<BillingChipState>> {
     val databaseService = flowLogic.serviceHub.cordaService(MemberBillingDatabaseService::class.java)
     // getting billing state from the vault. We know that there is only one billing state in the vault for this example
-    // but in the case where multiple billing states have been issued, you could use the externalId on the
+    // but in the case where multiple billing states have been issued, you could use the category on the
     // billing state to filter out the one you require.
     val billingState = databaseService.getOurActiveBillingStates().single()
     // chipping off an amount for transaction
