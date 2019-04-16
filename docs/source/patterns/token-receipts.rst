@@ -12,6 +12,6 @@ In the diagram below:
 
 The Cash state would likely use Confidential identities to preserve privacy along the Cash evolution chain.
 
-.. image:: resources/Receipts-State-Evolution.png
+.. image:: resources/P_Token_receipts_state_evolution.png
   :width: 80%
   :align: center
