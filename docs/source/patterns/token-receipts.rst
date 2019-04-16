@@ -4,7 +4,7 @@ Token Receipts Pattern
 
 WIP
 
-The receipts pattern can be extend so that the Chain state is a asset/ Cash. the receipts can then be used to evidence payment in a another transaction which allows some other event to occur, eg movement of another asset.
+The receipts pattern can be extend so that the Chain state is a asset/ Cash. The receipts can then be used to evidence payment in a another transaction which allows some other event to occur, eg movement of another asset.
 
 In the diagram below:
  - Chainstate -> CashState

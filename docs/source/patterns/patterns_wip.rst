@@ -16,6 +16,7 @@ This Design Patterns library is Work in progress.
    receipts.rst
    ref-states.rst
    token-receipts.rst
+   request-tree.rst
 
 
 Patterns being investigated relate to each other in the following ways:
