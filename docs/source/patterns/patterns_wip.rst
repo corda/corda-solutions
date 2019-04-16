@@ -6,6 +6,16 @@ Design Patterns
 This Design Patterns library is Work in progress.
 
 
+For Review Patterns
+
+.. toctree::
+   :maxdepth: 1
+
+   receipts.rst
+
+
+WIP Patterns
+
 .. toctree::
    :maxdepth: 1
 
@@ -17,6 +27,8 @@ This Design Patterns library is Work in progress.
    ref-states.rst
    token-receipts.rst
    request-tree.rst
+
+   add base pattern - set an expected reference to enable a future transaction
 
 
 Patterns being investigated relate to each other in the following ways:
