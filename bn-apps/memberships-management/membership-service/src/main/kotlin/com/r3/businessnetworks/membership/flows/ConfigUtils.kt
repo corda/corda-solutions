@@ -3,6 +3,7 @@ package com.r3.businessnetworks.membership.flows
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
 import java.io.File
+import java.net.URL
 import java.nio.file.Paths
 
 /**
@@ -13,6 +14,11 @@ object ConfigUtils {
         val propertiesFileName = "membership-service.conf"
         val defaultLocation = (Paths.get("cordapps").resolve("config").resolve(propertiesFileName)).toFile()
         return if (defaultLocation.exists()) ConfigFactory.parseFile(defaultLocation)
-            else ConfigFactory.parseFile(File(ConfigUtils::class.java.classLoader.getResource(propertiesFileName).toURI()))
+            else {
+            val url = this.javaClass.getResource("./$propertiesFileName") ?:
+                this.javaClass.getResource("/$propertiesFileName")
+                System.out.println("loadConfig URL: ${url}")
+                ConfigFactory.parseURL(url)
+        }
     }
 }
