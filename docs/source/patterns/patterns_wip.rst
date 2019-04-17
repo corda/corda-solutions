@@ -12,6 +12,7 @@ For Review Patterns
    :maxdepth: 1
 
    receipts.rst
+   token-receipts.rst
 
 
 WIP Patterns
@@ -25,7 +26,6 @@ WIP Patterns
    propose-agree.rst
    receipts.rst
    ref-states.rst
-   token-receipts.rst
    request-tree.rst
 
    add base pattern - set an expected reference to enable a future transaction
