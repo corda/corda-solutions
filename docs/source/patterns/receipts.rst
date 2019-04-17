@@ -71,8 +71,8 @@ The receipts pattern can be extended to:
 
  - Billing with tokens
  - Token Receipts
+ - Regulators: generically, this pattern can be used where some subset of the EnablingTransaction needs to be proved to the EnabledTransaction. This would be very powerful for regulators who need to collect some sub set of transaction data from every transaction in a market without being party to all the transaction information.
  - ** need to brainstorm out more **
-
 
 --------------------------------------------------
 Things to Consider when using the Receipts pattern
