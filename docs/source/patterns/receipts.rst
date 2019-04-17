@@ -13,8 +13,8 @@ Summary
 Receipts pattern can be used when the transitions of a state chain (EnablerState) must be evidenced within other transactions (EnabledTransaction) to allow  the transitions in those transactions to take palace, specifically where:
 
  - Each EnablerState transition should enable only one EnabledTransaction, no double spends.
- - Some participants on an EnabledTransaction cannot resolve details of other EnabledTransactions.
- - Some participants on the EnablerChain should not resolve the EnabledTransactions.
+ - Being a participant on the EnablerState chain, does not give the ability to resolve the EnabledTransactions. (Although some participants will also be participants on the EnabledTransactions)
+ - Being a participant on an EnabledTransaction does not giver the ability to resolve details on other EnabledTransactions. (Although some participants will also be participants on other EnabledTransactions)
  - The EnablerState Chain can store cumulative information about the Receipts it has created.
 
 
@@ -23,9 +23,9 @@ Receipts pattern can be used when the transitions of a state chain (EnablerState
 Explanation/ Walkthrough
 ------------------------
 
-As a foundational pattern, the explanation may be a little abstract, for a more concrete pattern which uses the Receipts pattern, see Billing with Receipts. Alternatively, it maybe helpful to imagine the EnablingState to be some form of payment token and the EnabledTransaction to be a business event that can only happen once payment has been proved to have occurred.
+As a foundational pattern, the explanation may be a little abstract, for a more concrete pattern which uses the Receipts pattern, see Billing with Receipts. Alternatively, it maybe helpful to imagine the EnablingState to be some form of payment token and the EnabledTransaction to be a business event that can only happen once payment has been proved to have occurred, in which case it extends to the Token Receipts pattern.
 
-The pattern can be illustrated as follows:
+The pattern can be illustrated as follows, using a State Evolution diagram with Privacy overlay (the Corda Modelling Notation section for details on how to read the diagram):
 
 .. image:: resources/P_Receipts_state_evolution.png
   :width: 100%
@@ -39,7 +39,7 @@ The pattern can be illustrated as follows:
 
 4. Once the ReceiptState has been created, it can be used in EnabledTransaction to enable the EnabledCommand Transition on EnabledState.
 
-5. Prior to EnabledTransaction 2 taking place, whoever has permission to execute the CommandWithRecipt Transition must execute another CommandWithReceipt transition thus generating the second (distinct) ReceiptState.
+5. Prior to EnabledTransaction 2 taking place, whoever has permission to execute the CommandWithReceipt Transition must execute another CommandWithReceipt transition thus generating the second (distinct) ReceiptState.
 
 6. The Second ReceiptState can now be used to enable EnabledTransaction 2.
 
@@ -52,7 +52,7 @@ The crux of the pattern is its privacy characteristics. There are two important 
 
 1) Privacy between EnabledTransactions:
 
- Let's assume that a subset of the participants in EnabledTransaction 2 are not allowed to know about EnabledTransaction 1, for example if they are competitors. When the participants of EnabledTransaction 2 resolves the transaction they will resolve back to the EnablerChain, they will at no point resolve EnabledTransaction 1. This is shown by the red Privacy trace, which considers what the 'CompetitorParty' participant must resolve.
+ Let's assume that a subset of the participants in EnabledTransaction 2 are not allowed to know about EnabledTransaction 1, for example if they are competitors. When the participants of EnabledTransaction 2 resolves the transaction they will resolve back to the EnablerState chain, they will at no point resolve EnabledTransaction 1. This is shown by the red Privacy trace, which considers what the 'CompetitorParty' participant must resolve.
 
  This assumes that 'CompetitorParty' is not a participant on the EnabledTransaction 1, because then they'd get to see EnabledTransaction 1 anyway.
 
@@ -60,7 +60,7 @@ The crux of the pattern is its privacy characteristics. There are two important 
 
 When the participants on the EnablerState chain resolve their transactions they will only resolve down the EnablerState chain, they will never resolve any of the EnabledTransactions which the ReceiptStates were used to enable. This is shown by the blue Privacy trace.
 
-This assumes that the participants on the EnablerChain are not participants on the EnabledTransactions, because then they'd get to see the EnabledTransaction anyway.
+This assumes that the participants on the EnablerState chain are not participants on the EnabledTransactions, because then they'd get to see the EnabledTransaction anyway.
 
 
 ----------

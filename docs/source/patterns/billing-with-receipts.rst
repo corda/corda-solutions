@@ -4,6 +4,8 @@ Billing With ChipOffs/ Receipts
 
 WIP
 
+** need to correct Diagram for privacy traceback (like receipts) + update github implementation readme 
+
 -------
 Summary
 -------
