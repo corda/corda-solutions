@@ -15,9 +15,8 @@ object ConfigUtils {
         val defaultLocation = (Paths.get("cordapps").resolve("config").resolve(propertiesFileName)).toFile()
         return if (defaultLocation.exists()) ConfigFactory.parseFile(defaultLocation)
             else {
-            val url = this.javaClass.getResource("./$propertiesFileName") ?:
-                this.javaClass.getResource("/$propertiesFileName")
-                System.out.println("loadConfig URL: ${url}")
+                val url = this.javaClass.getResource("./$propertiesFileName")
+                    ?: this.javaClass.getResource("/$propertiesFileName")
                 ConfigFactory.parseURL(url)
         }
     }
