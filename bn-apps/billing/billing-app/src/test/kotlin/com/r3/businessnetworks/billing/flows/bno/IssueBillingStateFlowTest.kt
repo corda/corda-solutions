@@ -25,7 +25,6 @@ class IssueBillingStateFlowTest : AbstractBusinessNetworksFlowTest(
     fun `test issue`() {
         val amount = 100L
         val expiryDate = Instant.now()
-        val category = "Testing"
 
         runFlowAndReturn(bnoNode(), IssueBillingStateFlow(participantNode().identity(), amount, expiryDate))
 

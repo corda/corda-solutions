@@ -1,0 +1,13 @@
+<changeSet author="R3 Corda" id="initial script for billing_states">
+    <createTable tableName="billing_states">
+        <column name="output_index" type="INT">
+            <constraints nullable="false"/>
+        </column>
+        <column name="transaction_id" type="NVARCHAR(64)">
+            <constraints nullable="false"/>
+        </column>
+        <column name="issuer" type="NVARCHAR(255)"/>
+        <column name="owner" type="NVARCHAR(255)"/>
+        <column name="status" type="INT"/>
+    </createTable>
+</changeSet>

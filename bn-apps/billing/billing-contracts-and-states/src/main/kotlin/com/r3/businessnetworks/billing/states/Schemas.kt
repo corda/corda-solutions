@@ -18,22 +18,11 @@ object BillingStateSchemaV1 : MappedSchema(schemaFamily = BillingState::class.ja
             @Column(name = "owner")
             var owner : Party,
             @Column(name = "status")
-            var status : BillingStateStatus) : PersistentState()
-}
-
-@CordaSerializable
-object BillingStateSchemaV2 : MappedSchema(schemaFamily = BillingState::class.java, version = 2, mappedTypes = listOf(PersistentBillingState::class.java)) {
-    @Entity
-    @Table(name = "billing_states2")
-    class PersistentBillingState (
-            @Column(name = "issuer")
-            var issuer: Party,
-            @Column(name = "owner")
-            var owner : Party,
-            @Column(name = "status")
             var status : BillingStateStatus,
-            @Column(name = "category", nullable = true)
-            var category : String?) : PersistentState()
+            @Column(name = "externalId", nullable = true)
+            var externalId : String?) : PersistentState()
+
+    override val migrationResource = "billing.changelog-master.xml"
 }
 
 @CordaSerializable

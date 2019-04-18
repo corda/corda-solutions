@@ -25,7 +25,7 @@ import java.time.Instant
  * @param owner the party to issue the [BillingState] to
  * @param amount the maximum amount of the [BillingChipState]s that can be chipped off
  * @param expiryDate the expiry date of the [BillingState]. Can be null, in which case the [BillingState] will be unexpirable. Transactions that involve [BillingState]s with the expiry dates set must contain time windows.
- * @param category the billing category of the [BillingState].  This can be used to differentiate amongst multiple active billing states for a member.  Can be null
+ * @param category the billing externalId of the [BillingState].  This can be used to differentiate amongst multiple active billing states for a member.  Can be null
  * @returns issued [BillingState] with the [SignedTransaction]
  */
 @StartableByRPC

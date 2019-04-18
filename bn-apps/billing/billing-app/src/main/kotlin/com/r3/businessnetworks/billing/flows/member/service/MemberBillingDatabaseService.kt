@@ -31,10 +31,10 @@ class MemberBillingDatabaseService(private val appServiceHub : AppServiceHub) : 
                 .and(QueryCriteria.VaultCustomQueryCriteria(statusCriteria))).states
     }
 
-    fun getOurActiveBillingStatesForCategory(category: String) : List<StateAndRef<BillingState>> {
-        val ownerCriteria = BillingStateSchemaV2.PersistentBillingState::owner.equal(me)
-        val statusCriteria = BillingStateSchemaV2.PersistentBillingState::status.equal(BillingStateStatus.ACTIVE)
-        val categoryCriteria = BillingStateSchemaV2.PersistentBillingState::category.equal(category)
+    fun getOurActiveBillingStatesForExternalId(externalId: String) : List<StateAndRef<BillingState>> {
+        val ownerCriteria = BillingStateSchemaV1.PersistentBillingState::owner.equal(me)
+        val statusCriteria = BillingStateSchemaV1.PersistentBillingState::status.equal(BillingStateStatus.ACTIVE)
+        val categoryCriteria = BillingStateSchemaV1.PersistentBillingState::externalId.equal(externalId)
 
         return appServiceHub.vaultService.queryBy<BillingState>(QueryCriteria.VaultCustomQueryCriteria(ownerCriteria)
                 .and(QueryCriteria.VaultCustomQueryCriteria(statusCriteria))

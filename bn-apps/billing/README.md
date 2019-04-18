@@ -16,7 +16,7 @@ Billing Service can be used for billing and metering on Business Networks. Billi
 ![Billing State Evolution](./resources/billing_state_evolution.png) 
 
 The billing / metering workflow consists of the following steps:
-1. The BNO issues a *BillingState* to each of their Business Network members. The BNO can either pre-allocate an amount that a member can spent (bounded state), or leave the amount empty which would effectively allow the member to spent an unlimited number of *Billing Chips* (unbounded state, can be used for transaction metering). *Billing States* might include an *expiry date*, after which the states can not be used anymore.  *Billing States* may also include a category which can be used to differentiate amongst multiple active billing states for a member.
+1. The BNO issues a *BillingState* to each of their Business Network members. The BNO can either pre-allocate an amount that a member can spent (bounded state), or leave the amount empty which would effectively allow the member to spent an unlimited number of *Billing Chips* (unbounded state, can be used for transaction metering). *Billing States* might include an *expiry date*, after which the states can not be used anymore.  *Billing States* may also include a externalId which can be used to differentiate amongst multiple active billing states for a member.
 2. A member unilaterally (the BNO's signature is not required) *chips offs* one or multiple *Billing Chips* from their *Billing State*. Chipping off increments the *spent* amount of the associated *Billing State*. 
 3. A member includes *Billing Chips* as inputs to a transaction he(she) needs to pay for. Paid-for transactions never contain *Billing States* as inputs and hence *Billing States* don't carry along any private transaction history. However, the valid *Billing States* must be included as *reference inputs* to prevent an expired, revoked or returned states from being used. Developers must define a logic in their contracts code that verifies that each of the required transaction participants had included enough of the Billing Chips as inputs.  
 4. In the end of the billing period the BNO requests each BN member to return their *Billing State*. In response to that, the members attach back all *unspent Billing Chips* to the respective *Billing States*, which decrements the *spent* amount value and then *return Billing States* to the BNO. The returned *Billing States* and the associated *Billing Chips* can not be used to pay for transactions anymore.  
@@ -61,7 +61,7 @@ class IssueBillingStateFlow(
     private val owner : Party, // a party to issue the BillingState to
     private val amount : Long, // the maximum amount of the Billing Chips that can be chipped off from this Billing State. Can be 0 for an unbounded spending.
     private val expiryDate : Instant? = null, // the Billing State's expiry date. All transactions that include Billing States with an expiry date defined must also contain a Time Window.
-    private val category : String? = null // a billing category to differentiate between multiple active billing states.  
+    private val externalId : String? = null // a billing externalId to differentiate between multiple active billing states.  
 )
 ```
 
@@ -87,7 +87,7 @@ class ChipOffBillingStateFlow(private val billingState : StateAndRef<BillingStat
 class MemberDatabaseService {
     fun getBillingStateByLinearId(linearId : UniqueIdentifier) : StateAndRef<BillingState>? 
     fun getOurActiveBillingStates() : List<StateAndRef<BillingState>> 
-    fun getOurActiveBillingStatesForCategory(category: String) : List<StateAndRef<BillingState>>
+    fun getOurActiveBillingStatesForExternalId(externalId: String) : List<StateAndRef<BillingState>>
     fun getOurActiveBillingStatesByIssuer(issuer : Party) : List<StateAndRef<BillingState>> 
     fun getBillingChipStatesByBillingStateLinearId(billingStateLinearId : UniqueIdentifier) : List<StateAndRef<BillingChipState>> 
     fun getBillingChipStateByLinearId(chipLinearId : UniqueIdentifier) : StateAndRef<BillingChipState>? 
