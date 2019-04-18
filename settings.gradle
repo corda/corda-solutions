@@ -12,5 +12,5 @@ include ':bn-apps:billing:billing-contracts-and-states'
 include ':bn-apps:billing:billing-demo'
 include ':bn-apps:businessnetworks-utilities'
 include ':bn-apps:businessnetworks-test-utilities'
-include 'test-utils'
+include ':bn-apps:memberships-management:test-utils'
 
