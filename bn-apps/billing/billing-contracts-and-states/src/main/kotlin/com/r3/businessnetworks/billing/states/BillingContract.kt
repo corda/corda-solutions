@@ -4,7 +4,6 @@ import net.corda.core.contracts.BelongsToContract
 import net.corda.core.contracts.Command
 import net.corda.core.contracts.CommandData
 import net.corda.core.contracts.Contract
-import net.corda.core.contracts.ContractState
 import net.corda.core.contracts.LinearState
 import net.corda.core.contracts.TypeOnlyCommandData
 import net.corda.core.contracts.UniqueIdentifier
@@ -230,11 +229,12 @@ data class BillingState(
         val status : BillingStateStatus = BillingStateStatus.ACTIVE, // billing state status
         val expiryDate : Instant? = null, // billing state expiry date. If the expiry date is null then state is considered to be unexpirable.
                                           // Transactions involving expirable states require TimeWindow to be provided.
+        val externalId : String? = null, // an optional billing externalId to differentiate multiple active billing states
         override val linearId : UniqueIdentifier = UniqueIdentifier()
 ) : LinearState, QueryableState {
     override fun generateMappedObject(schema : MappedSchema) : PersistentState {
         return when (schema) {
-            is BillingStateSchemaV1 -> BillingStateSchemaV1.PersistentBillingState(issuer, owner, status)
+            is BillingStateSchemaV1 -> BillingStateSchemaV1.PersistentBillingState(issuer, owner, status, externalId)
             else -> throw IllegalArgumentException("Unrecognised schema $schema")
         }
     }

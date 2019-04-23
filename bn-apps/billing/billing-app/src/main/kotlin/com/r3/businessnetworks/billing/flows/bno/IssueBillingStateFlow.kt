@@ -7,6 +7,7 @@ import com.r3.businessnetworks.billing.flows.member.GetChipsByIssuer
 import com.r3.businessnetworks.billing.states.BillingContract
 import com.r3.businessnetworks.billing.states.BillingState
 import com.r3.businessnetworks.billing.states.BillingStateStatus
+import net.corda.core.contracts.UniqueIdentifier
 import net.corda.core.flows.CollectSignaturesFlow
 import net.corda.core.flows.FinalityFlow
 import net.corda.core.flows.FlowLogic
@@ -24,20 +25,22 @@ import java.time.Instant
  * @param owner the party to issue the [BillingState] to
  * @param amount the maximum amount of the [BillingChipState]s that can be chipped off
  * @param expiryDate the expiry date of the [BillingState]. Can be null, in which case the [BillingState] will be unexpirable. Transactions that involve [BillingState]s with the expiry dates set must contain time windows.
+ * @param category the billing externalId of the [BillingState].  This can be used to differentiate amongst multiple active billing states for a member.  Can be null
  * @returns issued [BillingState] with the [SignedTransaction]
  */
 @StartableByRPC
 @InitiatingFlow
 class IssueBillingStateFlow(private val owner : Party,
                             private val amount : Long,
-                            private val expiryDate : Instant? = null) : FlowLogic<Pair<BillingState, SignedTransaction>>() {
+                            private val expiryDate : Instant? = null,
+                            private val category : String? = null) : FlowLogic<Pair<BillingState, SignedTransaction>>() {
 
     @Suspendable
     override fun call() : Pair<BillingState, SignedTransaction> {
         val configuration = serviceHub.cordaService(BNOConfigurationService::class.java)
         val notary = configuration.notaryParty()
 
-        val billingState = BillingState(ourIdentity, owner, amount, 0L, BillingStateStatus.ACTIVE, expiryDate)
+        val billingState = BillingState(ourIdentity, owner, amount, 0L, BillingStateStatus.ACTIVE, expiryDate, category)
         val builder = TransactionBuilder(notary)
                 .addOutputState(billingState, BillingContract.CONTRACT_NAME)
                 .addCommand(BillingContract.Commands.Issue(), ourIdentity.owningKey, owner.owningKey)
