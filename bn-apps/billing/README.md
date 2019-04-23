@@ -168,3 +168,42 @@ Add the following lines to the `repositories` and `dependencies` blocks of your 
     }
 ```
 
+# Deploying the Billing Service
+
+
+## Getting the Jars
+
+You will need 2 jars to run the Billing Service
+
+- billing-app:X.0.jar
+- billing-contracts-and-states:X.0.jar
+
+If the version is 2.0, then you will also need (this is bundled for 3.0 onwards): 
+
+-  businessnetworks-utilities-2.0.jar
+
+You can get the jars from the r3 artifactory: 
+
+https://ci-artifactory.corda.r3cev.com/artifactory/webapp/#/artifacts/browse/tree/General/corda-solutions-releases
+
+
+Alternatively, you can build the project from source, from corda-solutions directory run: 
+ ```./gradlew build``` 
+
+
+## Install the Jars on the node
+
+
+1. Place the billing-app:X.0.jar and billing-contracts-and-states:X.0.jar into your node's cordapp directory.
+
+2. Create/ move into the cordapps/config directory.
+
+3. Create a billing-app.conf file with the following content, updated for your specific network details: 
+
+    ```
+    notaryName = "O=Notary, L=London, C=GB"
+    bnoName = "O=BNO, L=London, C=GB"
+    ```
+
+4. Restart the node.
+
