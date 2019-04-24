@@ -1,45 +1,48 @@
 package com.r3.businessnetworks.memberships.demo.flows
 
+
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.businessnetworks.membership.flows.bno.ActivateMembershipFlow
-import com.r3.businessnetworks.membership.flows.bno.service.DatabaseService
+import com.r3.businessnetworks.membership.flows.BNONotWhitelisted
 import com.r3.businessnetworks.membership.flows.member.GetMembershipsFlow
-import com.r3.businessnetworks.membership.flows.member.MembershipListRequest
-import com.r3.businessnetworks.membership.flows.member.MembershipsListResponse
-import com.r3.businessnetworks.membership.flows.member.RequestMembershipFlow
-import com.r3.businessnetworks.membership.flows.member.service.MembershipsCacheHolder
-import com.r3.businessnetworks.membership.states.MembershipContract
+import com.r3.businessnetworks.membership.flows.member.service.MemberConfigurationService
 import com.r3.businessnetworks.membership.states.MembershipState
-
-
-import com.r3.businessnetworks.memberships.demo.contracts.SampleContract
-import com.r3.businessnetworks.memberships.demo.contracts.SampleState
+import com.r3.businessnetworks.memberships.demo.contracts.AssetContract
+import com.r3.businessnetworks.memberships.demo.contracts.AssetState
 import net.corda.core.contracts.ReferencedStateAndRef
 import net.corda.core.contracts.StateAndRef
-import net.corda.core.contracts.requireThat
 import net.corda.core.flows.*
 import net.corda.core.identity.Party
+import net.corda.core.node.ServiceHub
 import net.corda.core.serialization.CordaSerializable
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.unwrap
 
 @CordaSerializable
-class RequestMembershipForTransaction (val bno : Party)
+class RequestMembershipForTransaction(val bno: Party)
 
-class IssueAssetFlow (val bno : Party) : FlowLogic<SignedTransaction>() {
+fun checkIfBNOWhitelisted (bno : Party, serviceHub : ServiceHub) {
+    val memberConfigurationService = serviceHub.cordaService(MemberConfigurationService::class.java)
+    if (bno !in memberConfigurationService.bnoIdentities())
+        throw BNONotWhitelisted(bno)
+}
+
+class IssueAssetFlow(val bno: Party) : FlowLogic<SignedTransaction>() {
     @Suspendable
-    override fun call() : SignedTransaction {
+    override fun call(): SignedTransaction {
+        // check if bno is whitelisted
+        checkIfBNOWhitelisted (bno, serviceHub)
+
         // for the sake of demo we are just taking the first available notary
         val notary = serviceHub.networkMapCache.notaryIdentities.single()
 
-        // query the vault with bno
-        val memberships= subFlow(GetMembershipsFlow(bno))
-        val ourMembership = memberships[ourIdentity]!!
+        // get the node's membership (from the node's membership cache or from the bno)
+        val ourMembership = subFlow(GetMembershipsFlow(bno))[ourIdentity]
+                ?: throw FlowException("Membership for $ourIdentity has not been found")
 
         val builder = TransactionBuilder(notary)
-                .addOutputState(SampleState(ourIdentity), SampleContract.CONTRACT_NAME)
-                .addCommand(SampleContract.Commands.Issue(), ourIdentity.owningKey)
+                .addOutputState(AssetState(ourIdentity), AssetContract.CONTRACT_NAME)
+                .addCommand(AssetContract.Commands.Issue(), ourIdentity.owningKey)
                 .addReferenceState(ReferencedStateAndRef(ourMembership))
 
         builder.verify(serviceHub)
@@ -49,71 +52,69 @@ class IssueAssetFlow (val bno : Party) : FlowLogic<SignedTransaction>() {
 }
 
 @InitiatingFlow
-class TransferAssetFlow(val sampleState : StateAndRef<SampleState>,
-                              val bno : Party,
-                              val partyToTransferTo : Party) : FlowLogic<SignedTransaction>() {
+class TransferAssetFlow(val assetState: StateAndRef<AssetState>, val bno: Party, val partyToTransferTo: Party) : FlowLogic<SignedTransaction>() {
     @Suspendable
-    override fun call() : SignedTransaction {
-        if (ourIdentity != sampleState.state.data.owner)
+    override fun call(): SignedTransaction {
+        if (ourIdentity != assetState.state.data.owner)
             throw FlowException("Only owner of the state can transfer it")
         if (ourIdentity == partyToTransferTo)
             throw FlowException("sender and recipient should be different parties")
+
+        // check if bno is whitelisted
+        checkIfBNOWhitelisted (bno, serviceHub)
+
         // for the sake of demo we are just taking the first available notary
         val notary = serviceHub.networkMapCache.notaryIdentities.single()
 
-        // get the membership from the node's membership cache
-        val membershipsCacheHolderService = serviceHub.cordaService(MembershipsCacheHolder::class.java)
-        val ourMembership = membershipsCacheHolderService.cache.getMembership(bno, ourIdentity)
-
-        if (ourMembership == null) {
-           throw FlowException("Invalid membership: ourMembership is null")
-        }
+        // get the node's membership (from the node's membership cache or from the bno)
+        val ourMembership = subFlow(GetMembershipsFlow(bno))[ourIdentity]
+                ?: throw FlowException("Membership for $ourIdentity has not been found")
 
         val builder = TransactionBuilder(notary)
                 .addReferenceState(ReferencedStateAndRef(ourMembership))
-                .addInputState(sampleState)
-                .addOutputState(SampleState(partyToTransferTo))
-                .addCommand(SampleContract.Commands.Transfer(), ourIdentity.owningKey, partyToTransferTo.owningKey)
+                .addInputState(assetState)
+                .addOutputState(AssetState(partyToTransferTo))
+                .addCommand(AssetContract.Commands.Transfer(), ourIdentity.owningKey, partyToTransferTo.owningKey)
 
         // create a session
         val counterPartySession = initiateFlow(partyToTransferTo)
-        // requesting other party to send us their billing states
+        // requesting other party to send us their membership state
         counterPartySession.send(RequestMembershipForTransaction(bno))
+        val counterPartyMembershipState =
+                subFlow(ReceiveStateAndRefFlow<MembershipState<Any>>(counterPartySession)).single()
 
-
-        val counterPartyMembershipState = subFlow(ReceiveStateAndRefFlow<MembershipState<Any>>(counterPartySession)).single()
         builder.addReferenceState(ReferencedStateAndRef(counterPartyMembershipState))
 
         // verifying the transaction
         builder.verify(serviceHub)
 
         val selfSignedTx = serviceHub.signInitialTransaction(builder)
-
         val allSignedTx = subFlow(CollectSignaturesFlow(selfSignedTx, listOf(counterPartySession)))
+
+        // notarise the transaction
         return subFlow(FinalityFlow(allSignedTx, listOf(counterPartySession)))
     }
 }
 
 @InitiatedBy(TransferAssetFlow::class)
-class TransferAssetFlowResponder(val session : FlowSession) : FlowLogic<Unit>() {
+class TransferAssetFlowResponder(val session: FlowSession) : FlowLogic<Unit>() {
     @Suspendable
     override fun call() {
 
-        // receiving request for billing state
-        val bno = session.receive<RequestMembershipForTransaction>().unwrap { it }
+        // receiving request for membership state
+        val bno = session.receive<RequestMembershipForTransaction>().unwrap { it }.bno
 
-        val membershipCacheHolder = serviceHub.cordaService(MembershipsCacheHolder::class.java)
-        val membershipState =  membershipCacheHolder.cache.getMembership(bno.bno, ourIdentity)
+        // check if bno is whitelisted
+        checkIfBNOWhitelisted (bno, serviceHub)
 
-        if (membershipState == null) {
-            throw FlowException ("Invalid membership")
-        }
+        val ourMembership = subFlow(GetMembershipsFlow(bno))[ourIdentity]
+                ?: throw FlowException("Membership for $ourIdentity has not been found")
 
         // sending the states to the requester
-        subFlow(SendStateAndRefFlow(session, listOf(membershipState)))
+        subFlow(SendStateAndRefFlow(session, listOf(ourMembership)))
 
         val stx = subFlow(object : SignTransactionFlow(session) {
-            override fun checkTransaction(stx : SignedTransaction) {
+            override fun checkTransaction(stx: SignedTransaction) {
                 stx.toLedgerTransaction(serviceHub, false).verify()
             }
         })
@@ -121,4 +122,3 @@ class TransferAssetFlowResponder(val session : FlowSession) : FlowLogic<Unit>() 
         subFlow(ReceiveFinalityFlow(session, stx.id))
     }
 }
-
