@@ -10,11 +10,11 @@ Receipts Pattern
 Summary
 -------
 
-Receipts pattern can be used when the transitions of a state chain (EnablerState) must be evidenced within other transactions (EnabledTransaction) to allow  the transitions in those transactions to take palace, specifically where:
+Receipts pattern can be used when the transitions of a state chain (EnablerState) must be evidenced within other transactions (EnabledTransaction) to allow  the transitions in those transactions to take place, specifically where:
 
  - Each EnablerState transition should enable only one EnabledTransaction, no double spends.
  - Being a participant on the EnablerState chain, does not give the ability to resolve the EnabledTransactions. (Although some participants will also be participants on the EnabledTransactions)
- - Being a participant on an EnabledTransaction does not giver the ability to resolve details on other EnabledTransactions. (Although some participants will also be participants on other EnabledTransactions)
+ - Being a participant on an EnabledTransaction does not give the ability to resolve details on other EnabledTransactions. (Although some participants will also be participants on other EnabledTransactions)
  - The EnablerState Chain can store cumulative information about the Receipts it has created.
 
 

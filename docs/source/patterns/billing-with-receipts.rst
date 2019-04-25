@@ -4,7 +4,7 @@ Billing With ChipOffs/ Receipts
 
 WIP
 
-** need to correct Diagram for privacy traceback (like receipts) + update github implementation readme 
+** need to correct Diagram for privacy traceback (like receipts) + update github implementation readme
 
 -------
 Summary
@@ -24,7 +24,7 @@ The 'Billing With Chip Offs' Pattern can be used for billing and metering on Bus
 
 Diagrams:
 
-.. image:: resources/Billing-State-evolution-diagram-v2.png
+.. image:: resources/Billing-State-evolution-diagram-v3.png
   :width: 80%
   :align: center
 

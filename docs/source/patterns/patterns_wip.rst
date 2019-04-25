@@ -24,11 +24,10 @@ WIP Patterns
    billing-with-receipts.rst
    business-pattern.rst
    propose-agree.rst
-   receipts.rst
    ref-states.rst
    request-tree.rst
 
-   add base pattern - set an expected reference to enable a future transaction
+add base pattern - set an expected reference to enable a future transaction
 
 
 Patterns being investigated relate to each other in the following ways:
