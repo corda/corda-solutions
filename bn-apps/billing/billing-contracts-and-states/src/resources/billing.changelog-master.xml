@@ -1,0 +1,4 @@
+<databaseChangeLog>
+    <include file="migration/billing.changelog-init.xml"/>
+    <include file="migration/billing.changelog-v2.xml"/>
+</databaseChangeLog>

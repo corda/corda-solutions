@@ -1,0 +1,5 @@
+<changeSet author="R3 Corda" id="add externalId to billing_states">
+    <addColumn tableName="billing_states">
+        <column name="externalId" type="nvarchar(255)"/>
+    </addColumn>
+</changeSet>
