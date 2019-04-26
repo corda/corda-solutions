@@ -2,7 +2,6 @@ package com.r3.businessnetworks.billing.flows.member.service
 
 import com.r3.businessnetworks.utilities.AbstractConfigurationService
 import net.corda.core.identity.CordaX500Name
-import net.corda.core.identity.Party
 import net.corda.core.node.AppServiceHub
 import net.corda.core.node.services.CordaService
 
@@ -12,5 +11,4 @@ import net.corda.core.node.services.CordaService
 @CordaService
 class MemberConfigurationService(appServiceHub : AppServiceHub) : AbstractConfigurationService(appServiceHub, "billing-app") {
     override fun bnoName() : CordaX500Name  = throw NotImplementedError("This method should not be used")
-    override fun bnoParty() : Party = throw NotImplementedError("This method should not be used")
 }
