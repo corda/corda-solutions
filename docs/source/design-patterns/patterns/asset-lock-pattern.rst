@@ -35,18 +35,18 @@ The need for such an lock stems from the potential for nefarious actors to attem
 - Use a state used to power two transitions of the same value in same transaction.
 - Use a state used to power more than one transaction using reference states
 
--------------
+--------------
 Forces/Factors
--------------
+--------------
 
 
 The challenge is to set up the lock so that the lock can be released by somebody other than the owner once they have provided some consideration. This is difficult as the asset's own contract rules are likely to state that the current owner needs to sign to transfer ownership.
 
 
 
----------
+--------
 Solution
----------
+--------
 
 There are four proposed patterns put forward. Each of these is described separately below.
 
@@ -117,17 +117,17 @@ b. *Analysis & Considerations*
 doesn’t actually lock the asset, so not an asset lock, it only gives the ability for someone other than the owner to move the asset.
 
 
--------
+--------
 Benefits
--------
+--------
 
 
 Particular benefits of using this pattern
 
 
--------
+---------
 Drawbacks
--------
+---------
 
 
 draw backs of using this pattern

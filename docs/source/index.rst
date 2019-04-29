@@ -34,7 +34,8 @@ finished application, are about to deploy, or are already in production.
   :caption: Design Patterns
   :maxdepth: 1
 
-  patterns/patterns_wip.rst
+  design-patterns/patterns/patterns_wip.rst
+  design-patterns/antipatterns/antipatterns-wip.rst
 
 .. toctree::
   :caption:  Deployment Patterns
