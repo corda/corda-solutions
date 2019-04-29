@@ -26,6 +26,7 @@ WIP Patterns
    propose-agree.rst
    ref-states.rst
    request-tree.rst
+   template.rst
 
 add base pattern - set an expected reference to enable a future transaction
 
