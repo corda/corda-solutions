@@ -54,11 +54,11 @@ abstract class AbstractConfigurationService(val appServiceHub : AppServiceHub, v
         else {
             val configResource = AbstractConfigurationService::class.java.classLoader.getResource(fileName)
             if (configResource == null) {
-                logger.error("Configuration $configName.conf has not bee found")
+                logger.error("Configuration $configName.conf has not been found")
                 null
             } else ConfigFactory.parseFile(File(configResource.toURI()))
         }
     }
 
-    private fun Config?.getStringOrThrow(property : String) : String = _config?.getString(property) ?: throw IllegalArgumentException("Configuration $configName.conf has not bee found")
+    private fun Config?.getStringOrThrow(property : String) : String = _config?.getString(property) ?: throw IllegalArgumentException("Configuration $configName.conf has not been found")
 }
