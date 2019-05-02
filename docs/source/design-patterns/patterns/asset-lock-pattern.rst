@@ -9,8 +9,8 @@ Asset Lock Pattern
 Summary
 -------
 
-An asset lock is a mechanism, used during a two party agreement, that prevents one party spending or distributing the asset involved in the agreement elsewhere.
-The lock enables a named asset to be locked out of use until another event has happened. The mechanism further allows the asset to be unlocked once an certain event has occured
+An asset lock is a mechanism, used during a two-party agreement, that prevents one party spending or distributing the asset involved in the agreement elsewhere.
+The lock enables a named asset to be locked out of use until another event has happened. The mechanism further allows the asset to be unlocked once a certain event has occurred
 
 -------
 Context
@@ -26,13 +26,13 @@ One of the most common examples of this kind of event would be a payment for the
 Problem
 -------
 
-The need for such an lock stems from the potential for nefarious actors attempting to:
+The need for such a lock stems from the potential for nefarious actors attempting to:
 
 - Transact the same asset with a different party while a deal is underway.
-- Spend states away mid pattern to benefit one party.
+- Spend states away mid-pattern to benefit one party.
 - Offer a state but substitute a fake state (i.e. one without the assumed provenance)
 - Pledge a state from an invalid transaction.
-- Use a state used to power two transitions of the same value in same transaction.
+- Use a state used to power two transitions of the same type
 - Use a state used to power more than one transaction using reference states
 
 --------------
@@ -99,7 +99,7 @@ The transfer of the asset again occurs over two transactions:
     - `newOwner`: the new owner of the asset, the buyer.
     -  A reference ID
 
-**Tx 2**: Since the encumbrance still lies on the AssetState from transaction one, the LockState must be released before the AssetState can finally be transferred to its new owner. Furthermore, the contract logic of the LockState requires the presents of a relevant ConsiderationState that defines valid payment of the AssetState, whether via the state itself of proof-of-payment elsewhere, potentially with the side state of the Receipts Pattern.
+**Tx 2**: Since the encumbrance still lies on the AssetState from transaction one, the LockState must be released before the AssetState can finally be transferred to its new owner. Furthermore, the contract logic of the LockState requires the presence of a relevant ConsiderationState that defines valid payment of the AssetState, whether via the state itself of proof-of-payment elsewhere, potentially with the side state of the Receipts Pattern.
 
 b. *Analysis & Considerations*
 
@@ -132,7 +132,7 @@ This asset transfer also occurs over two transactions.
     - `considerationState`: this a state that acts as either payment or proof-of-payment between A and B.
     - A reference ID to be used in the consideration later on.
 
-**Tx 2**: In order the transfer of the AssetState to occur, the contract rules of the twin AssetState must be met. These include that the precondition is satisfied and that there is a ConsiderationState with the correct reference ID also present in the transaction.
+**Tx 2**: In order for the transfer of the AssetState to occur, the contract rules of the twin AssetState must be met. These include that the precondition is satisfied and that there is a ConsiderationState with the correct reference ID also present in the transaction.
 
 
 b. *Analysis & Considerations*
@@ -190,8 +190,7 @@ Benefits
 --------
 
 
-Particular benefits of using this pattern
-
+This pattern can allow two mutually distrusting partys to perform an atomic swap of two assets without the need our a third party to validate the transaction.
 
 ---------
 Drawbacks
@@ -204,15 +203,10 @@ It is thus likely that the asset has to have a rule that says it can be transfer
 
 
 
-----------------
-Related Patterns
-----------------
+-----------------------------
+Related Patterns & Extensions
+-----------------------------
 
-List related Patterns
-
-Extensions:
-
-List possible Extensions
 
 
 
