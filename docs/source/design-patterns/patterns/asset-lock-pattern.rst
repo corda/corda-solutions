@@ -32,8 +32,8 @@ The need for such a lock stems from the potential for nefarious actors attemptin
 - Spend states away mid-pattern to benefit one party.
 - Offer a state but substitute a fake state (i.e. one without the assumed provenance)
 - Pledge a state from an invalid transaction.
-- Use a state used to power two transitions of the same type
-- Use a state used to power more than one transaction using reference states
+- Use a state to power two transitions of the same type
+- Use a state to power more than one transaction using reference states
 
 --------------
 Forces/Factors
@@ -78,6 +78,7 @@ b. *Analysis & Considerations*
   - Party B cannot consume a state in an invalid Tx 2 because if Tx 1 fails then the LockState will not be created as an output state thus Tx 2 cannot happen.
   - Since the LockState is consumed it cannot be used in multiple transactions similar Tx 2. The same applies to ConsiderationState. Furthermore, reference states are not used as part of this transaction so there is no risk of one state being used in multiple transactions.
   - Since it is a bilateral agreement, privacy is shared between the two participants.
+  - The crux here lies in whether the owner's signature is required to change the state ownership property.
 
 
 **2.    Pre-permissioned pattern with encumbered states**
@@ -99,7 +100,8 @@ The transfer of the asset again occurs over two transactions:
     - `newOwner`: the new owner of the asset, the buyer.
     -  A reference ID
 
-**Tx 2**: Since the encumbrance still lies on the AssetState from transaction one, the LockState must be released before the AssetState can finally be transferred to its new owner. Furthermore, the contract logic of the LockState requires the presence of a relevant ConsiderationState that defines valid payment of the AssetState, whether via the state itself of proof-of-payment elsewhere, potentially with the side state of the Receipts Pattern.
+**Tx 2**: Since the encumbrance still lies on the AssetState from transaction one, the LockState must be released before the AssetState can finally be transferred to its new owner. Furthermore, the contract logic of the LockState requires the presence of a relevant ConsiderationState that defines valid payment of the AssetState, whether via the state itself of proof-of-payment elsewhere, potentially with the side state chain of the Receipts Pattern.
+Again, despite encumbrances, the crux lies in whether the owner's signature is required to change the state ownership property.
 
 b. *Analysis & Considerations*
 
@@ -144,6 +146,8 @@ b. *Analysis & Considerations*
 - Reference states are not used as part of this transaction so there is no risk of one state being used in multiple transactions.
 - It is mandatory that the owners signatue is not required to transfer ownership of the asset in Tx 2, other the payment could be made and the Asset never transferred.
 - Since it is a bilateral agreement, privacy is shared between the two participants. Privacy of the consideration is a fundamental part of the Receipts pattern design.
+- There is a concern that the receiving party could alter the FinalityFlow such that the Consideration/Payment would be notarised but then the actual state not passed over to the selling party.
+This means the buyer could end up with both the consideration **and** the asset.
 
 
 doesn’t actually lock the asset, so not an asset lock, it only gives the ability for someone other than the owner to move the asset.
