@@ -10,7 +10,7 @@ Summary
 -------
 
 An asset lock is a mechanism, used during a two-party agreement, that prevents one party spending or distributing the asset involved in the agreement elsewhere.
-The lock enables a named asset to be locked out of use until another event has happened. The mechanism further allows the asset to be unlocked once a certain event has occurred
+The lock enables a named asset to be locked out of use until another event has happened which only then allows the asset to be unlocked.
 
 -------
 Context
