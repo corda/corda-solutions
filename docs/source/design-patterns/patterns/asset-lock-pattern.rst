@@ -146,11 +146,15 @@ b. *Analysis & Considerations*
 - Reference states are not used as part of this transaction so there is no risk of one state being used in multiple transactions.
 - It is mandatory that the owners signatue is not required to transfer ownership of the asset in Tx 2, other the payment could be made and the Asset never transferred.
 - Since it is a bilateral agreement, privacy is shared between the two participants. Privacy of the consideration is a fundamental part of the Receipts pattern design.
-- There is a concern that the receiving party could alter the FinalityFlow such that the Consideration/Payment would be notarised but then the actual state not passed over to the selling party.
-This means the buyer could end up with both the consideration **and** the asset.
 
 
-doesn’t actually lock the asset, so not an asset lock, it only gives the ability for someone other than the owner to move the asset.
+- There is a concern that the receiving party could alter the FinalityFlow such that the Consideration/Payment would be notarised but then the actual state not passed over to the selling party. This might not even involve altering the FinalityFlow and could just be blocking the packets from reaching the counterparty.
+- This means the buyer could end up with both the consideration **and** the asset.
+- This concern may be counteracted by allowing the selling party to initiate the transaction such that they are responsible for sending the states across. This may however bring about the same trust issue, but in reverse.
+- There might be potential for a custom *ReverseFinalityFlow* that is called on the responder side such that they can notarise the signed transaction and broadcast the states.
+
+
+This pattern doesn’t actually lock the asset, so not an asset lock, it only gives the ability for someone other than the owner to move the asset.
 
 
 **4. Pre-permissioned Asset transfer with reference states**
