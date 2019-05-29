@@ -16,7 +16,7 @@ fun MembershipState<Any>.getAttachmentIdForGenericParam(): SecureHash {
 }
 
 fun StateAndRef<MembershipState<Any>>.isAttachmentRequired(): Boolean {
-    return this.isAttachmentRequired()
+    return this.state.data.isAttachmentRequired()
 }
 
 fun MembershipState<Any>.isAttachmentRequired(): Boolean {
