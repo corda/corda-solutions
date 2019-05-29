@@ -133,9 +133,6 @@ data class MembershipState<out T : Any>(val member : Party,
     fun isActive() = status == MembershipStatus.ACTIVE
 }
 
-@CordaSerializable
-data class BasicMembershipMetaData(val data: String)
-
 /**
  * Statuses that a membership can go through.
  *
