@@ -184,10 +184,17 @@ class MembershipContractTest {
             }
             transaction {
                 val input = membershipState(MembershipStatus.SUSPENDED)
-                input(MembershipContract.CONTRACT_NAME,  input)
-                output(MembershipContract.CONTRACT_NAME,  input.copy(status = MembershipStatus.ACTIVE, modified = input.modified.plusMillis(1), membershipMetadata = SimpleMembershipMetadata(role = "Another metadata")))
+                input(MembershipContract.CONTRACT_NAME, input)
+                output(MembershipContract.CONTRACT_NAME, input.copy(status = MembershipStatus.ACTIVE, modified = input.modified.plusMillis(1), membershipMetadata = SimpleMembershipMetadata(role = "Another metadata")))
                 command(listOf(bno.publicKey), MembershipContract.Commands.Activate())
                 this.`fails with`("Input and output states of a membership activation transaction should have the same metadata")
+            }
+            transaction {
+                val input = membershipState(MembershipStatus.SUSPENDED)
+                input(MembershipContract.CONTRACT_NAME,  input)
+                output(MembershipContract.CONTRACT_NAME,  input.copy(status = MembershipStatus.ACTIVE, modified = input.modified.plusMillis(1), membershipMetadata = SimpleMembershipMetadata(role = "test")))
+                command(listOf(bno.publicKey), MembershipContract.Commands.Activate())
+                this.verifies()
             }
         }
     }

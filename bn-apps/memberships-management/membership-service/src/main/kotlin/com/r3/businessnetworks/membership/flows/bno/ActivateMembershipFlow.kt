@@ -5,6 +5,7 @@ import com.r3.businessnetworks.membership.flows.bno.service.BNOConfigurationServ
 import com.r3.businessnetworks.membership.flows.bno.service.DatabaseService
 import com.r3.businessnetworks.membership.flows.bno.support.BusinessNetworkOperatorFlowLogic
 import com.r3.businessnetworks.membership.flows.getAttachmentIdForGenericParam
+import com.r3.businessnetworks.membership.flows.isAttachmentRequired
 import com.r3.businessnetworks.membership.states.MembershipContract
 import com.r3.businessnetworks.membership.states.MembershipState
 import com.r3.businessnetworks.membership.states.MembershipStatus
@@ -40,7 +41,9 @@ open class ActivateMembershipFlow(val membership: StateAndRef<MembershipState<An
             .addInputState(membership)
             .addOutputState(membership.state.data.copy(status = MembershipStatus.ACTIVE, modified = serviceHub.clock.instant()), MembershipContract.CONTRACT_NAME)
             .addCommand(MembershipContract.Commands.Activate(), ourIdentity.owningKey)
-            .addAttachment(membership.getAttachmentIdForGenericParam())
+
+        if (membership.isAttachmentRequired()) builder.addAttachment(membership.getAttachmentIdForGenericParam())
+
         builder.verify(serviceHub)
         val selfSignedTx = serviceHub.signInitialTransaction(builder)
 
