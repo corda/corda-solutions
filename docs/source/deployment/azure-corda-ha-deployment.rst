@@ -9,7 +9,6 @@ In this section we will go thru the steps to ensure Corda Enterprise is deployed
 #. Corda Enterprise Deployment on Backup VM.
 #. Corda Enterprise on VM Startup.
 #. Azure Fileshare on VM Startup.
-#. Failover test of Corda Enterprise Node from Primary to Backup.
 
 Corda Enterprise Deployment on Primary 
 --------------------------------------
@@ -97,21 +96,9 @@ Corda can be configured to start automatically whenever the VM starts as by crea
 
 Enter the following in the file and save:
 
-.. sourcecode:: shell
+.. literalinclude:: ./resources/systemctlcorda.conf
+    :language: javascript
 
-[Unit]
-Description=Corda Node
-Requires=network.target
-
-[Service]
-Type=simple
-User=cordaadmin
-WorkingDirectory=/opt/corda
-ExecStart=/usr/bin/java -Xmx2048m -jar /opt/corda/corda-3.3.jar
-Restart=on-failure
-
-[Install]
-WantedBy=multi-user.target
 
 Run the following commands in the VM as root:
 
@@ -136,23 +123,12 @@ Azure Fileshare  can be configured to start automatically whenever the VM starts
 .. parsed-literal::
     > sudo vi /etc/systemd/system/fileshare.service 
 
+
 Enter the following in the file and save:
 
-.. sourcecode:: shell
+.. literalinclude:: ./resources/systemctlfileshare.conf
+    :language: javascript
 
-[Unit]
-Description=Mount EFS
-Requires=network.target
-
-[Service]
-Type=oneshot
-User=root
-WorkingDirectory=/mnt
-ExecStart=/bin/mkdir /mnt/MyAzureFileShare 
-ExecStart=/bin/mount -a 
-
-[Install]
-WantedBy=multi-user.target
 
 Run the following commands in the VM as root:
 
@@ -167,3 +143,20 @@ You can now start/stop/check status of Corda JVM as follows
     > sudo systemctl stop fileshare
     > sudo systemctl status fileshare
 
+This is a sample node.conf which connects to the Corda UAT Network.
+
+**Note that when using the Load Balancer the P2P entry will be the Load Balancer Public DNS name.**
+
+
+.. literalinclude:: ./resources/nodefull.conf
+    :language: javascript
+
+To start your node run:
+
+.. parsed-literal::
+    > /usr/bin/java -Xmx2048m -jar /opt/corda/corda.jar --config-file node.conf
+
+Once your Node has started up successfully you will see output similar to the following:
+
+.. literalinclude:: ./resources/nodestart.conf
+    :language: javascript

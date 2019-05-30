@@ -24,7 +24,7 @@ Basics
 - Size : Standard B2s 2 vcpu's, 4 GB Memory
 - Authentication Type : SSH Public Key
 
-If you are using MacOS or Windows Terminal, use the ssh-keygen to create a private and public key. The public key should be pasted into the SSH Publik Key Section.
+If you are using MacOS or Windows Terminal, use the ssh-keygen to create a private and public key. The public key should be pasted into the SSH Public Key Section.
 
 - Inbound Port Rules : Choose SSH 
 
@@ -118,20 +118,3 @@ Once your /opt/corda directory is fully created it will contain the following fi
    network-parameters -> this is created after node is registered and it first connects to Network Map 
    node.conf - this is the main configuration file containing CE parameters to be used on startup
 
-This is a sample node.conf which connects to the Corda UAT Network. 
-
-*Note that when we create the Load Balancer in the next section the P2P entry will be the Load Balancer Public DNS name.*
-
-
-.. literalinclude:: ./resources/nodefull.conf
-    :language: javascript
-
-To start your node run:
-
-.. parsed-literal::
-    > /usr/bin/java -Xmx2048m -jar /opt/corda/corda.jar --config-file node.conf 
-
-Once your Node has started up successfully you will see output similar to the following: 
-
-.. literalinclude:: ./resources/nodestart.conf
-    :language: javascript

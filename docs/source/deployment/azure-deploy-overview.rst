@@ -16,7 +16,7 @@ In order to deploy Corda Enterprise in HA the following Azure resources are requ
 
 - Security Group with default Inbound/Outbound TCP, HTTP Access Rules
 - Load Balancer to present single IP for RPC and P2P Inbound connections 
-- Back End Pool consisting of of 2 VM’s for the LB to target 
+- Back End Pool consisting of 2 VM’s for the LB to target 
 - Availability Set for the 2 VM’s in HA configuration        
 - Health Probes which monitor a Protocol and Port to detect health of processes 
 - Load Balancing Rules which assign a Protocol (P2P, RPC, HTTP) and Port to monitor processes
