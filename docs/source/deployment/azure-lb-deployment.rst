@@ -7,7 +7,7 @@ The purpose of a Load Balancer is to present a single IP address or DNS name to 
 1. In portal.azure.com choose Load Balancers from the left hand side menu. 
 
 .. image:: ./resources/lbmenu.png
-   :scale: 50%
+   :scale: 20%
 
 2. Choose Add and fill out required fields as follows:
 
