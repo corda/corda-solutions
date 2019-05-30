@@ -34,6 +34,7 @@ open class MembershipContract : Contract {
     open class Commands : CommandData, TypeOnlyCommandData() {
         class Request : Commands()
         class Amend : Commands()
+        class SelfIssue : Commands()
         class Suspend : Commands()
         class Activate : Commands()
     }
@@ -60,6 +61,7 @@ open class MembershipContract : Contract {
 
         when (command.value) {
             is Commands.Request -> verifyRequest(tx, command, outputMembership)
+            is Commands.SelfIssue -> verifySelfIssue(tx, command, outputMembership)
             is Commands.Suspend -> verifySuspend(tx, command, outputMembership, tx.inputsOfType<MembershipState<*>>().single())
             is Commands.Activate -> verifyActivate(tx, command, outputMembership, tx.inputsOfType<MembershipState<*>>().single())
             is Commands.Amend -> verifyAmend(tx, command, outputMembership, tx.inputsOfType<MembershipState<*>>().single())
@@ -74,6 +76,12 @@ open class MembershipContract : Contract {
         "Both BNO and member have to sign a membership request transaction" using (command.signers.toSet() == outputMembership.participants.map { it.owningKey }.toSet() )
         "Membership request transaction shouldn't contain any inputs" using (tx.inputs.isEmpty())
         "Membership request transaction should contain an output state in PENDING status" using (outputMembership.isPending())
+    }
+
+    open fun verifySelfIssue(tx : LedgerTransaction, command : CommandWithParties<Commands>, outputMembership : MembershipState<*>) {
+        "Only BNO should sign a self issue membership transaction" using (command.signers.toSet() == setOf(outputMembership.bno.owningKey))
+        "Self Issue transaction shouldn't contain any inputs" using (tx.inputs.isEmpty())
+        "Self Issue transaction should contain an output state in ACTIVE status" using (outputMembership.isActive())
     }
 
     open fun verifySuspend(tx : LedgerTransaction, command : CommandWithParties<Commands>, outputMembership : MembershipState<*>, inputMembership : MembershipState<*>) {
