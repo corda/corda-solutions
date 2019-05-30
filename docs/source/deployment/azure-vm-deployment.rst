@@ -6,6 +6,9 @@ This guide to deployment of VM's in Azure assumes the following:
 - Azure Subscription is in place for https://portal.azure.com
 - Resource Group is allocated for deployment of Corda Enterprise
 
+.. image:: ./resources/vmadd.png
+   :scale: 50%
+
 The following steps are required:
 
 Basics
@@ -14,6 +17,10 @@ Basics
 1. Click on Create a Virtual Machine
 2. Choose an appropriate Subsctiption and Resource Group
 3. Choose Instance Details
+
+
+.. image:: ./resources/vmmenu.png
+   :scale: 50%
 
 - Virtual Machine Name : Corda-Primary
 - Region : based on user preference
@@ -36,6 +43,10 @@ Disks
 
 Networking
 ----------
+
+
+.. image:: ./resources/vmnetwork.png
+   :scale: 50%
 
 - Virtual Network : Choose an existing Virtual Network or Create New 
 - Subnet : Default subnet

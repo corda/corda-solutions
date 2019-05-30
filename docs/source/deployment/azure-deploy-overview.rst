@@ -9,7 +9,6 @@ The image below illustrates the environment that will result from following the 
 
 .. image:: ./resources/ha-overview.png
    :scale: 50%
-   :align: center
 
 
 In order to deploy Corda Enterprise in HA the following Azure resources are required:
