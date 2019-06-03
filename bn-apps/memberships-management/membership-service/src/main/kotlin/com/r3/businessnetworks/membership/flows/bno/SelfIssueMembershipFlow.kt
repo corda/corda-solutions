@@ -1,5 +1,6 @@
 package com.r3.businessnetworks.membership.flows.bno
 
+import co.paralleluniverse.fibers.Suspendable
 import com.r3.businessnetworks.membership.flows.bno.service.BNOConfigurationService
 import com.r3.businessnetworks.membership.flows.member.Utils.throwExceptionIfNotBNO
 import com.r3.businessnetworks.membership.states.MembershipContract
@@ -27,6 +28,7 @@ open class SelfIssueMembershipFlow(val metaData : Any) : FlowLogic<SignedTransac
 
     override val progressTracker = tracker()
 
+    @Suspendable
     override fun call(): SignedTransaction {
         throwExceptionIfNotBNO(ourIdentity, serviceHub)
         progressTracker.currentStep = IssuingMembership
@@ -34,11 +36,13 @@ open class SelfIssueMembershipFlow(val metaData : Any) : FlowLogic<SignedTransac
         val config = serviceHub.cordaService(BNOConfigurationService::class.java)
         val notary = config.notaryParty()
         val membershipState = MembershipState(this.ourIdentity, this.ourIdentity, metaData, status = MembershipStatus.ACTIVE)
-        val txCommand = Command(MembershipContract.Commands.SelfIssue(), ourIdentity.owningKey)
+        val requestCommand = Command(MembershipContract.Commands.Request(), ourIdentity.owningKey)
+        val activateCommand = Command(MembershipContract.Commands.Activate(), ourIdentity.owningKey)
 
         val txBuilder = TransactionBuilder(notary).withItems()
                 .addOutputState(membershipState, MembershipContract.CONTRACT_NAME)
-                .addCommand(txCommand)
+                .addCommand(requestCommand)
+                .addCommand(activateCommand)
 
         txBuilder.verify(serviceHub)
         val tx = serviceHub.signInitialTransaction(txBuilder)
