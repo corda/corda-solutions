@@ -9,6 +9,7 @@ import net.corda.core.flows.InitiatingFlow
 import net.corda.core.flows.StartableByRPC
 import net.corda.core.identity.Party
 import net.corda.core.serialization.CordaSerializable
+import net.corda.core.utilities.ProgressTracker
 import net.corda.core.utilities.unwrap
 
 /**
@@ -20,6 +21,8 @@ import net.corda.core.utilities.unwrap
 class RequestLedgersSyncFlow(
         private val members: List<Party>
 ) : FlowLogic<Map<Party, LedgerSyncFindings>>() {
+
+    override val progressTracker: ProgressTracker = ProgressTracker()
 
     @Suspendable
     override fun call(): Map<Party, LedgerSyncFindings> = (members - ourIdentity)
