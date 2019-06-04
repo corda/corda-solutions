@@ -39,6 +39,7 @@ open class MembershipContract : Contract {
     }
 
     override fun verify(tx : LedgerTransaction) {
+        val command = tx.commands.requireSingleCommand<Commands>()
         val output = tx.outputs.single { it.data is MembershipState<*> }
         val outputMembership = output.data as MembershipState<*>
 
@@ -57,31 +58,13 @@ open class MembershipContract : Contract {
             }
         }
 
-        when (tx.commands.size) {
-            1 -> {
-                val command = tx.commands.requireSingleCommand<Commands>()
-
-                when (command.value) {
-                    is Commands.Request -> verifyRequest(tx, command, outputMembership)
-                    is Commands.Suspend -> verifySuspend(tx, command, outputMembership, tx.inputsOfType<MembershipState<*>>().single())
-                    is Commands.Activate -> verifyActivate(tx, command, outputMembership, tx.inputsOfType<MembershipState<*>>().single())
-                    is Commands.Amend -> verifyAmend(tx, command, outputMembership, tx.inputsOfType<MembershipState<*>>().single())
-                    else -> throw IllegalArgumentException("Unsupported command ${command.value}")
-                }
-            }
-            2 -> verifySelfIssue(tx, tx.commands, outputMembership) // BNO self activate
-            else -> throw java.lang.IllegalArgumentException("Unsupported command list")
+        when (command.value) {
+            is Commands.Request -> verifyRequest(tx, command, outputMembership)
+            is Commands.Suspend -> verifySuspend(tx, command, outputMembership, tx.inputsOfType<MembershipState<*>>().single())
+            is Commands.Activate -> verifyActivate(tx, command, outputMembership, tx.inputsOfType<MembershipState<*>>().single())
+            is Commands.Amend -> verifyAmend(tx, command, outputMembership, tx.inputsOfType<MembershipState<*>>().single())
+            else -> throw IllegalArgumentException("Unsupported command ${command.value}")
         }
-    }
-
-    open fun verifySelfIssue(tx : LedgerTransaction, commands : List<CommandWithParties<CommandData>>, outputMembership: MembershipState<*>) {
-        "BNO is the same as the member" using (outputMembership.member == outputMembership.bno)
-        "BNO is the only participant" using (outputMembership.participants.toSet() == setOf(outputMembership.bno))
-        "Commands are Request and Activate" using (tx.commands
-                .map { cd -> cd.value }
-                .toSet() == setOf(Commands.Request(), Commands.Activate())
-                )
-        "Output Membership is Active" using (outputMembership.isActive())
     }
 
     // custom implementations should be able to specify their own contract names

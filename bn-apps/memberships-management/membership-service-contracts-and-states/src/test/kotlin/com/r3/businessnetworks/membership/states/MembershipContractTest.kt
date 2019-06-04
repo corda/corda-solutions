@@ -152,31 +152,6 @@ class MembershipContractTest {
     }
 
     @Test
-    fun `test self issue`() {
-        ledgerServices.ledger {
-            transaction {
-                output(MembershipContract.CONTRACT_NAME,  membershipState(member = bnoParty, status = MembershipStatus.ACTIVE))
-                command(listOf(bno.publicKey), MembershipContract.Commands.Request())
-                command(listOf(bno.publicKey), MembershipContract.Commands.Activate())
-                this.verifies()
-            }
-            transaction {
-                output(MembershipContract.CONTRACT_NAME,  membershipState(member = bnoParty, status = MembershipStatus.PENDING))
-                command(listOf(bno.publicKey), MembershipContract.Commands.Request())
-                command(listOf(bno.publicKey), MembershipContract.Commands.Activate())
-                this.fails()
-            }
-            transaction {
-                input(MembershipContract.CONTRACT_NAME, membershipState())
-                output(MembershipContract.CONTRACT_NAME,  membershipState(member = memberParty, status = MembershipStatus.PENDING))
-                command(listOf(bno.publicKey), MembershipContract.Commands.Request())
-                command(listOf(bno.publicKey), MembershipContract.Commands.Activate())
-                this.fails()
-            }
-        }
-    }
-
-    @Test
     fun `test activate membership`() {
         ledgerServices.ledger {
             transaction {

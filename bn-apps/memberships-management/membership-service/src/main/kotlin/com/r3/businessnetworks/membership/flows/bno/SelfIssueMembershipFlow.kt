@@ -11,6 +11,7 @@ import net.corda.core.flows.*
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.ProgressTracker
+import java.time.Instant
 
 /**
  * Self Issue a Membership.  This can only be done by a BNO
@@ -19,10 +20,12 @@ import net.corda.core.utilities.ProgressTracker
 @InitiatingFlow(version = 2)
 open class SelfIssueMembershipFlow(val metaData : Any) : FlowLogic<SignedTransaction>() {
     companion object {
-        object IssuingMembership : ProgressTracker.Step("Issuing Membership")
+        object RequestingMembership : ProgressTracker.Step("Requesting Membership")
+        object ActivatingMembership : ProgressTracker.Step("Activating Membership")
 
         fun tracker() = ProgressTracker(
-                IssuingMembership
+                RequestingMembership,
+                ActivatingMembership
         )
     }
 
@@ -31,23 +34,40 @@ open class SelfIssueMembershipFlow(val metaData : Any) : FlowLogic<SignedTransac
     @Suspendable
     override fun call(): SignedTransaction {
         throwExceptionIfNotBNO(ourIdentity, serviceHub)
-        progressTracker.currentStep = IssuingMembership
 
         val config = serviceHub.cordaService(BNOConfigurationService::class.java)
         val notary = config.notaryParty()
-        val membershipState = MembershipState(this.ourIdentity, this.ourIdentity, metaData, status = MembershipStatus.ACTIVE)
-        val requestCommand = Command(MembershipContract.Commands.Request(), ourIdentity.owningKey)
-        val activateCommand = Command(MembershipContract.Commands.Activate(), ourIdentity.owningKey)
+        val pendingState = MembershipState(this.ourIdentity, this.ourIdentity, metaData, status = MembershipStatus.PENDING)
 
-        val txBuilder = TransactionBuilder(notary).withItems()
-                .addOutputState(membershipState, MembershipContract.CONTRACT_NAME)
-                .addCommand(requestCommand)
-                .addCommand(activateCommand)
+        // Request Membership
 
-        txBuilder.verify(serviceHub)
-        val tx = serviceHub.signInitialTransaction(txBuilder)
+        progressTracker.currentStep = RequestingMembership
 
-        return subFlow(FinalityFlow(tx, emptyList()))
+        val requestTxBuilder = TransactionBuilder(notary).withItems()
+                .addOutputState(pendingState, MembershipContract.CONTRACT_NAME)
+                .addCommand(Command(MembershipContract.Commands.Request(), ourIdentity.owningKey))
+
+        requestTxBuilder.verify(serviceHub)
+
+        val requestTx = serviceHub.signInitialTransaction(requestTxBuilder)
+        val f1 = subFlow(FinalityFlow(requestTx, emptyList()))
+        val requestState = f1.tx.outRef<MembershipState<Any>>(0)
+
+        // Activate Membership
+
+        progressTracker.currentStep = ActivatingMembership
+
+        val activateTxBuilder = TransactionBuilder(notary).withItems()
+                .addInputState(requestState)
+                .addOutputState(requestState.state.data.copy(status = MembershipStatus.ACTIVE, modified = Instant.now()),
+                        MembershipContract.CONTRACT_NAME)
+                .addCommand(Command(MembershipContract.Commands.Activate(), ourIdentity.owningKey))
+
+        activateTxBuilder.verify(serviceHub)
+
+        val activateTx = serviceHub.signInitialTransaction(activateTxBuilder)
+
+        return subFlow(FinalityFlow(activateTx, emptyList()))
     }
 }
 
