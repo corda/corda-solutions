@@ -2,6 +2,9 @@ package com.r3.businessnetworks.membership.flows.bno
 
 import co.paralleluniverse.fibers.Suspendable
 import com.r3.businessnetworks.membership.flows.bno.service.BNOConfigurationService
+import com.r3.businessnetworks.membership.flows.bno.service.DatabaseService
+import com.r3.businessnetworks.membership.flows.getAttachmentIdForGenericParam
+import com.r3.businessnetworks.membership.flows.isAttachmentRequired
 import com.r3.businessnetworks.membership.flows.member.Utils.throwExceptionIfNotBNO
 import com.r3.businessnetworks.membership.states.MembershipContract
 import com.r3.businessnetworks.membership.states.MembershipState
@@ -38,6 +41,12 @@ open class SelfIssueMembershipFlow(val metaData : Any) : FlowLogic<SignedTransac
         val config = serviceHub.cordaService(BNOConfigurationService::class.java)
         val notary = config.notaryParty()
         val pendingState = MembershipState(this.ourIdentity, this.ourIdentity, metaData, status = MembershipStatus.PENDING)
+        val databaseService = serviceHub.cordaService(DatabaseService::class.java)
+
+        val bnoMember = databaseService.getMembership(ourIdentity, ourIdentity)
+        if (bnoMember != null) {
+            throw FlowException("Membership already exists")
+        }
 
         // Request Membership
 
@@ -49,6 +58,9 @@ open class SelfIssueMembershipFlow(val metaData : Any) : FlowLogic<SignedTransac
 
         requestTxBuilder.verify(serviceHub)
 
+        if (pendingState.isAttachmentRequired())
+            requestTxBuilder.addAttachment(pendingState.getAttachmentIdForGenericParam())
+
         val requestTx = serviceHub.signInitialTransaction(requestTxBuilder)
         val f1 = subFlow(FinalityFlow(requestTx, emptyList()))
         val requestState = f1.tx.outRef<MembershipState<Any>>(0)
@@ -57,11 +69,16 @@ open class SelfIssueMembershipFlow(val metaData : Any) : FlowLogic<SignedTransac
 
         progressTracker.currentStep = ActivatingMembership
 
+        val activateState = requestState.state.data.copy(status = MembershipStatus.ACTIVE, modified = Instant.now())
+
         val activateTxBuilder = TransactionBuilder(notary).withItems()
                 .addInputState(requestState)
-                .addOutputState(requestState.state.data.copy(status = MembershipStatus.ACTIVE, modified = Instant.now()),
+                .addOutputState(activateState,
                         MembershipContract.CONTRACT_NAME)
                 .addCommand(Command(MembershipContract.Commands.Activate(), ourIdentity.owningKey))
+
+        if (activateState.isAttachmentRequired())
+            activateTxBuilder.addAttachment(pendingState.getAttachmentIdForGenericParam())
 
         activateTxBuilder.verify(serviceHub)
 
