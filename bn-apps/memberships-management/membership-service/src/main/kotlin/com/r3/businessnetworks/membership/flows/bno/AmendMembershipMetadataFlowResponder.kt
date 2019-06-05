@@ -5,6 +5,7 @@ import com.r3.businessnetworks.membership.flows.bno.service.BNOConfigurationServ
 import com.r3.businessnetworks.membership.flows.bno.service.DatabaseService
 import com.r3.businessnetworks.membership.flows.bno.support.BusinessNetworkOperatorInitiatedFlow
 import com.r3.businessnetworks.membership.flows.getAttachmentIdForGenericParam
+import com.r3.businessnetworks.membership.flows.isAttachmentRequired
 import com.r3.businessnetworks.membership.flows.member.AmendMembershipMetadataFlow
 import com.r3.businessnetworks.membership.flows.member.AmendMembershipMetadataRequest
 import com.r3.businessnetworks.membership.states.MembershipContract
@@ -42,7 +43,9 @@ open class AmendMembershipMetadataFlowResponder(flowSession: FlowSession) : Busi
             .addInputState(counterpartyMembership)
             .addOutputState(newMembership, MembershipContract.CONTRACT_NAME)
             .addCommand(MembershipContract.Commands.Amend(), flowSession.counterparty.owningKey, ourIdentity.owningKey)
-            .addAttachment(counterpartyMembership.getAttachmentIdForGenericParam())
+
+        if (counterpartyMembership.isAttachmentRequired())
+            builder.addAttachment(counterpartyMembership.getAttachmentIdForGenericParam())
 
         verifyTransaction(builder)
 

@@ -5,6 +5,7 @@ import com.r3.businessnetworks.membership.flows.bno.service.BNOConfigurationServ
 import com.r3.businessnetworks.membership.flows.bno.service.DatabaseService
 import com.r3.businessnetworks.membership.flows.bno.support.BusinessNetworkOperatorFlowLogic
 import com.r3.businessnetworks.membership.flows.getAttachmentIdForGenericParam
+import com.r3.businessnetworks.membership.flows.isAttachmentRequired
 import com.r3.businessnetworks.membership.states.MembershipContract
 import com.r3.businessnetworks.membership.states.MembershipState
 import com.r3.businessnetworks.membership.states.MembershipStatus
@@ -37,7 +38,9 @@ open class SuspendMembershipFlow(val membership: StateAndRef<MembershipState<Any
             .addInputState(membership)
             .addOutputState(membership.state.data.copy(status = MembershipStatus.SUSPENDED, modified = serviceHub.clock.instant()))
             .addCommand(MembershipContract.Commands.Suspend(), ourIdentity.owningKey)
-            .addAttachment(membership.getAttachmentIdForGenericParam())
+
+        if (membership.isAttachmentRequired()) builder.addAttachment(membership.getAttachmentIdForGenericParam())
+
         builder.verify(serviceHub)
         val selfSignedTx = serviceHub.signInitialTransaction(builder)
 

@@ -5,6 +5,7 @@ import com.r3.businessnetworks.membership.flows.bno.service.BNOConfigurationServ
 import com.r3.businessnetworks.membership.flows.bno.service.DatabaseService
 import com.r3.businessnetworks.membership.flows.bno.support.BusinessNetworkOperatorFlowLogic
 import com.r3.businessnetworks.membership.flows.getAttachmentIdForGenericParam
+import com.r3.businessnetworks.membership.flows.isAttachmentRequired
 import com.r3.businessnetworks.membership.flows.member.OnBoardingRequest
 import com.r3.businessnetworks.membership.flows.member.RequestMembershipFlow
 import com.r3.businessnetworks.membership.states.MembershipContract
@@ -58,7 +59,9 @@ open class RequestMembershipFlowResponder(val session: FlowSession) : BusinessNe
             val builder = TransactionBuilder(notary)
                 .addOutputState(membership, MembershipContract.CONTRACT_NAME)
                 .addCommand(MembershipContract.Commands.Request(), counterparty.owningKey, ourIdentity.owningKey)
-                .addAttachment(membership.getAttachmentIdForGenericParam())
+
+            if (membership.isAttachmentRequired())
+                builder.addAttachment(membership.getAttachmentIdForGenericParam())
 
             verifyTransaction(builder)
 
