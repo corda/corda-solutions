@@ -83,8 +83,12 @@ open class SelfIssueMembershipFlow(val metaData : Any) : FlowLogic<SignedTransac
         activateTxBuilder.verify(serviceHub)
 
         val activateTx = serviceHub.signInitialTransaction(activateTxBuilder)
+        val stx = subFlow(FinalityFlow(activateTx, emptyList()))
 
-        return subFlow(FinalityFlow(activateTx, emptyList()))
+        val activatedMembership = databaseService.getMembership(ourIdentity, ourIdentity)!!
+        subFlow(NotifyActiveMembersFlow(OnMembershipChanged(activatedMembership)))
+
+        return stx
     }
 }
 

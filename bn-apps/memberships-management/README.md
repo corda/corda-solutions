@@ -73,6 +73,7 @@ Flows that can be invoked by members:
 Flows that can be invoked by BNO: 
 * `ActivateMembershipFlow` - to activate a `PENDING` membership.
 * `SuspendMembershipFlow` - to suspend an `ACTIVE` membership.
+* `SelfIssueMembershipFlow` - to self issue a membership to the BNO.
 
 Activation and suspension transactions don't require the member's signature. BNO is eligible to suspend memberships unilaterally, for example as a result of a governance action.  
 
