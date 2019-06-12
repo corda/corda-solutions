@@ -14,6 +14,7 @@ import net.corda.core.identity.Party
 import net.corda.core.serialization.CordaSerializable
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.utilities.ProgressTracker
+import net.corda.core.utilities.unwrap
 
 @CordaSerializable
 data class OnBoardingRequest(val metadata : Any)
@@ -65,12 +66,16 @@ open class RequestMembershipFlow(bno : Party, private val membershipMetadata : A
         }
         progressTracker.currentStep = ACCEPTING_INCOMING_PENDING_MEMBERSHIP
 
-        val selfSignedTx = subFlow(signResponder)
+        if (ourIdentity != bno) {
+            val selfSignedTx = subFlow(signResponder)
 
-        return if (bnoSession.getCounterpartyFlowInfo().flowVersion == 1) {
-            selfSignedTx
+            return if (bnoSession.getCounterpartyFlowInfo().flowVersion != 1) {
+                subFlow(ReceiveFinalityFlow(bnoSession, selfSignedTx.id))
+            } else {
+                selfSignedTx
+            }
         } else {
-            subFlow(ReceiveFinalityFlow(bnoSession, selfSignedTx.id))
+            return bnoSession.receive<SignedTransaction>().unwrap { it }
         }
     }
 }

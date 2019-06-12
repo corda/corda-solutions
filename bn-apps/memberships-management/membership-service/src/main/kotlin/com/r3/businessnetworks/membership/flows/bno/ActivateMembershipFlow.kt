@@ -51,7 +51,10 @@ open class ActivateMembershipFlow(val membership: StateAndRef<MembershipState<An
         val stx = if (memberSession.getCounterpartyFlowInfo().flowVersion == 1) {
             subFlow(FinalityFlow(selfSignedTx))
         } else {
-            subFlow(FinalityFlow(selfSignedTx, listOf(memberSession)))
+            if (membership.state.data.bno == membership.state.data.member)
+                subFlow(FinalityFlow(selfSignedTx, listOf()))
+            else
+                subFlow(FinalityFlow(selfSignedTx, listOf(memberSession)))
         }
 
         // We should notify members about changes with the ACTIVATED membership

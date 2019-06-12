@@ -33,9 +33,6 @@ class SelfIssueMembershipFlowTest : AbstractFlowTest(numberOfBusinessNetworks = 
         assert(outputMembership.bno == bnoNode.identity())
         assert(outputMembership.member == bnoNode.identity())
         stx.verifyRequiredSignatures()
-
-        // no notifications should be sent at this point
-        assertTrue(NotificationsCounterFlow.NOTIFICATIONS.isEmpty())
     }
 
     @Test

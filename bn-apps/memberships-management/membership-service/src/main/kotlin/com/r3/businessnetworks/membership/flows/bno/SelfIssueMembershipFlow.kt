@@ -5,6 +5,7 @@ import com.r3.businessnetworks.membership.flows.bno.service.BNOConfigurationServ
 import com.r3.businessnetworks.membership.flows.bno.service.DatabaseService
 import com.r3.businessnetworks.membership.flows.getAttachmentIdForGenericParam
 import com.r3.businessnetworks.membership.flows.isAttachmentRequired
+import com.r3.businessnetworks.membership.flows.member.RequestMembershipFlow
 import com.r3.businessnetworks.membership.flows.member.Utils.throwExceptionIfNotBNO
 import com.r3.businessnetworks.membership.states.MembershipContract
 import com.r3.businessnetworks.membership.states.MembershipState
@@ -35,56 +36,26 @@ open class SelfIssueMembershipFlow(val metaData : Any) : FlowLogic<SignedTransac
     override val progressTracker = tracker()
 
     @Suspendable
-    override fun call(): SignedTransaction {
+    override fun call() : SignedTransaction {
         throwExceptionIfNotBNO(ourIdentity, serviceHub)
 
-        val config = serviceHub.cordaService(BNOConfigurationService::class.java)
-        val notary = config.notaryParty()
-        val pendingState = MembershipState(this.ourIdentity, this.ourIdentity, metaData, status = MembershipStatus.PENDING)
-        val databaseService = serviceHub.cordaService(DatabaseService::class.java)
-
-        val bnoMember = databaseService.getMembership(ourIdentity, ourIdentity)
-        if (bnoMember != null) {
-            throw FlowException("Membership already exists")
-        }
-
-        // Request Membership
-
         progressTracker.currentStep = RequestingMembership
+        val stx = subFlow(RequestMembershipFlow(ourIdentity, metaData))
 
-        val requestTxBuilder = TransactionBuilder(notary).withItems()
-                .addOutputState(pendingState, MembershipContract.CONTRACT_NAME)
-                .addCommand(Command(MembershipContract.Commands.Request(), ourIdentity.owningKey))
+        val outState = stx.tx.outputs.single()
+        val membershipState = outState.data as MembershipState<*>
 
-        requestTxBuilder.verify(serviceHub)
+        // If auto activate is set then don't need to call ActivateMembership
+        return if (!membershipState.isActive()) {
+            logger.info("Membership is not yet active")
+            progressTracker.currentStep = ActivatingMembership
+            val output = stx.tx.outRefsOfType(MembershipState::class.java).single()
 
-        if (pendingState.isAttachmentRequired())
-            requestTxBuilder.addAttachment(pendingState.getAttachmentIdForGenericParam())
-
-        val requestTx = serviceHub.signInitialTransaction(requestTxBuilder)
-        val f1 = subFlow(FinalityFlow(requestTx, emptyList()))
-        val requestState = f1.tx.outRef<MembershipState<Any>>(0)
-
-        // Activate Membership
-
-        progressTracker.currentStep = ActivatingMembership
-
-        val activateState = requestState.state.data.copy(status = MembershipStatus.ACTIVE, modified = Instant.now())
-
-        val activateTxBuilder = TransactionBuilder(notary).withItems()
-                .addInputState(requestState)
-                .addOutputState(activateState,
-                        MembershipContract.CONTRACT_NAME)
-                .addCommand(Command(MembershipContract.Commands.Activate(), ourIdentity.owningKey))
-
-        if (activateState.isAttachmentRequired())
-            activateTxBuilder.addAttachment(pendingState.getAttachmentIdForGenericParam())
-
-        activateTxBuilder.verify(serviceHub)
-
-        val activateTx = serviceHub.signInitialTransaction(activateTxBuilder)
-
-        return subFlow(FinalityFlow(activateTx, emptyList()))
+            subFlow(ActivateMembershipFlow(output))
+        } else {
+            logger.info("Membership was automatically activated")
+            stx
+        }
     }
 }
 
