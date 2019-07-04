@@ -6,6 +6,7 @@ Receipts Pattern
 :Status: Ready for review
 :Implemented: No (abstract/ foundational Pattern)
 
+
 -------
 Summary
 -------
