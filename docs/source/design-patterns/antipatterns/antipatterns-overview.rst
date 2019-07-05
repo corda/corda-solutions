@@ -6,9 +6,9 @@ CorDapp Anti-Patterns
 
 There a some designs for CorDapps which have been found to have sub-optimal results.
 
-The Antipatterns Library is intended to be a used by CorDapps designers and developers to help them not fall into known traps.
+The Anti-patterns Library is intended to be a used by CorDapps designers and developers to help them not fall into known traps. It will be added to as more Anti-patterns are identified
 
-Antipatterns:
+Anti-patterns:
 
 .. toctree::
    :maxdepth: 1
