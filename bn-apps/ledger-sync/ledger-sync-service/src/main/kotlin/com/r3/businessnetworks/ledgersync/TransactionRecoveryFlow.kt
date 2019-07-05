@@ -11,6 +11,7 @@ import net.corda.core.flows.SendTransactionFlow
 import net.corda.core.flows.StartableByRPC
 import net.corda.core.identity.Party
 import net.corda.core.node.StatesToRecord.ALL_VISIBLE
+import net.corda.core.utilities.ProgressTracker
 import net.corda.core.utilities.unwrap
 
 /**
@@ -21,6 +22,8 @@ import net.corda.core.utilities.unwrap
 class TransactionRecoveryFlow(
         private val report: Map<Party, LedgerSyncFindings>
 ) : FlowLogic<Unit>() {
+
+    override val progressTracker: ProgressTracker = ProgressTracker()
 
     @Suspendable
     override fun call() {

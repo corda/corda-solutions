@@ -55,7 +55,7 @@ class RequestMembershipFlowTest : AbstractFlowTest(numberOfBusinessNetworks = 2,
     }
 
     @Test
-    fun `membership request should fail if another membership request form the same member is already in progress`() {
+    fun `membership request should fail if another membership request from the same member is already in progress`() {
         val bnoNode = bnoNodes.first()
         val participantNode = participantsNodes.first()
         val databaseService = bnoNode.services.cordaService(DatabaseService::class.java)

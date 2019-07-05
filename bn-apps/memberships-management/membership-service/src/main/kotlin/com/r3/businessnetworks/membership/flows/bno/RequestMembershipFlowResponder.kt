@@ -5,6 +5,7 @@ import com.r3.businessnetworks.membership.flows.bno.service.BNOConfigurationServ
 import com.r3.businessnetworks.membership.flows.bno.service.DatabaseService
 import com.r3.businessnetworks.membership.flows.bno.support.BusinessNetworkOperatorFlowLogic
 import com.r3.businessnetworks.membership.flows.getAttachmentIdForGenericParam
+import com.r3.businessnetworks.membership.flows.isAttachmentRequired
 import com.r3.businessnetworks.membership.flows.member.OnBoardingRequest
 import com.r3.businessnetworks.membership.flows.member.RequestMembershipFlow
 import com.r3.businessnetworks.membership.states.MembershipContract
@@ -58,17 +59,35 @@ open class RequestMembershipFlowResponder(val session: FlowSession) : BusinessNe
             val builder = TransactionBuilder(notary)
                 .addOutputState(membership, MembershipContract.CONTRACT_NAME)
                 .addCommand(MembershipContract.Commands.Request(), counterparty.owningKey, ourIdentity.owningKey)
-                .addAttachment(membership.getAttachmentIdForGenericParam())
+
+            if (membership.isAttachmentRequired())
+                builder.addAttachment(membership.getAttachmentIdForGenericParam())
 
             verifyTransaction(builder)
 
             val selfSignedTx = serviceHub.signInitialTransaction(builder)
-            val allSignedTx = subFlow(CollectSignaturesFlow(selfSignedTx, listOf(session)))
+            val allSignedTx = if (membership.bno != membership.member)
+                subFlow(CollectSignaturesFlow(selfSignedTx, listOf(session)))
+            else
+                selfSignedTx
 
             if (session.getCounterpartyFlowInfo().flowVersion == 1) {
                 subFlow(FinalityFlow(allSignedTx))
             } else {
-                subFlow(FinalityFlow(allSignedTx, listOf(session)))
+                if (membership.bno == membership.member) {
+                    subFlow(FinalityFlow(allSignedTx, listOf()))
+                } else {
+                    subFlow(FinalityFlow(allSignedTx, listOf(session)))
+                }
+            }
+
+            if (activateRightAway(membership, configuration)) {
+                logger.info("Auto-activating membership for party ${membership.member}")
+                val stateToActivate = findMembershipStateForParty(membership.member)
+                val tx = subFlow(ActivateMembershipFlow(stateToActivate))
+                if (membership.bno == membership.member) session.send(tx)
+            } else if (membership.bno == membership.member) {
+                session.send(allSignedTx)
             }
         } finally {
             try {
@@ -77,12 +96,6 @@ open class RequestMembershipFlowResponder(val session: FlowSession) : BusinessNe
             } catch (e: PersistenceException) {
                 logger.warn("Error when trying to delete pending membership request", e)
             }
-        }
-
-        if (activateRightAway(membership, configuration)) {
-            logger.info("Auto-activating membership for party ${membership.member}")
-            val stateToActivate = findMembershipStateForParty(membership.member)
-            subFlow(ActivateMembershipFlow(stateToActivate))
         }
     }
 

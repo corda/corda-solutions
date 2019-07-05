@@ -14,3 +14,13 @@ fun MembershipState<Any>.getAttachmentIdForGenericParam(): SecureHash {
     val bytesOfCordapp = this.membershipMetadata.javaClass.location.readBytes()
     return bytesOfCordapp.sha256()
 }
+
+fun StateAndRef<MembershipState<Any>>.isAttachmentRequired(): Boolean {
+    return this.state.data.isAttachmentRequired()
+}
+
+fun MembershipState<Any>.isAttachmentRequired(): Boolean {
+    return this.membershipMetadata.javaClass.protectionDomain.codeSource != null
+}
+
+

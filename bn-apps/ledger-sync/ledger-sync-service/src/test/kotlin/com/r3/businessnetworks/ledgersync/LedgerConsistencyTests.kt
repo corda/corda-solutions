@@ -158,6 +158,37 @@ class LedgerConsistencyTests {
         assertEquals(6, node1.fromNetwork().bogusStateCount())
     }
 
+    @Test
+    fun `transactions are recovered by LedgerSyncAndRecoveryFlow from every node when members list is empty`() {
+        node1.fromNetwork().createTransactions(3)
+
+        assertEquals(6, node1.fromNetwork().bogusStateCount())
+
+        node1.fromNetwork().simulateCatastrophicFailure()
+
+        assertEquals(0, node1.fromNetwork().bogusStateCount())
+
+        node1.fromNetwork().runLedgerSyncAndRecoveryFlow(null)
+
+        assertEquals(6, node1.fromNetwork().bogusStateCount())
+    }
+
+    @Test
+    fun `transactions are recovered by LedgerSyncAndRecoveryFlow when passing only Bank2 node in members list`() {
+        node1.fromNetwork().createTransactions(3)
+
+        assertEquals(6, node1.fromNetwork().bogusStateCount())
+
+        node1.fromNetwork().simulateCatastrophicFailure()
+
+        assertEquals(0, node1.fromNetwork().bogusStateCount())
+
+        node1.fromNetwork().runLedgerSyncAndRecoveryFlow(listOf(node2.fromNetwork().identity()))
+
+        // We only expect 3 states to be recovered from Bank2
+        assertEquals(3, node1.fromNetwork().bogusStateCount())
+    }
+
     private fun TestStartedNode.runRequestLedgerSyncFlow(members: List<Party>): Map<Party, LedgerSyncFindings> {
         val future = services.startFlow(RequestLedgersSyncFlow(members)).resultFuture
         mockNetwork.runNetwork()
@@ -174,6 +205,12 @@ class LedgerConsistencyTests {
         val future = services.startFlow(EvaluateLedgerConsistencyFlow(members)).resultFuture
         mockNetwork.runNetwork()
         return future.getOrThrow()
+    }
+
+    private fun TestStartedNode.runLedgerSyncAndRecoveryFlow(members: List<Party>?) {
+        val future = services.startFlow(LedgerSyncAndRecoveryFlow(members)).resultFuture
+        mockNetwork.runNetwork()
+        future.getOrThrow()
     }
 
     private fun TestStartedNode.regularNodes(): List<Party> = listOf(node1, node2, node3).map {

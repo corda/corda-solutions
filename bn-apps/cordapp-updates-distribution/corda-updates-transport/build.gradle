@@ -43,6 +43,7 @@ dependencies {
     compile("org.apache.maven:maven-resolver-provider:3.5.4") {
         exclude group: "org.apache.maven.resolver", module: "*"
     }
+    compile project(":bn-apps:businessnetworks-utilities")
     // corda dependencies
     cordaCompile "$corda_release_group:corda-core:$corda_release_version"
     cordaCompile "$corda_release_group:corda-node-api:$corda_release_version"
