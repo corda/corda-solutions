@@ -8,9 +8,6 @@ For example purposes only the steps for setting up a Load Balancer in Azure are 
 
 1. In portal.azure.com choose Load Balancers from the left hand side menu. 
 
-.. image:: ./resources/lbmenu.png
-   :scale: 10%
-
 2. Choose Add and fill out required fields as follows:
 
 - Subscription : choose your portal.azure.com default subscription
@@ -25,7 +22,6 @@ For example purposes only the steps for setting up a Load Balancer in Azure are 
 
 3. Assign Tags as needed and create the Load Balancer.
 
-
 4. Once the Load Balancer is created you need to click on it and then add a Back End Pool (or equivalent) for the 2 VM's you created. 
 
 - Name : corda-backend-pool (suggested name)
@@ -35,20 +31,22 @@ For example purposes only the steps for setting up a Load Balancer in Azure are 
 - Target Virtual Machine : Corda-Backup
 - Network IP Configuration : Choose the default associated with Corda-Backup
 
-5. Once the Back End Pool is created you need to create Load Balancing Rules which are associated to the 2 VM's on the corda-backend-pool that you have created. Load Balancing Rules direct incoming requests from P2P peers and RPC clients on to the Primary VM and if needed Backup VM (during failover) 
+5. Once the Back End Pool is created you need to create Load Balancing Rules which are associated to the 2 VM's on the corda-backend-pool that you have created. 
+
+Load Balancing Rules direct incoming requests from P2P peers and RPC clients on to the Primary VM and if needed Backup VM (during failover) 
 
 In the example below 2 rules have been created based on a node.conf entry for P2P Port 10010 and RPC Port 10005
 
 
 .. image:: ./resources/lbrules.png
-   :scale: 50%
+   :scale: 20%
 
 
 6. The next step is to create Health Probes which will monitor the ports specified to ensure the P2P and RPC Corda services are up and listening on their respective ports. An example of a P2P probe is provided below. Both P2P and RPC Probe Ports must match those created for Load Balancer Rules. 
 
 
 .. image:: ./resources/p2probe.png
-   :scale: 50%
+   :scale: 20%
 
 
 Once the above steps have been completed you can select you Load Balancer and ensure you see the following:
