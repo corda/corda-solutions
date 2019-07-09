@@ -1,4 +1,4 @@
-Cloud Deployment
+HA Deployment
 ================
 
 These are guidelines for deploying Corda Enterprise and the Corda Enterprise Firewall for use in the Corda Network from a Cloud deployment perspective. 
@@ -7,14 +7,9 @@ These are guidelines for deploying Corda Enterprise and the Corda Enterprise Fir
 .. toctree::
    :maxdepth: 1
 
-   azure-deploy-overview
-   azure-vm-deployment
-   azure-lb-deployment
-   azure-nfs-deployment
-   azure-corda-ha-deployment
-   aws-deploy-overview
-   aws-vm-deployment
-   aws-lb-deployment
-   aws-nfs-deployment
-   aws-corda-ha-deployment
+   deploy-overview
+   vm-deployment
+   lb-deployment
+   nfs-deployment
+   corda-ha-deployment
 
