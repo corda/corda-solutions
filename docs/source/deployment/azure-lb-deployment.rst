@@ -9,7 +9,7 @@ For example purposes only the steps for setting up a Load Balancer in Azure are 
 1. In portal.azure.com choose Load Balancers from the left hand side menu. 
 
 .. image:: ./resources/lbmenu.png
-   :scale: 20%
+   :scale: 10%
 
 2. Choose Add and fill out required fields as follows:
 
