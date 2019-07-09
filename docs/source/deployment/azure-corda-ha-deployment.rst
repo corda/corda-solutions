@@ -4,7 +4,7 @@ Corda HA Deployment
 In this section we will go thru the steps to ensure Corda Enterprise is deployed in HA configuration. The following steps need to be completed. 
 
 1. Corda Enterprise Deployment on Primary VM.
-#. Corda Artemis Message Queue on Azure Fileshare.
+#. Corda Artemis Message Queue on Fileshare (shared file system between VM's).
 #. Corda Configuration File Load Balancer setup. 
 #. Corda Enterprise Deployment on Backup VM.
 #. Corda Enterprise on VM Startup.
