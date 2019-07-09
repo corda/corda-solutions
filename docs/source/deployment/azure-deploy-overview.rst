@@ -1,4 +1,4 @@
-Azure HA Deployment Overview
+HA Deployment Overview
 ============================
 
 This guide is designed to provide detail on how to deploy Corda Enterprise in a HA environment.
