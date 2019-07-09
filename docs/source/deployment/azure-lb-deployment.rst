@@ -1,8 +1,10 @@
-Azure Load Balancer
-===================
+Load Balancer
+=============
 
 
-The purpose of a Load Balancer is to present a single IP address or DNS name to RPC Clients and P2P Peer Corda Nodes. The steps for setting up a Load Balancer in Azure are as follows:
+The purpose of a Load Balancer is to present a single IP address or DNS name to RPC Clients and P2P Peer Corda Nodes. 
+
+For example purposes only the steps for setting up a Load Balancer in Azure are outlined:
 
 1. In portal.azure.com choose Load Balancers from the left hand side menu. 
 
@@ -24,7 +26,7 @@ The purpose of a Load Balancer is to present a single IP address or DNS name to 
 3. Assign Tags as needed and create the Load Balancer.
 
 
-4. Once the Load Balancer is created you need to click on it and then add a Back End Pool for the 2 VM's you created. 
+4. Once the Load Balancer is created you need to click on it and then add a Back End Pool (or equivalent) for the 2 VM's you created. 
 
 - Name : corda-backend-pool (suggested name)
 - Associated To : corda-avail-set will appear as a default option
