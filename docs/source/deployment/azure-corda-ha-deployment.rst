@@ -1,5 +1,5 @@
-Azure Corda HA Deployment
-=========================
+Corda HA Deployment
+===================
 
 In this section we will go thru the steps to ensure Corda Enterprise is deployed in HA configuration. The following steps need to be completed. 
 
@@ -38,12 +38,12 @@ The node.conf needs to be configured such that the VM Load Balancer DNS and Port
 Corda Artemis Message Queue on Fileshare
 ----------------------------------------
 
-As we learned in the previous section on NFS setup, when the Azure File Share is deployed on Primary and Backup you will see entries similar to those below on *both* VM's. 
+As we learned in the previous section on NFS setup, when the File Share is deployed on Primary and Backup you will see entries similar to those below on *both* VM's. 
 
 .. image:: ./resources/smb.png
    :scale: 50%
 
-At this point we need to move the /opt/corda/artemis directory to the Azure File Share. The local mountpoint in our scenario is /mnt/cordastorage. Once this is done we will create a softlink back to the /opt/corda directory. 
+At this point we need to move the /opt/corda/artemis directory to the File Share. The local mountpoint in our scenario is /mnt/cordastorage. Once this is done we will create a softlink back to the /opt/corda directory. 
 
 .. parsed-literal::
     > sudo mkdir /mnt/cordastorage
@@ -113,12 +113,12 @@ You can now start/stop/check status of Corda JVM as follows
     > sudo systemctl stop corda
     > sudo systemctl status corda
 
-Azure Fileshare on VM Startup
------------------------------
+Fileshare on VM Startup
+-----------------------
 
-It is critical that the Azure Fileshare on which /opt/corda/artemis resides is available prior to Corda starting on the VM. 
+It is critical that the Fileshare on which /opt/corda/artemis resides is available prior to Corda starting on the VM. 
 
-Azure Fileshare  can be configured to start automatically whenever the VM starts as by creating a system service as follows:
+Fileshare can be configured to start automatically whenever the VM starts as by creating a system service as follows:
 
 .. parsed-literal::
     > sudo vi /etc/systemd/system/fileshare.service 
