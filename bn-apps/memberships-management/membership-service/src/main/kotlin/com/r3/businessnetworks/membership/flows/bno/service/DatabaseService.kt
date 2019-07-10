@@ -14,15 +14,12 @@ import net.corda.core.node.services.vault.builder
 import net.corda.core.schemas.MappedSchema
 import net.corda.core.serialization.SingletonSerializeAsToken
 import java.io.Serializable
-import javax.persistence.Column
-import javax.persistence.Entity
-import javax.persistence.GeneratedValue
-import javax.persistence.GenerationType
-import javax.persistence.Id
-import javax.persistence.Table
+import javax.persistence.*
 
 class PendingMembershipRequestSchema
-class PendingMembershipRequestSchemaV1 internal constructor() : MappedSchema(PendingMembershipRequestSchema::class.java, 1, ImmutableList.of(PersistentPendingMembershipRequest::class.java))
+class PendingMembershipRequestSchemaV1 internal constructor() : MappedSchema(PendingMembershipRequestSchema::class.java, 1, ImmutableList.of(PersistentPendingMembershipRequest::class.java)) {
+    override val migrationResource = "pending-membership-request.changelog-master"
+}
 
 @Entity(name = "PersistentPendingMembershipRequest")
 @Table(name = "pending_membership_requests")

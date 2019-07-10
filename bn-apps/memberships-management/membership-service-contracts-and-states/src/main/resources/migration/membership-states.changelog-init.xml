@@ -3,6 +3,11 @@
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
 
-    <include file="migration/billing.changelog-init.xml"/>
-    <include file="migration/billing.changelog-v2.xml"/>
+    <changeSet author="R3 Corda" id="initial script for membership states">
+        <createTable tableName="membership_states">
+            <column name="member_name" type="NVARCHAR(255)"/>
+            <column name="bno_name" type="NVARCHAR(255)"/>
+            <column name="status" type="INT"/>
+        </createTable>
+    </changeSet>
 </databaseChangeLog>

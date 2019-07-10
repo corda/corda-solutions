@@ -19,5 +19,7 @@ object MembershipStateSchemaV1 : MappedSchema(schemaFamily = MembershipState::cl
             var bno: Party,
             @Column(name = "status")
             var status: MembershipStatus) : PersistentState()
+
+    override val migrationResource = "membership-states.changelog-master"
 }
 
