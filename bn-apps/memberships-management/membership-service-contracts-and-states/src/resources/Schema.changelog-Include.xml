@@ -1,3 +1,3 @@
 <databaseChangeLog>
-    <include file="migration/membership_states.changelog-createTable.xml"/>
+    <include file="migration/Schema.changelog-createTable.xml"/>
 </databaseChangeLog>
