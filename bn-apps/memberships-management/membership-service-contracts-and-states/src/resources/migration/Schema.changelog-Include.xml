@@ -1,0 +1,4 @@
+<databaseChangeLog>
+    <include file="Schema.changelog-createTable.xml"/>
+    <include file="Schema.changelog-PendingMembershipRequestSchemaV1.xml"/>
+</databaseChangeLog>

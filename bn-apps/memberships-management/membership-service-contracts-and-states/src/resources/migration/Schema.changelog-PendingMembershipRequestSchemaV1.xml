@@ -1,0 +1,11 @@
+<changeSet author="R3 Corda" id="initial script for billing_states">
+    <createTable tableName="PersistentPendingMembershipRequest">
+        <column name="id" type="INT">
+            <constraints nullable="false"/>
+        </column>
+        <column name="pending_member" type="NVARCHAR(255)">
+            <constraints unique="true"/>
+            <constraints nullable="false"/>
+        </column>
+    </createTable>
+</changeSet>
