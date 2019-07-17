@@ -1,5 +1,5 @@
 <changeSet author="R3 Corda" id=" create PersistentPendingMembershipRequest table">
-    <createTable tableName="PersistentPendingMembershipRequest">
+    <createTable tableName="pending_membership_requests">
         <column name="id" type="INT">
             <constraints nullable="false"/>
         </column>
