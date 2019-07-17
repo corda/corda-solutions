@@ -1,4 +1,4 @@
-<changeSet author="R3 Corda" id="initial script for billing_states">
+<changeSet author="R3 Corda" id=" create PersistentPendingMembershipRequest table">
     <createTable tableName="PersistentPendingMembershipRequest">
         <column name="id" type="INT">
             <constraints nullable="false"/>
