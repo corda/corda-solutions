@@ -1,4 +1,4 @@
-<changeSet author="R3 Corda" id=" create PersistentPendingMembershipRequest table">
+<changeSet author="R3 Corda" id=" PendingMembershipRequestSchemaV1">
     <createTable tableName="pending_membership_requests">
         <column name="id" type="INT" autoIncrement="true">
             <constraints nullable="false"/>
