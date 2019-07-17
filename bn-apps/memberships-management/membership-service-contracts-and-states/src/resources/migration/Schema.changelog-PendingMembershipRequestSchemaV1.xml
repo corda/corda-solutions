@@ -4,8 +4,7 @@
             <constraints nullable="false"/>
         </column>
         <column name="pending_member" type="NVARCHAR(255)">
-            <constraints unique="true"/>
-            <constraints nullable="false"/>
+            <constraints unique="true" nullable="false"/>
         </column>
     </createTable>
 </changeSet>
