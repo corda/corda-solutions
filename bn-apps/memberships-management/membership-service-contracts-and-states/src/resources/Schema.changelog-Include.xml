@@ -1,4 +1,4 @@
 <databaseChangeLog>
     <include file="migration/Schema.changelog-createTable.xml"/>
-    <include file="migration/Schema.changelog-test.xml"/>
+    //<include file="migration/Schema.changelog-test.xml"/>
 </databaseChangeLog>
