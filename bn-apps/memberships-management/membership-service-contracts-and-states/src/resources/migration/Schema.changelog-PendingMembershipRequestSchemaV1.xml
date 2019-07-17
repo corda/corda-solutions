@@ -1,6 +1,6 @@
 <changeSet author="R3 Corda" id=" create PersistentPendingMembershipRequest table">
     <createTable tableName="pending_membership_requests">
-        <column name="id" type="INT">
+        <column name="id" type="INT" autoIncrement="true">
             <constraints nullable="false"/>
         </column>
         <column name="pending_member" type="NVARCHAR(255)">
