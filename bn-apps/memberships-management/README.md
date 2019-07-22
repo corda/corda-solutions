@@ -88,13 +88,13 @@ CorDapp configuration is red from `cordapps/config/membership-service.conf` file
 ### Member configuration
 
 ```hocon
-// whitelist of accpted BNOs. Attempt to communicate to not whitelisted BNO would result into an exception
+// Whitelist of accepted BNOs. Attempt to communicate to not whitelisted BNO would result into an exception
 bnoWhitelist = ["O=BNO,L=New York,C=US", "O=BNO,L=London,C=GB"]
 ``` 
 
 ### BNO configuration
 ```hocon
-// Name of the Notary
+// Name of the notary to use for BNO transactions such as membership approval
 notaryName = "O=Notary,L=Longon,C=GB"
 ```
 ## Designing your flows for Business Networks
