@@ -46,41 +46,34 @@ open class SelfIssueMembershipFlow(val bnoMembership: StateAndRef<MembershipStat
     override fun call(): SignedTransaction {
         // stop if Node is not a BNO
         throwExceptionIfNotBNO(ourIdentity, serviceHub)
-
         val configuration = serviceHub.cordaService(BNOConfigurationService::class.java)
         val notary = configuration.notaryParty()
+        logger.info("Membership is being activated")
+        progressTracker.currentStep = ActivatingMembership
 
-        //txBuilderNoNotary is used to build a transaction with notary
-        val txBuilder = TransactionBuilder(notary)
-        val stx = serviceHub.signInitialTransaction(txBuilder)
 
-        if (!bnoMembership.state.data.isActive()) {
-            logger.info("Membership is being activated")
-            progressTracker.currentStep = ActivatingMembership
-            txBuilder.addInputState(bnoMembership)
+            val txBuilder = TransactionBuilder(notary)
+                .addInputState(bnoMembership)
+                //transaction will only modify the status of the BNO node and set it to ACTIVE
+                .addOutputState(bnoMembership.state.data.copy(
+                                status = MembershipStatus.ACTIVE,
+                                modified = serviceHub.clock.instant()),
+                                MembershipContract.CONTRACT_NAME)
+                .addCommand(MembershipContract.Commands.Activate(), ourIdentity.owningKey)
 
-            //transaction will only modify the status of the BNO node and set it to ACTIVE
-            txBuilder.addOutputState(bnoMembership.state.data.copy(
-                            status = MembershipStatus.ACTIVE,
-                            modified = serviceHub.clock.instant()),
-                            MembershipContract.CONTRACT_NAME)
-            txBuilder.addCommand(MembershipContract.Commands.Activate(), ourIdentity.owningKey)
-
+            txBuilder.verify(serviceHub)
+            val stx = serviceHub.signInitialTransaction(txBuilder)
             // sign the transaction so it can be written to the ledger
             subFlow(FinalityFlow(stx, listOf())) //listOf remains empty since only BNO needed to sign the transaction
             logger.info("Membership has been activated")
             progressTracker.currentStep = ActivatedMembership
-            return stx
+            return subFlow(FinalityFlow(stx, listOf()))
 
-        } else {
-            progressTracker.currentStep = AlreadyActvie
-            return stx
-        }
     }
 }
 
 /**
- * This is a convenience flow that can be easily used from a command line
+ * convenience flow that can be used from the command line
  *
  * @param party whose membership state to be activated
  */
@@ -110,3 +103,5 @@ open class ActivateBnoMembershipFlow(val party: Party) : BusinessNetworkOperator
     }
 
 }
+
+
