@@ -7,10 +7,18 @@ import net.corda.core.identity.Party
 import net.corda.core.node.services.Vault.StateStatus.ALL
 import net.corda.core.node.services.VaultService
 import net.corda.core.node.services.queryBy
+import net.corda.core.node.services.vault.DEFAULT_PAGE_SIZE
 import net.corda.core.node.services.vault.MAX_PAGE_SIZE
 import net.corda.core.node.services.vault.PageSpecification
+import net.corda.core.node.services.vault.QueryCriteria
 import net.corda.core.node.services.vault.QueryCriteria.VaultQueryCriteria
+import net.corda.core.serialization.SerializationDefaults
+import net.corda.core.serialization.deserialize
+import net.corda.core.transactions.SignedTransaction
 import sun.security.util.ByteArrayLexOrder
+import java.lang.StringBuilder
+import java.sql.Blob
+import java.util.*
 
 /**
  * Provides a list of transaction hashes referring to transactions in which all of the given parties are participating.
@@ -22,13 +30,23 @@ import sun.security.util.ByteArrayLexOrder
  * Note that this can be a lengthy list and no precautions are taken to ensure the output does not exceed the maximum
  * message size.
  */
-fun VaultService.withParticipants(vararg parties: Party): List<SecureHash> = queryBy<ContractState>(
-        VaultQueryCriteria(status = ALL),
-        PageSpecification(1, MAX_PAGE_SIZE)
-).states.filter {
-    it.state.data.participants.containsAll(parties.toList())
-}.map {
-    it.ref.txhash
+
+fun VaultService.withParticipants(vararg parties: Party): List<SecureHash> {
+    val list = mutableListOf<SecureHash>()
+    val pageSize = DEFAULT_PAGE_SIZE
+    val criteria = VaultQueryCriteria(status = ALL)
+    var count = 1
+    var page = queryBy<ContractState>(criteria, PageSpecification(count, pageSize))
+    while(page.states.isNotEmpty()) {
+        page.states.filter {
+            it.state.data.participants.containsAll(parties.toList())
+        }.map {
+            list.add(it.ref.txhash)
+        }
+        count ++
+        page = queryBy(criteria, PageSpecification(count, pageSize))
+    }
+    return list
 }
 
 /**
