@@ -26,7 +26,7 @@ import net.corda.core.utilities.ProgressTracker
 @InitiatingFlow(version = 2)
 open class SelfIssueMembershipFlow(val bnoMembership: StateAndRef<MembershipState<Any>>) : FlowLogic<SignedTransaction>() {
     companion object {
-        object ACTIVAED_MEMBERSHIP: ProgressTracker.Step("Membership Activated")
+        object ACTIVATED_MEMBERSHIP: ProgressTracker.Step("Membership Activated")
         object ACTIVATING_MEMBERSHIP : ProgressTracker.Step("Activating Membership")
         
         fun tracker() = ProgressTracker(
