@@ -26,11 +26,11 @@ import net.corda.core.utilities.ProgressTracker
 @InitiatingFlow(version = 2)
 open class SelfIssueMembershipFlow(val bnoMembership: StateAndRef<MembershipState<Any>>) : FlowLogic<SignedTransaction>() {
     companion object {
-        object ACTIVATED_MEMBERSHIP: ProgressTracker.Step("Membership Activated")
+        object ACTIVATED_MEMBERSHIP : ProgressTracker.Step("Membership Activated")
         object ACTIVATING_MEMBERSHIP : ProgressTracker.Step("Activating Membership")
-        
+
         fun tracker() = ProgressTracker(
-                ACTIVATED_MEMEBERSHIP,
+                ACTIVATED_MEMBERSHIP,
                 ACTIVATING_MEMBERSHIP
         )
     }
@@ -48,8 +48,6 @@ open class SelfIssueMembershipFlow(val bnoMembership: StateAndRef<MembershipStat
         val notary = configuration.notaryParty()
         logger.info("Membership is being activated")
         progressTracker.currentStep = ACTIVATING_MEMBERSHIP
-
-
             val txBuilder = TransactionBuilder(notary)
                 .addInputState(bnoMembership)
                 //transaction will only modify the status of the BNO node and set it to ACTIVE
@@ -71,7 +69,7 @@ open class SelfIssueMembershipFlow(val bnoMembership: StateAndRef<MembershipStat
 }
 
 /**
- * convenience flow that can be used from the command line
+ * This is a convenience flow that can be easily used from a command line
  *
  * @param party whose membership state to be activated
  */
@@ -101,5 +99,3 @@ open class ActivateBnoMembershipFlow(val party: Party) : BusinessNetworkOperator
     }
 
 }
-
-
