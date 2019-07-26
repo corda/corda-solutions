@@ -55,6 +55,4 @@ class SelfIssueMembershipFlowTest : AbstractFlowTest(
         } catch (e : BNONotWhitelisted) {
         }
     }
-
-
 }
