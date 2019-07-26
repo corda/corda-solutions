@@ -6,7 +6,7 @@ import net.corda.core.utilities.getOrThrow
 import org.junit.Test
 import kotlin.test.fail
 
-class SelfIssueMembershipFlow : AbstractFlowTest(
+class SelfIssueMembershipFlowTest : AbstractFlowTest(
         numberOfBusinessNetworks = 2,
         numberOfParticipants = 4,
         participantRespondingFlows = listOf(NotificationsCounterFlow::class.java)) {
