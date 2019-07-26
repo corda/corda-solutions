@@ -189,4 +189,3 @@ class NotificationsCounterFlow(session : FlowSession) : NotifyMembersFlowRespond
 }
 
 data class NotificationHolder(val member : Party, val bno : Party, val notification : Any)
-
