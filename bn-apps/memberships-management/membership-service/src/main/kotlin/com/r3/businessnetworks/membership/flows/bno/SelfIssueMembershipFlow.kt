@@ -26,14 +26,12 @@ import net.corda.core.utilities.ProgressTracker
 @InitiatingFlow(version = 2)
 open class SelfIssueMembershipFlow(val bnoMembership: StateAndRef<MembershipState<Any>>) : FlowLogic<SignedTransaction>() {
     companion object {
-        object ActivatedMembership : ProgressTracker.Step("Membership Activated")
-        object ActivatingMembership : ProgressTracker.Step("Activating Membership")
-        object AlreadyActvie : ProgressTracker.Step("Membership is already active")
-
+        object ACTIVAED_MEMBERSHIP: ProgressTracker.Step("Membership Activated")
+        object ACTIVATING_MEMBERSHIP : ProgressTracker.Step("Activating Membership")
+        
         fun tracker() = ProgressTracker(
-                ActivatedMembership,
-                ActivatingMembership,
-                AlreadyActvie
+                ACTIVATED_MEMEBERSHIP,
+                ACTIVATING_MEMBERSHIP
         )
     }
 
@@ -49,7 +47,7 @@ open class SelfIssueMembershipFlow(val bnoMembership: StateAndRef<MembershipStat
         val configuration = serviceHub.cordaService(BNOConfigurationService::class.java)
         val notary = configuration.notaryParty()
         logger.info("Membership is being activated")
-        progressTracker.currentStep = ActivatingMembership
+        progressTracker.currentStep = ACTIVATING_MEMBERSHIP
 
 
             val txBuilder = TransactionBuilder(notary)
@@ -66,7 +64,7 @@ open class SelfIssueMembershipFlow(val bnoMembership: StateAndRef<MembershipStat
             // sign the transaction so it can be written to the ledger
             subFlow(FinalityFlow(stx, listOf())) //listOf remains empty since only BNO needed to sign the transaction
             logger.info("Membership has been activated")
-            progressTracker.currentStep = ActivatedMembership
+            progressTracker.currentStep = ACTIVATED_MEMBERSHIP
             return subFlow(FinalityFlow(stx, listOf()))
 
     }
