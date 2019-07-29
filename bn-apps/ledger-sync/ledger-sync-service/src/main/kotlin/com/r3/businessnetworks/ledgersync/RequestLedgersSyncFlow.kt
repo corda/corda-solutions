@@ -27,7 +27,7 @@ class RequestLedgersSyncFlow(
     @Suspendable
     override fun call(): Map<Party, LedgerSyncFindings> = (members - ourIdentity)
             .map { they ->
-                val knownTransactionsIds = serviceHub.vaultService.withParticipants(ourIdentity, they)
+                val knownTransactionsIds = serviceHub.withParticipants(ourIdentity, they)
                 val findings = initiateFlow(they).sendAndReceive<LedgerSyncFindings>(knownTransactionsIds).unwrap { it }
                 // an individual implementation might treat findings differently, i.e. report them to the BNO
                 they to findings
@@ -53,7 +53,7 @@ class RespondLedgerSyncFlow(
     @Suspendable
     override fun call() {
         val theirs = otherSideSession.receive<List<SecureHash>>().unwrap { it }
-        val ours = serviceHub.vaultService.withParticipants(ourIdentity, otherSideSession.counterparty)
+        val ours = serviceHub.withParticipants(ourIdentity, otherSideSession.counterparty)
         otherSideSession.send(LedgerSyncFindings(
                 ours - theirs,
                 theirs - ours
