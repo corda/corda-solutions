@@ -24,7 +24,7 @@ import net.corda.core.utilities.ProgressTracker
 @Suppress("UNUSED_VARIABLE")
 @StartableByRPC
 @InitiatingFlow(version = 2)
-open class SelfIssueMembershipFlow(val bnoMembership: StateAndRef<MembershipState<Any>>) : FlowLogic<SignedTransaction>() {
+open class SelfIssueMembershipFlow(val metaData : Any) : FlowLogic<SignedTransaction>() {
     companion object {
         object ACTIVATED_MEMBERSHIP : ProgressTracker.Step("Membership Activated")
         object ACTIVATING_MEMBERSHIP : ProgressTracker.Step("Activating Membership")
@@ -39,24 +39,36 @@ open class SelfIssueMembershipFlow(val bnoMembership: StateAndRef<MembershipStat
 
     @Suspendable
 
-    //The call function will build a transaction which will only
-    // modify the BNO status and then self sign the transaction
     override fun call(): SignedTransaction {
-        // stop if Node is not a BNO
+
         throwExceptionIfNotBNO(ourIdentity, serviceHub)
+
         val configuration = serviceHub.cordaService(BNOConfigurationService::class.java)
         val notary = configuration.notaryParty()
+
+        //Start of first transaction to request a membership state
+        val membership: MembershipState<Any>
+        membership = MembershipState(ourIdentity, ourIdentity, metaData)
+        val builder = TransactionBuilder(notary)
+                    .addOutputState(membership, MembershipContract.CONTRACT_NAME)
+                    .addCommand(MembershipContract.Commands.Request(),ourIdentity.owningKey)
+        builder.verify(serviceHub)
+        val selfSignedTx = serviceHub.signInitialTransaction(builder)
+        subFlow(FinalityFlow(selfSignedTx, listOf()))
+        //end of first transaction to request a membership state
+
+        //start of second transaction to set membership status to ACTIVE
+        val bnoMembership = selfSignedTx.tx.outRefsOfType(MembershipState::class.java).single()
         logger.info("Membership is being activated")
         progressTracker.currentStep = ACTIVATING_MEMBERSHIP
             val txBuilder = TransactionBuilder(notary)
                 .addInputState(bnoMembership)
-                //transaction will only modify the status of the BNO node and set it to ACTIVE
+                //Second transaction will only modify the status of the BNO node and set it to ACTIVE
                 .addOutputState(bnoMembership.state.data.copy(
                                 status = MembershipStatus.ACTIVE,
                                 modified = serviceHub.clock.instant()),
                                 MembershipContract.CONTRACT_NAME)
                 .addCommand(MembershipContract.Commands.Activate(), ourIdentity.owningKey)
-
             txBuilder.verify(serviceHub)
             val stx = serviceHub.signInitialTransaction(txBuilder)
             // sign the transaction so it can be written to the ledger
@@ -64,7 +76,7 @@ open class SelfIssueMembershipFlow(val bnoMembership: StateAndRef<MembershipStat
             logger.info("Membership has been activated")
             progressTracker.currentStep = ACTIVATED_MEMBERSHIP
             return subFlow(FinalityFlow(stx, listOf()))
-
+            //end of second transaction to set membership status to ACTIVE
     }
 }
 
@@ -91,11 +103,10 @@ open class ActivateBnoMembershipFlow(val party: Party) : BusinessNetworkOperator
 
     @Suspendable
     override fun call(): SignedTransaction {
-        progressTracker.currentStep = LOOKING_FOR_MEMBERSHIP_STATE
-        val stateToActivate = findMembershipStateForParty(party)
-
         progressTracker.currentStep = ACTIVATING_THE_MEMBERSHIP_STATE
+        val stateToActivate = findMembershipStateForParty(party)
         return subFlow(SelfIssueMembershipFlow(stateToActivate))
     }
+
 
 }
