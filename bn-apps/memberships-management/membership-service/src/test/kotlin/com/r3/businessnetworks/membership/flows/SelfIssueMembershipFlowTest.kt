@@ -1,14 +1,9 @@
 package com.r3.businessnetworks.membership.flows
 
-import com.r3.businessnetworks.membership.flows.bno.OnMembershipChanged
 import com.r3.businessnetworks.membership.flows.bno.SelfIssueMembershipFlow
-import com.r3.businessnetworks.membership.flows.bno.SuspendMembershipFlow
 import com.r3.businessnetworks.membership.states.MembershipContract
-import net.corda.core.transactions.SignedTransaction
 import net.corda.core.utilities.getOrThrow
-import net.corda.testing.node.StartedMockNode
 import org.junit.Test
-import kotlin.test.assertEquals
 import kotlin.test.fail
 
 class SelfIssueMembershipFlowTest : AbstractFlowTest(
@@ -23,18 +18,19 @@ class SelfIssueMembershipFlowTest : AbstractFlowTest(
 
         runRequestMembershipFlow(bnoNode, bnoNode)
         // membership state before activation
-        val inputMembership = getMembership(bnoNode, bnoNode.identity(), bnoNode.identity())
         val stx = runSelfIssueMembershipFlow(bnoNode)
-        ////stx.inputs.
-
         val outputTxState = stx.tx.outputs.single()
         val command = stx.tx.commands.single()
 
         assert(MembershipContract.CONTRACT_NAME == outputTxState.contract)
         assert(command.value is MembershipContract.Commands.Activate)
-        assert(stx.tx.inputs.single() == inputMembership.ref)
-
         stx.verifyRequiredSignatures()
+
+        //to check if updated status BNO can still suspend memberships
+        runRequestAndActivateMembershipFlow(bnoNode, participantNode)
+        val stx2 = runSuspendMembershipForPartyFlow(bnoNode, participantNode.identity())
+        val Status = stx2.tx.commands.single()
+        assert(Status.value is MembershipContract.Commands.Suspend)
     }
 
     @Test
@@ -55,4 +51,5 @@ class SelfIssueMembershipFlowTest : AbstractFlowTest(
         } catch (e : BNONotWhitelisted) {
         }
     }
+
 }
