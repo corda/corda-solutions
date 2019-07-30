@@ -28,7 +28,7 @@ class RequestLedgersSyncFlow(
     override fun call(): Map<Party, LedgerSyncFindings> = (members - ourIdentity)
             .map { they ->
                 val knownTransactionsIds = serviceHub.withParticipants(ourIdentity, they)
-                val findings = initiateFlow(they).sendAndReceive<LedgerSyncFindings>(knownTransactionsIds).unwrap { it }
+                val findings = initiateFlow(they).sendAndReceive<LedgerSyncFindings>(Pair(knownTransactionsIds, serviceHub.getRecycledTx())).unwrap { it }
                 // an individual implementation might treat findings differently, i.e. report them to the BNO
                 they to findings
             }.toMap()
@@ -52,11 +52,13 @@ class RespondLedgerSyncFlow(
 
     @Suspendable
     override fun call() {
-        val theirs = otherSideSession.receive<List<SecureHash>>().unwrap { it }
+        val (theirs, their_VR) = otherSideSession.receive<Pair<List<SecureHash>, List<SecureHash>>>().unwrap { it }
         val ours = serviceHub.withParticipants(ourIdentity, otherSideSession.counterparty)
+        val our_VR = serviceHub.getRecycledTx()
+        val combine_VR = our_VR.union(their_VR)
         otherSideSession.send(LedgerSyncFindings(
-                ours - theirs,
-                theirs - ours
+                ours - theirs - combine_VR,
+                theirs - ours - combine_VR
         ))
     }
 }
