@@ -23,6 +23,8 @@ import net.corda.core.serialization.SingletonSerializationToken
 import net.corda.core.serialization.SingletonSerializeAsToken
 import net.corda.core.serialization.deserialize
 import net.corda.core.transactions.SignedTransaction
+import net.corda.nodeapi.internal.persistence.contextDatabase
+import org.hibernate.Transaction
 import sun.security.util.ByteArrayLexOrder
 import java.io.File
 import java.lang.StringBuilder
@@ -88,4 +90,20 @@ class ConfigurationService(appServiceHub : AppServiceHub): SingletonSerializeAsT
         }
     }
     open fun pageSize() = _config?.getInt("pageSize") ?: DEFAULT_PAGE_SIZE
+}
+
+fun ServiceHub.getRecycledTx(): List<SecureHash> {
+    return this.withEntityManager {
+        val hqlSelectQuery = "select txID from RecyclableTransaction as dbTable where dbTable.txID not in " +
+                            "(select nodeTXTable.txId from DBTransactionStorage\$DBTransaction nodeTXTable) "
+        createQuery(hqlSelectQuery)
+                .resultList
+                .map { SecureHash.parse(it as String) }
+    }
+}
+
+fun ServiceHub.VRExist(): Boolean {
+    return this.withEntityManager{
+        this.metamodel.entities.any { it.name.equals("RecyclableTransaction") }
+    }
 }
