@@ -40,9 +40,7 @@ open class SelfIssueMembershipFlow(val metaData : Any) : FlowLogic<SignedTransac
     @Suspendable
 
     override fun call(): SignedTransaction {
-
         throwExceptionIfNotBNO(ourIdentity, serviceHub)
-
         val configuration = serviceHub.cordaService(BNOConfigurationService::class.java)
         val notary = configuration.notaryParty()
 
