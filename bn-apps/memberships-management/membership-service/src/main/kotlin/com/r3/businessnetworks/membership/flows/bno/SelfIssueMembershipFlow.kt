@@ -59,7 +59,7 @@ open class SelfIssueMembershipFlow(val metaData : Any) : FlowLogic<SignedTransac
         val bnoMembership = selfSignedTx.tx.outRefsOfType(MembershipState::class.java).single()
         logger.info("Membership is being activated")
         progressTracker.currentStep = ACTIVATING_MEMBERSHIP
-            val txBuilder = TransactionBuilder(notary)
+        val txBuilder = TransactionBuilder(notary)
                 .addInputState(bnoMembership)
                 //Second transaction will only modify the status of the BNO node and set it to ACTIVE
                 .addOutputState(bnoMembership.state.data.copy(
@@ -67,14 +67,14 @@ open class SelfIssueMembershipFlow(val metaData : Any) : FlowLogic<SignedTransac
                                 modified = serviceHub.clock.instant()),
                                 MembershipContract.CONTRACT_NAME)
                 .addCommand(MembershipContract.Commands.Activate(), ourIdentity.owningKey)
-            txBuilder.verify(serviceHub)
-            val stx = serviceHub.signInitialTransaction(txBuilder)
-            // sign the transaction so it can be written to the ledger
-            subFlow(FinalityFlow(stx, listOf())) //listOf remains empty since only BNO needed to sign the transaction
-            logger.info("Membership has been activated")
-            progressTracker.currentStep = ACTIVATED_MEMBERSHIP
-            return subFlow(FinalityFlow(stx, listOf()))
-            //end of second transaction to set membership status to ACTIVE
+         txBuilder.verify(serviceHub)
+         val stx = serviceHub.signInitialTransaction(txBuilder)
+         // sign the transaction so it can be written to the ledger
+         subFlow(FinalityFlow(stx, listOf())) //listOf remains empty since only BNO needed to sign the transaction
+         logger.info("Membership has been activated")
+         progressTracker.currentStep = ACTIVATED_MEMBERSHIP
+         return subFlow(FinalityFlow(stx, listOf()))
+         //end of second transaction to set membership status to ACTIVE
     }
 }
 
