@@ -101,7 +101,6 @@ abstract class AbstractFlowTest(private val numberOfBusinessNetworks : Int,
     }
 
     fun runSelfIssueMembershipFlow(bnoNode : StartedMockNode, membershipMetadata : Any = SimpleMembershipMetadata(role = "DEFAULT")) : SignedTransaction {
-        //val membership = getMembership(bnoNode, bnoNode.identity(), bnoNode.identity())
         val future = bnoNode.startFlow(SelfIssueMembershipFlow(membershipMetadata))
         mockNetwork.runNetwork()
         return future.getOrThrow()
