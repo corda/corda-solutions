@@ -99,15 +99,13 @@ abstract class AbstractFlowTest(private val numberOfBusinessNetworks : Int,
         mockNetwork.runNetwork()
         return future.getOrThrow()
     }
-  
-    fun runSelfIssueMembershipFlow(bnoNode : StartedMockNode) : SignedTransaction {
-        val membership = getMembership(bnoNode, bnoNode.identity(), bnoNode.identity())
-        val future = bnoNode.startFlow(SelfIssueMembershipFlow(membership.state.data))
+
+    fun runSelfIssueMembershipFlow(bnoNode : StartedMockNode, membershipMetadata : Any = SimpleMembershipMetadata(role = "DEFAULT")) : SignedTransaction {
+        //val membership = getMembership(bnoNode, bnoNode.identity(), bnoNode.identity())
+        val future = bnoNode.startFlow(SelfIssueMembershipFlow(membershipMetadata))
         mockNetwork.runNetwork()
         return future.getOrThrow()
     }
-
-
 
     fun runRequestMembershipFlow(bnoNode : StartedMockNode, participantNodes : List<StartedMockNode>, membershipMetadata : Any = SimpleMembershipMetadata(role = "DEFAULT")) : List<SignedTransaction> {
         return participantNodes.map { runRequestMembershipFlow(bnoNode, it, membershipMetadata) }
@@ -189,3 +187,4 @@ class NotificationsCounterFlow(session : FlowSession) : NotifyMembersFlowRespond
 }
 
 data class NotificationHolder(val member : Party, val bno : Party, val notification : Any)
+
