@@ -43,7 +43,14 @@ open class SelfIssueMembershipFlow(val metaData : Any) : FlowLogic<SignedTransac
         throwExceptionIfNotBNO(ourIdentity, serviceHub)
         val configuration = serviceHub.cordaService(BNOConfigurationService::class.java)
         val notary = configuration.notaryParty()
-
+        val databaseService = serviceHub.cordaService(DatabaseService::class.java)
+        val counterpartMembership = databaseService.getMembership(ourIdentity, ourIdentity)
+        
+        //no new membership can be issued if one already exists.
+        if (counterpartMembership != null) {
+            throw FlowException("Membership already exists")
+        }
+        
         //Start of first transaction to request a membership state
         val membership: MembershipState<Any>
         membership = MembershipState(ourIdentity, ourIdentity, metaData)
