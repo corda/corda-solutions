@@ -5,32 +5,19 @@ import com.typesafe.config.ConfigFactory
 import net.corda.core.contracts.ContractState
 import net.corda.core.crypto.SecureHash
 import net.corda.core.crypto.sha256
-import net.corda.core.identity.CordaX500Name
 import net.corda.core.identity.Party
 import net.corda.core.node.AppServiceHub
 import net.corda.core.node.ServiceHub
 import net.corda.core.node.services.CordaService
 import net.corda.core.node.services.Vault.StateStatus.ALL
-import net.corda.core.node.services.VaultService
 import net.corda.core.node.services.queryBy
 import net.corda.core.node.services.vault.DEFAULT_PAGE_SIZE
-import net.corda.core.node.services.vault.MAX_PAGE_SIZE
 import net.corda.core.node.services.vault.PageSpecification
-import net.corda.core.node.services.vault.QueryCriteria
 import net.corda.core.node.services.vault.QueryCriteria.VaultQueryCriteria
-import net.corda.core.serialization.SerializationDefaults
-import net.corda.core.serialization.SingletonSerializationToken
 import net.corda.core.serialization.SingletonSerializeAsToken
-import net.corda.core.serialization.deserialize
-import net.corda.core.transactions.SignedTransaction
-import net.corda.nodeapi.internal.persistence.contextDatabase
-import org.hibernate.Transaction
 import sun.security.util.ByteArrayLexOrder
 import java.io.File
-import java.lang.StringBuilder
 import java.nio.file.Paths
-import java.sql.Blob
-import java.util.*
 
 /**
  * Provides a list of transaction hashes referring to transactions in which all of the given parties are participating.
@@ -93,17 +80,19 @@ class ConfigurationService(appServiceHub : AppServiceHub): SingletonSerializeAsT
 }
 
 fun ServiceHub.getRecycledTx(): List<SecureHash> {
-    return this.withEntityManager {
-        val hqlSelectQuery = "select txID from RecyclableTransaction as dbTable where dbTable.txID not in " +
-                            "(select nodeTXTable.txId from DBTransactionStorage\$DBTransaction nodeTXTable) "
-        createQuery(hqlSelectQuery)
-                .resultList
-                .map { SecureHash.parse(it as String) }
-    }
+    if(!vrExist()) return listOf()
+    val list = mutableListOf<SecureHash>()
+    val hqlSelectQuery = "select tx_id from RECYCLABLE_TX as dbTable where dbTable.tx_id not in " +
+                            "(select nodeTXTable.TX_ID from NODE_TRANSACTIONS nodeTXTable) "
+    val result = jdbcSession().prepareStatement(hqlSelectQuery).executeQuery()
+    while(result.next()) list.add((SecureHash.parse(result.getString(1))))
+    return list
 }
 
-fun ServiceHub.VRExist(): Boolean {
-    return this.withEntityManager{
-        this.metamodel.entities.any { it.name.equals("RecyclableTransaction") }
+fun ServiceHub.vrExist(): Boolean {
+    val result = jdbcSession().prepareStatement("show tables").executeQuery()
+    while(result.next()) {
+        if (result.getString(1).equals("RECYCLABLE_TX")) return true
     }
+    return false
 }

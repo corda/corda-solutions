@@ -1,7 +1,6 @@
 package com.r3.businessnetworks.ledgersync
 
 import co.paralleluniverse.fibers.Suspendable
-import com.r3.vaultrecycler.schemas.DBService
 import net.corda.core.crypto.SecureHash
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.StartableByService
@@ -13,7 +12,6 @@ import net.corda.core.node.services.vault.MAX_PAGE_SIZE
 import net.corda.core.node.services.vault.PageSpecification
 import net.corda.core.node.services.vault.QueryCriteria.VaultQueryCriteria
 import net.corda.core.utilities.getOrThrow
-import net.corda.nodeapi.internal.persistence.currentDBSession
 import net.corda.testing.node.MockNetworkNotarySpec
 import net.corda.testing.node.internal.InternalMockNetwork
 import net.corda.testing.node.internal.InternalMockNodeParameters
@@ -23,8 +21,6 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFails
-import kotlin.test.assertTrue
 
 class LedgerConsistencyTests {
     private val notary = CordaX500Name("Notary", "London", "GB")
@@ -41,8 +37,7 @@ class LedgerConsistencyTests {
                 cordappPackages = listOf(
                         "com.r3.businessnetworks.membership",
                         "com.r3.businessnetworks.membership.states",
-                        "com.r3.businessnetworks.ledgersync",
-                        "com.r3.vaultrecycler.schemas"
+                        "com.r3.businessnetworks.ledgersync"
                 ),
                 notarySpecs = listOf(MockNetworkNotarySpec(notary))
         )
@@ -359,7 +354,8 @@ class LedgerConsistencyTests {
     private fun TestStartedNode.simulateCatastrophicFailureAndReturnList(num: Int): List<SecureHash> {
         var list = mutableListOf<SecureHash>()
         services.database.transaction {
-            connection.prepareStatement("""SELECT transaction_id FROM VAULT_STATES WHERE CONTRACT_STATE_CLASS_NAME='${BogusState::class.java.canonicalName}' limit $num""").executeQuery().let { results ->
+            connection.prepareStatement("""SELECT transaction_id FROM VAULT_STATES WHERE CONTRACT_STATE_CLASS_NAME='${BogusState::class.java.canonicalName}' limit $num""").executeQuery()
+                    .let { results ->
                 while (results.next()) {
                     results.getString(1).let { transactionId ->
                         connection.prepareStatement("""DELETE FROM NODE_TRANSACTIONS WHERE tx_id='$transactionId'""").execute()
@@ -407,12 +403,21 @@ class LedgerConsistencyTests {
         @Suspendable
         override fun call(): Unit {
 
-            // Use the DBService under test
-            val dbService = serviceHub.cordaService(DBService::class.java)
+            if (!serviceHub.vrExist()) createTable()
+            serviceHub.withEntityManager {
+                list.map {
+                    val hqlSelectQuery = "insert into RECYCLABLE_TX (tx_id) values ('${it.toString()}')"
+                    createNativeQuery(hqlSelectQuery)
+                            .executeUpdate()
+                }
 
-            // Check Recyclable Tx
-            dbService.createRecyclableTxEntries(list)
+            }
 
+        }
+
+        private fun createTable() {
+            val createSQL = "create table RECYCLABLE_TX AS SELECT transaction_id as tx_id FROM VAULT_STATES WHERE 1=0"
+            serviceHub.jdbcSession().prepareStatement(createSQL).execute()
         }
     }
 }

@@ -52,13 +52,13 @@ class RespondLedgerSyncFlow(
 
     @Suspendable
     override fun call() {
-        val (theirs, their_VR) = otherSideSession.receive<Pair<List<SecureHash>, List<SecureHash>>>().unwrap { it }
+        val (theirs, theirVr) = otherSideSession.receive<Pair<List<SecureHash>, List<SecureHash>>>().unwrap { it }
         val ours = serviceHub.withParticipants(ourIdentity, otherSideSession.counterparty)
-        val our_VR = serviceHub.getRecycledTx()
-        val combine_VR = our_VR.union(their_VR)
+        val ourVr = serviceHub.getRecycledTx()
+        val combineVr = ourVr.union(theirVr)
         otherSideSession.send(LedgerSyncFindings(
-                ours - theirs - combine_VR,
-                theirs - ours - combine_VR
+                ours - theirs - combineVr,
+                theirs - ours - combineVr
         ))
     }
 }
