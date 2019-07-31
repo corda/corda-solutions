@@ -77,34 +77,3 @@ open class SelfIssueMembershipFlow(val metaData : Any) : FlowLogic<SignedTransac
          //end of second transaction to set membership status to ACTIVE
     }
 }
-
-/**
- * This is a convenience flow that can be easily used from a command line
- *
- * @param party whose membership state to be activated
- */
-@InitiatingFlow
-@StartableByRPC
-open class ActivateBnoMembershipFlow(val party: Party) : BusinessNetworkOperatorFlowLogic<SignedTransaction>() {
-
-    companion object {
-        object LOOKING_FOR_MEMBERSHIP_STATE : ProgressTracker.Step("Looking for party's membership state")
-        object ACTIVATING_THE_MEMBERSHIP_STATE : ProgressTracker.Step("Activating the membership state")
-
-        fun tracker() = ProgressTracker(
-                LOOKING_FOR_MEMBERSHIP_STATE,
-                ACTIVATING_THE_MEMBERSHIP_STATE
-        )
-    }
-
-    override val progressTracker = tracker()
-
-    @Suspendable
-    override fun call(): SignedTransaction {
-        progressTracker.currentStep = ACTIVATING_THE_MEMBERSHIP_STATE
-        val stateToActivate = findMembershipStateForParty(party)
-        return subFlow(SelfIssueMembershipFlow(stateToActivate))
-    }
-
-
-}
