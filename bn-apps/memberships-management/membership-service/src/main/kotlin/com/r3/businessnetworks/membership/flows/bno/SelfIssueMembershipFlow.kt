@@ -2,16 +2,13 @@ package com.r3.businessnetworks.membership.flows.bno
 
 import co.paralleluniverse.fibers.Suspendable
 import com.r3.businessnetworks.membership.flows.bno.service.BNOConfigurationService
+import com.r3.businessnetworks.membership.flows.bno.service.DatabaseService
 import com.r3.businessnetworks.membership.flows.bno.support.BusinessNetworkOperatorFlowLogic
 import com.r3.businessnetworks.membership.flows.member.Utils.throwExceptionIfNotBNO
 import com.r3.businessnetworks.membership.states.MembershipContract
 import com.r3.businessnetworks.membership.states.MembershipState
 import com.r3.businessnetworks.membership.states.MembershipStatus
-import net.corda.core.contracts.StateAndRef
-import net.corda.core.flows.FinalityFlow
-import net.corda.core.flows.FlowLogic
-import net.corda.core.flows.InitiatingFlow
-import net.corda.core.flows.StartableByRPC
+import net.corda.core.flows.*
 import net.corda.core.identity.Party
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
@@ -19,7 +16,7 @@ import net.corda.core.utilities.ProgressTracker
 
 /**
  * Self Issue a Membership.  This can only be done by a BNO,
- * @param bnoMembership bno membership state to be activated
+ * @param metaData BNO data needs a membership and then be activated
  */
 @Suppress("UNUSED_VARIABLE")
 @StartableByRPC
@@ -43,17 +40,15 @@ open class SelfIssueMembershipFlow(val metaData : Any) : FlowLogic<SignedTransac
         throwExceptionIfNotBNO(ourIdentity, serviceHub)
         val configuration = serviceHub.cordaService(BNOConfigurationService::class.java)
         val notary = configuration.notaryParty()
-        val databaseService = serviceHub.cordaService(DatabaseService::class.java)
-        val counterpartMembership = databaseService.getMembership(ourIdentity, ourIdentity)
-        
-        //no new membership can be issued if one already exists.
-        if (counterpartMembership != null) {
-            throw FlowException("Membership already exists")
-        }
-        
+
         //Start of first transaction to request a membership state
         val membership: MembershipState<Any>
         membership = MembershipState(ourIdentity, ourIdentity, metaData)
+        val databaseService = serviceHub.cordaService(DatabaseService::class.java)
+        val counterpartMembership = databaseService.getMembership(ourIdentity, ourIdentity)
+        if (counterpartMembership != null) {
+            throw FlowException("Membership already exists")
+        }
         val builder = TransactionBuilder(notary)
                     .addOutputState(membership, MembershipContract.CONTRACT_NAME)
                     .addCommand(MembershipContract.Commands.Request(),ourIdentity.owningKey)
@@ -66,7 +61,7 @@ open class SelfIssueMembershipFlow(val metaData : Any) : FlowLogic<SignedTransac
         val bnoMembership = selfSignedTx.tx.outRefsOfType(MembershipState::class.java).single()
         logger.info("Membership is being activated")
         progressTracker.currentStep = ACTIVATING_MEMBERSHIP
-        val txBuilder = TransactionBuilder(notary)
+            val txBuilder = TransactionBuilder(notary)
                 .addInputState(bnoMembership)
                 //Second transaction will only modify the status of the BNO node and set it to ACTIVE
                 .addOutputState(bnoMembership.state.data.copy(
@@ -74,13 +69,13 @@ open class SelfIssueMembershipFlow(val metaData : Any) : FlowLogic<SignedTransac
                                 modified = serviceHub.clock.instant()),
                                 MembershipContract.CONTRACT_NAME)
                 .addCommand(MembershipContract.Commands.Activate(), ourIdentity.owningKey)
-         txBuilder.verify(serviceHub)
-         val stx = serviceHub.signInitialTransaction(txBuilder)
-         // sign the transaction so it can be written to the ledger
-         subFlow(FinalityFlow(stx, listOf())) //listOf remains empty since only BNO needed to sign the transaction
-         logger.info("Membership has been activated")
-         progressTracker.currentStep = ACTIVATED_MEMBERSHIP
-         return subFlow(FinalityFlow(stx, listOf()))
-         //end of second transaction to set membership status to ACTIVE
+            txBuilder.verify(serviceHub)
+            val stx = serviceHub.signInitialTransaction(txBuilder)
+            // sign the transaction so it can be written to the ledger
+            subFlow(FinalityFlow(stx, listOf())) //listOf remains empty since only BNO needed to sign the transaction
+            logger.info("Membership has been activated")
+            progressTracker.currentStep = ACTIVATED_MEMBERSHIP
+            return subFlow(FinalityFlow(stx, listOf()))
+            //end of second transaction to set membership status to ACTIVE
     }
 }
