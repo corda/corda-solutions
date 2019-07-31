@@ -25,12 +25,6 @@ class SelfIssueMembershipFlowTest : AbstractFlowTest(
         assert(MembershipContract.CONTRACT_NAME == outputTxState.contract)
         assert(command.value is MembershipContract.Commands.Activate)
         stx.verifyRequiredSignatures()
-
-        //to check if updated status BNO can still suspend memberships
-//        runRequestAndActivateMembershipFlow(bnoNode, participantNode)
-//        val stx2 = runSuspendMembershipForPartyFlow(bnoNode, participantNode.identity())
-//        val Status = stx2.tx.commands.single()
-//        assert(Status.value is MembershipContract.Commands.Suspend)
     }
 
     @Test
@@ -38,7 +32,7 @@ class SelfIssueMembershipFlowTest : AbstractFlowTest(
         val bnoNode = bnoNodes.first()
         runRequestMembershipFlow(bnoNode, bnoNode)
         try {
-            SelfIssueMembershipFlow(bnoNode)
+            runSelfIssueMembershipFlow(bnoNode)
             fail()
         }catch (e : FlowException) {
         assert("Membership already exists" == e.message)
@@ -47,14 +41,9 @@ class SelfIssueMembershipFlowTest : AbstractFlowTest(
 
     @Test
     fun `only BNO should be able to start the flow`() {
-        val bnoNode = bnoNodes.first()
         val participantNode = participantsNodes.first()
-
-        val membership = getMembership(participantNode, participantNode.identity(), bnoNode.identity())
         try {
-            val future = participantNode.startFlow(SelfIssueMembershipFlow(membership.state.data))
-            mockNetwork.runNetwork()
-            future.getOrThrow()
+            runSelfIssueMembershipFlow(participantNode)
             fail()
         } catch (e : BNONotWhitelisted) {
         }
