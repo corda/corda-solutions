@@ -1,13 +1,11 @@
 package com.r3.businessnetworks.membership.flows
 
-import com.r3.businessnetworks.membership.flows.bno.SelfIssueMembershipFlow
-import com.r3.businessnetworks.membership.flows.bno.service.DatabaseService
+import com.natpryce.hamkrest.assertion.assertThat
+import com.natpryce.hamkrest.equalTo
+import com.natpryce.hamkrest.throws
 import com.r3.businessnetworks.membership.states.MembershipContract
-import com.r3.businessnetworks.membership.states.MembershipState
 import net.corda.core.flows.FlowException
-import net.corda.core.utilities.getOrThrow
 import org.junit.Test
-import kotlin.test.fail
 
 class SelfIssueMembershipFlowTest : AbstractFlowTest(
         numberOfBusinessNetworks = 2,
@@ -22,30 +20,22 @@ class SelfIssueMembershipFlowTest : AbstractFlowTest(
         val outputTxState = stx.tx.outputs.single()
         val command = stx.tx.commands.single()
 
-        assert(MembershipContract.CONTRACT_NAME == outputTxState.contract)
-        assert(command.value is MembershipContract.Commands.Activate)
+        assertThat(MembershipContract.CONTRACT_NAME, equalTo(outputTxState.contract))
+        assertThat(command.value, equalTo(MembershipContract.Commands.Activate()))
         stx.verifyRequiredSignatures()
     }
 
     @Test
     fun `Flow should fail if membership already exists`(){
         val bnoNode = bnoNodes.first()
+
         runRequestMembershipFlow(bnoNode, bnoNode)
-        try {
-            runSelfIssueMembershipFlow(bnoNode)
-            fail()
-        }catch (e : FlowException) {
-        assert("Membership already exists" == e.message)
-    }
+        assertThat({ runSelfIssueMembershipFlow(bnoNode) }, throws<FlowException>())
     }
 
     @Test
     fun `only BNO should be able to start the flow`() {
         val participantNode = participantsNodes.first()
-        try {
-            runSelfIssueMembershipFlow(participantNode)
-            fail()
-        } catch (e : BNONotWhitelisted) {
-        }
+        assertThat({ runSelfIssueMembershipFlow(participantNode) }, throws<BNONotWhitelisted>())
     }
 }
