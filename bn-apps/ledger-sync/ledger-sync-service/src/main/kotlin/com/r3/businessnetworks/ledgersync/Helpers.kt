@@ -23,6 +23,7 @@ import net.corda.core.serialization.SingletonSerializationToken
 import net.corda.core.serialization.SingletonSerializeAsToken
 import net.corda.core.serialization.deserialize
 import net.corda.core.transactions.SignedTransaction
+import net.corda.core.utilities.loggerFor
 import sun.security.util.ByteArrayLexOrder
 import java.io.File
 import java.lang.StringBuilder
@@ -33,12 +34,10 @@ import java.util.*
 /**
  * Provides a list of transaction hashes referring to transactions in which all of the given parties are participating.
  *
- * Due to limitations of filtering by [Party] in vault query criteria (CORDA-1888), this will load ALL STATES into
- * memory, potentially causing memory issues at the node running the query. A proper vault query criterion should be
- * used once implemented.
+ * Due to limitations of filtering by [Party] in vault query criteria (CORDA-3112), this will load ALL STATES into
+ * memory page by page. The page size will be either defined in config file or using DEFAULT_PAGE_SIZE.
+ * A proper vault query criteria with participants filtering should be used once the above issue is fixed.
  *
- * Note that this can be a lengthy list and no precautions are taken to ensure the output does not exceed the maximum
- * message size.
  */
 
 fun ServiceHub.withParticipants(vararg parties: Party, pageSize: Int = this.cordaService(ConfigurationService::class.java).pageSize()): List<SecureHash> {
@@ -73,6 +72,9 @@ fun List<SecureHash>.hash(): SecureHash = map {
  */
 @CordaService
 class ConfigurationService(appServiceHub : AppServiceHub): SingletonSerializeAsToken()  {
+    companion object {
+        private val logger = loggerFor<ConfigurationService>()
+    }
     private val configName = "ledgersync"
     private var _config = loadConfig()
     private fun loadConfig() : Config? {
@@ -82,10 +84,23 @@ class ConfigurationService(appServiceHub : AppServiceHub): SingletonSerializeAsT
         else {
             val configResource = this::class.java.classLoader.getResource(fileName)
             if (configResource == null) {
-                //logger.error("Configuration $configName.conf has not been found")
                 null
             } else ConfigFactory.parseFile(File(configResource.toURI()))
         }
     }
-    open fun pageSize() = _config?.getInt("pageSize") ?: DEFAULT_PAGE_SIZE
+    open fun pageSize() = _config?.let{
+        var size = DEFAULT_PAGE_SIZE
+        try {
+            size = it.getInt("pageSize")
+            logger.info("pageSize = ${it.getInt("pageSize")}")
+        } catch (e: Exception) {
+            logger.warn("pageSize is not properly configured! Exception: ${e.message} \n" +
+                    "Using DEFAULT_PAGE_SIZE = $DEFAULT_PAGE_SIZE")
+        }
+        size
+    } ?: run {
+        logger.warn("Configuration $configName.conf has not been found.\n" +
+                "Using DEFAULT_PAGE_SIZE = $DEFAULT_PAGE_SIZE")
+        DEFAULT_PAGE_SIZE
+    }
 }
