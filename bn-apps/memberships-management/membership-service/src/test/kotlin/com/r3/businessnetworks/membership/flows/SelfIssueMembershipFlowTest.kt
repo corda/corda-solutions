@@ -2,10 +2,12 @@ package com.r3.businessnetworks.membership.flows
 
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
+import com.natpryce.hamkrest.isA
 import com.natpryce.hamkrest.throws
 import com.r3.businessnetworks.membership.states.MembershipContract
 import net.corda.core.flows.FlowException
 import org.junit.Test
+
 
 class SelfIssueMembershipFlowTest : AbstractFlowTest(
         numberOfBusinessNetworks = 2,
@@ -19,9 +21,8 @@ class SelfIssueMembershipFlowTest : AbstractFlowTest(
         val stx = runSelfIssueMembershipFlow(bnoNode)
         val outputTxState = stx.tx.outputs.single()
         val command = stx.tx.commands.single()
-
         assertThat(MembershipContract.CONTRACT_NAME, equalTo(outputTxState.contract))
-        assertThat(command.value, equalTo(MembershipContract.Commands.Activate()))
+        assertThat(command.value, isA<MembershipContract.Commands.Activate>())
         stx.verifyRequiredSignatures()
     }
 
