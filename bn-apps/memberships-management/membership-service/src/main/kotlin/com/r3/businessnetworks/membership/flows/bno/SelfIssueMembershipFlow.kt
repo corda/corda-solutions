@@ -21,6 +21,7 @@ import net.corda.core.utilities.ProgressTracker
 @StartableByRPC
 @InitiatingFlow(version = 2)
 open class SelfIssueMembershipFlow(val metaData : Any) : FlowLogic<SignedTransaction>() {
+
     companion object {
         object ACTIVATED_MEMBERSHIP : ProgressTracker.Step("Membership Activated")
         object ACTIVATING_MEMBERSHIP : ProgressTracker.Step("Activating Membership")
@@ -33,8 +34,8 @@ open class SelfIssueMembershipFlow(val metaData : Any) : FlowLogic<SignedTransac
 
     override val progressTracker = tracker()
 
-    @Suspendable
-     fun grantMembership(): SignedTransaction {
+
+     fun createMembership(): SignedTransaction{
         throwExceptionIfNotBNO(ourIdentity, serviceHub)
         val configuration = serviceHub.cordaService(BNOConfigurationService::class.java)
         val notary = configuration.notaryParty()
@@ -55,10 +56,10 @@ open class SelfIssueMembershipFlow(val metaData : Any) : FlowLogic<SignedTransac
         return grantMembershipStx
     }
 
-
-    override fun call(): SignedTransaction {
+    @Suspendable
+    override fun call(): SignedTransaction{
         //start of second transaction to set membership status to ACTIVE
-        val bnoMembership =  grantMembership().tx.outRefsOfType(MembershipState::class.java).single()
+        val bnoMembership = createMembership().tx.outRefsOfType(MembershipState::class.java).single()
         val configuration = serviceHub.cordaService(BNOConfigurationService::class.java)
         val notary = configuration.notaryParty()
         logger.info("Membership is being activated")
