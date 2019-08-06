@@ -1,51 +1,42 @@
 package com.r3.businessnetworks.membership.flows
 
-import com.r3.businessnetworks.membership.flows.bno.RequestMembershipFlowResponder
-import com.r3.businessnetworks.membership.flows.bno.service.DatabaseService
-import com.r3.businessnetworks.membership.flows.member.service.MemberConfigurationService
+import com.natpryce.hamkrest.assertion.assertThat
+import com.natpryce.hamkrest.equalTo
+import com.natpryce.hamkrest.isA
+import com.natpryce.hamkrest.throws
 import com.r3.businessnetworks.membership.states.MembershipContract
-import com.r3.businessnetworks.membership.states.MembershipState
-import com.r3.businessnetworks.membership.testextensions.RequestMembershipFlowResponderWithMetadataVerification
 import net.corda.core.flows.FlowException
 import org.junit.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
-import kotlin.test.fail
 
-class SelfIssueMembershipFlowTest : AbstractFlowTest(numberOfBusinessNetworks = 2,
-        numberOfParticipants = 2,
-        participantRespondingFlows = listOf(RequestMembershipFlowResponder::class.java)) {
+
+class SelfIssueMembershipFlowTest : AbstractFlowTest(
+        numberOfBusinessNetworks = 2,
+        numberOfParticipants = 4,
+        participantRespondingFlows = listOf(NotificationsCounterFlow::class.java)) {
 
     @Test
     fun `self issue happy path`() {
         val bnoNode = bnoNodes.first()
-
+        //membership state before activation
         val stx = runSelfIssueMembershipFlow(bnoNode)
-        
-        assert(stx.notary!!.name == notaryName)
-
-        val outputWithContract = stx.tx.outputs.single()
-        val outputMembership = outputWithContract.data as MembershipState<*>
+        val outputTxState = stx.tx.outputs.single()
         val command = stx.tx.commands.single()
-
-        assert(command.value is MembershipContract.Commands.Activate)
-        assert(outputWithContract.contract == MembershipContract.CONTRACT_NAME)
-        assert(outputMembership.bno == bnoNode.identity())
-        assert(outputMembership.member == bnoNode.identity())
+        assertThat(MembershipContract.CONTRACT_NAME, equalTo(outputTxState.contract))
+        assertThat(command.value, isA<MembershipContract.Commands.Activate>())
         stx.verifyRequiredSignatures()
     }
 
     @Test
-    fun `self issue should fail if a membership state already exists`() {
+    fun `Flow should fail if membership already exists`(){
         val bnoNode = bnoNodes.first()
 
-        runSelfIssueMembershipFlow(bnoNode)
+        runRequestMembershipFlow(bnoNode, bnoNode)
+        assertThat({ runSelfIssueMembershipFlow(bnoNode) }, throws<FlowException>())
+    }
 
-        try {
-            runSelfIssueMembershipFlow(bnoNode)
-            fail()
-        } catch (e : FlowException) {
-            assert("Membership already exists" == e.message)
-        }
+    @Test
+    fun `only BNO should be able to start the flow`() {
+        val participantNode = participantsNodes.first()
+        assertThat({ runSelfIssueMembershipFlow(participantNode) }, throws<BNONotWhitelisted>())
     }
 }
