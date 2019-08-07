@@ -28,12 +28,14 @@ open class NotifyMembersFlowResponder(val session : FlowSession) : FlowLogic<Any
         val cache = membershipService.cache
         when (notification) {
             is OnMembershipChanged -> {
-                val membership = notification.changedMembership.state.data
+                val membership = notification.changedMembership?.state?.data
                 // if our membership was suspended - then cleaning up the cache as suspended members won't get notifications anymore
-                if (membership.member == ourIdentity && membership.isSuspended()) {
-                    cache.reset(membership.bno)
-                } else {
-                    cache.updateMembership(notification.changedMembership)
+                if (membership != null) {
+                    if (membership.member == ourIdentity && membership.isSuspended()) {
+                        cache.reset(membership.bno)
+                    } else {
+                        notification.changedMembership?.let { cache.updateMembership(it) }
+                    }
                 }
             }
             else -> throw IllegalArgumentException("Unknown notification $notification")

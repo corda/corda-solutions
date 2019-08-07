@@ -17,14 +17,14 @@ import net.corda.core.utilities.ProgressTracker
 import net.corda.core.utilities.unwrap
 
 @CordaSerializable
-data class OnBoardingRequest(val metadata : Any)
+data class OnBoardingRequest(val metadata : Any, val netID : String)
 
 /**
  * The flow requests BNO to kick-off the on-boarding procedure.
  */
 @StartableByRPC
 @InitiatingFlow(version = 2)
-open class RequestMembershipFlow(bno : Party, private val membershipMetadata : Any) : BusinessNetworkAwareInitiatingFlow<SignedTransaction>(bno) {
+open class RequestMembershipFlow(bno : Party, private val membershipMetadata : Any, val JoiningNetworkID : String) : BusinessNetworkAwareInitiatingFlow<SignedTransaction>(bno) {
     companion object {
         object SENDING_MEMBERSHIP_DATA_TO_BNO : ProgressTracker.Step("Sending membership data to BNO")
         object ACCEPTING_INCOMING_PENDING_MEMBERSHIP : ProgressTracker.Step("Accepting incoming pending membership")
@@ -42,7 +42,7 @@ open class RequestMembershipFlow(bno : Party, private val membershipMetadata : A
         progressTracker.currentStep = SENDING_MEMBERSHIP_DATA_TO_BNO
 
         val bnoSession = initiateFlow(bno)
-        bnoSession.send(OnBoardingRequest(membershipMetadata))
+        bnoSession.send(OnBoardingRequest(membershipMetadata,JoiningNetworkID))
 
         val signResponder = object : SignTransactionFlow(bnoSession) {
             override fun checkTransaction(stx : SignedTransaction) {
