@@ -109,19 +109,21 @@ open class MembershipContract : Contract {
  * @param status status of the state, i.e. ACTIVE, SUSPENDED, PENDING etc.
  */
 @BelongsToContract(MembershipContract::class)
-data class MembershipState<out T : Any>(val member : Party,
-                                        val bno : Party,
-                                        val membershipMetadata : T,
-                                        val issued : Instant = Instant.now(),
-                                        val modified : Instant = issued,
-                                        val status : MembershipStatus = MembershipStatus.PENDING,
-                                        override val linearId : UniqueIdentifier = UniqueIdentifier()) : LinearState, QueryableState {
+data class MembershipState<out T : Any>(val member: Party,
+                                        val bno: Party,
+                                        val membershipMetadata: T,
+                                        val NetworkID: String?,
+                                        val issued: Instant = Instant.now(),
+                                        val modified: Instant = issued,
+                                        val status: MembershipStatus = PENDING,
+                                        override val linearId: UniqueIdentifier = UniqueIdentifier()) : LinearState, QueryableState {
     override fun generateMappedObject(schema : MappedSchema) : PersistentState {
         return when (schema) {
             is MembershipStateSchemaV1 -> MembershipStateSchemaV1.PersistentMembershipState(
                     member = this.member,
                     bno = this.bno,
-                    status = this.status
+                    status = this.status,
+                    networkID = this.NetworkID
             )
             else -> throw IllegalArgumentException("Unrecognised schema $schema")
         }
