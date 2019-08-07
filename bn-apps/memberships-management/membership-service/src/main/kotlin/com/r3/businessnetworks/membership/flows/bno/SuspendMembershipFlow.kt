@@ -54,7 +54,7 @@ open class SuspendMembershipFlow(val membership: StateAndRef<MembershipState<Any
 
         val dbService = serviceHub.cordaService(DatabaseService::class.java)
         val suspendedMembership =
-            dbService.getMembership(membership.state.data.member, ourIdentity) ?: throw FlowException("Membership for ${membership.state.data.member} has not been found")
+            dbService.getMembershipOnNetwork(membership.state.data.member, ourIdentity, membership.state.data.NetworkID) ?: throw FlowException("Membership for ${membership.state.data.member} has not been found on the network ${membership.state.data.NetworkID}")
 
         // notify other members about suspension
         subFlow(NotifyActiveMembersFlow(OnMembershipChanged(suspendedMembership)))

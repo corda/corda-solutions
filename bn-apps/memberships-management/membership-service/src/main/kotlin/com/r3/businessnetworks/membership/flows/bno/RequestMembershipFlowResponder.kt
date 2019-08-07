@@ -55,7 +55,7 @@ open class RequestMembershipFlowResponder(val session: FlowSession) : BusinessNe
             val notary = configuration.notaryParty()
 
             // issue pending membership state on the ledger
-            membership = MembershipState(counterparty, ourIdentity, request.metadata)
+            membership = MembershipState(counterparty, ourIdentity, request.metadata, request.netID)
             val builder = TransactionBuilder(notary)
                 .addOutputState(membership, MembershipContract.CONTRACT_NAME)
                 .addCommand(MembershipContract.Commands.Request(), counterparty.owningKey, ourIdentity.owningKey)

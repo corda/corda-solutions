@@ -20,7 +20,7 @@ import net.corda.core.utilities.ProgressTracker
 
 @StartableByRPC
 @InitiatingFlow(version = 2)
-open class SelfIssueMembershipFlow(val metaData : Any) : FlowLogic<SignedTransaction>() {
+open class SelfIssueMembershipFlow(val metaData : Any, val networkID: String) : FlowLogic<SignedTransaction>() {
 
     companion object {
         object ACTIVATED_MEMBERSHIP : ProgressTracker.Step("Membership Activated")
@@ -40,7 +40,7 @@ open class SelfIssueMembershipFlow(val metaData : Any) : FlowLogic<SignedTransac
         val configuration = serviceHub.cordaService(BNOConfigurationService::class.java)
         val notary = configuration.notaryParty()
         //Start of first transaction to request a membership state
-        val membership: MembershipState<Any> = MembershipState(ourIdentity, ourIdentity, metaData)
+        val membership: MembershipState<Any> = MembershipState(ourIdentity, ourIdentity, metaData,networkID)
         val databaseService = serviceHub.cordaService(DatabaseService::class.java)
         val counterpartMembership = databaseService.getMembership(ourIdentity, ourIdentity)
         if (counterpartMembership != null) {
