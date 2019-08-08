@@ -94,14 +94,14 @@ abstract class AbstractFlowTest(private val numberOfBusinessNetworks : Int,
         runActivateMembershipFlow(bnoNode, participantNodes.map { it.identity() })
     }
 
-    fun runRequestMembershipFlow(bnoNode : StartedMockNode, participantNode : StartedMockNode, membershipMetadata : Any = SimpleMembershipMetadata(role = "DEFAULT")) : SignedTransaction {
-        val future = participantNode.startFlow(RequestMembershipFlow(bnoNode.identity(), membershipMetadata))
+    fun runRequestMembershipFlow(bnoNode : StartedMockNode, participantNode : StartedMockNode, membershipMetadata : Any = SimpleMembershipMetadata(role = "DEFAULT"), netID : String = "0") : SignedTransaction {
+        val future = participantNode.startFlow(RequestMembershipFlow(bnoNode.identity(), membershipMetadata,netID))
         mockNetwork.runNetwork()
         return future.getOrThrow()
     }
 
     fun runSelfIssueMembershipFlow(bnoNode : StartedMockNode, membershipMetadata : Any = SimpleMembershipMetadata(role = "DEFAULT")) : SignedTransaction {
-        val future = bnoNode.startFlow(SelfIssueMembershipFlow(membershipMetadata))
+        val future = bnoNode.startFlow(SelfIssueMembershipFlow(membershipMetadata, "0"))
         mockNetwork.runNetwork()
         return future.getOrThrow()
     }
@@ -152,9 +152,9 @@ abstract class AbstractFlowTest(private val numberOfBusinessNetworks : Int,
         return future.getOrThrow()
     }
 
-    fun getMembership(nodeToGetFrom : StartedMockNode, member : Party, bno : Party) : StateAndRef<MembershipState<Any>> = nodeToGetFrom.transaction {
+    fun getMembership(nodeToGetFrom: StartedMockNode, member: Party, bno: Party) : StateAndRef<MembershipState<Any>> = nodeToGetFrom.transaction {
         val dbService = nodeToGetFrom.services.cordaService(DatabaseService::class.java)
-        dbService.getMembership(member, bno)!!
+        dbService.getMembershipOnNetwork(member, bno,"0")!!
     }
 
     fun getAllMemberships(nodeToGetFrom : StartedMockNode, bno : Party) : List<StateAndRef<MembershipState<Any>>> = nodeToGetFrom.transaction {

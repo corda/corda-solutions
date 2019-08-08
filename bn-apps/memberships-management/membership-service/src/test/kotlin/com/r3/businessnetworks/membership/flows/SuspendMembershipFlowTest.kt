@@ -2,6 +2,7 @@ package com.r3.businessnetworks.membership.flows
 
 import com.r3.businessnetworks.membership.flows.bno.OnMembershipChanged
 import com.r3.businessnetworks.membership.flows.bno.SuspendMembershipFlow
+import com.r3.businessnetworks.membership.flows.bno.service.DatabaseService
 import com.r3.businessnetworks.membership.states.MembershipContract
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.utilities.getOrThrow
@@ -10,6 +11,7 @@ import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.fail
 
+
 class SuspendMembershipFlowTest : AbstractFlowTest(numberOfBusinessNetworks = 2,
         numberOfParticipants = 3,
         participantRespondingFlows = listOf(NotificationsCounterFlow::class.java)) {
@@ -17,7 +19,7 @@ class SuspendMembershipFlowTest : AbstractFlowTest(numberOfBusinessNetworks = 2,
     private fun testMembershipSuspension(suspender : (bnoNode : StartedMockNode, participantNode : StartedMockNode) -> SignedTransaction) {
         val bnoNode = bnoNodes.first()
         val suspendedMemberNode = participantsNodes.first()
-
+        val databaseService = DatabaseService(suspendedMemberNode.services)
         runRequestAndActivateMembershipFlow(bnoNode, participantsNodes)
 
         // cleaning up notifications as we are interested in SUSPENDs only
@@ -36,7 +38,7 @@ class SuspendMembershipFlowTest : AbstractFlowTest(numberOfBusinessNetworks = 2,
 
         // both the active and the suspended member should have received the same notification
         val suspendedMembership = getMembership(bnoNode, suspendedMemberNode.identity(), bnoNode.identity())
-        val expectedNotifications = participantsNodes.map { NotificationHolder(it.identity(), bnoNode.identity(), OnMembershipChanged(suspendedMembership)) }.toSet()
+        val expectedNotifications = participantsNodes.map{ NotificationHolder(it.identity(), bnoNode.identity(), OnMembershipChanged(suspendedMembership)) }.toSet()
         assertEquals(expectedNotifications, NotificationsCounterFlow.NOTIFICATIONS)
     }
 

@@ -110,7 +110,7 @@ class GetMembershipsFlowTest : AbstractFlowTest(
 
         // adding not existing party to the cache
         val notExistingParty = TestIdentity(CordaX500Name.parse("O=Member,L=London,C=GB")).party
-        val future = participant.startFlow(AddNotExistingPartyToMembershipsCache(bnoNode.identity(), MembershipState(notExistingParty, bnoNode.identity(), SimpleMembershipMetadata("DEFAULT"), status = MembershipStatus.ACTIVE)))
+        val future = participant.startFlow(AddNotExistingPartyToMembershipsCache(bnoNode.identity(), MembershipState(notExistingParty, bnoNode.identity(), SimpleMembershipMetadata("DEFAULT"), status = MembershipStatus.ACTIVE, NetworkID = "0")))
         mockNetwork.runNetwork()
         future.getOrThrow()
 
