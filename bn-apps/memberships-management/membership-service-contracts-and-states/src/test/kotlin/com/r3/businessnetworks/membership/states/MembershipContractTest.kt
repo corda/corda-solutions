@@ -22,7 +22,7 @@ class MembershipContractTest {
     private val bnoParty = bno.party
 
     private fun membershipState(status : MembershipStatus = MembershipStatus.PENDING, member : Party = memberParty, bno : Party = bnoParty, issued : Instant = Instant.now())
-            = MembershipState(member, bno, issued = issued, status = status, membershipMetadata = SimpleMembershipMetadata("test"))
+            = MembershipState(member, bno, membershipMetadata = SimpleMembershipMetadata("test"), issued = issued, status = status, NetworkID = "0")
 
 
     @Test
