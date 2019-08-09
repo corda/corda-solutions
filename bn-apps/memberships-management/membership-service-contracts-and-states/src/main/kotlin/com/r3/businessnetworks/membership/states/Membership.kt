@@ -104,6 +104,7 @@ open class MembershipContract : Contract {
  *
  * @param member identity of a member
  * @param bno identity of the BNO
+ * @param networkID is used to identify different networks which a BNO can govern
  * @param issued timestamp when the state has been issued
  * @param modified timestamp when the state has been modified the last time
  * @param status status of the state, i.e. ACTIVE, SUSPENDED, PENDING etc.
