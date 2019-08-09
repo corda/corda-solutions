@@ -17,3 +17,4 @@ from other Corda Nodes by way of valid identity certificates that are known in a
    monitoring
    corda-network-access-details
    additional-info
+   kill-flow

@@ -26,7 +26,7 @@ class EvaluateLedgerConsistencyFlow(
     @Suspendable
     override fun call(): Map<Party, Boolean> = (members - ourIdentity)
             .map { they ->
-                val knownTransactionsHash = serviceHub.vaultService.withParticipants(ourIdentity, they).hash()
+                val knownTransactionsHash = serviceHub.withParticipants(ourIdentity, they).hash()
                 val findings = initiateFlow(they).sendAndReceive<Boolean>(knownTransactionsHash as OpaqueBytes).unwrap { it }
                 they to findings
             }.toMap()
@@ -51,7 +51,7 @@ class RespondEvaluateLedgersConsistencyFlow(
     @Suspendable
     override fun call() {
         val theirHash = otherSideSession.receive<OpaqueBytes>().unwrap { it }
-        val ourHash = serviceHub.vaultService.withParticipants(ourIdentity, otherSideSession.counterparty).hash()
+        val ourHash = serviceHub.withParticipants(ourIdentity, otherSideSession.counterparty).hash()
         otherSideSession.send(theirHash == ourHash)
     }
 }

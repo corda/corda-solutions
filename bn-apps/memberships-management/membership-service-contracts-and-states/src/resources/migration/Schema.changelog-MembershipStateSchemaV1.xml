@@ -1,0 +1,7 @@
+<changeSet author="R3 Corda" id="MembershipStateSchemaV1">
+    <createTable tableName="membership_states">
+        <column name="member_name" type="NVARCHAR(255)"/>
+        <column name="bno_name" type="NVARCHAR(255)"/>
+        <column name="status" type="NVARCHAR(255)"/>
+    </createTable>
+</changeSet>
