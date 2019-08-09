@@ -20,7 +20,7 @@ import net.corda.core.utilities.ProgressTracker
 
 @StartableByRPC
 @InitiatingFlow(version = 2)
-open class SelfIssueMembershipFlow(val metaData : Any, val networkID: String) : FlowLogic<SignedTransaction>() {
+open class SelfIssueMembershipFlow(val metaData : Any, val networkID: String?) : FlowLogic<SignedTransaction>() {
 
     companion object {
         object ACTIVATED_MEMBERSHIP : ProgressTracker.Step("Membership Activated")
