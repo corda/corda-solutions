@@ -3,98 +3,82 @@ package com.r3.businessnetworks.membership.flows.bno
 import co.paralleluniverse.fibers.Suspendable
 import com.r3.businessnetworks.membership.flows.bno.service.BNOConfigurationService
 import com.r3.businessnetworks.membership.flows.bno.service.DatabaseService
-import com.r3.businessnetworks.membership.flows.bno.support.BusinessNetworkOperatorFlowLogic
-import com.r3.businessnetworks.membership.flows.getAttachmentIdForGenericParam
-import com.r3.businessnetworks.membership.flows.isAttachmentRequired
+import com.r3.businessnetworks.membership.flows.member.Utils.throwExceptionIfNotBNO
 import com.r3.businessnetworks.membership.states.MembershipContract
 import com.r3.businessnetworks.membership.states.MembershipState
 import com.r3.businessnetworks.membership.states.MembershipStatus
-import net.corda.core.contracts.StateAndRef
-import net.corda.core.flows.FinalityFlow
-import net.corda.core.flows.FlowException
-import net.corda.core.flows.InitiatingFlow
-import net.corda.core.flows.StartableByRPC
-import net.corda.core.identity.Party
+import net.corda.core.flows.*
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.ProgressTracker
 
 /**
- * A flow that is used by BNO to suspend a membership. BNO can unilaterally suspend memberships, for example as a result of the governance
- * action.
+ * Self Issue a Membership.  This can only be done by a BNO,
+ * @param metaData BNO data needs a membership and then be activated
  */
+@Suppress("UNUSED_VARIABLE", "MemberVisibilityCanBePrivate")
+
 @StartableByRPC
 @InitiatingFlow(version = 2)
-open class SuspendMembershipFlow(val membership: StateAndRef<MembershipState<Any>>) : BusinessNetworkOperatorFlowLogic<SignedTransaction>() {
-
-    @Suspendable
-    override fun call(): SignedTransaction {
-        verifyThatWeAreBNO(membership.state.data)
-        val configuration = serviceHub.cordaService(BNOConfigurationService::class.java)
-        val notary = configuration.notaryParty()
-
-        // build suspension transaction
-        val builder = TransactionBuilder(notary)
-            .addInputState(membership)
-            .addOutputState(membership.state.data.copy(status = MembershipStatus.SUSPENDED, modified = serviceHub.clock.instant()))
-            .addCommand(MembershipContract.Commands.Suspend(), ourIdentity.owningKey)
-
-        if (membership.isAttachmentRequired()) builder.addAttachment(membership.getAttachmentIdForGenericParam())
-
-        builder.verify(serviceHub)
-        val selfSignedTx = serviceHub.signInitialTransaction(builder)
-
-        val memberSession = initiateFlow(membership.state.data.member)
-
-        val finalisedTx = if (memberSession.getCounterpartyFlowInfo().flowVersion == 1) {
-            subFlow(FinalityFlow(selfSignedTx))
-        } else {
-            subFlow(FinalityFlow(selfSignedTx, memberSession))
-        }
-
-        val dbService = serviceHub.cordaService(DatabaseService::class.java)
-        // find member on a specific Network ID
-        val suspendedMembership =
-            dbService.getMembershipOnNetwork(membership.state.data.member, ourIdentity, membership.state.data.networkID) ?: throw FlowException("Membership for ${membership.state.data.member} has not been found on the network ${membership.state.data.networkID}")
-
-        // notify other members about suspension
-        subFlow(NotifyActiveMembersFlow(OnMembershipChanged(suspendedMembership)))
-        // sending notification to the suspended member separately
-        val suspendedMember = suspendedMembership.state.data.member
-        subFlow(NotifyMemberFlow(OnMembershipChanged(suspendedMembership), suspendedMember))
-
-        return finalisedTx
-    }
-}
-
-/**
- * This is a convenience flow that can be easily used from a command line
- *
- * @param party whose membership state to be suspended
- */
-@InitiatingFlow
-@StartableByRPC
-open class SuspendMembershipForPartyFlow(val party: Party) : BusinessNetworkOperatorFlowLogic<SignedTransaction>() {
+open class SelfIssueMembershipFlow(val metaData : Any, val networkID: String) : FlowLogic<SignedTransaction>() {
 
     companion object {
-        object LOOKING_FOR_MEMBERSHIP_STATE : ProgressTracker.Step("Looking for party's membership state")
-        object SUSPENDING_THE_MEMBERSHIP_STATE : ProgressTracker.Step("Suspending the membership state")
+        object ACTIVATED_MEMBERSHIP : ProgressTracker.Step("Membership Activated")
+        object ACTIVATING_MEMBERSHIP : ProgressTracker.Step("Activating Membership")
 
         fun tracker() = ProgressTracker(
-            LOOKING_FOR_MEMBERSHIP_STATE,
-            SUSPENDING_THE_MEMBERSHIP_STATE
+                ACTIVATED_MEMBERSHIP,
+                ACTIVATING_MEMBERSHIP
         )
     }
 
     override val progressTracker = tracker()
 
-    @Suspendable
-    override fun call(): SignedTransaction {
-        progressTracker.currentStep = LOOKING_FOR_MEMBERSHIP_STATE
-        val stateToActivate = findMembershipStateForParty(party)
 
-        progressTracker.currentStep = SUSPENDING_THE_MEMBERSHIP_STATE
-        return subFlow(SuspendMembershipFlow(stateToActivate))
+     fun createMembership(): SignedTransaction{
+        throwExceptionIfNotBNO(ourIdentity, serviceHub)
+        val configuration = serviceHub.cordaService(BNOConfigurationService::class.java)
+        val notary = configuration.notaryParty()
+        //Start of first transaction to request a membership state
+        val membership: MembershipState<Any> = MembershipState(ourIdentity, ourIdentity, metaData,networkID)
+        val databaseService = serviceHub.cordaService(DatabaseService::class.java)
+        val counterpartMembership = databaseService.getMembership(ourIdentity, ourIdentity)
+        if (counterpartMembership != null) {
+            throw FlowException("Membership already exists")
+        }
+        val builder = TransactionBuilder(notary)
+                .addOutputState(membership, MembershipContract.CONTRACT_NAME)
+                .addCommand(MembershipContract.Commands.Request(), ourIdentity.owningKey)
+        builder.verify(serviceHub)
+        val grantMembershipStx = serviceHub.signInitialTransaction(builder)
+        subFlow(FinalityFlow(grantMembershipStx, emptyList()))
+        //end of first transaction to request a membership state
+        return grantMembershipStx
     }
 
+    @Suspendable
+    override fun call(): SignedTransaction{
+        //start of second transaction to set membership status to ACTIVE
+        val bnoMembership = createMembership().tx.outRefsOfType(MembershipState::class.java).single()
+        val configuration = serviceHub.cordaService(BNOConfigurationService::class.java)
+        val notary = configuration.notaryParty()
+        logger.info("Membership is being activated")
+        progressTracker.currentStep = ACTIVATING_MEMBERSHIP
+            val txBuilder = TransactionBuilder(notary)
+                .addInputState(bnoMembership)
+                //Second transaction will only modify the status of the BNO node and set it to ACTIVE
+                .addOutputState(bnoMembership.state.data.copy(
+                                status = MembershipStatus.ACTIVE,
+                                modified = serviceHub.clock.instant()),
+                                MembershipContract.CONTRACT_NAME)
+                .addCommand(MembershipContract.Commands.Activate(), ourIdentity.owningKey)
+            txBuilder.verify(serviceHub)
+            val activateMembershipStx = serviceHub.signInitialTransaction(txBuilder)
+            // sign the transaction so it can be written to the ledger
+            subFlow(FinalityFlow(activateMembershipStx, listOf())) //listOf remains empty since only BNO needed to sign the transaction
+            logger.info("Membership has been activated")
+            progressTracker.currentStep = ACTIVATED_MEMBERSHIP
+            return subFlow(FinalityFlow(activateMembershipStx,  emptyList()))
+            //end of second transaction to set membership status to ACTIVE
+    }
 }
