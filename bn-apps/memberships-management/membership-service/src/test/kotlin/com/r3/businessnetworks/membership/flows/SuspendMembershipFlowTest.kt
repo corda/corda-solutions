@@ -19,7 +19,6 @@ class SuspendMembershipFlowTest : AbstractFlowTest(numberOfBusinessNetworks = 2,
     private fun testMembershipSuspension(suspender : (bnoNode : StartedMockNode, participantNode : StartedMockNode) -> SignedTransaction) {
         val bnoNode = bnoNodes.first()
         val suspendedMemberNode = participantsNodes.first()
-        val databaseService = DatabaseService(suspendedMemberNode.services)
         runRequestAndActivateMembershipFlow(bnoNode, participantsNodes)
 
         // cleaning up notifications as we are interested in SUSPENDs only
