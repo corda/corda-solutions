@@ -113,7 +113,7 @@ open class MembershipContract : Contract {
 data class MembershipState<out T : Any>(val member: Party,
                                         val bno: Party,
                                         val membershipMetadata: T,
-                                        val NetworkID: String?,
+                                        val networkID: String,
                                         val issued: Instant = Instant.now(),
                                         val modified: Instant = issued,
                                         val status: MembershipStatus = PENDING,
@@ -124,7 +124,7 @@ data class MembershipState<out T : Any>(val member: Party,
                     member = this.member,
                     bno = this.bno,
                     status = this.status,
-                    networkID = this.NetworkID
+                    networkID = this.networkID
             )
             else -> throw IllegalArgumentException("Unrecognised schema $schema")
         }
