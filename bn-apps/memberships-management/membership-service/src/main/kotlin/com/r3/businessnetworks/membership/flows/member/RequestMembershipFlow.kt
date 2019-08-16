@@ -19,7 +19,7 @@ data class OnBoardingRequest(val metadata: Any, val networkID: String?)
  */
 @StartableByRPC
 @InitiatingFlow(version = 2)
-open class RequestMembershipFlow(bno: Party, private val membershipMetadata: Any, private val JoiningNetworkID: String) : BusinessNetworkAwareInitiatingFlow<SignedTransaction>(bno) {
+open class RequestMembershipFlow(bno: Party, private val membershipMetadata: Any, private val joiningNetworkID: String) : BusinessNetworkAwareInitiatingFlow<SignedTransaction>(bno) {
     companion object {
         object SENDING_MEMBERSHIP_DATA_TO_BNO : ProgressTracker.Step("Sending membership data to BNO")
         object ACCEPTING_INCOMING_PENDING_MEMBERSHIP : ProgressTracker.Step("Accepting incoming pending membership")
@@ -37,7 +37,7 @@ open class RequestMembershipFlow(bno: Party, private val membershipMetadata: Any
         progressTracker.currentStep = SENDING_MEMBERSHIP_DATA_TO_BNO
 
         val bnoSession = initiateFlow(bno)
-        bnoSession.send(OnBoardingRequest(membershipMetadata, JoiningNetworkID))
+        bnoSession.send(OnBoardingRequest(membershipMetadata, joiningNetworkID))
         val signResponder = object : SignTransactionFlow(bnoSession) {
             override fun checkTransaction(stx: SignedTransaction) {
                 val command = stx.tx.commands.single()
