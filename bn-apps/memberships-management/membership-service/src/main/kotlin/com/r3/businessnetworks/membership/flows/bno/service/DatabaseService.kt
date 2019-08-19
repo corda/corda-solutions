@@ -19,7 +19,6 @@ import javax.persistence.*
 class PendingMembershipRequestSchema
 class PendingMembershipRequestSchemaV1 internal constructor() : MappedSchema(PendingMembershipRequestSchema::class.java, 1, ImmutableList.of(PersistentPendingMembershipRequest::class.java))
 
-
 @Entity(name = "PersistentPendingMembershipRequest")
 @Table(name = "pending_membership_requests")
 class PersistentPendingMembershipRequest : Serializable {
@@ -39,7 +38,6 @@ class PersistentPendingMembershipRequest : Serializable {
     @Column(name = "pending_member", nullable = false, unique = true)
     var pendingMember: String? = null
 }
-
 
 /**
  * Used by BNO to interact with the underlying database.
