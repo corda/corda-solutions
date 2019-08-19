@@ -96,9 +96,8 @@ class DatabaseService(val serviceHub: ServiceHub) : SingletonSerializeAsToken() 
                     .executeUpdate()
         }
     }
-
-
-    private fun networkIDCriteria(NetworkID: String?) = QueryCriteria.VaultCustomQueryCriteria(builder { MembershipStateSchemaV1.PersistentMembershipState::networkID.equal(NetworkID) })
+    
+    private fun networkIDCriteria(networkID: String?) = QueryCriteria.VaultCustomQueryCriteria(builder { MembershipStateSchemaV1.PersistentMembershipState::networkID.equal(networkID) })
     private fun memberCriteria(member: Party) = QueryCriteria.VaultCustomQueryCriteria(builder { MembershipStateSchemaV1.PersistentMembershipState::member.equal(member) })
     private fun bnoCriteria(bno: Party) = QueryCriteria.VaultCustomQueryCriteria(builder { MembershipStateSchemaV1.PersistentMembershipState::bno.equal(bno) })
 }
