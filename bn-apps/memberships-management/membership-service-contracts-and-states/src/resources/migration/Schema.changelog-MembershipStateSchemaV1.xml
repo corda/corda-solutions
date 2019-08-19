@@ -3,6 +3,6 @@
         <column name="member_name" type="NVARCHAR(255)"/>
         <column name="bno_name" type="NVARCHAR(255)"/>
         <column name="status" type="NVARCHAR(255)"/>
-        <column name="Network_ID" type="NVARCHAR(255)" defaultValue="UNASSIGNED"/>
+        <column name="Network_ID" type="NVARCHAR(255)"/>
     </createTable>
 </changeSet>
