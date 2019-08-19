@@ -123,6 +123,13 @@ class MembershipContractTest {
             transaction {
                 val input = membershipState(MembershipStatus.ACTIVE)
                 input(MembershipContract.CONTRACT_NAME,  input)
+                output(MembershipContract.CONTRACT_NAME,  input.copy(status = MembershipStatus.SUSPENDED, modified = input.modified.plusMillis(1), networkID = null))
+                command(listOf(bno.publicKey), MembershipContract.Commands.Suspend())
+                this.verifies()
+            }
+            transaction {
+                val input = membershipState(MembershipStatus.ACTIVE)
+                input(MembershipContract.CONTRACT_NAME,  input)
                 output(MembershipContract.CONTRACT_NAME,  input.copy(status = MembershipStatus.SUSPENDED, modified = input.modified.plusMillis(1)))
                 command(listOf(bno.publicKey, member.publicKey), MembershipContract.Commands.Suspend())
                 this.`fails with`("Only BNO should sign a suspension transaction")
