@@ -1,6 +1,7 @@
 package com.r3.businessnetworks.ledgersync
 
 import com.typesafe.config.Config
+import com.typesafe.config.ConfigException
 import com.typesafe.config.ConfigFactory
 import net.corda.core.contracts.ContractState
 import net.corda.core.crypto.SecureHash
@@ -20,6 +21,7 @@ import net.corda.core.utilities.loggerFor
 import sun.security.util.ByteArrayLexOrder
 import java.io.File
 import java.nio.file.Paths
+import javax.naming.ConfigurationException
 
 /**
  * Provides a list of transaction hashes referring to transactions in which all of the given parties are participating.
@@ -38,13 +40,13 @@ fun ServiceHub.withParticipants(vararg parties: Party, pageSize: Int = this.cord
 
     var count = 1
     var page = vaultService.queryBy<ContractState>(criteria, PageSpecification(count, pageSize))
-    while(page.states.isNotEmpty()) {
+    while (page.states.isNotEmpty()) {
         page.states.filter {
             it.state.data.participants.containsAll(parties.toList())
         }.map {
             list.add(it.ref.txhash)
         }
-        count ++
+        count++
         page = vaultService.queryBy(criteria, PageSpecification(count, pageSize))
     }
     return list
@@ -63,46 +65,49 @@ fun List<SecureHash>.hash(): SecureHash = map {
 /*
     read pageSize from ledgersync.conf. More config could be added if needed.
  */
+@Suppress("UNUSED_PARAMETER")
 @CordaService
-class ConfigurationService(appServiceHub : AppServiceHub): SingletonSerializeAsToken()  {
+class ConfigurationService(appServiceHub: AppServiceHub) : SingletonSerializeAsToken() {
+
     companion object {
         private val logger = loggerFor<ConfigurationService>()
     }
+
     private val configName = "ledgersync"
-    private var _config = loadConfig()
-    private fun loadConfig() : Config? {
+    private val config = loadConfig()
+
+    private fun loadConfig(): Config? {
         val fileName = "$configName.conf"
         val defaultLocation = (Paths.get("cordapps").resolve("config").resolve(fileName)).toFile()
-        var loc: File? = null
-        loc = if(defaultLocation.exists())
+        val loc = if (defaultLocation.exists()) {
             defaultLocation
-        else {
-            val configResource = this::class.java.classLoader.getResource(fileName)
-            configResource?.let { File(configResource.toURI()) }
+        } else {
+            this::class.java.classLoader.getResource(fileName)?.let {
+                File(it.toURI())
+            }
         }
-        return if(loc == null) {
-            logger.warn("Cannot find $configName.conf")
+        return if (loc == null) {
+            logger.info("Cannot find $configName.conf")
             null
-        }
-        else try {
+        } else try {
             ConfigFactory.parseFile(loc)
-        }catch (e: Exception){
-            logger.warn("Failed to parse ${loc.absolutePath} due to ${e.message} ")
+        } catch (e: ConfigException) {
+            logger.warn("Failed to parse ${loc.absolutePath} due to ${e.origin()} ")
             null
         }
     }
-    open fun pageSize() = _config?.let{
-        var size = DEFAULT_PAGE_SIZE
+
+    fun pageSize() = config?.let {
         try {
-            size = it.getInt("pageSize")
             logger.info("pageSize = ${it.getInt("pageSize")}")
-        } catch (e: Exception) {
-            logger.warn("pageSize is not properly configured! Exception: ${e.message} \n" +
+            it.getInt("pageSize")
+        } catch (e: ConfigException) {
+            logger.warn("pageSize is not properly configured! Exception: ${e.origin()} \n" +
                     "Using DEFAULT_PAGE_SIZE = $DEFAULT_PAGE_SIZE")
+            DEFAULT_PAGE_SIZE
         }
-        size
     } ?: run {
-        logger.warn("Using DEFAULT_PAGE_SIZE = $DEFAULT_PAGE_SIZE")
+        logger.info("Using DEFAULT_PAGE_SIZE = $DEFAULT_PAGE_SIZE")
         DEFAULT_PAGE_SIZE
     }
 }
