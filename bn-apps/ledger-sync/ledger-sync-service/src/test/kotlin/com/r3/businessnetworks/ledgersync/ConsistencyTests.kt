@@ -5,11 +5,10 @@ import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.StartableByService
 import net.corda.core.identity.CordaX500Name
 import net.corda.core.identity.Party
-import net.corda.core.node.services.Vault.Page
-import net.corda.core.node.services.Vault.StateStatus.ALL
+import net.corda.core.node.services.Vault
 import net.corda.core.node.services.vault.MAX_PAGE_SIZE
 import net.corda.core.node.services.vault.PageSpecification
-import net.corda.core.node.services.vault.QueryCriteria.VaultQueryCriteria
+import net.corda.core.node.services.vault.QueryCriteria
 import net.corda.core.utilities.getOrThrow
 import net.corda.testing.node.MockNetworkNotarySpec
 import net.corda.testing.node.internal.InternalMockNetwork
@@ -21,23 +20,21 @@ import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
 
-class LedgerConsistencyTests {
+abstract class ConsistencyTests {
+    abstract val cordappPackages: List<String>
+
     private val notary = CordaX500Name("Notary", "London", "GB")
 
-    private val node1 = CordaX500Name("Member 1", "Paris", "FR")
-    private val node2 = CordaX500Name("Member 2", "Paris", "FR")
-    private val node3 = CordaX500Name("Member 3", "Paris", "FR")
+    internal val node1 = CordaX500Name("Member 1", "Paris", "FR")
+    internal val node2 = CordaX500Name("Member 2", "Paris", "FR")
+    internal val node3 = CordaX500Name("Member 3", "Paris", "FR")
 
-    private lateinit var mockNetwork: InternalMockNetwork
+    protected lateinit var mockNetwork: InternalMockNetwork
 
     @Before
     fun start() {
         mockNetwork = InternalMockNetwork(
-                cordappPackages = listOf(
-                        "com.r3.businessnetworks.membership",
-                        "com.r3.businessnetworks.membership.states",
-                        "com.r3.businessnetworks.ledgersync"
-                ),
+                cordappPackages = cordappPackages,
                 notarySpecs = listOf(MockNetworkNotarySpec(notary))
         )
 
@@ -51,13 +48,6 @@ class LedgerConsistencyTests {
     @After
     fun stop() {
         mockNetwork.stopNodes()
-    }
-
-    @Test
-    fun `check VR existence`() {
-        val future = node1.fromNetwork().services.startFlow(VaultRecyclerExistFlow()).resultFuture
-        mockNetwork.runNetwork()
-        assertEquals(false, future.getOrThrow())
     }
 
     @Test
@@ -199,13 +189,16 @@ class LedgerConsistencyTests {
         assertEquals(3, node1.fromNetwork().bogusStateCount())
     }
 
-    private fun TestStartedNode.runRequestLedgerSyncFlow(members: List<Party>): Map<Party, LedgerSyncFindings> {
+    /**
+     * All Helper Functions that are used by both test here
+     */
+    fun TestStartedNode.runRequestLedgerSyncFlow(members: List<Party>): Map<Party, LedgerSyncFindings> {
         val future = services.startFlow(RequestLedgersSyncFlow(members)).resultFuture
         mockNetwork.runNetwork()
         return future.getOrThrow()
     }
 
-    private fun TestStartedNode.runTransactionRecoveryFlow(report: Map<Party, LedgerSyncFindings>) {
+    fun TestStartedNode.runTransactionRecoveryFlow(report: Map<Party, LedgerSyncFindings>) {
         val future = services.startFlow(TransactionRecoveryFlow(report)).resultFuture
         mockNetwork.runNetwork()
         future.getOrThrow()
@@ -223,26 +216,24 @@ class LedgerConsistencyTests {
         future.getOrThrow()
     }
 
-    private fun TestStartedNode.regularNodes(): List<Party> = listOf(node1, node2, node3).map {
+    fun TestStartedNode.regularNodes(): List<Party> = listOf(node1, node2, node3).map {
         services.identityService.wellKnownPartyFromX500Name(it)!!
     }
 
-    private fun TestStartedNode.identity() = info.legalIdentities.first()
+    fun TestStartedNode.identity() = info.legalIdentities.first()
 
     /*
      * The number of states in this node's vault
      */
-    private fun TestStartedNode.bogusStateCount() = bogusStates().totalStatesAvailable.toInt()
-
-    private fun TestStartedNode.bogusStates(): Page<BogusState> = database.transaction {
+    fun TestStartedNode.bogusStateCount() = database.transaction {
         services.vaultService.queryBy(
                 BogusState::class.java,
-                VaultQueryCriteria(ALL),
+                QueryCriteria.VaultQueryCriteria(Vault.StateStatus.ALL),
                 PageSpecification(1, MAX_PAGE_SIZE)
         )
-    }
+    }.totalStatesAvailable.toInt()
 
-    private fun TestStartedNode.simulateCatastrophicFailure() {
+    fun TestStartedNode.simulateCatastrophicFailure() {
         services.database.transaction {
             connection.prepareStatement("""SELECT transaction_id FROM VAULT_STATES WHERE CONTRACT_STATE_CLASS_NAME='${BogusState::class.java.canonicalName}'""").executeQuery().let { results ->
                 while (results.next()) {
@@ -257,19 +248,20 @@ class LedgerConsistencyTests {
         }
 
         restart()
+
     }
 
-    private fun CordaX500Name.fromNetwork(): TestStartedNode = mockNetwork.nodes.lastOrNull {
+    fun CordaX500Name.fromNetwork(): TestStartedNode = mockNetwork.nodes.lastOrNull {
         it.configuration.myLegalName == this
     }?.started!!
 
-    private fun TestStartedNode.createTransactions(count: Int = 1) {
+    fun TestStartedNode.createTransactions(count: Int = 1) {
         (regularNodes() - identity()).forEach { party ->
             createTransaction(party, count)
         }
     }
 
-    private fun TestStartedNode.createTransaction(counterParty: Party, count: Int = 1) {
+    fun TestStartedNode.createTransaction(counterParty: Party, count: Int = 1) {
         repeat(count) {
             val future = services.startFlow(BogusFlow(counterParty)).resultFuture
             mockNetwork.runNetwork()
@@ -277,7 +269,7 @@ class LedgerConsistencyTests {
         }
     }
 
-    private fun TestStartedNode.restart() {
+    fun TestStartedNode.restart() {
         internals.disableDBCloseOnStop()
         internals.stop()
         mockNetwork.createNode(
