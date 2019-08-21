@@ -42,7 +42,7 @@ open class SelfIssueMembershipFlow(val metaData: Any, val networkID: String?) : 
         //Start of first transaction to request a membership state
         val membership: MembershipState<Any> = MembershipState(ourIdentity, ourIdentity, metaData, networkID)
         val databaseService = serviceHub.cordaService(DatabaseService::class.java)
-        val counterpartMembership = databaseService.getMembership(ourIdentity, ourIdentity)
+        val counterpartMembership = databaseService.getMembershipOnNetwork(ourIdentity, ourIdentity, networkID)
         if (counterpartMembership != null) {
             throw FlowException("Membership already exists")
         }

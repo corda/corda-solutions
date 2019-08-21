@@ -30,10 +30,11 @@ open class RequestMembershipFlowResponder(val session: FlowSession) : BusinessNe
     @Suspendable
     override fun call() {
         // checking that there is no existing membership state
+        val request = session.receive<OnBoardingRequest>().unwrap { it }
         val counterparty = session.counterparty
         val configuration = serviceHub.cordaService(BNOConfigurationService::class.java)
         val databaseService = serviceHub.cordaService(DatabaseService::class.java)
-        val counterpartMembership = databaseService.getMembership(counterparty, ourIdentity)
+        val counterpartMembership = databaseService.getMembershipOnNetwork(counterparty, ourIdentity, request.networkID)
         if (counterpartMembership != null) {
             throw FlowException("Membership already exists")
         }
@@ -50,7 +51,7 @@ open class RequestMembershipFlowResponder(val session: FlowSession) : BusinessNe
         // Issuing PENDING membership state onto the ledger
         try {
             // receive an on-boarding request
-            val request = session.receive<OnBoardingRequest>().unwrap { it }
+            //val request = session.receive<OnBoardingRequest>().unwrap { it }
 
             val notary = configuration.notaryParty()
 
@@ -83,7 +84,7 @@ open class RequestMembershipFlowResponder(val session: FlowSession) : BusinessNe
 
             if (activateRightAway(membership, configuration)) {
                 logger.info("Auto-activating membership for party ${membership.member}")
-                val stateToActivate = findMembershipStateForParty(membership.member)
+                val stateToActivate = findMembershipStateForParty(membership.member, request.networkID)
                 val tx = subFlow(ActivateMembershipFlow(stateToActivate))
                 if (membership.bno == membership.member) session.send(tx)
             } else if (membership.bno == membership.member) {

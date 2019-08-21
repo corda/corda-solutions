@@ -59,7 +59,7 @@ open class ActivateMembershipFlow(val membership: StateAndRef<MembershipState<An
 
         // We should notify members about changes with the ACTIVATED membership
         val databaseService = serviceHub.cordaService(DatabaseService::class.java)
-        val activatedMembership = databaseService.getMembership(membership.state.data.member, ourIdentity)!!
+        val activatedMembership = databaseService.getMembershipOnNetwork(membership.state.data.member, ourIdentity, membership.state.data.networkID)!!
         subFlow(NotifyActiveMembersFlow(OnMembershipChanged(activatedMembership)))
 
         return stx
@@ -73,7 +73,7 @@ open class ActivateMembershipFlow(val membership: StateAndRef<MembershipState<An
  */
 @InitiatingFlow
 @StartableByRPC
-open class ActivateMembershipForPartyFlow(val party: Party) : BusinessNetworkOperatorFlowLogic<SignedTransaction>() {
+open class ActivateMembershipForPartyFlow(val party: Party, val networkID: String?) : BusinessNetworkOperatorFlowLogic<SignedTransaction>() {
 
     companion object {
         object LOOKING_FOR_MEMBERSHIP_STATE : ProgressTracker.Step("Looking for party's membership state")
@@ -90,7 +90,7 @@ open class ActivateMembershipForPartyFlow(val party: Party) : BusinessNetworkOpe
     @Suspendable
     override fun call(): SignedTransaction {
         progressTracker.currentStep = LOOKING_FOR_MEMBERSHIP_STATE
-        val stateToActivate = findMembershipStateForParty(party)
+        val stateToActivate = findMembershipStateForParty(party, networkID)
 
         progressTracker.currentStep = ACTIVATING_THE_MEMBERSHIP_STATE
         return subFlow(ActivateMembershipFlow(stateToActivate))

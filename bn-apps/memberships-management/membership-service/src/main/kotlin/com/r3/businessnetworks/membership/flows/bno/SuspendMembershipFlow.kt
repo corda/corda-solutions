@@ -75,7 +75,7 @@ open class SuspendMembershipFlow(val membership: StateAndRef<MembershipState<Any
  */
 @InitiatingFlow
 @StartableByRPC
-open class SuspendMembershipForPartyFlow(val party: Party) : BusinessNetworkOperatorFlowLogic<SignedTransaction>() {
+open class SuspendMembershipForPartyFlow(val party: Party,val networkID: String?) : BusinessNetworkOperatorFlowLogic<SignedTransaction>() {
 
     companion object {
         object LOOKING_FOR_MEMBERSHIP_STATE : ProgressTracker.Step("Looking for party's membership state")
@@ -92,7 +92,7 @@ open class SuspendMembershipForPartyFlow(val party: Party) : BusinessNetworkOper
     @Suspendable
     override fun call(): SignedTransaction {
         progressTracker.currentStep = LOOKING_FOR_MEMBERSHIP_STATE
-        val stateToActivate = findMembershipStateForParty(party)
+        val stateToActivate = findMembershipStateForParty(party, networkID)
 
         progressTracker.currentStep = SUSPENDING_THE_MEMBERSHIP_STATE
         return subFlow(SuspendMembershipFlow(stateToActivate))
