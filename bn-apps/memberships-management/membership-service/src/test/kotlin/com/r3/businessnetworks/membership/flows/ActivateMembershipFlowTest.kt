@@ -57,7 +57,7 @@ class ActivateMembershipFlowTest : AbstractFlowTest(
 
     @Test
     fun `membership activation should succeed when using a convenience flow`() = testMembershipActivation { bnoNode, participantNode ->
-        runActivateMembershipForPartyFlow(bnoNode, participantNode.identity())
+        runActivateMembershipForPartyFlow(bnoNode, participantNode.identity(), "0")
     }
 
     @Test

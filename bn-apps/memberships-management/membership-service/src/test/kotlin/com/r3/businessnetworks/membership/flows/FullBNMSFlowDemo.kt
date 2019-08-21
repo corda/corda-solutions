@@ -50,7 +50,7 @@ class FullBNMSFlowDemo : AbstractFlowTest(
         }
 
         // Business Network members can amend their membership metadata via AmendMembershipMetadataFlow
-        runAmendMetadataFlow(bnoNode, newJoiner, SimpleMembershipMetadata(role="Some other role"))
+        runAmendMetadataFlow(bnoNode, newJoiner, SimpleMembershipMetadata(role="Some other role"),"0")
 
         // BNO can suspend memberships via SuspendMembershipFlow
         runSuspendMembershipFlow(bnoNode, newJoiner.identity())

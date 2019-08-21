@@ -28,7 +28,7 @@ class AmendMembershipMetadataFlowTest : AbstractFlowTest(
         val existingMembership = getMembership(participantNode, participantNode.identity(), bnoNode.identity())
         val newMetadata = (existingMembership.state.data.membershipMetadata as SimpleMembershipMetadata).copy(role = "Some other role")
 
-        val partiallySignedTx = runAmendMetadataFlow(bnoNode, participantNode, newMetadata)
+        val partiallySignedTx = runAmendMetadataFlow(bnoNode, participantNode, newMetadata,"0")
         val allSignedTx = allTransactions(participantNode).single { it.id == partiallySignedTx.id }
         allSignedTx.verifyRequiredSignatures()
 
@@ -56,7 +56,7 @@ class AmendMembershipMetadataFlowTest : AbstractFlowTest(
         runActivateMembershipFlow(bnoNode, memberNode.identity())
 
         try {
-            runAmendMetadataFlow(bnoNode, memberNode, SimpleMembershipMetadata(role = "Some role"))
+            runAmendMetadataFlow(bnoNode, memberNode, SimpleMembershipMetadata(role = "Some role"),"0")
         } catch (e : FlowException) {
             assert("${memberNode.identity()} is not a member" == e.message)
         }
@@ -73,7 +73,7 @@ class AmendMembershipMetadataFlowTest : AbstractFlowTest(
         val newMetadata = (existingMembership.state.data.membershipMetadata as SimpleMembershipMetadata).copy(role = "Some other role")
 
         try {
-            runAmendMetadataFlow(bnoNode, participantNode, newMetadata)
+            runAmendMetadataFlow(bnoNode, participantNode, newMetadata, "0")
             fail()
         } catch (ex : FlowException) {
             assertEquals("Invalid metadata", ex.message)

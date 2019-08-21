@@ -117,8 +117,8 @@ abstract class AbstractFlowTest(private val numberOfBusinessNetworks: Int,
         return future.getOrThrow()
     }
 
-    fun runSuspendMembershipForPartyFlow(bnoNode: StartedMockNode, participant: Party): SignedTransaction {
-        val future = bnoNode.startFlow(SuspendMembershipForPartyFlow(participant))
+    fun runSuspendMembershipForPartyFlow(bnoNode: StartedMockNode, participant: Party, networkID: String?): SignedTransaction {
+        val future = bnoNode.startFlow(SuspendMembershipForPartyFlow(participant, networkID))
         mockNetwork.runNetwork()
         return future.getOrThrow()
     }
@@ -134,14 +134,14 @@ abstract class AbstractFlowTest(private val numberOfBusinessNetworks: Int,
         return participants.map { runActivateMembershipFlow(bnoNode, it) }
     }
 
-    fun runActivateMembershipForPartyFlow(bnoNode: StartedMockNode, participant: Party): SignedTransaction {
-        val future = bnoNode.startFlow(ActivateMembershipForPartyFlow(participant))
+    fun runActivateMembershipForPartyFlow(bnoNode: StartedMockNode, participant: Party, networkID: String): SignedTransaction {
+        val future = bnoNode.startFlow(ActivateMembershipForPartyFlow(participant,networkID))
         mockNetwork.runNetwork()
         return future.getOrThrow()
     }
 
-    fun runAmendMetadataFlow(bnoNode: StartedMockNode, participantNode: StartedMockNode, newMetadata: Any): SignedTransaction {
-        val future = participantNode.startFlow(AmendMembershipMetadataFlow(bnoNode.identity(), newMetadata))
+    fun runAmendMetadataFlow(bnoNode: StartedMockNode, participantNode: StartedMockNode, newMetadata: Any, networkID: String?): SignedTransaction {
+        val future = participantNode.startFlow(AmendMembershipMetadataFlow(bnoNode.identity(), newMetadata, "0"))
         mockNetwork.runNetwork()
         return future.getOrThrow()
     }
