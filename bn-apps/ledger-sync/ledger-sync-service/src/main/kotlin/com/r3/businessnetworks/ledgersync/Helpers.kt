@@ -35,13 +35,13 @@ fun ServiceHub.withParticipants(vararg parties: Party, pageSize: Int = this.cord
     val criteria = VaultQueryCriteria(status = ALL)
     var count = 1
     var page = vaultService.queryBy<ContractState>(criteria, PageSpecification(count, pageSize))
-    while(page.states.isNotEmpty()) {
+    while (page.states.isNotEmpty()) {
         page.states.filter {
             it.state.data.participants.containsAll(parties.toList())
         }.map {
             list.add(it.ref.txhash)
         }
-        count ++
+        count++
         page = vaultService.queryBy(criteria, PageSpecification(count, pageSize))
     }
     return list
@@ -61,10 +61,10 @@ fun List<SecureHash>.hash(): SecureHash = map {
     read pageSize from ledgersync.conf. More config could be added if needed.
  */
 @CordaService
-class ConfigurationService(appServiceHub : AppServiceHub): SingletonSerializeAsToken()  {
+class ConfigurationService(appServiceHub: AppServiceHub) : SingletonSerializeAsToken() {
     private val configName = "ledgersync"
     private var _config = loadConfig()
-    private fun loadConfig() : Config? {
+    private fun loadConfig(): Config? {
         val fileName = "$configName.conf"
         val defaultLocation = (Paths.get("cordapps").resolve("config").resolve(fileName)).toFile()
         return if (defaultLocation.exists()) ConfigFactory.parseFile(defaultLocation)
@@ -76,23 +76,25 @@ class ConfigurationService(appServiceHub : AppServiceHub): SingletonSerializeAsT
             } else ConfigFactory.parseFile(File(configResource.toURI()))
         }
     }
+
     open fun pageSize() = _config?.getInt("pageSize") ?: DEFAULT_PAGE_SIZE
 }
 
 fun ServiceHub.getRecycledTx(): List<SecureHash> {
-    if(!vrExist()) return listOf()
-    val list = mutableListOf<SecureHash>()
-    val hqlSelectQuery = "select tx_id from RECYCLABLE_TX as dbTable where dbTable.tx_id not in " +
-                            "(select nodeTXTable.TX_ID from NODE_TRANSACTIONS nodeTXTable) "
-    val result = jdbcSession().prepareStatement(hqlSelectQuery).executeQuery()
-    while(result.next()) list.add((SecureHash.parse(result.getString(1))))
-    return list
+    return if (!vrExist())
+        emptyList()
+    else
+        this.withEntityManager {
+            val hqlSelectQuery = "select txID from RecyclableTransaction as dbTable where dbTable.txID not in " +
+                    "(select nodeTXTable.txId from DBTransactionStorage\$DBTransaction nodeTXTable) "
+            createQuery(hqlSelectQuery)
+                    .resultList
+                    .map { SecureHash.parse(it as String) }
+        }
 }
 
 fun ServiceHub.vrExist(): Boolean {
-    val result = jdbcSession().prepareStatement("show tables").executeQuery()
-    while(result.next()) {
-        if (result.getString(1).equals("RECYCLABLE_TX")) return true
+    return this.withEntityManager {
+        this.metamodel.entities.any { it.name.equals("RecyclableTransaction") }
     }
-    return false
 }

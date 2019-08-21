@@ -60,6 +60,12 @@ subprojects {
         maven { url 'https://jitpack.io' }
         maven { url "http://ci-artifactory.corda.r3cev.com/artifactory/corda-dev" }
         maven { url "http://ci-artifactory.corda.r3cev.com/artifactory/corda-releases" }
+        maven { url "https://ci-artifactory.corda.r3cev.com/artifactory/corda-solutions-private-dev/"
+            credentials {
+                username = System.getenv('CORDA_ARTIFACTORY_USERNAME') ?: System.getProperty('corda.artifactory.username')
+                password = System.getenv('CORDA_ARTIFACTORY_PASSWORD') ?: System.getProperty('corda.artifactory.password')
+            }
+        }
     }
 }
 
