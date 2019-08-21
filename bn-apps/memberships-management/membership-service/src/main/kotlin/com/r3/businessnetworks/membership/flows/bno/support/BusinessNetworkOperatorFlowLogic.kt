@@ -19,9 +19,9 @@ abstract class BusinessNetworkOperatorFlowLogic<out T> : FlowLogic<T>() {
         }
     }
 
-    protected fun findMembershipStateForParty(party : Party) : StateAndRef<MembershipState<Any>> {
+    protected fun findMembershipStateForParty(party : Party, networkID:String?) : StateAndRef<MembershipState<Any>> {
         val databaseService = serviceHub.cordaService(DatabaseService::class.java)
-        return databaseService.getMembership(party, ourIdentity) ?: throw MembershipNotFound(party)
+        return databaseService.getMembershipOnNetwork(party, ourIdentity,networkID) ?: throw MembershipNotFound(party)
     }
 
     protected fun getActiveMembershipStates() : List<StateAndRef<MembershipState<Any>>> {
