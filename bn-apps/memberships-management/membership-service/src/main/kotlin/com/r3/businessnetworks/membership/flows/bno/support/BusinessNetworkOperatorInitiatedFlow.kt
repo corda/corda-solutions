@@ -21,7 +21,8 @@ abstract class BusinessNetworkOperatorInitiatedFlow<out T>(val flowSession : Flo
 
     @Suspendable
     override fun call() : T {
-        val membership = verifyAndGetMembership(flowSession.counterparty)
+        val receivedNetworkID = flowSession.receive<AmendMembershipMetadataRequest>().unwrap{it}
+        val membership = verifyAndGetMembership(flowSession.counterparty, receivedNetworkID.networkID)
         return onCounterpartyMembershipVerified(membership)
     }
 
@@ -29,10 +30,10 @@ abstract class BusinessNetworkOperatorInitiatedFlow<out T>(val flowSession : Flo
     abstract fun onCounterpartyMembershipVerified(counterpartyMembership : StateAndRef<MembershipState<Any>>) : T
 
     @Suspendable
-    private fun verifyAndGetMembership(initiator : Party) : StateAndRef<MembershipState<Any>> {
+    private fun verifyAndGetMembership(initiator : Party, networkID: String?) : StateAndRef<MembershipState<Any>> {
         logger.info("Verifying membership status of $initiator")
         val databaseService = serviceHub.cordaService(DatabaseService::class.java)
-        val membership = databaseService.getMembership(initiator, ourIdentity)
+        val membership = databaseService.getMembershipOnNetwork(initiator, ourIdentity, networkID)
         if (membership == null) {
             throw NotAMemberException(initiator)
         } else if (!membership.state.data.isActive()) {
