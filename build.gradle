@@ -15,6 +15,12 @@ buildscript {
         jcenter()
         mavenCentral()
         maven { url "http://ci-artifactory.corda.r3cev.com/artifactory/corda-releases" }
+        maven { url "https://ci-artifactory.corda.r3cev.com/artifactory/corda-solutions-private-dev/"
+            credentials {
+                username = System.getenv('CORDA_ARTIFACTORY_USERNAME') ?: System.getProperty('corda.artifactory.username')
+                password = System.getenv('CORDA_ARTIFACTORY_PASSWORD') ?: System.getProperty('corda.artifactory.password')
+            }
+        }
     }
 
     dependencies {
@@ -45,6 +51,11 @@ allprojects {
         }
     }
 }
+
+println("CORDA_ARTIFACTORY_USERNAME: " + System.getenv('CORDA_ARTIFACTORY_USERNAME'))
+println("CORDA_ARTIFACTORY_PASSWORD: " + System.getenv('CORDA_ARTIFACTORY_PASSWORD'))
+println("corda.artifactory.username" + System.getProperty('corda.artifactory.username'))
+println("corda.artifactory.password" + System.getProperty('corda.artifactory.password'))
 
 subprojects {
     buildscript {
