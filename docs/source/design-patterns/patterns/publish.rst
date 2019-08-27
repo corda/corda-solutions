@@ -63,14 +63,24 @@ The pattern can be illustrated as follows, using a State Evolution diagram with 
     :text-align: left
 
     * -
-      - Pros
-      - Cons
-    * - issue new PublishedState and use as Input
-      - always get the latest info
-      - need to publish whenever needed, which involves all participants of original state and lead to more transaction volume
-    * - use existing one as Reference
-      - publish once and use multiple times, so more efficient and all participants only get involved once
-      - the PublishedState does not reflect the latest info when the original state is updated. And additional flow to update/cancel copy might be needed when updating the original state
+      - As reference
+      - As input
+    * - issue new PublishedState whenever needed
+      - - always get the latest info  
+        - Dependency on participants of original state 
+        - Duplicate on PublishedState
+      - - always get the latest info 
+        - Dependency on participants of original state 
+        - Less but possible duplicate on PublishedState
+    * - use existing one first, otherwise issue new PublishedState
+      - - outdated info possible 
+        - No duplicate PublishedState 
+        - Less dependency on participants of original states 
+        - Revoke for PublishedState is needed
+      - - outdated info possible 
+        - No duplicate PublishedState
+        - Significant dependency on participants of original states 
+        - Revoke for PublishedState is needed
 
 
 ----------------
@@ -93,6 +103,7 @@ Extensions
 ----------
 
 1. is it possible to publish only selected fields of state? If so, how to mask private fields? And primary key fields cannot be masked, for verification purpose.
+2. reissuance of state
 
 
 --------------------------------------------------
@@ -100,13 +111,15 @@ Things to Consider when using the Publisher pattern
 --------------------------------------------------
 
   - Who has the right to issue the PublishedState?
-  - Who has the right to hold the PublishedState?
-  - PublishedState as input or reference?
+  - Who has the right to be the owner of the PublishedState?
+  - Use PublishedState as input or reference?
+  - Issue new PublishedState whenever needed or using existing ones first?
+  - Revoke process should be considered when original state has changed
 
 
 ----------------------
 Related Anti-patterns
 ----------------------
 
-1. The holder of original state could publish the state in advance. And later if the original state is updated or cancelled, the PublishedState could still be used.
-2. If PublishedState is being used as input, the malicious node could request the PublishedState repeatedly, which would consume the resources and keep participants of original state busy.
+1. The holder of original state could publish the state in advance. And later if revoke is not handled properly when the original state is updated or cancelled, the PublishedState could still be used.
+2. If PublishedState is issued whenever needed, the malicious node could request the PublishedState repeatedly, which would consume the resources and keep participants of original state busy.
