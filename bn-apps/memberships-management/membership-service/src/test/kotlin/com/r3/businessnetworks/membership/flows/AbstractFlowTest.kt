@@ -140,8 +140,8 @@ abstract class AbstractFlowTest(private val numberOfBusinessNetworks: Int,
         return future.getOrThrow()
     }
 
-    fun runAmendMetadataFlow(bnoNode: StartedMockNode, participantNode: StartedMockNode, newMetadata: Any, networkID: String?): SignedTransaction {
-        val future = participantNode.startFlow(AmendMembershipMetadataFlow(bnoNode.identity(), newMetadata, "0"))
+    fun runAmendMetadataFlow(bnoNode: StartedMockNode, participantNode: StartedMockNode, newMetadata: Any, networkID: String = "0"): SignedTransaction {
+        val future = participantNode.startFlow(AmendMembershipMetadataFlow(bnoNode.identity(), newMetadata, networkID))
         mockNetwork.runNetwork()
         return future.getOrThrow()
     }

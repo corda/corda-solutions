@@ -5,6 +5,7 @@ import com.r3.businessnetworks.membership.flows.MembershipNotActiveException
 import com.r3.businessnetworks.membership.flows.NotAMemberException
 import com.r3.businessnetworks.membership.flows.bno.service.DatabaseService
 import com.r3.businessnetworks.membership.flows.member.AmendMembershipMetadataRequest
+import com.r3.businessnetworks.membership.flows.member.MembershipsListResponse
 import com.r3.businessnetworks.membership.states.MembershipState
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.flows.FlowSession
@@ -21,7 +22,11 @@ abstract class BusinessNetworkOperatorInitiatedFlow<out T>(val flowSession : Flo
     @Suspendable
     override fun call() : T {
         val receivedNetworkID = flowSession.receive<AmendMembershipMetadataRequest>().unwrap{it}
+<<<<<<< HEAD
         val membership = verifyAndGetMembership(flowSession.counterparty,receivedNetworkID.networkID)
+=======
+        val membership = verifyAndGetMembership(flowSession.counterparty, receivedNetworkID.networkID)
+>>>>>>> 65dbaa9b6f68c32f9b8bd5ac77fa93cb3d035ec0
         return onCounterpartyMembershipVerified(membership)
     }
 
