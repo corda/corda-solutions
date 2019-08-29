@@ -14,13 +14,13 @@ import net.corda.core.node.services.Vault.StateStatus.ALL
 import net.corda.core.node.services.queryBy
 import net.corda.core.node.services.vault.DEFAULT_PAGE_SIZE
 import net.corda.core.node.services.vault.PageSpecification
+import net.corda.core.node.services.vault.QueryCriteria
 import net.corda.core.node.services.vault.QueryCriteria.VaultQueryCriteria
 import net.corda.core.serialization.SingletonSerializeAsToken
 import net.corda.core.utilities.loggerFor
 import sun.security.util.ByteArrayLexOrder
 import java.io.File
 import java.nio.file.Paths
-import javax.naming.ConfigurationException
 
 /**
  * Provides a list of transaction hashes referring to transactions in which all of the given parties are participating.
@@ -110,7 +110,6 @@ class ConfigurationService(appServiceHub: AppServiceHub) : SingletonSerializeAsT
         DEFAULT_PAGE_SIZE
     }
 
-    open fun pageSize() = _config?.getInt("pageSize") ?: DEFAULT_PAGE_SIZE
 }
 
 fun ServiceHub.getRecycledTx(): List<SecureHash> {
@@ -128,6 +127,6 @@ fun ServiceHub.getRecycledTx(): List<SecureHash> {
 
 fun ServiceHub.vrExist(): Boolean {
     return this.withEntityManager {
-        this.metamodel.entities.any { it.name.equals("RecyclableTransaction") }
+        this.metamodel.entities.any { it.name == "RecyclableTransaction" }
     }
 }
