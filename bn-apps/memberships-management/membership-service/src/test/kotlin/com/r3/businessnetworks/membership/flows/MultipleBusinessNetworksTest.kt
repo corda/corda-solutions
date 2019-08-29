@@ -51,12 +51,12 @@ class MultipleBusinessNetworksTest : AbstractFlowTest(numberOfBusinessNetworks =
         // future 2 should fail as multiBnNode's membership is PENDING in BN2
         try {
             future2.getOrThrow()
-            fail()
+           fail()
         } catch (ex : NotAMemberException) { }
         // future 3 should fail as multiBnNode's membership is SUSPENDED in BN3
         try {
             future3.getOrThrow()
-            fail()
+           fail()
         } catch (ex : NotAMemberException) { }
         // future 4 should fail as multiBnNode's is not a member of BN4
         try {

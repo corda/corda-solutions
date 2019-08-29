@@ -95,7 +95,7 @@ class FullBNMSFlowDemo : AbstractFlowTest(
         @Suspendable
         override fun call() {
             val bnoParty = serviceHub.identityService.wellKnownPartyFromX500Name(BNO_NAME)!!
-            val membership = subFlow(GetMembershipsFlow(bnoParty))[flowSession.counterparty]
+            val membership = subFlow(GetMembershipsFlow(bnoParty, "0"))[flowSession.counterparty]
             if (membership == null || !membership.state.data.isActive()) {
                 throw FlowException("Counterparty must be a member")
             }

@@ -13,7 +13,7 @@ import net.corda.core.utilities.ProgressTracker
 import net.corda.core.utilities.unwrap
 
 @CordaSerializable
-class MembershipListRequest
+data class MembershipListRequest (val networkID: String?)
 
 @CordaSerializable
 data class MembershipsListResponse(val memberships : List<StateAndRef<MembershipState<Any>>>)
@@ -43,7 +43,7 @@ data class MembershipsListResponse(val memberships : List<StateAndRef<Membership
  */
 @InitiatingFlow
 @StartableByRPC
-open class GetMembershipsFlow(bno : Party, private val forceRefresh : Boolean = false, private val filterOutMissingFromNetworkMap : Boolean = true) : BusinessNetworkAwareInitiatingFlow<Map<Party, StateAndRef<MembershipState<Any>>>>(bno) {
+open class GetMembershipsFlow(bno : Party, private val networkID: String?,private val forceRefresh : Boolean = false, private val filterOutMissingFromNetworkMap : Boolean = true) : BusinessNetworkAwareInitiatingFlow<Map<Party, StateAndRef<MembershipState<Any>>>>(bno) {
 
     @Suspendable
     override fun afterBNOIdentityVerified() : Map<Party, StateAndRef<MembershipState<Any>>> {
@@ -53,7 +53,8 @@ open class GetMembershipsFlow(bno : Party, private val forceRefresh : Boolean = 
 
         if (forceRefresh || lastRefreshed == null) {
             val bnoSession = initiateFlow(bno)
-            val response = bnoSession.sendAndReceive<MembershipsListResponse>(MembershipListRequest()).unwrap { it }
+            bnoSession.send(MembershipListRequest(networkID))
+            val response =  bnoSession.sendAndReceive<MembershipsListResponse>(MembershipListRequest(networkID)).unwrap { it }
             cache.applyMembershipsSnapshot(response.memberships)
         }
 
@@ -69,7 +70,7 @@ open class GetMembershipsFlow(bno : Party, private val forceRefresh : Boolean = 
 }
 
 @StartableByRPC
-open class GetMembersFlow(bno : Party, private val forceRefresh : Boolean = false, private val filterOutNotExisting : Boolean = true) : BusinessNetworkAwareInitiatingFlow<List<PartyAndMembershipMetadata<Any>>>(bno) {
+open class GetMembersFlow(bno : Party, private val forceRefresh : Boolean = false, private val filterOutNotExisting : Boolean = true, private val networkID: String?) : BusinessNetworkAwareInitiatingFlow<List<PartyAndMembershipMetadata<Any>>>(bno) {
     companion object {
         object GOING_TO_CACHE_OR_BNO : ProgressTracker.Step("Going to cache or BNO for membership data")
 
@@ -82,7 +83,7 @@ open class GetMembersFlow(bno : Party, private val forceRefresh : Boolean = fals
 
     override fun afterBNOIdentityVerified() : List<PartyAndMembershipMetadata<Any>> {
         progressTracker.currentStep = GOING_TO_CACHE_OR_BNO
-        return subFlow(GetMembershipsFlow(bno, forceRefresh, filterOutNotExisting)).map { PartyAndMembershipMetadata(it.key, it.value.state.data.membershipMetadata) }
+        return subFlow(GetMembershipsFlow(bno,networkID, forceRefresh, filterOutNotExisting)).map { PartyAndMembershipMetadata(it.key, it.value.state.data.membershipMetadata) }
     }
 }
 

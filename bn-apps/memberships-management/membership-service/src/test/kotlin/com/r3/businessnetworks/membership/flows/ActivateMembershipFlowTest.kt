@@ -99,7 +99,7 @@ class ActivateMembershipFlowTest : AbstractFlowTest(
 open class AbstractDummyInitiatingFlow(private val counterparty : Party) : FlowLogic<Unit>() {
     @Suspendable
     override fun call() {
-        initiateFlow(counterparty).sendAndReceive<String>("Hello")
+            initiateFlow(counterparty).sendAndReceive<String>("Hello")
     }
 }
 
