@@ -52,11 +52,6 @@ allprojects {
     }
 }
 
-println("CORDA_ARTIFACTORY_USERNAME: " + System.getenv('CORDA_ARTIFACTORY_USERNAME'))
-println("CORDA_ARTIFACTORY_PASSWORD: " + System.getenv('CORDA_ARTIFACTORY_PASSWORD'))
-println("corda.artifactory.username" + System.getProperty('corda.artifactory.username'))
-println("corda.artifactory.password" + System.getProperty('corda.artifactory.password'))
-
 subprojects {
     buildscript {
         repositories {
