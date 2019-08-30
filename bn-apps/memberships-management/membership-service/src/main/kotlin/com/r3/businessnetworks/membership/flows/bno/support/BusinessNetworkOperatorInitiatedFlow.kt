@@ -22,11 +22,7 @@ abstract class BusinessNetworkOperatorInitiatedFlow<out T>(val flowSession : Flo
     @Suspendable
     override fun call() : T {
         val receivedNetworkID = flowSession.receive<AmendMembershipMetadataRequest>().unwrap{it}
-<<<<<<< HEAD
         val membership = verifyAndGetMembership(flowSession.counterparty,receivedNetworkID.networkID)
-=======
-        val membership = verifyAndGetMembership(flowSession.counterparty, receivedNetworkID.networkID)
->>>>>>> 65dbaa9b6f68c32f9b8bd5ac77fa93cb3d035ec0
         return onCounterpartyMembershipVerified(membership)
     }
 
@@ -46,4 +42,3 @@ abstract class BusinessNetworkOperatorInitiatedFlow<out T>(val flowSession : Flo
         return membership
     }
 }
-
