@@ -21,7 +21,6 @@ import net.corda.core.utilities.loggerFor
 import sun.security.util.ByteArrayLexOrder
 import java.io.File
 import java.nio.file.Paths
-import javax.naming.ConfigurationException
 
 /**
  * Provides a list of transaction hashes referring to transactions in which all of the given parties are participating.
@@ -109,5 +108,25 @@ class ConfigurationService(appServiceHub: AppServiceHub) : SingletonSerializeAsT
     } ?: run {
         logger.info("Using DEFAULT_PAGE_SIZE = $DEFAULT_PAGE_SIZE")
         DEFAULT_PAGE_SIZE
+    }
+
+}
+
+fun ServiceHub.getRecycledTx(): List<SecureHash> {
+    return if (!vrExist())
+        emptyList()
+    else
+        this.withEntityManager {
+            val hqlSelectQuery = "select txID from RecyclableTransaction as dbTable where dbTable.txID not in " +
+                    "(select nodeTXTable.txId from DBTransactionStorage\$DBTransaction nodeTXTable) "
+            createQuery(hqlSelectQuery)
+                    .resultList
+                    .map { SecureHash.parse(it as String) }
+        }
+}
+
+fun ServiceHub.vrExist(): Boolean {
+    return this.withEntityManager {
+        this.metamodel.entities.any { it.name == "RecyclableTransaction" }
     }
 }
