@@ -19,8 +19,7 @@ import net.corda.core.utilities.unwrap
 abstract class BusinessNetworkAwareInitiatedFlow<out T>(protected val flowSession : FlowSession, private val networkID: String?) : FlowLogic<T>() {
     @Suspendable
     override fun call(): T {
-        //val receivedNetworkID = flowSession.receive<MembershipListRequest>().unwrap{it}
-        verifyMembership(flowSession.counterparty,"0")//receivedNetworkID.networkID)
+        verifyMembership(flowSession.counterparty, receivedNetworkID.networkID)
         return onOtherPartyMembershipVerified()
     }
 
