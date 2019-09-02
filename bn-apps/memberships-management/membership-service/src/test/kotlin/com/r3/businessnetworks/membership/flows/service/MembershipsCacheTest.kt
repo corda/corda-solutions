@@ -118,6 +118,6 @@ class MembershipsCacheTest {
         assertEquals(mapOf(Pair(member3, membership3.toStateAndRef())), cache.getMemberships(bno2))
     }
 
-    private fun membershipStateFor(bno : Party, member : Party) =  MembershipState(member, bno, SimpleMembershipMetadata(),"0",Instant.now(), Instant.now(), MembershipStatus.PENDING)
+    private fun membershipStateFor(bno: Party, member: Party) = MembershipState(member, bno, SimpleMembershipMetadata(), "0", Instant.now(), Instant.now(), MembershipStatus.PENDING)
     private fun MembershipState<Any>.toStateAndRef() = StateAndRef(TransactionState(this, MembershipContract.CONTRACT_NAME, notary), StateRef(SecureHash.zeroHash, 0))
 }

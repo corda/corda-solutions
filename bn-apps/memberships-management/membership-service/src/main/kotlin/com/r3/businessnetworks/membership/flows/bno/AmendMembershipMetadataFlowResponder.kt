@@ -36,13 +36,13 @@ open class AmendMembershipMetadataFlowResponder(flowSession: FlowSession) : Busi
         val notaryParty = configuration.notaryParty()
 
         val newMembership = counterpartyMembership.state.data
-            .copy(membershipMetadata = metadataChangeRequest.metadata, modified = serviceHub.clock.instant())
+                .copy(membershipMetadata = metadataChangeRequest.metadata, modified = serviceHub.clock.instant())
 
         // changes to the metadata should be governed by the contract, not flows
         val builder = TransactionBuilder(notaryParty)
-            .addInputState(counterpartyMembership)
-            .addOutputState(newMembership, MembershipContract.CONTRACT_NAME)
-            .addCommand(MembershipContract.Commands.Amend(), flowSession.counterparty.owningKey, ourIdentity.owningKey)
+                .addInputState(counterpartyMembership)
+                .addOutputState(newMembership, MembershipContract.CONTRACT_NAME)
+                .addCommand(MembershipContract.Commands.Amend(), flowSession.counterparty.owningKey, ourIdentity.owningKey)
 
         if (counterpartyMembership.isAttachmentRequired())
             builder.addAttachment(counterpartyMembership.getAttachmentIdForGenericParam())

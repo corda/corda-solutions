@@ -16,20 +16,20 @@ import net.corda.core.utilities.unwrap
  * the initiating party is member of your business network or not. Your code (inside onCounterpartyMembershipVerified)
  * will be called only after the check is performed. If the initiating party is not a member an exception is thrown.
  */
-abstract class BusinessNetworkOperatorInitiatedFlowMembershipList<out T>(val flowSession : FlowSession) : BusinessNetworkOperatorFlowLogic<T>() {
+abstract class BusinessNetworkOperatorInitiatedFlowMembershipList<out T>(val flowSession: FlowSession) : BusinessNetworkOperatorFlowLogic<T>() {
 
     @Suspendable
-    override fun call() : T {
-        val receivedNetworkID = flowSession.receive<MembershipListRequest>().unwrap{it}
-        val membership = verifyAndGetMembership(flowSession.counterparty,receivedNetworkID.networkID)
+    override fun call(): T {
+        val receivedNetworkID = flowSession.receive<MembershipListRequest>().unwrap { it }
+        val membership = verifyAndGetMembership(flowSession.counterparty, receivedNetworkID.networkID)
         return onCounterpartyMembershipVerified(membership)
     }
 
     @Suspendable
-    abstract fun onCounterpartyMembershipVerified(counterpartyMembership : StateAndRef<MembershipState<Any>>) : T
+    abstract fun onCounterpartyMembershipVerified(counterpartyMembership: StateAndRef<MembershipState<Any>>): T
 
     @Suspendable
-    private fun verifyAndGetMembership(initiator : Party, networkID: String?) : StateAndRef<MembershipState<Any>> {
+    private fun verifyAndGetMembership(initiator: Party, networkID: String?): StateAndRef<MembershipState<Any>> {
         logger.info("Verifying membership status of $initiator")
         val databaseService = serviceHub.cordaService(DatabaseService::class.java)
         val membership = databaseService.getMembershipOnNetwork(initiator, ourIdentity, networkID)

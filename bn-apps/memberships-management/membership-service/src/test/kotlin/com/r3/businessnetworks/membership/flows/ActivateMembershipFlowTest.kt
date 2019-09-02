@@ -25,7 +25,7 @@ class ActivateMembershipFlowTest : AbstractFlowTest(
         numberOfParticipants = 4,
         participantRespondingFlows = listOf(NotificationsCounterFlow::class.java)) {
 
-    private fun testMembershipActivation(activateCallback : (bnoNode : StartedMockNode, participantNode : StartedMockNode) -> SignedTransaction) {
+    private fun testMembershipActivation(activateCallback: (bnoNode: StartedMockNode, participantNode: StartedMockNode) -> SignedTransaction) {
         val bnoNode = bnoNodes.first()
         val participantNode = participantsNodes.first()
 
@@ -72,7 +72,7 @@ class ActivateMembershipFlowTest : AbstractFlowTest(
             mockNetwork.runNetwork()
             future.getOrThrow()
             fail()
-        } catch (e : NotBNOException) {
+        } catch (e: NotBNOException) {
             assertEquals("This node is not the business network operator for this membership", e.message)
         }
     }
@@ -96,15 +96,15 @@ class ActivateMembershipFlowTest : AbstractFlowTest(
     }
 }
 
-open class AbstractDummyInitiatingFlow(private val counterparty : Party) : FlowLogic<Unit>() {
+open class AbstractDummyInitiatingFlow(private val counterparty: Party) : FlowLogic<Unit>() {
     @Suspendable
     override fun call() {
-            initiateFlow(counterparty).sendAndReceive<String>("Hello")
+        initiateFlow(counterparty).sendAndReceive<String>("Hello")
     }
 }
 
-open class AbstractBNAwareRespondingFlow(session : FlowSession, private val bnoName : String, private val networkID : String?) : BusinessNetworkAwareInitiatedFlow<Unit>(session, networkID)  {
-    override fun bnoIdentity()  = serviceHub.identityService.wellKnownPartyFromX500Name(CordaX500Name.parse(bnoName))!!
+open class AbstractBNAwareRespondingFlow(session: FlowSession, private val bnoName: String, private val networkID: String?) : BusinessNetworkAwareInitiatedFlow<Unit>(session, networkID) {
+    override fun bnoIdentity() = serviceHub.identityService.wellKnownPartyFromX500Name(CordaX500Name.parse(bnoName))!!
 
     @Suspendable
     override fun onOtherPartyMembershipVerified() {

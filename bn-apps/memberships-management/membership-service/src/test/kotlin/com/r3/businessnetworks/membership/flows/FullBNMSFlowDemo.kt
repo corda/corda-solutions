@@ -29,7 +29,7 @@ class FullBNMSFlowDemo : AbstractFlowTest(
         val nonMember = participantsNodes[1]
 
         // participant submits a membership request to the BNO via RequestMembershipFlow
-        runRequestMembershipFlow(bnoNode, newJoiner, SimpleMembershipMetadata(role="My new role"))
+        runRequestMembershipFlow(bnoNode, newJoiner, SimpleMembershipMetadata(role = "My new role"))
 
         // the flow issues MembershipState in PENDING status onto the ledger
         // After the state has been issued, the BNO needs to kick-off their internal KYC / on-boarding procedures, do all the paperwork and etc.
@@ -45,12 +45,12 @@ class FullBNMSFlowDemo : AbstractFlowTest(
         try {
             runGetMembershipsListFlow(bnoNode, nonMember, false)
             fail()
-        } catch (ex : FlowException) {
+        } catch (ex: FlowException) {
             // pass
         }
 
         // Business Network members can amend their membership metadata via AmendMembershipMetadataFlow
-        runAmendMetadataFlow(bnoNode, newJoiner, SimpleMembershipMetadata(role="Some other role"),"0")
+        runAmendMetadataFlow(bnoNode, newJoiner, SimpleMembershipMetadata(role = "Some other role"), "0")
 
         // BNO can suspend memberships via SuspendMembershipFlow
         runSuspendMembershipFlow(bnoNode, newJoiner.identity())
@@ -59,7 +59,7 @@ class FullBNMSFlowDemo : AbstractFlowTest(
         try {
             runGetMembershipsListFlow(bnoNode, newJoiner, true)
             fail()
-        } catch (ex : FlowException) {
+        } catch (ex: FlowException) {
             // pass
         }
 
@@ -72,13 +72,13 @@ class FullBNMSFlowDemo : AbstractFlowTest(
         try {
             future.getOrThrow()
             fail()
-        } catch (ex : Exception) {
+        } catch (ex: Exception) {
             assertEquals("Counterparty must be a member", ex.message)
         }
     }
 
     @InitiatingFlow
-    class MyInitiatingFlow(val counterparty : Party) : FlowLogic<Unit>() {
+    class MyInitiatingFlow(val counterparty: Party) : FlowLogic<Unit>() {
         @Suspendable
         override fun call() {
             initiateFlow(counterparty).sendAndReceive<String>("Hello!")
@@ -86,7 +86,7 @@ class FullBNMSFlowDemo : AbstractFlowTest(
     }
 
     @InitiatedBy(MyInitiatingFlow::class)
-    class MyInitiatedFlow(val flowSession : FlowSession) : FlowLogic<Unit>() {
+    class MyInitiatedFlow(val flowSession: FlowSession) : FlowLogic<Unit>() {
         companion object {
             // name of the well known BNO
             val BNO_NAME = CordaX500Name.parse("O=BNO_0,L=New York,C=US")

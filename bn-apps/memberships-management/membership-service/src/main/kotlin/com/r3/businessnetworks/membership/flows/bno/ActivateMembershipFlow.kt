@@ -38,9 +38,9 @@ open class ActivateMembershipFlow(val membership: StateAndRef<MembershipState<An
         // create membership activation transaction
         val notary = configuration.notaryParty()
         val builder = TransactionBuilder(notary)
-            .addInputState(membership)
-            .addOutputState(membership.state.data.copy(status = MembershipStatus.ACTIVE, modified = serviceHub.clock.instant()), MembershipContract.CONTRACT_NAME)
-            .addCommand(MembershipContract.Commands.Activate(), ourIdentity.owningKey)
+                .addInputState(membership)
+                .addOutputState(membership.state.data.copy(status = MembershipStatus.ACTIVE, modified = serviceHub.clock.instant()), MembershipContract.CONTRACT_NAME)
+                .addCommand(MembershipContract.Commands.Activate(), ourIdentity.owningKey)
 
         if (membership.isAttachmentRequired()) builder.addAttachment(membership.getAttachmentIdForGenericParam())
 
@@ -80,8 +80,8 @@ open class ActivateMembershipForPartyFlow(val party: Party, val networkID: Strin
         object ACTIVATING_THE_MEMBERSHIP_STATE : ProgressTracker.Step("Activating the membership state")
 
         fun tracker() = ProgressTracker(
-            LOOKING_FOR_MEMBERSHIP_STATE,
-            ACTIVATING_THE_MEMBERSHIP_STATE
+                LOOKING_FOR_MEMBERSHIP_STATE,
+                ACTIVATING_THE_MEMBERSHIP_STATE
         )
     }
 

@@ -49,7 +49,7 @@ class RequestMembershipFlowTest : AbstractFlowTest(numberOfBusinessNetworks = 2,
         try {
             runRequestMembershipFlow(bnoNode, participantNode)
             fail()
-        } catch (e : FlowException) {
+        } catch (e: FlowException) {
             assert("Membership already exists" == e.message)
         }
     }
@@ -67,7 +67,7 @@ class RequestMembershipFlowTest : AbstractFlowTest(numberOfBusinessNetworks = 2,
         try {
             runRequestMembershipFlow(bnoNode, participantNode)
             fail()
-        } catch (e : FlowException) {
+        } catch (e: FlowException) {
             assert("Membership request already exists" == e.message)
         }
 
@@ -95,7 +95,7 @@ class RequestMembershipFlowTest : AbstractFlowTest(numberOfBusinessNetworks = 2,
         try {
             runRequestMembershipFlow(bnoNode, participantNode)
             fail()
-        } catch (ex : FlowException) {
+        } catch (ex: FlowException) {
             assertEquals("Invalid metadata", ex.message)
         }
     }

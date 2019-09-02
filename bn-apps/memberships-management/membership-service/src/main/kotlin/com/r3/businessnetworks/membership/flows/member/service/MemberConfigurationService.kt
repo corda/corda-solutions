@@ -11,20 +11,20 @@ import net.corda.core.utilities.loggerFor
  * Configuration that is used by member app.
  */
 @CordaService
-class MemberConfigurationService(private val serviceHub : AppServiceHub) : AbstractConfigurationService(serviceHub, "membership-service") {
+class MemberConfigurationService(private val serviceHub: AppServiceHub) : AbstractConfigurationService(serviceHub, "membership-service") {
     companion object {
         // X500 name of the BNO
         const val BNO_WHITELIST = "bnoWhitelist"
         val logger = loggerFor<MemberConfigurationService>()
     }
 
-    override fun bnoName() : CordaX500Name  = throw NotImplementedError("This method should not be used")
+    override fun bnoName(): CordaX500Name = throw NotImplementedError("This method should not be used")
     override fun notaryName() = throw NotImplementedError("This method should not be used")
 
     /**
      * BNOs should be explicitly whitelisted. Any attempt to communicate with not whitelisted BNO would fail.
      */
-    fun bnoIdentities() : Set<Party> {
+    fun bnoIdentities(): Set<Party> {
         val config = _config ?: throw IllegalArgumentException("Configuration for membership service is missing")
         return (if (config.hasPath(BNO_WHITELIST)) config.getStringList(BNO_WHITELIST) else listOf())
                 .asSequence().map {

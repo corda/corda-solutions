@@ -16,9 +16,9 @@ import net.corda.core.flows.InitiatedBy
  * Responder to the [GetMembershipsFlow]. Only active members can request a membership list.
  */
 @InitiatedBy(GetMembershipsFlow::class)
-open class GetMembershipsFlowResponder(flowSession : FlowSession) : BusinessNetworkOperatorInitiatedFlowMembershipList<Unit>(flowSession) {
+open class GetMembershipsFlowResponder(flowSession: FlowSession) : BusinessNetworkOperatorInitiatedFlowMembershipList<Unit>(flowSession) {
     @Suspendable
-    override fun onCounterpartyMembershipVerified(counterpartyMembership : StateAndRef<MembershipState<Any>>) {
+    override fun onCounterpartyMembershipVerified(counterpartyMembership: StateAndRef<MembershipState<Any>>) {
         logger.info("Sending membership list to ${flowSession.counterparty}")
         //build memberships snapshot
         flowSession.receive<MembershipListRequest>()

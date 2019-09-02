@@ -43,7 +43,7 @@ class SuspendMembershipFlowTest : AbstractFlowTest(numberOfBusinessNetworks = 2,
     fun `membership suspension happy path`() = testMembershipSuspension { bnoNode, participantNode -> runSuspendMembershipFlow(bnoNode, participantNode.identity()) }
 
     @Test
-    fun `membership suspension should succeed when using a convenience flow`() = testMembershipSuspension { bnoNode, participantNode -> runSuspendMembershipForPartyFlow(bnoNode, participantNode.identity(),"0") }
+    fun `membership suspension should succeed when using a convenience flow`() = testMembershipSuspension { bnoNode, participantNode -> runSuspendMembershipForPartyFlow(bnoNode, participantNode.identity(), "0") }
 
     @Test
     fun `only BNO should be able to start the flow`() {

@@ -135,7 +135,7 @@ abstract class AbstractFlowTest(private val numberOfBusinessNetworks: Int,
     }
 
     fun runActivateMembershipForPartyFlow(bnoNode: StartedMockNode, participant: Party, networkID: String): SignedTransaction {
-        val future = bnoNode.startFlow(ActivateMembershipForPartyFlow(participant,networkID))
+        val future = bnoNode.startFlow(ActivateMembershipForPartyFlow(participant, networkID))
         mockNetwork.runNetwork()
         return future.getOrThrow()
     }
@@ -147,7 +147,7 @@ abstract class AbstractFlowTest(private val numberOfBusinessNetworks: Int,
     }
 
     fun runGetMembershipsListFlow(bnoNode: StartedMockNode, participantNode: StartedMockNode, force: Boolean = false, filterOutNotExisting: Boolean = true): Map<Party, StateAndRef<MembershipState<Any>>> {
-        val future = participantNode.startFlow(GetMembershipsFlow(bnoNode.identity(),"0" , force, filterOutNotExisting))
+        val future = participantNode.startFlow(GetMembershipsFlow(bnoNode.identity(), "0", force, filterOutNotExisting))
         mockNetwork.runNetwork()
         return future.getOrThrow()
     }

@@ -9,10 +9,10 @@ import net.corda.core.flows.FlowSession
 import net.corda.core.flows.InitiatedBy
 
 @InitiatedBy(RequestMembershipFlow::class)
-class AutoApprovingMembershipFlow(session : FlowSession) : RequestMembershipFlowResponder(session) {
+class AutoApprovingMembershipFlow(session: FlowSession) : RequestMembershipFlowResponder(session) {
 
     @Suspendable
-    override fun activateRightAway(membershipState : MembershipState<Any>, configuration : BNOConfigurationService) : Boolean {
+    override fun activateRightAway(membershipState: MembershipState<Any>, configuration: BNOConfigurationService): Boolean {
         return true
     }
 }

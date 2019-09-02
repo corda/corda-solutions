@@ -13,21 +13,21 @@ import net.corda.core.serialization.CordaSerializable
 import net.corda.core.transactions.SignedTransaction
 
 @CordaSerializable
-data class AmendMembershipMetadataRequest(val metadata : Any, val networkID: String?)
+data class AmendMembershipMetadataRequest(val metadata: Any, val networkID: String?)
 
 /**
  * Proposes a change to the membership metadata
  */
 @InitiatingFlow(version = 2)
-open class AmendMembershipMetadataFlow(bno : Party, private val newMetadata : Any, private val networkID : String?) : BusinessNetworkAwareInitiatingFlow<SignedTransaction>(bno) {
+open class AmendMembershipMetadataFlow(bno: Party, private val newMetadata: Any, private val networkID: String?) : BusinessNetworkAwareInitiatingFlow<SignedTransaction>(bno) {
 
     @Suspendable
-    override fun afterBNOIdentityVerified() : SignedTransaction {
+    override fun afterBNOIdentityVerified(): SignedTransaction {
         val bnoSession = initiateFlow(bno)
         bnoSession.send(AmendMembershipMetadataRequest(newMetadata, networkID)) // first flow session used by AmendMembershipMetadataFlowResponder
         bnoSession.send(AmendMembershipMetadataRequest(newMetadata, networkID)) // second flow session used by BusinessNetworkOperatorInitiatedFlow
         val signTransactionFlow = object : SignTransactionFlow(bnoSession) {
-            override fun checkTransaction(stx : SignedTransaction) {
+            override fun checkTransaction(stx: SignedTransaction) {
                 val newMembership = stx.coreTransaction.outputs.single()
                 val newMembershipState = newMembership.data as MembershipState<*>
 
