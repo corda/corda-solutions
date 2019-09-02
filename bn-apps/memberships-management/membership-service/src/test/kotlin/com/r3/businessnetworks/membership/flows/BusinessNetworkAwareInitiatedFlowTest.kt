@@ -1,6 +1,5 @@
 package com.r3.businessnetworks.membership.flows
 
-import com.r3.businessnetworks.membership.flows.member.service.MemberConfigurationService
 import net.corda.core.flows.FlowSession
 import net.corda.core.flows.InitiatedBy
 import net.corda.core.flows.InitiatingFlow
@@ -103,16 +102,16 @@ class BN_4_InitiatingFlow(counterparty : Party) : AbstractDummyInitiatingFlow(co
 class BN_5_InitiatingFlow(counterparty : Party) : AbstractDummyInitiatingFlow(counterparty)
 
 @InitiatedBy(BN_1_InitiatingFlow::class)
-class BN_1_RespondingFlow(session : FlowSession) : AbstractBNAwareRespondingFlow(session, "O=BNO_0,L=New York,C=US")
+class BN_1_RespondingFlow(session : FlowSession) : AbstractBNAwareRespondingFlow(session, "O=BNO_0,L=New York,C=US", "0")
 
 @InitiatedBy(BN_2_InitiatingFlow::class)
-class BN_2_RespondingFlow(session : FlowSession) : AbstractBNAwareRespondingFlow(session, "O=BNO_1,L=New York,C=US")
+class BN_2_RespondingFlow(session : FlowSession) : AbstractBNAwareRespondingFlow(session, "O=BNO_1,L=New York,C=US", "0")
 
 @InitiatedBy(BN_3_InitiatingFlow::class)
-class BN_3_RespondingFlow(session : FlowSession) : AbstractBNAwareRespondingFlow(session, "O=BNO_2,L=New York,C=US")
+class BN_3_RespondingFlow(session : FlowSession) : AbstractBNAwareRespondingFlow(session, "O=BNO_2,L=New York,C=US", "0")
 
 @InitiatedBy(BN_4_InitiatingFlow::class)
-class BN_4_RespondingFlow(session : FlowSession) : AbstractBNAwareRespondingFlow(session, "O=BNO_3,L=New York,C=US")
+class BN_4_RespondingFlow(session : FlowSession) : AbstractBNAwareRespondingFlow(session, "O=BNO_3,L=New York,C=US", "0")
 
 @InitiatedBy(BN_5_InitiatingFlow::class)
-class BN_5_RespondingFlow(session : FlowSession) : AbstractBNAwareRespondingFlow(session, "O=BNO_4,L=New York,C=US")
+class BN_5_RespondingFlow(session : FlowSession) : AbstractBNAwareRespondingFlow(session, "O=BNO_4,L=New York,C=US", "0")

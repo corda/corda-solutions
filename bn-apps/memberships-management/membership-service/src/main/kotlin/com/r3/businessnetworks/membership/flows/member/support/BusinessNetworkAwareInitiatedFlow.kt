@@ -16,11 +16,11 @@ import net.corda.core.utilities.unwrap
  * that check is performed. If the initiating party is not a member an exception is thrown.
  */
 
-abstract class BusinessNetworkAwareInitiatedFlow<out T>(protected val flowSession : FlowSession) : FlowLogic<T>() {
+abstract class BusinessNetworkAwareInitiatedFlow<out T>(protected val flowSession : FlowSession, private val networkID: String?) : FlowLogic<T>() {
     @Suspendable
     override fun call(): T {
-        //val receivedNetworkID = flowSession.receive<MembershipListRequest>().unwrap{it} <--- counterflow error
-        verifyMembership(flowSession.counterparty, "0") //receivedNetworkID.networkID
+        //val receivedNetworkID = flowSession.receive<MembershipListRequest>().unwrap{it}
+        verifyMembership(flowSession.counterparty,"0")//receivedNetworkID.networkID)
         return onOtherPartyMembershipVerified()
     }
 

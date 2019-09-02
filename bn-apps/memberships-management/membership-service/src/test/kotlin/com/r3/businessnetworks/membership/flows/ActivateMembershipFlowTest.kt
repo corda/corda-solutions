@@ -4,9 +4,9 @@ import co.paralleluniverse.fibers.Suspendable
 import com.r3.businessnetworks.membership.flows.bno.ActivateMembershipFlow
 import com.r3.businessnetworks.membership.flows.bno.OnMembershipChanged
 import com.r3.businessnetworks.membership.flows.bno.service.BNOConfigurationService
-import com.r3.businessnetworks.membership.testextensions.AutoApprovingMembershipFlow
 import com.r3.businessnetworks.membership.flows.member.support.BusinessNetworkAwareInitiatedFlow
 import com.r3.businessnetworks.membership.states.MembershipContract
+import com.r3.businessnetworks.membership.testextensions.AutoApprovingMembershipFlow
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.FlowSession
 import net.corda.core.identity.CordaX500Name
@@ -103,7 +103,7 @@ open class AbstractDummyInitiatingFlow(private val counterparty : Party) : FlowL
     }
 }
 
-open class AbstractBNAwareRespondingFlow(session : FlowSession, private val bnoName : String) : BusinessNetworkAwareInitiatedFlow<Unit>(session)  {
+open class AbstractBNAwareRespondingFlow(session : FlowSession, private val bnoName : String, private val networkID : String?) : BusinessNetworkAwareInitiatedFlow<Unit>(session, networkID)  {
     override fun bnoIdentity()  = serviceHub.identityService.wellKnownPartyFromX500Name(CordaX500Name.parse(bnoName))!!
 
     @Suspendable

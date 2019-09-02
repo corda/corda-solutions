@@ -29,13 +29,7 @@ open class AmendMembershipMetadataFlowResponder(flowSession: FlowSession) : Busi
     @Suspendable
     override fun onCounterpartyMembershipVerified(counterpartyMembership: StateAndRef<MembershipState<Any>>) {
         // await for a message with a proposed metadata change
-<<<<<<< HEAD
         val metadataChangeRequest = flowSession.receive<AmendMembershipMetadataRequest>().unwrap { it }
-=======
-
-        val metadataChangeRequest = flowSession.receive<AmendMembershipMetadataRequest>().unwrap { it }
-        val x :String = "0"
->>>>>>> 65dbaa9b6f68c32f9b8bd5ac77fa93cb3d035ec0
         // build transaction
         val configuration = serviceHub.cordaService(BNOConfigurationService::class.java)
         val notaryParty = configuration.notaryParty()
