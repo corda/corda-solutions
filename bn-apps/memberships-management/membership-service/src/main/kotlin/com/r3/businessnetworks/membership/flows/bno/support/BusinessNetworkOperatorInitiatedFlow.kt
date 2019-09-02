@@ -41,4 +41,3 @@ abstract class BusinessNetworkOperatorInitiatedFlow<out T>(val flowSession : Flo
         return membership
     }
 }
-
