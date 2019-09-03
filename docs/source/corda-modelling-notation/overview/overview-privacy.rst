@@ -1,5 +1,5 @@
 ========================
-Modelling Privacy in CDL
+Analysing Privacy in CDL
 ========================
 
-The Modelling Privacy in CDL section considers how to represent and reason about Privacy in CorDapps and Corda Networks.
+The Analysing Privacy in CDL section considers how to represent and reason about Privacy in CorDapps and Corda Networks.

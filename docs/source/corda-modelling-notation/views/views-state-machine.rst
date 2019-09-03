@@ -13,7 +13,7 @@ The Contracts attached to the Corda States impose a set of constraints which nee
 
 So, we have the Ledger State, then a set of allowed transitions to get to the new Ledger state of the ledger. This is similar to the idea of a Finite State Machine which forms the basis of this view.
 
-However, modelling the entire Corda Ledger, even from the perspective of one CorDapp, as one big Finite State Machine is not practical. Instead we will model the behaviour of a single State. Later we will look at how different State types and different instances of the same State type can interact with each other.
+However, analysing the entire Corda Ledger, even from the perspective of one CorDapp, as one big Finite State Machine is not practical. Instead we will model the behaviour of a single State. Later we will look at how different State types and different instances of the same State type can interact with each other.
 
 UML (Unified Modelling Language) provides a notation for modelling Finite State Machines: https://en.wikipedia.org/wiki/UML_state_machine. The UML State Machine representation is the starting point for the CDL State Machine View, although there are some required modifications.
 

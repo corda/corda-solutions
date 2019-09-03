@@ -51,6 +51,6 @@ There are some specific drivers which have led to the development of CorDapp Des
 
   There are mitigations to these potential privacy leaks, such as confidential identities, token tear offs etc ... but these must be actively designed into the CorDapp and the supporting Business Network Services.
 
-  A CorDapp design should be able to prove that their application does not leak privacy. To this end, CorDapp Design Language aims to provide techniques for modelling and reasoning about privacy characteristics of CorDApps.
+  A CorDapp design should be able to prove that their application does not leak privacy. To this end, CorDapp Design Language aims to provide techniques for representing and reasoning about privacy characteristics of CorDApps.
 
 **5. Re-read 4, it's really important**

@@ -25,7 +25,7 @@ A State Evolution maps out a potential route through this State Machine, for exa
 
 1. State
 
-  Base representation of the State is consistent with other CMN views, how ever this represents an instance of a state rather than the generic behaviour of the state. the analogy would be an object vs it's class.
+  Base representation of the State is consistent with other CDL views, how ever this represents an instance of a state rather than the generic behaviour of the state. the analogy would be an object vs it's class.
 
 2. State Variable
 
