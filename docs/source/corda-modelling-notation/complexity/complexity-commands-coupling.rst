@@ -10,7 +10,7 @@ The proposed approach is to tie two or more transitions together across two or m
 
 The linkages are expressed through the Transaction Level Constraints.
 
-For the modelling, we can’t draw arrows to tie commands together, it would quickly make the model unreadable and restrict the linkages we could represent, especially if linkages could be to many different States. Instead, we reference the linked Command from the Command which is imposing the restriction.
+For the representation, we can’t draw arrows to tie commands together, it would quickly make the model unreadable and restrict the linkages we could represent, especially if linkages could be to many different States. Instead, we reference the linked Command from the Command which is imposing the restriction.
 
 .. image:: ../resources/complexity/CMN2_C_Command_coupling_2.png
   :width: 60%

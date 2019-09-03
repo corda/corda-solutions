@@ -15,7 +15,7 @@ So, we have the Ledger State, then a set of allowed transitions to get to the ne
 
 However, modelling the entire Corda Ledger, even from the perspective of one CorDapp, as one big Finite State Machine is not practical. Instead we will model the behaviour of a single State. Later we will look at how different State types and different instances of the same State type can interact with each other.
 
-UML (Unified Modelling Language) provides a notation for modelling Finite State Machines: https://en.wikipedia.org/wiki/UML_state_machine. The UML State Machine representation is the starting point for the CMN State Machine View, although there are some required modifications.
+UML (Unified Modelling Language) provides a notation for modelling Finite State Machines: https://en.wikipedia.org/wiki/UML_state_machine. The UML State Machine representation is the starting point for the CDL State Machine View, although there are some required modifications.
 
 -----------
 Basic model
@@ -64,11 +64,11 @@ Introducing Constraints
 
 By default, Corda allows any transaction that is not explicitly disallowed. The code to implement Contract constraints is placed in the Contract’s verify() method. If you have a State with a Contract with an empty verify() method, with the exception that the input states must be unconsumed, there are no restrictions over the composition of a transaction using those states.
 
-To have a useful CorDapp, we need to impose constraints over how the States are allowed to evolve. There are multiple types of constraints which we may want to impose on a State and Transactions involving the State, the modelling notations needs to reflect these.
+To have a useful CorDapp, we need to impose constraints over how the States are allowed to evolve. There are multiple types of constraints which we may want to impose on a State and Transactions involving the State, the design language needs to reflect these.
 
 It should be possible to reason that undesirable transitions are not permitted from the constraints in the model. It is envisaged that this will be important tools for audits and security reviews.
 
-We will build up the types of constraints and show how they are represented in the modelling.
+We will build up the types of constraints and show how they are represented in the view.
 
 -----------------------
 Transitions Constraints
@@ -76,9 +76,9 @@ Transitions Constraints
 
 The first type of constraint is the allowable transitions as denoted by allowable Commands
 
-If you follow the Basic model diagram above, we can see that when an agreement is in Draft it only has two valid transitions: back to Draft via the Amend Command or to Agreed via the AgreeDeal Command. It can't, for example, move from Cancelled to Agreed.
+If you follow the basic model diagram above, we can see that when an agreement is in Draft it only has two valid transitions: back to Draft via the Amend Command or to Agreed via the AgreeDeal Command. It can't, for example, move from Cancelled to Agreed.
 
-The modelling assumption is that if the transition/ Command is not shown on the diagram, it should not be permitted to occur.
+The language assumption is that if the transition/ Command is not shown on the diagram, it should not be permitted to occur.
 
 -----------------------
 State Level Constraints
@@ -116,11 +116,11 @@ These could include:
   -	Requirements that a particular type of State is include in the Transaction
   -	Requirements that a specified Command is included in the Transaction
 
-As the nature of the Transaction changes based on the Command invoked, the Transaction Level Constraints are modelled as being attached to the Command.
+As the nature of the Transaction changes based on the Command invoked, the Transaction Level Constraints are represented as being attached to the Command.
 
 The total Transaction Level Constraints in a given Transaction is the union of the Transaction Level Constraints attached to all Commands in the Transaction from all the Contracts attached to the States in the Transaction.
 
-Note, Transitions, Required Signatures, Visibility and Multiplicity constraints are also type of Transaction Level Constraints, but these have special importance so are shown separately to aid model understanding. We want to avoid just having a big list of constraints as this is hard to visually take in and reason about.
+Note, Transitions, Required Signatures, Visibility and Multiplicity constraints are also type of Transaction Level Constraints, but these have special importance so are shown separately to aid understanding. We want to avoid just having a big list of constraints as this is hard to visually take in and reason about.
 
 ----------------------------
 Required Signers Constraints
@@ -159,7 +159,7 @@ Note, there is nothing stopping a Party distributing a copy of a transaction to 
 
 The purpose of imposing Visibility Constraints is to stop CorDapps inadvertently sharing confidential information thorough inappropriate design decisions.
 
-Privacy in CorDapps and on Corda Networks is not straight forward to reason about. The resolution of historic state chains to prove the provenance of input states brings in complex privacy considerations, these are discussed in the CMN Section on Privacy.
+Privacy in CorDapps and on Corda Networks is not straight forward to reason about. The resolution of historic state chains to prove the provenance of input states brings in complex privacy considerations, these are discussed in the CDL section on Privacy.
 
 ------------------------
 Multiplicity Constraints

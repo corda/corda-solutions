@@ -2,7 +2,7 @@
 BPMN (Orchestration)
 ====================
 
-The Orchestration Layer is driven by business events. Whereas the Ledger Layer models all the things you can do with Corda states and transactions, the Orchestration layer deals with what you intend to do with the states and transactions, ie. actions which reflect legitimate business events.
+The Orchestration Layer is driven by business events. Whereas the Ledger Layer represents all the things you can do with Corda states and transactions, the Orchestration layer deals with what you intend to do with the states and transactions, ie. actions which reflect legitimate business events.
 
 A good way of capturing business events is to use a slightly modified Business Process Modelling Notation (BPMN), although any flowcharting method would work as well with similar modifications. The BPMN view, intends to capture all business events for the business processes which the CorDapp is supporting. It would normally consist of a hierarchical drill down from a high-level map of all processes to more detailed process diagrams at the resolution of individual business actions.
 

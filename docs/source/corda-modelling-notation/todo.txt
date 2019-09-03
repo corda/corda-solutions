@@ -4,10 +4,14 @@
 
 2. Take out the flow view
 
+3. Update the State eveolution section to make more comprehensive
+
 3. Add analysis sections
 
 4. Add ledger time step diagram
 
 5. Add high level flows diagram
+
+5. Rework mapping to the code
 
 6. Add worked example (from Alice's project)
