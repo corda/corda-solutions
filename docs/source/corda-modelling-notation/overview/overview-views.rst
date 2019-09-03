@@ -69,10 +69,10 @@ The Transaction Instance View shows the specific Transaction that will be built 
 
 **Flow Sequence View (Orchestration Layer)**
 
-The Flow Sequence View shows how the Corda Flow framework is used to correctly form, agree, notarise and distribute the Transaction shown in the Transaction Instance View. For example:
+The Flow Sequence View shows how the Corda Flow framework can be used to orchestrate activities between nodes this can include forming, agreeing, notarising and distributing the Transactions. A simple example from the BNO Membership CorDapp:
 
-.. image:: ../resources/overview/CMN2_O_FS_example.png
-  :width: 100%
+.. image:: ../resources/views/CMN2_FS_Plantuml_example.png
+  :width: 80%
   :align: center
 
 
