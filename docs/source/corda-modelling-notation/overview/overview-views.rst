@@ -1,12 +1,12 @@
 ------------------------------
-Corda Modelling Notation Views
+CorDapp Design Language Views
 ------------------------------
 
-This section gives an example of each CMN view, see the sections dedicated to each view for more details.
+This section gives an example of each CDL view, see the sections dedicated to each view for more details.
 
 **Representing States**
 
-For the latest version of CMN we have standardised the representation of a Corda State across all the various views. The base representation of a Corda State is as follows and will be used in all three of the Ledger Layer views:
+For the latest version of CDL we have standardised the representation of a Corda State across all the various views. The base representation of a Corda State is as follows and will be used in all three of the Ledger Layer views:
 
 
 .. image:: ../resources/overview/CMN2_O_State.png

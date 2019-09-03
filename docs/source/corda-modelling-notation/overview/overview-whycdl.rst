@@ -1,15 +1,15 @@
-----------------------------
-Why Corda Modelling Notation
-----------------------------
+---------------------------
+Why CorDapp Design Language
+---------------------------
 
-There are some specific drivers which have led to the development of Corda Modelling Notation (CMN)
+There are some specific drivers which have led to the development of CorDapp Design Language (CDL)
 
 
 **1. Standard architecture techniques don’t capture all aspects of a CorDapp design**
 
   Describing computer application designs is not a new problem, there are many existing architectural and design techniques. However, Corda introduces some new dimensions that don’t fit with current techniques. In addition, where there may be appropriate existing techniques, it’s not always obvious which are best to use and they may require modification to make them applicable for CorDapps.
 
-  The approach taken whilst developing Corda Modelling Notation was to reuse existing architecture and design techniques as much as possible, only extending where Corda brings a new dimension or requires a different view for increased clarity. Much of CMN should look familiar.
+  The approach taken whilst developing CorDapp Design Language was to reuse existing architecture and design techniques as much as possible, only extending where Corda brings a new dimension or requires a different view for increased clarity. Much of CDL should look familiar.
 
 
 **2. CorDapp complexity is increasing**
@@ -43,7 +43,7 @@ There are some specific drivers which have led to the development of Corda Model
 
   There is a very important distinction between these two layers: The Ledger layer is the only part of the CorDapp where you get the Distributed Ledger guarantee of shared data and shared execution logic. The Flows and API may be distributed as part of the developed CorDapp and may represent the intended use of the CorDapp, but any party can rewrite the Flows in the Orchestration Layer to execute any logic they want.
 
-  Put another, exaggerated way, an assets trading CorDapp might be distributed with Flows for issuance, transfer, settlement, ie the intended actions. However, just because the CorDapp developers didn’t write a ‘steal all the assets’ Flow doesn’t mean that a nefarious actor can’t write their own. It’s the constraints baked into the Ledger Layer which stop the assets being stolen. Hence, when describing and reasoning about Corda, it is essential to split out the Ledger Layer from the Orchestration Layer and consider them separately. The modelling notation needs to draw a clear distinction between these layers.
+  Put another, exaggerated way, an assets trading CorDapp might be distributed with Flows for issuance, transfer, settlement, ie the intended actions. However, just because the CorDapp developers didn’t write a ‘steal all the assets’ Flow doesn’t mean that a nefarious actor can’t write their own. It’s the constraints baked into the Ledger Layer which stop the assets being stolen. Hence, when describing and reasoning about Corda, it is essential to split out the Ledger Layer from the Orchestration Layer and consider them separately. The design language needs to draw a clear distinction between these layers.
 
 **4. Privacy is Key**
 
@@ -51,6 +51,6 @@ There are some specific drivers which have led to the development of Corda Model
 
   There are mitigations to these potential privacy leaks, such as confidential identities, token tear offs etc ... but these must be actively designed into the CorDapp and the supporting Business Network Services.
 
-  A CorDapp design should be able to prove that their application does not leak privacy. To this end, Corda Modelling Notation aims to provide techniques for modelling and reasoning about privacy characteristics of CorDApps.
+  A CorDapp design should be able to prove that their application does not leak privacy. To this end, CorDapp Design Language aims to provide techniques for modelling and reasoning about privacy characteristics of CorDApps.
 
 **5. Re-read 4, it's really important**

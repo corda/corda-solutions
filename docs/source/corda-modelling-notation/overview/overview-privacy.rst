@@ -1,5 +1,5 @@
 ========================
-Modelling Privacy in CMN
+Modelling Privacy in CDL
 ========================
 
-The Modelling Privacy in CMN section considers how to represent and reason about Privacy in CorDapps and Corda Networks.
+The Modelling Privacy in CDL section considers how to represent and reason about Privacy in CorDapps and Corda Networks.

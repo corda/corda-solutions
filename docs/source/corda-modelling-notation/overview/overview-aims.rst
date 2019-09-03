@@ -1,10 +1,10 @@
 --------------------------------
-Aims of Corda Modelling Notation
+Aims of CorDap Design Language
 --------------------------------
 
-In summary, Corda Modelling Notation should:
+In summary, CorDapp Design Language should:
 
-  1.	Allow corda designs to be documented in an accurate, clear and concise way to aid common understanding and reasoning over the design.
+  1.	Allow CorDapp designs to be documented in an accurate, clear and concise way to aid common understanding and reasoning over the design.
 
   2.	Describe and enable reasoning about key aspects of CorDapp design:
 
