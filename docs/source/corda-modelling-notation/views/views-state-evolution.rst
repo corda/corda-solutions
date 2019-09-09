@@ -44,6 +44,24 @@ A State Evolution maps out a potential route through this State Machine, for exa
   There are no multiplicities as these are implicit in the diagram, eg. if there are 2 output states, then two output states are shown.
 
 
+---------------
+Reference State
+---------------
+
+Reference states are supported from Corda v4. A reference input state is a ContractState which can be referred to in a transaction by the contracts of input and output states but whose contract is not executed as part of the transaction verification process. Furthermore, reference states are not consumed when the transaction is committed to the ledger but they are checked for “current-ness”. In other words, the contract logic isn’t run for the referencing transaction only. It’s still a normal state when it occurs in an input or output position. (see https://docs.corda.net/api-states.html#reference-states for more details)
+
+To represent Reference states in a State Evolution diagram the state should be shaded out and be marked with 'Ref'. for example, the diagram below shows a Reference state being used in a Transaction where the AgreementState must be present for the 'SomeTranstion' transition on 'SomeOtherState' to be valid:
+
+
+
+.. image:: ../resources/views/CDL_SE_Reference_state.png
+  :width: 60%
+  :align: center
+
+
+
+
+
 ---------------------
 Explicit Transactions
 ---------------------
