@@ -1,8 +1,6 @@
 
 
 
-2. Take out the flow view
-
 3. Update the State eveolution section to make more comprehensive
 
 3. Add analysis sections
@@ -14,3 +12,5 @@
 5. Rework mapping to the code
 
 6. Add worked example (from Alice's project)
+
+7. add cordapp frame work spreadsheet.

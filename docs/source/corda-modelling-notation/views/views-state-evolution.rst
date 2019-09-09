@@ -44,13 +44,15 @@ A State Evolution maps out a potential route through this State Machine, for exa
   There are no multiplicities as these are implicit in the diagram, eg. if there are 2 output states, then two output states are shown.
 
 
---------------------------
-Interacting State Machines
---------------------------
+---------------------
+Explicit Transactions
+---------------------
 
-Sometimes we will want to show how two or more state machines interact with each other. This becomes particularly important when scaling complexity and designing for Privacy.
+Each transition arrow in the State Evolution view implies a Corda transaction, this makes the view less cluttered as each state doesn't have to be represented as an output state in one transaction then again as a input state in another transaction.
 
-Let's assume we have a BillingState that needs to be included in the AgreementState's AgreeDeal and UpdateDeal transitions. To show that the two State Machines (AgreementState and BillingState) come together in a single transaction we will introduce a Transaction box:
+However, sometimes we want to explicitly show a transaction with input and output states. For example, if want to show how two or more state machines interact with each other. This becomes particularly important when scaling complexity and designing for Privacy.
+
+Let's assume we have a BillingState that needs to be included in the AgreementState's AgreeDeal and UpdateDeal transitions. To show that the two State Machines (AgreementState and BillingState) come together in a single transaction we will introduce a Transaction box which contains the explict transaction we want to show:
 
 
 .. image:: ../resources/views/CMN2_SE_Transaction_box.png
@@ -69,3 +71,15 @@ Let's assume we have a BillingState that needs to be included in the AgreementSt
 3. Duplicate States
 
   To avoid overlapping boxes we sometimes have to represent a State in two places (first as an output, secondly as an input). To do this we duplicate the State and use a thick arrow labelled 'consumed in'. If the State is only being shown in one transaction box then this is not necessary.
+
+---------------------
+Branching Transitions
+---------------------
+
+Sometimes a transition results in more than one output state, we can show this by spliting the transition arrow, for example in this extract from the billing pattern:
+
+
+
+.. image:: ../resources/views/CDL_SE_Branching_transition.png
+  :width: 60%
+  :align: center
