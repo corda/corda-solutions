@@ -153,10 +153,52 @@ Here is sample output from the tool java -jar corda-tools-health-survey-4.1.2019
 	Size of report: 69.4 KiB
 
 
+Example Failure Scenario
+------------------------
 
-Future minor versions of Corda will contain additional improvements along with new supporting APIs.
+This scenario assumes Node and Bridge are deployed on the same VM and Float is on separate VM. The Node and Bridge are UP, Float is DOWN. Health Survey Checker will provide the following output
 
-- CRL check from the bridge
-- Basic RPC and P2P Node connectivity
-- HA notary health check (requires an API change)
-- HA bridge configuration check (requires an API change)
+.. sourcecode:: shell
+
+	Corda Health Survey Tool 4.1
+	~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 	✔ Reporting to file report-20190909-170933.txt
+	✔ Collected machine information
+	✔ Collected information about Corda installation
+	✔ Collected network parameters
+	✔ Collected node information file
+	✔ Collected additional node information files
+	✔ Collected CorDapp information
+	✔ Collected censored node configuration
+	✔ Collected driver information
+	✔ Collected log files
+	• Identity Manager status endpoint http://xxx.eastus.cloudapp.azure.com:10000/status returned response  
+	• Identity Manager status endpoint http://xxx.eastus.cloudapp.azure.com:10000/status returned response  
+	• Identity Manager status endpoint http://xxx.eastus.cloudapp.azure.com:10000/status returned response  
+	• Network Map status endpoint http://xxx.cloudapp.azure.com:10001/status returned response code  
+	• Network Map status endpoint http://xxx.eastus.cloudapp.azure.com:10001/status returned response code  
+	• Network Map status endpoint http://xxx.eastus.cloudapp.azure.com:10001/status returned response code  
+	✔ Collected general network information
+	✔ Node is configured to use external bridge
+	✔ Connected to Artemis Broker
+	✔ Initialised tool serialization context
+	✔ Node network settings are valid
+	✔ Echo message(s) received
+	✔ Received ECHO from bridge
+	✔ Remote deployment configs collected
+	✘ Float config not found, but expected
+	✔ Verified collected configuration files
+	✔ Network settings received
+	✔ Runtime info collected
+	✔ Service status received
+	✘ One or more firewall services are reported as inactive
+	✔ Validated firewall services
+	✔ Bridge map received
+	✔ Exported report to report-20190910-094824.txt
+
+ A report has been generated and written to disk.
+ Path of report: /opt/corda/report-20190910-094824.txt
+ Size of report: 54.6 KiB
+ 
+ 
+ This is an indicator for the operator to investigate Float status and restart the Float. Operator can then re-run the Corda Healthchecker Toool to confirm end to end connectivity.
