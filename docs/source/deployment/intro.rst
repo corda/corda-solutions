@@ -18,3 +18,4 @@ from other Corda Nodes by way of valid identity certificates that are known in a
    corda-network-access-details
    additional-info
    kill-flow
+   corda-health-checker
