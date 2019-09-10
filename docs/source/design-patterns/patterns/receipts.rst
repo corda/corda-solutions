@@ -50,7 +50,7 @@ Solution Walkthrough
 
 As a foundational pattern, the explanation may be a little abstract, for a more concrete pattern which uses the Receipts pattern, see Billing with Receipts. Alternatively, it maybe helpful to imagine the EnablerState to be some form of payment token and the DependentState transition to be a business event that can only happen once payment has been proved to have occurred, in which case it extends to the Token Receipts pattern.
 
-The pattern can be illustrated as follows, using a State Evolution diagram with Privacy overlay (the Corda Modelling Notation section for details on how to read the diagram):
+The pattern can be illustrated as follows, using a State Evolution diagram with Privacy overlay (see the CorDapp Design Language section for details on how to read the diagram):
 
 .. image:: resources/P_Receipts_state_evolution.png
   :width: 100%

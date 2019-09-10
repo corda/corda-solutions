@@ -11,7 +11,7 @@ An State Instance diagram might look like this:
   :align: center
 
 
-The diagram is based on states using a similar representation to the State Machine View, however there are some important differences:
+The view is based on states using a similar representation to the State Machine View, however there are some important differences:
 
 1. State Ids
 

@@ -2,7 +2,7 @@
 Managing Complexity
 ===================
 
-So far, we have focused on modelling CorDapps which have a single State type. However, production CorDapps are likely to have more than one type of Corda States interacting with each other.
+So far, we have focused on representing CorDapps which have a single State type. However, production CorDapps are likely to have more than one type of Corda States interacting with each other.
 
 In order to cope with the increased complexity that multiple state types introduce, we can use the concepts of high cohesion and low coupling. From Wikipedia:
 

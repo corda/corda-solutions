@@ -21,7 +21,7 @@ finished application, are about to deploy, or are already in production.
    designs/ledger-synchronisation-service.rst
 
 .. toctree::
-   :caption: Corda Modelling Notation
+   :caption: CorDapp Design Language
    :maxdepth: 1
 
    corda-modelling-notation/overview/overview-overview.rst
