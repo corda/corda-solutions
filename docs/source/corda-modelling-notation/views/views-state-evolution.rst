@@ -52,7 +52,7 @@ Reference states are supported from Corda v4. A reference input state is a Contr
 
 To represent Reference states in a State Evolution diagram the state should be shaded out and be marked with 'Ref'. for example, the diagram below shows a Reference state being used in a Transaction where the AgreementState must be present for the 'SomeTranstion' transition on 'SomeOtherState' to be valid:
 
-The link from the creation of a state to its use as a reference state should be shown with a dotted line. Note this doesn't represent a state transition, just showing where the state was created. 
+The link from the creation of a state to its use as a reference state should be shown with a dotted line. Note this doesn't represent a state transition, it just shows where the state was created. 
 
 
 
