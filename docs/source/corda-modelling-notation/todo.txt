@@ -1,7 +1,6 @@
 
 
-
-3. Add reference states
+Change Transaction Instance view - to match State Evolution - or delete it ???
 
 3. Add analysis sections
 
