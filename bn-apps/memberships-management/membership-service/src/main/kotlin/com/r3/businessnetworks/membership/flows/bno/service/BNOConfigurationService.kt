@@ -10,6 +10,6 @@ import net.corda.core.node.services.CordaService
  * membership-service.conf on the classpath.
  */
 @CordaService
-class BNOConfigurationService(private val serviceHub : AppServiceHub) : AbstractConfigurationService(serviceHub, "membership-service") {
-    override fun bnoName() : CordaX500Name  = throw NotImplementedError("This method should not be used")
+class BNOConfigurationService(private val serviceHub: AppServiceHub) : AbstractConfigurationService(serviceHub, "membership-service") {
+    override fun bnoName(): CordaX500Name = throw NotImplementedError("This method should not be used")
 }

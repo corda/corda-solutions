@@ -38,9 +38,9 @@ open class ActivateMembershipFlow(val membership: StateAndRef<MembershipState<An
         // create membership activation transaction
         val notary = configuration.notaryParty()
         val builder = TransactionBuilder(notary)
-            .addInputState(membership)
-            .addOutputState(membership.state.data.copy(status = MembershipStatus.ACTIVE, modified = serviceHub.clock.instant()), MembershipContract.CONTRACT_NAME)
-            .addCommand(MembershipContract.Commands.Activate(), ourIdentity.owningKey)
+                .addInputState(membership)
+                .addOutputState(membership.state.data.copy(status = MembershipStatus.ACTIVE, modified = serviceHub.clock.instant()), MembershipContract.CONTRACT_NAME)
+                .addCommand(MembershipContract.Commands.Activate(), ourIdentity.owningKey)
 
         if (membership.isAttachmentRequired()) builder.addAttachment(membership.getAttachmentIdForGenericParam())
 
@@ -59,7 +59,7 @@ open class ActivateMembershipFlow(val membership: StateAndRef<MembershipState<An
 
         // We should notify members about changes with the ACTIVATED membership
         val databaseService = serviceHub.cordaService(DatabaseService::class.java)
-        val activatedMembership = databaseService.getMembership(membership.state.data.member, ourIdentity)!!
+        val activatedMembership = databaseService.getMembershipOnNetwork(membership.state.data.member, ourIdentity, membership.state.data.networkID)!!
         subFlow(NotifyActiveMembersFlow(OnMembershipChanged(activatedMembership)))
 
         return stx
@@ -73,15 +73,15 @@ open class ActivateMembershipFlow(val membership: StateAndRef<MembershipState<An
  */
 @InitiatingFlow
 @StartableByRPC
-open class ActivateMembershipForPartyFlow(val party: Party) : BusinessNetworkOperatorFlowLogic<SignedTransaction>() {
+open class ActivateMembershipForPartyFlow(val party: Party, val networkID: String?) : BusinessNetworkOperatorFlowLogic<SignedTransaction>() {
 
     companion object {
         object LOOKING_FOR_MEMBERSHIP_STATE : ProgressTracker.Step("Looking for party's membership state")
         object ACTIVATING_THE_MEMBERSHIP_STATE : ProgressTracker.Step("Activating the membership state")
 
         fun tracker() = ProgressTracker(
-            LOOKING_FOR_MEMBERSHIP_STATE,
-            ACTIVATING_THE_MEMBERSHIP_STATE
+                LOOKING_FOR_MEMBERSHIP_STATE,
+                ACTIVATING_THE_MEMBERSHIP_STATE
         )
     }
 
@@ -90,7 +90,7 @@ open class ActivateMembershipForPartyFlow(val party: Party) : BusinessNetworkOpe
     @Suspendable
     override fun call(): SignedTransaction {
         progressTracker.currentStep = LOOKING_FOR_MEMBERSHIP_STATE
-        val stateToActivate = findMembershipStateForParty(party)
+        val stateToActivate = findMembershipStateForParty(party, networkID)
 
         progressTracker.currentStep = ACTIVATING_THE_MEMBERSHIP_STATE
         return subFlow(ActivateMembershipFlow(stateToActivate))

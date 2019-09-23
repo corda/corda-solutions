@@ -6,7 +6,6 @@ import net.corda.core.identity.Party
 import net.corda.core.node.AppServiceHub
 import net.corda.core.node.services.CordaService
 import net.corda.core.serialization.SingletonSerializeAsToken
-import java.lang.IllegalArgumentException
 import java.time.Instant
 import java.util.concurrent.ConcurrentHashMap
 
@@ -17,19 +16,19 @@ private typealias MembershipsByBNO = ConcurrentHashMap<Party, MembershipByParty>
  * A singleton service that holds a cache of memberships
  */
 @CordaService
-class MembershipsCacheHolder(private val appServiceHub : AppServiceHub) : SingletonSerializeAsToken() {
-    val cache : MembershipsCache = MembershipsCache()
+class MembershipsCacheHolder(private val appServiceHub: AppServiceHub) : SingletonSerializeAsToken() {
+    val cache: MembershipsCache = MembershipsCache()
 }
 
 class MembershipsCache {
     private val cache = MembershipsByBNO()
     private val lastRefreshed = ConcurrentHashMap<Party, Instant>()
 
-    fun getMembership(bno : Party, party : Party) : StateAndRef<MembershipState<Any>>? = cache[bno]?.get(party)
+    fun getMembership(bno: Party, party: Party): StateAndRef<MembershipState<Any>>? = cache[bno]?.get(party)
 
-    fun getMemberships(bno : Party) : MembershipByParty = cache[bno] ?: MembershipByParty()
+    fun getMemberships(bno: Party): MembershipByParty = cache[bno] ?: MembershipByParty()
 
-    fun updateMembership(changedMembership : StateAndRef<MembershipState<Any>>) {
+    fun updateMembership(changedMembership: StateAndRef<MembershipState<Any>>) {
         val membershipsByParty = cache.getOrPut(changedMembership.state.data.bno) {
             MembershipByParty()
         }
@@ -38,7 +37,7 @@ class MembershipsCache {
         }
     }
 
-    fun applyMembershipsSnapshot(membershipByParty : List<StateAndRef<MembershipState<Any>>>) {
+    fun applyMembershipsSnapshot(membershipByParty: List<StateAndRef<MembershipState<Any>>>) {
         if (membershipByParty.isNotEmpty()) {
             val bnos = membershipByParty.asSequence().map { it.state.data.bno }.toSet()
             if (bnos.size != 1) {
@@ -53,9 +52,9 @@ class MembershipsCache {
         }
     }
 
-    fun getLastRefreshedTime(bno : Party) = lastRefreshed[bno]
+    fun getLastRefreshedTime(bno: Party) = lastRefreshed[bno]
 
-    internal fun reset(bno : Party) {
+    internal fun reset(bno: Party) {
         cache.remove(bno)
         lastRefreshed.remove(bno)
     }

@@ -81,19 +81,19 @@ class GetMembershipsFlowTest : AbstractFlowTest(
         try {
             runGetMembershipsListFlow(bnoNode, notMember, true)
             fail()
-        } catch (e : NotAMemberException) {
+        } catch (e: NotAMemberException) {
             assertEquals("Counterparty ${notMember.identity()} is not a member of this business network", e.message)
         }
         try {
             runGetMembershipsListFlow(bnoNode, pendingNode, true)
             fail()
-        } catch (e : MembershipNotActiveException) {
+        } catch (e: MembershipNotActiveException) {
             assertEquals("Counterparty's ${pendingNode.identity()} membership in this business network is not active", e.message)
         }
         try {
             runGetMembershipsListFlow(bnoNode, suspendedNode, true)
             fail()
-        } catch (e : MembershipNotActiveException) {
+        } catch (e: MembershipNotActiveException) {
             assertEquals("Counterparty's ${suspendedNode.identity()} membership in this business network is not active", e.message)
         }
     }
@@ -110,7 +110,7 @@ class GetMembershipsFlowTest : AbstractFlowTest(
 
         // adding not existing party to the cache
         val notExistingParty = TestIdentity(CordaX500Name.parse("O=Member,L=London,C=GB")).party
-        val future = participant.startFlow(AddNotExistingPartyToMembershipsCache(bnoNode.identity(), MembershipState(notExistingParty, bnoNode.identity(), SimpleMembershipMetadata("DEFAULT"), status = MembershipStatus.ACTIVE)))
+        val future = participant.startFlow(AddNotExistingPartyToMembershipsCache(bnoNode.identity(), MembershipState(notExistingParty, bnoNode.identity(), SimpleMembershipMetadata("DEFAULT"), status = MembershipStatus.ACTIVE, networkID = "0")))
         mockNetwork.runNetwork()
         future.getOrThrow()
 
@@ -215,7 +215,7 @@ class GetMembershipsFlowTest : AbstractFlowTest(
 
 }
 
-class AddNotExistingPartyToMembershipsCache(val bno : Party, val membership : MembershipState<SimpleMembershipMetadata>) : FlowLogic<Unit>() {
+class AddNotExistingPartyToMembershipsCache(val bno: Party, val membership: MembershipState<SimpleMembershipMetadata>) : FlowLogic<Unit>() {
     @Suspendable
     override fun call() {
         val cacheHolder = serviceHub.cordaService(MembershipsCacheHolder::class.java)

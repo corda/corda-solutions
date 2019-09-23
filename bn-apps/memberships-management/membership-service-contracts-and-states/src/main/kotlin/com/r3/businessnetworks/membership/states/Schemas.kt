@@ -12,11 +12,13 @@ import javax.persistence.Table
 object MembershipStateSchemaV1 : MappedSchema(schemaFamily = MembershipState::class.java, version = 1, mappedTypes = listOf(PersistentMembershipState::class.java)) {
     @Entity
     @Table(name = "membership_states")
-    class PersistentMembershipState (
+    class PersistentMembershipState(
             @Column(name = "member_name")
             var member: Party,
             @Column(name = "bno_name")
             var bno: Party,
+            @Column(name = "network_id")
+            var networkID: String?,
             @Column(name = "status")
             var status: MembershipStatus) : PersistentState()
 }

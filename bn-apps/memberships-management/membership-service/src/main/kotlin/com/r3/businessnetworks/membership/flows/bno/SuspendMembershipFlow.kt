@@ -35,9 +35,9 @@ open class SuspendMembershipFlow(val membership: StateAndRef<MembershipState<Any
 
         // build suspension transaction
         val builder = TransactionBuilder(notary)
-            .addInputState(membership)
-            .addOutputState(membership.state.data.copy(status = MembershipStatus.SUSPENDED, modified = serviceHub.clock.instant()))
-            .addCommand(MembershipContract.Commands.Suspend(), ourIdentity.owningKey)
+                .addInputState(membership)
+                .addOutputState(membership.state.data.copy(status = MembershipStatus.SUSPENDED, modified = serviceHub.clock.instant()))
+                .addCommand(MembershipContract.Commands.Suspend(), ourIdentity.owningKey)
 
         if (membership.isAttachmentRequired()) builder.addAttachment(membership.getAttachmentIdForGenericParam())
 
@@ -53,8 +53,10 @@ open class SuspendMembershipFlow(val membership: StateAndRef<MembershipState<Any
         }
 
         val dbService = serviceHub.cordaService(DatabaseService::class.java)
+        // find member on a specific Network ID
         val suspendedMembership =
-            dbService.getMembership(membership.state.data.member, ourIdentity) ?: throw FlowException("Membership for ${membership.state.data.member} has not been found")
+                dbService.getMembershipOnNetwork(membership.state.data.member, ourIdentity, membership.state.data.networkID)
+                        ?: throw FlowException("Membership for ${membership.state.data.member} has not been found on the network ${membership.state.data.networkID}")
 
         // notify other members about suspension
         subFlow(NotifyActiveMembersFlow(OnMembershipChanged(suspendedMembership)))
@@ -73,15 +75,15 @@ open class SuspendMembershipFlow(val membership: StateAndRef<MembershipState<Any
  */
 @InitiatingFlow
 @StartableByRPC
-open class SuspendMembershipForPartyFlow(val party: Party) : BusinessNetworkOperatorFlowLogic<SignedTransaction>() {
+open class SuspendMembershipForPartyFlow(val party: Party, val networkID: String?) : BusinessNetworkOperatorFlowLogic<SignedTransaction>() {
 
     companion object {
         object LOOKING_FOR_MEMBERSHIP_STATE : ProgressTracker.Step("Looking for party's membership state")
         object SUSPENDING_THE_MEMBERSHIP_STATE : ProgressTracker.Step("Suspending the membership state")
 
         fun tracker() = ProgressTracker(
-            LOOKING_FOR_MEMBERSHIP_STATE,
-            SUSPENDING_THE_MEMBERSHIP_STATE
+                LOOKING_FOR_MEMBERSHIP_STATE,
+                SUSPENDING_THE_MEMBERSHIP_STATE
         )
     }
 
@@ -90,7 +92,7 @@ open class SuspendMembershipForPartyFlow(val party: Party) : BusinessNetworkOper
     @Suspendable
     override fun call(): SignedTransaction {
         progressTracker.currentStep = LOOKING_FOR_MEMBERSHIP_STATE
-        val stateToActivate = findMembershipStateForParty(party)
+        val stateToActivate = findMembershipStateForParty(party, networkID)
 
         progressTracker.currentStep = SUSPENDING_THE_MEMBERSHIP_STATE
         return subFlow(SuspendMembershipFlow(stateToActivate))

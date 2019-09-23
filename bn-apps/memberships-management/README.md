@@ -5,7 +5,8 @@
 *Contents of this article assume the reader's familiarity with the concepts of *Business Networks*. Please see [this page](https://solutions.corda.net/business-networks/intro.html) for more information.*
 
 Business Network Membership Service aims to solve the following problems:
-* On-boarding of new members to a Business Network. 
+* On-boarding of new members to a Business Network.
+* Allow the BNO to manage multiple networks 
 * Suspension of members from a Business Network.
 * Distribution of a membership list to the Business Network members.
 * Association of a custom metadata with a node's identity.
@@ -54,6 +55,9 @@ Memberships are represented with a [MembershipState](./membership-service-contra
 * `PENDING` - the very first status for all newly issued memberships. To be able to transact on the Business Network `PENDING` memberships need to be activated first.
 * `ACTIVE` - active membership holders can transact on the Business Network.
 * `SUSPENDED` - Business Network members can be temporarily suspended by their BNO, for example as a result of a governance action. Suspended members can't transact on the Business Network.
+
+### Network ID
+The `networkID` parameter is used to assign each member to a network, all new members will be assigned a default value of `UNASSIGNED` if a value is not passed to the `networkID` when membership is requested.
 
 ### Membership contract
 
@@ -179,4 +183,4 @@ class RequestMembershipFlowResponderWithAutoApproval(session : FlowSession) : Re
         return true
     }
 }
-``` 
+```

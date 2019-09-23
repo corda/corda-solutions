@@ -9,9 +9,9 @@ import net.corda.core.flows.InitiatedBy
 import net.corda.core.transactions.TransactionBuilder
 
 @InitiatedBy(AmendMembershipMetadataFlow::class)
-class AmendMembershipMetadataFlowResponderWithCustomVerification(session : FlowSession) : AmendMembershipMetadataFlowResponder(session) {
+class AmendMembershipMetadataFlowResponderWithCustomVerification(session: FlowSession) : AmendMembershipMetadataFlowResponder(session) {
     @Suspendable
-    override fun verifyTransaction(builder : TransactionBuilder) {
+    override fun verifyTransaction(builder: TransactionBuilder) {
         throw FlowException("Invalid metadata")
     }
 }

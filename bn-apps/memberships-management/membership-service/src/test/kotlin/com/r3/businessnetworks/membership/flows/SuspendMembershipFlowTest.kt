@@ -14,10 +14,9 @@ class SuspendMembershipFlowTest : AbstractFlowTest(numberOfBusinessNetworks = 2,
         numberOfParticipants = 3,
         participantRespondingFlows = listOf(NotificationsCounterFlow::class.java)) {
 
-    private fun testMembershipSuspension(suspender : (bnoNode : StartedMockNode, participantNode : StartedMockNode) -> SignedTransaction) {
+    private fun testMembershipSuspension(suspender: (bnoNode: StartedMockNode, participantNode: StartedMockNode) -> SignedTransaction) {
         val bnoNode = bnoNodes.first()
         val suspendedMemberNode = participantsNodes.first()
-
         runRequestAndActivateMembershipFlow(bnoNode, participantsNodes)
 
         // cleaning up notifications as we are interested in SUSPENDs only
@@ -44,7 +43,7 @@ class SuspendMembershipFlowTest : AbstractFlowTest(numberOfBusinessNetworks = 2,
     fun `membership suspension happy path`() = testMembershipSuspension { bnoNode, participantNode -> runSuspendMembershipFlow(bnoNode, participantNode.identity()) }
 
     @Test
-    fun `membership suspension should succeed when using a convenience flow`() = testMembershipSuspension { bnoNode, participantNode -> runSuspendMembershipForPartyFlow(bnoNode, participantNode.identity()) }
+    fun `membership suspension should succeed when using a convenience flow`() = testMembershipSuspension { bnoNode, participantNode -> runSuspendMembershipForPartyFlow(bnoNode, participantNode.identity(), "0") }
 
     @Test
     fun `only BNO should be able to start the flow`() {
@@ -58,7 +57,7 @@ class SuspendMembershipFlowTest : AbstractFlowTest(numberOfBusinessNetworks = 2,
             mockNetwork.runNetwork()
             future.getOrThrow()
             fail()
-        } catch (e : NotBNOException) {
+        } catch (e: NotBNOException) {
             assertEquals("This node is not the business network operator for this membership", e.message)
         }
     }

@@ -27,7 +27,7 @@ class SelfIssueMembershipFlowTest : AbstractFlowTest(
     }
 
     @Test
-    fun `Flow should fail if membership already exists`(){
+    fun `Flow should fail if membership already exists`() {
         val bnoNode = bnoNodes.first()
 
         runRequestMembershipFlow(bnoNode, bnoNode)

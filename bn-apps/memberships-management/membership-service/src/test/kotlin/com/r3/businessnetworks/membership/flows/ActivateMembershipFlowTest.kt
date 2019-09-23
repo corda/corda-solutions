@@ -4,9 +4,9 @@ import co.paralleluniverse.fibers.Suspendable
 import com.r3.businessnetworks.membership.flows.bno.ActivateMembershipFlow
 import com.r3.businessnetworks.membership.flows.bno.OnMembershipChanged
 import com.r3.businessnetworks.membership.flows.bno.service.BNOConfigurationService
-import com.r3.businessnetworks.membership.testextensions.AutoApprovingMembershipFlow
 import com.r3.businessnetworks.membership.flows.member.support.BusinessNetworkAwareInitiatedFlow
 import com.r3.businessnetworks.membership.states.MembershipContract
+import com.r3.businessnetworks.membership.testextensions.AutoApprovingMembershipFlow
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.FlowSession
 import net.corda.core.identity.CordaX500Name
@@ -25,7 +25,7 @@ class ActivateMembershipFlowTest : AbstractFlowTest(
         numberOfParticipants = 4,
         participantRespondingFlows = listOf(NotificationsCounterFlow::class.java)) {
 
-    private fun testMembershipActivation(activateCallback : (bnoNode : StartedMockNode, participantNode : StartedMockNode) -> SignedTransaction) {
+    private fun testMembershipActivation(activateCallback: (bnoNode: StartedMockNode, participantNode: StartedMockNode) -> SignedTransaction) {
         val bnoNode = bnoNodes.first()
         val participantNode = participantsNodes.first()
 
@@ -57,7 +57,7 @@ class ActivateMembershipFlowTest : AbstractFlowTest(
 
     @Test
     fun `membership activation should succeed when using a convenience flow`() = testMembershipActivation { bnoNode, participantNode ->
-        runActivateMembershipForPartyFlow(bnoNode, participantNode.identity())
+        runActivateMembershipForPartyFlow(bnoNode, participantNode.identity(), "0")
     }
 
     @Test
@@ -72,7 +72,7 @@ class ActivateMembershipFlowTest : AbstractFlowTest(
             mockNetwork.runNetwork()
             future.getOrThrow()
             fail()
-        } catch (e : NotBNOException) {
+        } catch (e: NotBNOException) {
             assertEquals("This node is not the business network operator for this membership", e.message)
         }
     }
@@ -96,15 +96,15 @@ class ActivateMembershipFlowTest : AbstractFlowTest(
     }
 }
 
-open class AbstractDummyInitiatingFlow(private val counterparty : Party) : FlowLogic<Unit>() {
+open class AbstractDummyInitiatingFlow(private val counterparty: Party) : FlowLogic<Unit>() {
     @Suspendable
     override fun call() {
         initiateFlow(counterparty).sendAndReceive<String>("Hello")
     }
 }
 
-open class AbstractBNAwareRespondingFlow(session : FlowSession, private val bnoName : String) : BusinessNetworkAwareInitiatedFlow<Unit>(session)  {
-    override fun bnoIdentity()  = serviceHub.identityService.wellKnownPartyFromX500Name(CordaX500Name.parse(bnoName))!!
+open class AbstractBNAwareRespondingFlow(session: FlowSession, private val bnoName: String, private val networkID: String?) : BusinessNetworkAwareInitiatedFlow<Unit>(session, networkID) {
+    override fun bnoIdentity() = serviceHub.identityService.wellKnownPartyFromX500Name(CordaX500Name.parse(bnoName))!!
 
     @Suspendable
     override fun onOtherPartyMembershipVerified() {
