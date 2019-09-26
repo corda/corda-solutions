@@ -8,7 +8,7 @@ import net.corda.core.flows.InitiatedBy
 import net.corda.core.flows.ReceiveFinalityFlow
 
 @InitiatedBy(ActivateMembershipFlow::class)
-open class ActivateMembershipFlowResponder(private val session : FlowSession) : FlowLogic<Unit>() {
+open class ActivateMembershipFlowResponder(private val session: FlowSession) : FlowLogic<Unit>() {
     @Suspendable
     override fun call() {
         if (session.getCounterpartyFlowInfo().flowVersion != 1 && session.counterparty != ourIdentity) {

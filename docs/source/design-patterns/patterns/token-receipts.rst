@@ -49,7 +49,7 @@ Salient Factors
 Solution Walkthrough
 ------------------------
 
-State Evolution diagram with Privacy overlay (see the Corda Modelling Notation section for details on how to read the diagram):
+State Evolution diagram with Privacy overlay (see the CorDapp Design Language section for details on how to read the diagram):
 
 .. image:: resources/P_Token_receipts_state_evolution.png
   :width: 100%

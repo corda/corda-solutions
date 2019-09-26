@@ -6,7 +6,7 @@ Common Concepts
 Defining Terms
 --------------
 
-When discussing CMN we need to define some common terms.
+When discussing CDL we need to define some common terms.
 
  * **State:** A class or object which complies with ContractState interface in net.corda.core.contracts. In the training materials, this is what is referred to as a State.
  * **Ledger state:**	This is the sum total of all the unconsumed ContractStates
@@ -18,7 +18,7 @@ When discussing CMN we need to define some common terms.
 Representing States
 -------------------
 
-Many views in CMN show representation of a Corda State. For the latest version of CMN we have standardised the representation of a Corda State across all the various views. The base representation of a Corda State is as follows:
+Many views in CDL show representation of a Corda State. For the latest version of CDL we have standardised the representation of a Corda State across all the various views. The base representation of a Corda State is as follows:
 
 
 .. image:: ../resources/views/CMN2_State.png

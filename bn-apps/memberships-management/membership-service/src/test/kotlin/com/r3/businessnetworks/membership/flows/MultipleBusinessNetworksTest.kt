@@ -12,7 +12,7 @@ class MultipleBusinessNetworksTest : AbstractFlowTest(numberOfBusinessNetworks =
         val bno3Node = bnoNodes[2]
         val bno4Node = bnoNodes[3]
 
-        val multiBnNode= participantsNodes[0] // participates in all business networks
+        val multiBnNode = participantsNodes[0] // participates in all business networks
         val bn1ParticipantNode = participantsNodes[1] // participates in BN1 only
         val bn2ParticipantNode = participantsNodes[2] // participates in BN2 only
         val bn3ParticipantNode = participantsNodes[3] // participates in BN3 only
@@ -52,17 +52,20 @@ class MultipleBusinessNetworksTest : AbstractFlowTest(numberOfBusinessNetworks =
         try {
             future2.getOrThrow()
             fail()
-        } catch (ex : NotAMemberException) { }
+        } catch (ex: NotAMemberException) {
+        }
         // future 3 should fail as multiBnNode's membership is SUSPENDED in BN3
         try {
             future3.getOrThrow()
             fail()
-        } catch (ex : NotAMemberException) { }
+        } catch (ex: NotAMemberException) {
+        }
         // future 4 should fail as multiBnNode's is not a member of BN4
         try {
             future4.getOrThrow()
             fail()
-        } catch (ex : NotAMemberException) { }
+        } catch (ex: NotAMemberException) {
+        }
     }
 
 }

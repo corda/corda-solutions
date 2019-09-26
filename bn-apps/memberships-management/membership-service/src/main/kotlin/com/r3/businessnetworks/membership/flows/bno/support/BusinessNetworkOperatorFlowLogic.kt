@@ -13,18 +13,18 @@ import net.corda.core.identity.Party
  * flows by getting access to the useful methods in this class.
  */
 abstract class BusinessNetworkOperatorFlowLogic<out T> : FlowLogic<T>() {
-    protected fun verifyThatWeAreBNO(membership : MembershipState<Any>) {
-        if(ourIdentity != membership.bno) {
+    protected fun verifyThatWeAreBNO(membership: MembershipState<Any>) {
+        if (ourIdentity != membership.bno) {
             throw NotBNOException(membership)
         }
     }
 
-    protected fun findMembershipStateForParty(party : Party) : StateAndRef<MembershipState<Any>> {
+    protected fun findMembershipStateForParty(party: Party, networkID: String?): StateAndRef<MembershipState<Any>> {
         val databaseService = serviceHub.cordaService(DatabaseService::class.java)
-        return databaseService.getMembership(party, ourIdentity) ?: throw MembershipNotFound(party)
+        return databaseService.getMembershipOnNetwork(party, ourIdentity, networkID) ?: throw MembershipNotFound(party)
     }
 
-    protected fun getActiveMembershipStates() : List<StateAndRef<MembershipState<Any>>> {
+    protected fun getActiveMembershipStates(): List<StateAndRef<MembershipState<Any>>> {
         val databaseService = serviceHub.cordaService(DatabaseService::class.java)
         return databaseService.getActiveMemberships(ourIdentity)
     }

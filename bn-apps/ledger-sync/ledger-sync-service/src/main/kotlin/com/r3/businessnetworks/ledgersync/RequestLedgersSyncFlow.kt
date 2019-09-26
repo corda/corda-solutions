@@ -28,9 +28,11 @@ class RequestLedgersSyncFlow(
     override fun call(): Map<Party, LedgerSyncFindings> = (members - ourIdentity)
             .map { they ->
                 val knownTransactionsIds = serviceHub.withParticipants(ourIdentity, they)
+                val ourVr = serviceHub.getRecycledTx()
                 val findings = initiateFlow(they).sendAndReceive<LedgerSyncFindings>(knownTransactionsIds).unwrap { it }
+                val newFindings = findings.copy(missingAtRequestee = findings.missingAtRequestee - ourVr, missingAtRequester = findings.missingAtRequester - ourVr)
                 // an individual implementation might treat findings differently, i.e. report them to the BNO
-                they to findings
+                they to newFindings
             }.toMap()
 }
 
@@ -54,9 +56,10 @@ class RespondLedgerSyncFlow(
     override fun call() {
         val theirs = otherSideSession.receive<List<SecureHash>>().unwrap { it }
         val ours = serviceHub.withParticipants(ourIdentity, otherSideSession.counterparty)
+        val ourVr = serviceHub.getRecycledTx()
         otherSideSession.send(LedgerSyncFindings(
-                ours - theirs,
-                theirs - ours
+                ours - theirs - ourVr,
+                theirs - ours - ourVr
         ))
     }
 }

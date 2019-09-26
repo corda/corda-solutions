@@ -32,7 +32,7 @@ Some points to note:
   - It is often not possible to show a closed graph of state evolutions, or to show the full Corda Ledger, so there needs to be a way to show the edges of the graph that is being considered.
   - The objective of the CorDapp design is to avoid Privacy Leaks
 
-Taking the example above, we can start to build up the modelling by considering PartyD
+Taking the example above, we can start to build up the analysis by considering PartyD
 
 .. image:: ../resources/privacy/CMN2_P_Example_partyD.png
   :width: 100%

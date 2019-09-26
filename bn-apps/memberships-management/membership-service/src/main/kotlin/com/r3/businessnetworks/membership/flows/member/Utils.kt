@@ -23,7 +23,7 @@ object Utils {
     }.mapValues { it.value as StateAndRef<MembershipState<T>> }
 
 
-    fun throwExceptionIfNotBNO(bno : Party, serviceHub : ServiceHub) {
+    fun throwExceptionIfNotBNO(bno: Party, serviceHub: ServiceHub) {
         // Only configured BNOs should be accepted
         val configuration = serviceHub.cordaService(MemberConfigurationService::class.java)
         if (bno !in configuration.bnoIdentities()) {

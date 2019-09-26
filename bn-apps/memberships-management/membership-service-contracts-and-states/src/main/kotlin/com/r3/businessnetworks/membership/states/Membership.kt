@@ -38,7 +38,7 @@ open class MembershipContract : Contract {
         class Activate : Commands()
     }
 
-    override fun verify(tx : LedgerTransaction) {
+    override fun verify(tx: LedgerTransaction) {
         val command = tx.commands.requireSingleCommand<Commands>()
         val output = tx.outputs.single { it.data is MembershipState<*> }
         val outputMembership = output.data as MembershipState<*>
@@ -70,28 +70,28 @@ open class MembershipContract : Contract {
     // custom implementations should be able to specify their own contract names
     open fun contractName() = CONTRACT_NAME
 
-    open fun verifyRequest(tx : LedgerTransaction, command : CommandWithParties<Commands>, outputMembership : MembershipState<*>) = requireThat {
-        "Both BNO and member have to sign a membership request transaction" using (command.signers.toSet() == outputMembership.participants.map { it.owningKey }.toSet() )
+    open fun verifyRequest(tx: LedgerTransaction, command: CommandWithParties<Commands>, outputMembership: MembershipState<*>) = requireThat {
+        "Both BNO and member have to sign a membership request transaction" using (command.signers.toSet() == outputMembership.participants.map { it.owningKey }.toSet())
         "Membership request transaction shouldn't contain any inputs" using (tx.inputs.isEmpty())
         "Membership request transaction should contain an output state in PENDING status" using (outputMembership.isPending())
     }
 
-    open fun verifySuspend(tx : LedgerTransaction, command : CommandWithParties<Commands>, outputMembership : MembershipState<*>, inputMembership : MembershipState<*>) {
+    open fun verifySuspend(tx: LedgerTransaction, command: CommandWithParties<Commands>, outputMembership: MembershipState<*>, inputMembership: MembershipState<*>) {
         "Only BNO should sign a suspension transaction" using (command.signers.toSet() == setOf(outputMembership.bno.owningKey))
         "Input state of a suspension transaction shouldn't be already suspended" using (!inputMembership.isSuspended())
         "Output state of a suspension transaction should be suspended" using (outputMembership.isSuspended())
         "Input and output states of a suspension transaction should have the same metadata" using (inputMembership.membershipMetadata == outputMembership.membershipMetadata)
     }
 
-    open fun verifyActivate(tx : LedgerTransaction, command : CommandWithParties<Commands>, outputMembership : MembershipState<*>, inputMembership : MembershipState<*>) {
+    open fun verifyActivate(tx: LedgerTransaction, command: CommandWithParties<Commands>, outputMembership: MembershipState<*>, inputMembership: MembershipState<*>) {
         "Only BNO should sign a membership activation transaction" using (command.signers.toSet() == setOf(outputMembership.bno.owningKey))
         "Input state of a membership activation transaction shouldn't be already active" using (!inputMembership.isActive())
         "Output state of a membership activation transaction should be active" using (outputMembership.isActive())
         "Input and output states of a membership activation transaction should have the same metadata" using (inputMembership.membershipMetadata == outputMembership.membershipMetadata)
     }
 
-    open fun verifyAmend(tx : LedgerTransaction, command : CommandWithParties<Commands>, outputMembership : MembershipState<*>, inputMembership : MembershipState<*>) = requireThat {
-        "Both BNO and member have to sign a metadata amendment transaction" using (command.signers.toSet() == outputMembership.participants.map { it.owningKey }.toSet() )
+    open fun verifyAmend(tx: LedgerTransaction, command: CommandWithParties<Commands>, outputMembership: MembershipState<*>, inputMembership: MembershipState<*>) = requireThat {
+        "Both BNO and member have to sign a metadata amendment transaction" using (command.signers.toSet() == outputMembership.participants.map { it.owningKey }.toSet())
         "Both input and output states of a metadata amendment transaction should be active" using (inputMembership.isActive() && outputMembership.isActive())
         "Input and output states of an amendment transaction should have different membership metadata" using (inputMembership.membershipMetadata != outputMembership.membershipMetadata)
         "Input and output states's metadata of an amendment transaction should be of the same type" using (inputMembership.membershipMetadata.javaClass == outputMembership.membershipMetadata.javaClass)
@@ -104,28 +104,32 @@ open class MembershipContract : Contract {
  *
  * @param member identity of a member
  * @param bno identity of the BNO
+ * @param networkID is used to identify different networks which a BNO can govern
  * @param issued timestamp when the state has been issued
  * @param modified timestamp when the state has been modified the last time
  * @param status status of the state, i.e. ACTIVE, SUSPENDED, PENDING etc.
  */
 @BelongsToContract(MembershipContract::class)
-data class MembershipState<out T : Any>(val member : Party,
-                                        val bno : Party,
-                                        val membershipMetadata : T,
-                                        val issued : Instant = Instant.now(),
-                                        val modified : Instant = issued,
-                                        val status : MembershipStatus = MembershipStatus.PENDING,
-                                        override val linearId : UniqueIdentifier = UniqueIdentifier()) : LinearState, QueryableState {
-    override fun generateMappedObject(schema : MappedSchema) : PersistentState {
+data class MembershipState<out T : Any>(val member: Party,
+                                        val bno: Party,
+                                        val membershipMetadata: T,
+                                        val networkID: String?,
+                                        val issued: Instant = Instant.now(),
+                                        val modified: Instant = issued,
+                                        val status: MembershipStatus = PENDING,
+                                        override val linearId: UniqueIdentifier = UniqueIdentifier()) : LinearState, QueryableState {
+    override fun generateMappedObject(schema: MappedSchema): PersistentState {
         return when (schema) {
             is MembershipStateSchemaV1 -> MembershipStateSchemaV1.PersistentMembershipState(
-                    member = this.member,
-                    bno = this.bno,
-                    status = this.status
+                    member = member,
+                    bno = bno,
+                    status = status,
+                    networkID = networkID
             )
             else -> throw IllegalArgumentException("Unrecognised schema $schema")
         }
     }
+
     override fun supportedSchemas() = listOf(MembershipStateSchemaV1)
     override val participants = listOf(bno, member)
     fun isSuspended() = status == MembershipStatus.SUSPENDED

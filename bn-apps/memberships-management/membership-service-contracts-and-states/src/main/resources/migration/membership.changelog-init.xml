@@ -14,6 +14,7 @@
             <column name="member_name" type="NVARCHAR(255)"/>
             <column name="bno_name" type="NVARCHAR(255)"/>
             <column name="status" type="INT"/>
+            <column name="network_id" type="NVARCHAR(255)"/>
         </createTable>
     </changeSet>
 </databaseChangeLog>

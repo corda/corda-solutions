@@ -1,0 +1,17 @@
+
+
+Change Transaction Instance view - to match State Evolution - or delete it ???
+
+3. Add analysis sections
+
+4. Add ledger time step diagram
+
+5. Add high level flows diagram
+
+5. Rework mapping to the code
+
+6. Add worked example (from Alice's project)
+
+7. add cordapp frame work spreadsheet.
+
+8. add extra flaw in Token design pattern

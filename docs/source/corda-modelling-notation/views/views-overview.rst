@@ -1,8 +1,8 @@
 =========
-CMN Views
+CDL Views
 =========
 
-CMN provides a number of views representing different aspects of a CorDapp design:
+CDL provides a number of views representing different aspects of a CorDapp design:
 
 .. toctree::
    :maxdepth: 1

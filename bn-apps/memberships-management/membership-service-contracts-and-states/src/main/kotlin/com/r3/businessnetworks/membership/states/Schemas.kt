@@ -19,7 +19,8 @@ object MembershipStateSchemaV1 : MappedSchema(schemaFamily = MembershipState::cl
             var member: Party,
             @Column(name = "bno_name")
             var bno: Party,
+            @Column(name = "network_id")
+            var networkID: String?,
             @Column(name = "status")
             var status: MembershipStatus) : PersistentState()
 }
-
