@@ -48,9 +48,13 @@ class PersistentPendingMembershipRequest : Serializable {
  */
 @CordaService
 class DatabaseService(val serviceHub : ServiceHub) : SingletonSerializeAsToken() {
-    fun getMembership(member : Party, bno : Party) : StateAndRef<MembershipState<Any>>? {
+    /**
+     * This method is used to search for memberships on a particular network since the BNO can be in control on more then one network and the member can exsit on multiple networks
+     */
+    fun getMembershipOnNetwork(member: Party, bno: Party, networkID: String?): StateAndRef<MembershipState<Any>>? {
         val criteria = QueryCriteria.VaultQueryCriteria(Vault.StateStatus.UNCONSUMED)
                 .and(memberCriteria(member))
+                .and(networkIDCriteria(networkID))
                 .and(bnoCriteria(bno))
         val states = serviceHub.vaultService.queryBy<MembershipState<Any>>(criteria).states
         return if (states.isEmpty()) null else (states.sortedBy { it.state.data.modified }.last())
@@ -90,6 +94,8 @@ class DatabaseService(val serviceHub : ServiceHub) : SingletonSerializeAsToken()
         }
     }
 
+    private fun networkIDCriteria(networkID: String?) 
+            = QueryCriteria.VaultCustomQueryCriteria(builder { MembershipStateSchemaV1.PersistentMembershipState::networkID.equal(networkID) })
     private fun memberCriteria(member : Party)
             = QueryCriteria.VaultCustomQueryCriteria(builder { MembershipStateSchemaV1.PersistentMembershipState::member.equal(member) })
     private fun bnoCriteria(bno: Party)
