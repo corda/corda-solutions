@@ -35,7 +35,7 @@ What Billing Service is **not**:
 
 ## Data Model
 
-The data model is represented with `BillingState`, `BillingChipState` and `BillingContract` [classes](https://github.com/corda/corda-solutions/blob/billing-service-implementation/bn-apps/billing/billing-contracts-and-states/src/main/kotlin/com/r3/businessnetworks/billing/states/BillingContract.kt).
+The data model is represented with `BillingState`, `BillingChipState` and `BillingContract` [classes](https://github.com/corda/corda-solutions/blob/master/bn-apps/billing/billing-contracts-and-states/src/main/kotlin/com/r3/businessnetworks/billing/states/BillingContract.kt).
 
 `BillingContract` governs the evolution of both `Billing` and `BillingChip` states. The following commands are supported:
 * `Issue` - to issue a `BillingState`.
