@@ -7,7 +7,9 @@
             <column name="id" type="bigint" autoIncrement="true">
                 <constraints nullable="false"/>
             </column>
-            <column name="pending_member" type="varchar(255)"/>
+            <column name="pending_member" type="varchar(255)">
+                <constraints unique="true" nullable="false"/>
+            </column>
         </createTable>
         <addPrimaryKey columnNames="id"
                        constraintName="PK_PendingMembershipRequestSchemaV1"
