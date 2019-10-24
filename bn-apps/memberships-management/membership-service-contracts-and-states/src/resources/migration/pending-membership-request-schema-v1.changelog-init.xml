@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+    <changeSet author="R3 Corda" id="PendingMembershipRequestSchemaV1">
+        <createTable tableName="pending_membership_requests">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="pending_member" type="varchar(255)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey columnNames="id"
+                       constraintName="PK_PendingMembershipRequestSchemaV1"
+                       tableName="pending_membership_requests"/>
+    </changeSet>
+</databaseChangeLog>
