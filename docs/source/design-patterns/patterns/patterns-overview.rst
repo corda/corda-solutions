@@ -11,3 +11,4 @@ This Design Patterns library is Work in progress, more patterns will be added as
 
    receipts.rst
    token-receipts.rst
+   asset-lock.rst
