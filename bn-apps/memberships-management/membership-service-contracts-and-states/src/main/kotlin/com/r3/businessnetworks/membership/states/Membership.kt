@@ -124,7 +124,10 @@ data class MembershipState<out T : Any>(val member: Party,
                     member = member,
                     bno = bno,
                     status = status,
-                    networkID = networkID
+                    networkID = networkID,
+                    issued = issued,
+                    modified = modified,
+                    linearId = linearId.id
             )
             else -> throw IllegalArgumentException("Unrecognised schema $schema")
         }
