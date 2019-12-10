@@ -10,7 +10,7 @@ Prerequisite Platform Requirements
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-.. image:: ./resources/platform.png
+.. image:: ./resources/supportedmatrix.png
    :scale: 100%
    :align: left
 
