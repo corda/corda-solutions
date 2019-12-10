@@ -16,18 +16,18 @@ In order to mitigate the security challenges that are mentioned above Corda Ente
 
 Given that the instructions here are intended for deploying Corda Node in the Corda Network, please be aware if the Corda Network operating environments from which you will choose:
 
-- UAT
-- PROD
+- UAT (http://uat.network.r3.com/)
+- PROD  (https://corda.network/)
 
 Following are the preparation steps prior to deploying and on-boarding Corda Nodes to the Corda Network:
 
 1. Request the latest versions of Corda & Corda Firewall Jar Files from R3.
 
-#. Provision the Virtual Machines on which the Corda & Corda JVM's will run.
+#. Provision either Physical or Virtual Machines on which the Corda & Corda JVM's will run.
 
-#. Provide the Public IP Address of the VM on which your Corda Node will reside.
+#. Provide the Public IP Address of the Machine on which your Corda Node will reside.
 
-#. Provide the Public IP Address of the VM on which the Corda Float will reside.
+#. Provide the Public IP Address of the Machine on which the Corda Float will reside.
 
 #. Request your DBA team to provide a database for the Corda Vault in one of the supported platforms.
 
@@ -39,10 +39,12 @@ Following are the preparation steps prior to deploying and on-boarding Corda Nod
 
 Stakeholders
 ~~~~~~~~~~~~
+
 It is important at the outset to understand the goal of your deployment, and take into consideration the internal infrastructure stakeholders for example:
 
 - Systems Administration
 - Security
 - Network
 - Enterprise Architecture
-- In addition it is important to understand your deployment environment i.e. will it be On Premises or Cloud based? Corda is Cloud agnostic and can be deployed as required in Azure, AWS, Google and other market offerings.
+
+In addition it is important to understand your deployment environment i.e. will it be On Premises or Cloud based? Corda is Cloud agnostic and can be deployed as required in Azure, AWS, Google and other market offerings.
