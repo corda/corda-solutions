@@ -5,7 +5,7 @@ It is useful to take a high level perspective of the Corda components, especiall
 
 
 .. image:: ./resources/overview.png
-   :scale: 40%
+   :scale: 50%
    :align: center
 
 Note that Corda Nodes communicate with each other using an asynchronous protocol, AMQP/TLS. The only HTTP communication is for the initial registration of each Corda Node, and for sharing of the Corda Node address locations by way of the Network Map. Each client application communicates with Corda Nodes using RPC calls. Also, the Corda Vault is a database that relies on JDBC connection from the Corda Node.
