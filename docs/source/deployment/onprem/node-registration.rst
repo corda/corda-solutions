@@ -6,7 +6,7 @@ Overview
 The diagram illustrates the process of joining one of the Corda Network environments, e.g., UAT or PROD. The first few steps may happen any time before the actual Corda Node registration in order to retrieve the public key. 
 
 
-.. image:: ./resources/registration.png
+.. image:: resources/registration.png
    :scale: 100%
    :align: center
 
@@ -33,7 +33,7 @@ Registration Actions
 
    \c. If successful you will see the following output in your terminal:
 
-.. image:: ./resources/nodereg.png
+.. image:: resources/nodereg.png
    :scale: 50%
    :align: left
    
@@ -49,7 +49,7 @@ The Node will download and install the certificate and shut down.
       
 and you will see output like this:
 
-.. image:: ./resources/nodestart.png
+.. image:: resources/nodestart.png
    :scale: 100%
    :align: center
 

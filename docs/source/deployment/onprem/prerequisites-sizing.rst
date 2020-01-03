@@ -10,7 +10,7 @@ Prerequisite Platform Requirements
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-.. image:: ./resources/platform.png
+.. image:: resources/platform.png
    :scale: 100%
    :align: left
 
@@ -47,7 +47,7 @@ Vault - Database
 Prerequisite and sizing information for the Corda Vault (database).
 
 
-.. image:: ./resources/vault.png
+.. image:: resources/vault.png
    :scale: 60%
    :align: center
 
@@ -113,11 +113,11 @@ https://docs.corda.r3.com/releases/master/node-database.html
 
 JDBC Connectivity to the Corda Vault is handled in the Corda Enterprise node.conf file in /opt/corda. Here are examples for each supported RDBMS.
 
-.. literalinclude:: ./resources/node.conf
+.. literalinclude:: resources/node.conf
     :language: javascript
 
 The diagram below outlines the relations between tables in the Vault.
 
-.. image:: ./resources/vault-relations.png
+.. image:: resources/vault-relations.png
    :scale: 60%
    :align: center

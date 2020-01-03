@@ -39,7 +39,7 @@ finished application, are about to deploy, or are already in production.
 
 .. toctree::
   :caption:  Deployment Patterns
-  :maxdepth: 1
+  :maxdepth: 2
 
   deployment/intro.rst
 
