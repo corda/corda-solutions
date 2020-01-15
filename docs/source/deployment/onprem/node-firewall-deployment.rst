@@ -176,7 +176,7 @@ trust.jks
 The important keys are bridge.jks, float.jks, trust.jks.
 
 .. literalinclude:: resources/pki-keys.conf
-    :language: javascript
+    :language: bash
 
 A full guide to the creation and deployment of these keys can be found here : https://docs.corda.r3.com/bridge-configuration-file.html
 
@@ -277,7 +277,7 @@ The following is an example of how to set up a Squid Proxy Server and start the 
 3. You should edit /etc/squid/squid.conf and add the following entries
 
 .. literalinclude:: resources/squidconfig.conf
-    :language: javascript
+    :language: bash
 
 4. Once Squid is successfully installed run:
 
@@ -288,7 +288,7 @@ The following is an example of how to set up a Squid Proxy Server and start the 
 5. If Squid starts successfully you will see an output similar to this
 
 .. literalinclude:: resources/squidstatus.conf
-    :language: javascript
+    :language: bash
 
 6. At this point you can ssh to the VM where the Corda Node is installed and run the following:
 
