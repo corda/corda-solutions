@@ -80,8 +80,10 @@ Execution
 Once the ``helm_compile.sh`` has deployed the resources to the Kubernetes cluster we are already in the startup sequence, where the pods will start and continue to self-organise and connect to the required components.
 We just need to monitor and verify that everything gets initialised correctly. This is especially true if we have made a fresh deploy with values that have yet to be tested. There are many things that can be set incorrectly to provide a deployment that is not working, let's review some of these cases.
 
-First thing first, get used to writing ``kubectl get pods``, this is your number one command for verifying if your components are running correctly. ::
+First thing first, get used to writing ``kubectl get pods``, this is your number one command for verifying if your components are running correctly.
 
+.. code-block:: bash
+ 
     $ kubectl get pods
     NAME                                            READY   STATUS    RESTARTS   AGE
     corda-node-3-bridge-deployment-8d84c764-wx444   1/1     Running   0          28h
@@ -121,7 +123,9 @@ Now that we have the components up and running and have been able to verify that
 One such operation is verifying if our components can see the other components.
 We can use ping / telnet to check if we can reach the other pods / ports.
 There is a simple ``ping.sh`` script installed on the Corda Node in the workspace folder.
-This script executes a simple check to see if a port is open: ::
+This script executes a simple check to see if a port is open:
+
+.. code-block:: bash
 
     (echo > /dev/tcp/$IP/$PORT) > /dev/null 2>&1 && echo "UP" || echo "DOWN";
 
