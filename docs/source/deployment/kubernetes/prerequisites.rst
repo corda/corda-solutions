@@ -1,11 +1,11 @@
-Kubernetes Deployment option prerequisites
-==========================================
+Corda Kubernetes Deployment option prerequisites
+================================================
 
 .. line-block::
-    The Kubernetes Deployment option has the following prerequisites:
+    The Corda Kubernetes Deployment option has the following prerequisites:
 
     * A cloud environment with Kubernetes Cluster Services that has access to a Docker Container Registry
-        (Note! The current version of the scripts only supports Azure out of the box by way of Azure Kubernetes Service and Azure Container Registry, future versions of the scripts will add support for other cloud providers)
+        (Note! The current version of the scripts only supports Azure out of the box by way of Azure Kubernetes Service and Azure Container Registry, future versions of the scripts may add support for other cloud providers)
     * Building the images requires local Docker installation `Docker <https://www.docker.com/>`_
     * kubectl is used to manage Kubernetes cluster `Install kubectl <https://kubernetes.io/docs/tasks/tools/install-kubectl/>`_
     * `Helm <https://helm.sh/>`_ 
