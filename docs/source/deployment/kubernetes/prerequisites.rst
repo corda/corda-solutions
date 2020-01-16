@@ -23,19 +23,36 @@ Having said that though, these are the services you will need to have set up in 
 
 Azure Kubernetes Service (AKS)
 ------------------------------
+
 This is the main Kubernetes cluster that we will be using. Setting up the AKS will also set up a NodePool resource group. The NodePool should also have a few public IP addresses configured as Front End IP addresses for the AKS cluster.
+A good guide to follow for setting up AKS: `Quickstart: Deploy an Azure Kubernetes Service cluster using the Azure CLI <https://docs.microsoft.com/en-us/azure/aks/kubernetes-walkthrough>`_
+Worth reading the ACR section at the same time to combine the knowledge and setup process.
 
 Azure Container Registry (ACR)
 ------------------------------
+
 The ACR provides the Docker images for the AKS to use. Please make sure that the AKS can connect to the ACR using appropriate Service Principals. See: `Azure Container Registry authentication with service principals <https://docs.microsoft.com/en-us/azure/container-registry/container-registry-auth-service-principal>`_. 
+Guide for setting up ACR: `Tutorial: Deploy and use Azure Container Registry <https://docs.microsoft.com/en-us/azure/aks/tutorial-kubernetes-prepare-acr>`_
+Guide for connecting ACR and AKS: `Authenticate with Azure Container Registry from Azure Kubernetes Service <https://docs.microsoft.com/en-us/azure/aks/cluster-container-registry-integration>`_
+Worth reading the AKS section at the same time to combine the knowledge and setup process.
+
+Azure Service Principals
+------------------------
+
+Service Principals is Azures way of delegating permissions between different services within Azure. There should be at least one Service Principal for AKS which can access ACR to pull the Docker images from there.
+Here is a guide to get your started on SPs: `Service principals with Azure Kubernetes Service (AKS) <https://docs.microsoft.com/en-us/azure/aks/kubernetes-service-principal>`_
 
 Azure Storage Account
 ---------------------
+
 In addition to that there should be a storage account that will host the persistent volumes (File storage). 
+Guide on setting up Storage Accounts: `Create an Azure Storage account <https://docs.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal>`_
 
 Public IP addresses
 -------------------
+
 You should have a few static public IP addresses available for each deployment. One for the Node to accept incoming RPC connections from an UI level and another one if running the Float component within the cluster, this would then be the public IP address that other nodes would see and connect to.
+A guide on setting up Public IP addresses in Azure: `Create, change, or delete a public IP address <https://docs.microsoft.com/en-us/azure/virtual-network/virtual-network-public-ip-address>`_
 
 Docker image generation
 ~~~~~~~~~~~~~~~~~~~~~~~
