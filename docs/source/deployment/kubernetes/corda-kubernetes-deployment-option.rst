@@ -1,4 +1,4 @@
-Corda Kubernetes Deployment option
+Corda Kubernetes Deployment Option
 ==================================
 
 Now that we have reviewed the architecture and the prerequisites we can start talking about the actual deployment scripts.
@@ -13,13 +13,18 @@ There are a few distinct steps to deploying a Corda Node that are always require
 * Then moving on to deployment
 * And finally starting everything up and testing
 
-Registration / certificates generation
+Registration / Certificate Generation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 As discussed on the `Prerequisites <prerequisites.html>`_ page, we need to generate a PKI structure for the Corda Firewall to use.
-The generated certificates from this process should be copied to the following folder: ``helm/files/certificates/firewall_tunnel``. The required files are: ``bridge.jks``, ``float.jks`` and ``trust.jks``.
+
+The generated certificates from this process should be copied to the following folder: ``helm/files/certificates/firewall_tunnel``. 
+
+The required files are: ``bridge.jks``, ``float.jks`` and ``trust.jks``.
 
 Once this has been done we will also need to register the Corda Node itself to generate TLS certificates and signing keys, with the next step.
+
+For further information on Node registration please see `Node registration <https://solutions.corda.net/deployment/onprem/node-registration.html>`_
 
 Initial registration
 --------------------
@@ -66,10 +71,19 @@ Executing ``helm_compile.sh`` will do the following:
 Removing all installed resources from Kubernetes
 ------------------------------------------------
 
-Should you want a fresh start on the Kubernetes cluster (especially useful during first few executions while learning the system), you may run the bash script called ``delete-all.sh``. 
-This file will Kubernetes cluster resources in the following order: PersistentVolumes, PersistentVolumeClaims, StatefulSets, Deployments, Services, Pods, Jobs.
+In the event you want a new fresh deployment of the Kubernetes cluster (especially useful during first few executions while learning the system), run the bash script called ``delete-all.sh``.
+This file will delete Kubernetes cluster resources in the following order:
+
+* PersistentVolumes
+* PersistentVolumeClaims
+* StatefulSets
+* Deployments
+* Services
+* Pods
+* Jobs
+
 The script will then wait until all the resources have been deleted from the Kubernetes cluster by polling it every 5 seconds. Finally it will remove any PersistentVolumeClaims that have been released in the shutdown phase.
-Once this script has finished executing, it is safe to execute ``helm_compile.sh`` (or kubectl apply -f directly) to perform a fresh deploy.
+Once this script has finished executing, it is then safe to execute ``helm_compile.sh`` (or kubectl apply -f directly) to perform a fresh deployment.
 
 Execution and testing
 ~~~~~~~~~~~~~~~~~~~~~

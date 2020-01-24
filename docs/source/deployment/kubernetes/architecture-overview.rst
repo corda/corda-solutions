@@ -18,7 +18,7 @@ The deployment targets best security practices by using Corda Firewall in the Br
 Allowing for true DMZ when using Kubernetes does demand two physical Kubernetes clusters or alternatively the Float (and the proxies) can be hosted on virtual machines (VMs) sitting in DMZ.
 If your security requirements are more relaxed, you also have the option of hosting the Float component in the main Kubernetes cluster, this can be useful in testing scenarios.
 
-Demilitarized zone (DMZ)
+Demilitarized Zone (DMZ)
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 True DMZ means we can have physical separation of the data in the different zones. In addition we can have two firewalls to set up the DMZ. 
@@ -28,26 +28,71 @@ The only inbound connection requirement is the AMQP over TLS traffic which does 
 The internal firewall is protecting the internal zone from the DMZ. In true DMZ scenarios this firewall is blocking ALL inbound connections.
 Corda Firewall allows for this mode of operation, where the Bridge sits in the internal zone and opens a connection to the Float component, thus there is no need for any inbound connections to the internal zone.
 
-SOCKS and HTTP proxies
+Corda Firewall (Bridge & Float)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The Corda Firewall is composed of two components, the Bridge and the Float, let's look at what the separation of responsibilities between these two components is.
+
+Corda Firewall: Bridge
+----------------------
+
+The Bridge component of the Corda Firewall has the responsibility to connect to the Float component and establish a secure connection between the two components using mutually authenticated TLS.
+
+The Bridge component should sit in the internal zone, behind a physical firewall that blocks all incoming traffic.
+
+In addition to handling the incoming traffic to the Corda Node via the Float component, the Bridge component also has the responsibility to handle outbound communication from the Corda Node as well.
+This traffic can be routed via an optional SOCKS proxy.
+
+Corda Firewall: Float
+----------------------
+
+The Float component of the Corda Firewall has the responsibility to start up in a mode where it is *only* waiting for a connection on a port exposed towards the internal zone. 
+The expectation is that the Bridge component will connect to this port, create a secure TLS connection and then take ownership of the Float component.
+
+Only once the Bridge component has taken ownership of the Float, will the Float component continue with the next step.
+The next step is for the Float component to open the external facing port to accept traffic from the external zone (the internet).
+The external facing port should be protected by a physical firewall that only allows traffic in on the specific exposed port that the Float will allow inbound AMQP over TLS traffic on.
+
+After this step, we have a fully operational Corda Firewall system up and running, where only the Float accepts incoming traffic (the Float is effectively a "listener" in the DMZ) and the Bridge handles outgoing traffic.
+
+This setup allows the Corda Node, along with its Vault (database) to sit in an internal zone in a safe environment, isolated from any potential attackers.
+
+SOCKS and HTTP Proxies
 ~~~~~~~~~~~~~~~~~~~~~~
 
 Having satisfied true DMZ requirements by using Corda Firewall for inbound connections, we should also do the same for outbound connections. This is where we can utilise SOCKS proxy and HTTP proxy.
 
-The SOCKS proxy is there to provide a connection point for outbound AMQP over TLS traffic. The SOCKS proxy sits in the DMZ.
+Proxy Server
+------------
+
+A proxy server is a server that acts as an intermediary for requests from clients seeking resources from other servers. The proxy server forwards requests to and from anywhere on the Internet.
+
+SOCKS Proxy
+-----------
+
+The SOCKS proxy is there to provide a connection point for outbound AMQP over TLS traffic to other peer-to-peer nodes on the network. The SOCKS proxy sits in the DMZ.
 It takes the internal communication from the Bridge component and relays the information to the external nodes on the network.
+The SOCKS proxy terminates the connection from the local Corda Node and re-establishes a new connection to an external Node.
+
+HTTP Proxy
+----------
 
 The HTTP proxy acts as a connection point for outbound HTTP(s) traffic. The HTTP proxy sits in the DMZ.
 It takes the internal communication from the Bridge component to route the TLS CRL (Certificate Revocation List) checks via the HTTP proxy to the CRL end-point on the Corda Network.
 In addition it routes the traffic from the Node to the Network Map which is HTTP based traffic.
+The HTTP Proxy also masks the source IP address of the request from the Corda Node to the Internet.
 
 Kubernetes Cluster
 ~~~~~~~~~~~~~~~~~~
 
 The benefits of using Kubernetes includes:
 
-* version guarantee, knowing what is running at any given time
-* revision history, knowing what has changed and when
-* self-healing, a component that fails can be automatically restarted and the system can re-organise to continue functioning again
+* Immutability - the services are deployed in an immutable fashion compared to traditional VM based deployments (traditionally random maintenance actions are performed on a VM diverging the running state from the expected state over time)
+* Version guarantee - knowing what is running at any given time, relates to the immutable deployment
+* Revision history - knowing what has changed and when, giving you the possibility to identify issues and rollback to a specific point in time
+* Rolling updates - allows new versions to be deployed while the old ones are still running
+* Self-healing - a component that fails can be automatically restarted and the system can re-organise to continue functioning again
+* Infrastructure abstraction - the developers need not think about what hardware is required
 
 In the image above, we show the option of using two Kubernetes clusters, one for DMZ and one for the internal one.
 
@@ -99,7 +144,7 @@ The Float component starts off in a mode where it is just waiting for a Bridge c
 In this mode, it is only listening on one port, the port where we expect the Bridge to connect to.
 The connection between the Bridge and the Float is mutually authenticated TLS using certificates that originate from a shared trust root.
 As the Bridge connects to the the Float component on its listening port, the TLS handshake occurrs and verifies that both the identities of the two components are as expected, but also that the trust root they both use is the same and is valid.
-Once the Bridge has taken control of the Float, the Float will enter into the listening mode, where it will open up a port for listening for external AMQP over TLS connections (the peer to peer (p2p) traffic).
+Once the Bridge has taken control of the Float, the Float will enter into the listening mode, where it will open up a port for listening for external AMQP over TLS connections (the peer-to-peer (p2p) traffic).
 At this point the Corda Firewall component is fully started and established, ready to communicate with other nodes on the network.
 
 Next we will look at the Bridge component.
