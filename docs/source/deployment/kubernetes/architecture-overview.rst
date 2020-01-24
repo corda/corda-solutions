@@ -113,7 +113,8 @@ At this point we have established the full connection sequence. We have:
 * The Corda Node connected to the Artemis MQ
 * Artemis MQ connected to the Bridge
 * Bridge connected to the Float
-* Optionally Bridge connected to SOCKS and HTTP proxy
+* Optionally Bridge connected to SOCKS proxy for outbound AMQP over TLS traffic
+* Optionally Node connected to HTTP proxy for outbound Network Map access
 
 Now we can send and receive messages to/from other nodes on the network.
 
