@@ -1,5 +1,5 @@
-Corda Kubernetes Deployment Option
-==================================
+Corda Kubernetes Deployment
+===========================
 
 Now that we have reviewed the architecture and the prerequisites we can start talking about the actual deployment scripts.
 
@@ -13,8 +13,10 @@ There are a few distinct steps to deploying a Corda Node that are always require
 * Then moving on to deployment
 * And finally starting everything up and testing
 
+----
+
 Registration / Certificate Generation
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 As discussed on the `Prerequisites <prerequisites.html>`_ page, we need to generate a PKI structure for the Corda Firewall to use.
 
@@ -39,11 +41,15 @@ Once initiated the Corda Node will start the CSR request and wait indefinitely u
 If the CSR returns successfully, next the Node will generate the certificates in the folder ``certificates``.
 The generated files from this folder should then be copied to the following folder: ``helm/files/certificates/node``.
 
+----
+
 CorDapps
 ~~~~~~~~
 
 Any CorDapps that you would like to install on the Corda Node during the deployment should be placed in folder: ``helm/files/cordapps``.
 All files in this folder can then be automatically found in the Corda Node after executing ``pre-install.sh`` in folder ``helm/output/corda/templates``.
+
+----
 
 Deployment
 ~~~~~~~~~~
@@ -84,6 +90,8 @@ This file will delete Kubernetes cluster resources in the following order:
 
 The script will then wait until all the resources have been deleted from the Kubernetes cluster by polling it every 5 seconds. Finally it will remove any PersistentVolumeClaims that have been released in the shutdown phase.
 Once this script has finished executing, it is then safe to execute ``helm_compile.sh`` (or kubectl apply -f directly) to perform a fresh deployment.
+
+----
 
 Execution and testing
 ~~~~~~~~~~~~~~~~~~~~~
@@ -126,6 +134,8 @@ On Windows, we may have to route the call via winpty helper to correctly route t
 This should give us a bash command prompt to the running pod.
 The default working folders for Corda Node and Corda Firewall is ``/opt/corda``.
 We should perform normal Corda component investigation / trouble shooting from this point on.
+
+----
 
 Testing
 -------

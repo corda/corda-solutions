@@ -1,5 +1,5 @@
-Corda Kubernetes Deployment option
-==================================
+Corda Kubernetes Deployment
+===========================
 
 .. line-block::
     Kubernetes shines in orchestrating complex connection scenarios between multiple components and allowing these components to self-heal and recover from errors.
