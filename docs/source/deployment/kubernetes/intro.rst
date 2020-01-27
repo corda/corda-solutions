@@ -15,4 +15,4 @@ Corda Kubernetes Deployment
    considerations
    architecture-overview
    prerequisites
-   corda-kubernetes-deployment-option   
+   corda-kubernetes-deployment
