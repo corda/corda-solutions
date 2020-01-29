@@ -33,8 +33,8 @@ On the Node VM run:
 
 /usr/bin/java -Xmx2048m -jar /opt/corda/corda-3.2.jar --config-file node.conf
 
-.. literalinclude:: ./resources/nodestart.conf
-    :language: javascript
+.. literalinclude:: resources/nodestart.conf
+    :language: bash
 
 
 

@@ -4,7 +4,7 @@ Architecture Overview
 It is useful to take a high level perspective of the Corda components, especially where it comes to the various communication protocols that Corda employs in its operations. The diagram below illustrates the various communication protocols used by the Corda Node communicating with peers on the Corda Network.
 
 
-.. image:: ./resources/overview.png
+.. image:: resources/overview.png
    :scale: 40%
    :align: center
 
@@ -25,7 +25,7 @@ To aid deeper understanding, the diagram below illustrates in more detail the ba
 - Corda Enterprise Firewall
 
 
-.. image:: ./resources/nodebridgefloat_nbrs.png
+.. image:: resources/nodebridgefloat_nbrs.png
    :scale: 100%
    :align: center
 

@@ -19,7 +19,7 @@ Non HA Corda Node, Bridge, Float
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-.. image:: ./resources/nonha.png
+.. image:: resources/nonha.png
    :scale: 120%
    :align: center
    
@@ -41,7 +41,7 @@ HA Corda Node, Bridge, Float
 
 
 
-.. image:: ./resources/ha.png
+.. image:: resources/ha.png
    :scale: 120%
    :align: center
 
@@ -58,7 +58,7 @@ Java 8 should be installed on your Virtual Machine. Here is an example of how th
 
 These are the configuration files that will be created during the process:
 
-.. image:: ./resources/config.png
+.. image:: resources/config.png
    :scale: 60%
    :align: center
 
@@ -76,7 +76,7 @@ Node Installation
 #. In the root of your node directory, create a folder called cordapps.  Upload your CorDapps to this folder.
 #. Check that your node directory is structured as follows:
 
-.. image:: ./resources/cordadir.png
+.. image:: resources/cordadir.png
    :scale: 60%
    :align: center
    
@@ -102,7 +102,7 @@ Once your /opt/corda directory is fully created it will contain the following fi
 
 This is a sample node.conf which connects to the Corda UAT Network.
 
-.. literalinclude:: ./resources/nodefull.conf
+.. literalinclude:: resources/nodefull.conf
     :language: javascript
 
 
@@ -111,7 +111,7 @@ Corda Firewall PKI Implementation
 
 In a bank environment there will typically be several layers of security protecting the firms data.
 
-.. image:: ./resources/cordarch.png
+.. image:: resources/cordarch.png
    :scale: 60%
    :align: center
 
@@ -126,7 +126,7 @@ In a bank environment there will typically be several layers of security protect
 - Corda PKI Authentication issued by Corda Network can link the Node and Bridge i.e. the red keys indicated below truststore and sslkeystore
 - Local PKI Authentication issued by separate CA will link the Bridge and Float i.e the purple keys indicated below trust and bridge.
 
-.. image:: ./resources/firewallpki.png
+.. image:: resources/firewallpki.png
    :scale: 60%
    :align: center
 
@@ -159,7 +159,7 @@ Generate Bridge and Float Keystores
 
 - In /opt/corda/temp run chmod 755 keygen.sh
 
-- In /opt/corda/temp run ./keygen.sh
+- In /opt/corda/temp run keygen.sh
 
 The following keys will be generated:
 
@@ -175,8 +175,8 @@ trust.jks
 
 The important keys are bridge.jks, float.jks, trust.jks.
 
-.. literalinclude:: ./resources/pki-keys.conf
-    :language: javascript
+.. literalinclude:: resources/pki-keys.conf
+    :language: bash
 
 A full guide to the creation and deployment of these keys can be found here : https://docs.corda.r3.com/bridge-configuration-file.html
 
@@ -193,7 +193,7 @@ Bridge Installation
 
 This is a sample bridge.conf:
 
-.. literalinclude:: ./resources/bridge.conf
+.. literalinclude:: resources/bridge.conf
     :language: javascript
 
 
@@ -209,7 +209,7 @@ Float Installation
 
 This is a sample float.conf:
 
-.. literalinclude:: ./resources/float.conf
+.. literalinclude:: resources/float.conf
     :language: javascript
 
 
@@ -248,7 +248,7 @@ Suggested Work flow for Corda Node & Corda Firewall Installation
 
 The following image may be helpful in ensuring alignment between the Node, Bridge and Float configuration files.
 
-.. image:: ./resources/CordaFirewallConfigAlign.png
+.. image:: resources/CordaFirewallConfigAlign.png
    :scale: 100%
    :align: center
 
@@ -276,8 +276,8 @@ The following is an example of how to set up a Squid Proxy Server and start the 
 
 3. You should edit /etc/squid/squid.conf and add the following entries
 
-.. literalinclude:: ./resources/squidconfig.conf
-    :language: javascript
+.. literalinclude:: resources/squidconfig.conf
+    :language: bash
 
 4. Once Squid is successfully installed run:
 
@@ -287,9 +287,8 @@ The following is an example of how to set up a Squid Proxy Server and start the 
 
 5. If Squid starts successfully you will see an output similar to this
 
-
-.. literalinclude:: ./resources/squidstatus.conf
-    :language: javascript
+.. literalinclude:: resources/squidstatus.conf
+    :language: bash
 
 6. At this point you can ssh to the VM where the Corda Node is installed and run the following:
 
@@ -298,7 +297,7 @@ The following is an example of how to set up a Squid Proxy Server and start the 
 7. If the Corda Node starts up sucessfully you can then check /var/log/squid/access.log and you should see output as follows:
 
 
-.. literalinclude:: ./resources/access.conf
+.. literalinclude:: resources/access.conf
     :language: javascript
 
 Using Socks Proxy with Corda Bridge
@@ -315,5 +314,5 @@ SOCKS proxies provide an improvement over HTTP proxy in terms of speed of data d
 The additional benefit of utilizing a SOCKS server is that it facilitates organizations enforce security policy and allow applications to reach legitimate external hosts through simple, centrally controlled rule-based settings.
 
 
-.. literalinclude:: ./resources/socks.conf
+.. literalinclude:: resources/socks.conf
     :language: javascript

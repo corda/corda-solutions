@@ -27,7 +27,7 @@ Start a flow which has been modified to never finish. If the Corda node already 
 
 The flow will remain stuck on "Gathering the counterparty's signature".
 
-.. parsed-literal::
+.. parsed-literal::custom
    > Tue Jul 02 17:27:43 EDT 2019>>> flow start ExampleFlow iouValue: 1000, otherParty: PartyB
    > ✓ Starting
    > ✓ Generating transaction based on new IOU.

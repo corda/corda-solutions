@@ -116,7 +116,7 @@ Here are the basis goals of a Segregated Sub Zone:
 
 The diagram below outlines the the overview of SSZ.
 
-.. image:: ./resources/subzone.png
+.. image:: resources/subzone.png
    :scale: 60%
    :align: center
 

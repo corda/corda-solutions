@@ -4,7 +4,6 @@ Corda Health Checker
 This guide is designed to provide detail on how to run the Corda Health Checker tool. 
 
 
-
 Overview
 --------
 
