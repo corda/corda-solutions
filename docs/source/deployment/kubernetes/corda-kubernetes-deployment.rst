@@ -3,7 +3,7 @@ Corda Kubernetes Deployment
 
 Now that we have reviewed the architecture and the prerequisites we can start talking about the actual deployment scripts.
 
-The scripts are located at: `Github: Corda Deployments <https://github.com/corda/corda-deployments>`_
+The scripts are located at: `Github: Corda Kubernetes Deployment <https://github.com/corda/corda-kubernetes-deployment>`_
 
 The scripts come with usage instructions of their own, but it is worth explaining the steps in more details.
 
