@@ -1,6 +1,6 @@
 # Deprecation Warning
 
-Effective **31 September 2020**, the 'Business Network Toolkit' will be deprecated as the feature set will be included in Corda's official distribution.
+Effective **31 September 2020**, the 'Business Network Membership Service' will be deprecated as the feature set will be included in Corda's official distribution.
 To minimise disruption to existing users, binaries of previous released versions will continue to be served through [software.r3.com](https://software.r3.com/artifactory/corda-solutions-releases/net/corda/businessnetworks/) until further notice.
 
 More information will be released in September as part of the deprecation notice.
