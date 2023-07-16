@@ -4,7 +4,7 @@ certifi==2018.4.16
 chardet==3.0.4
 CommonMark==0.5.5
 docutils==0.12
-future==0.16.0
+future==0.18.3
 idna==2.6
 imagesize==0.7.1
 Jinja2==2.10.1
