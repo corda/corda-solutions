@@ -11,7 +11,7 @@ buildscript {
             }
         }
         maven {
-            url "https://software.r3.com/artifactory/corda-solutions-private-dev/"
+            url "$artifactoryContextUrl/corda-solutions-private-dev/"
             credentials {
                 username = System.getenv('CORDA_ARTIFACTORY_USERNAME') ?: System.getProperty('corda.artifactory.username')
                 password = System.getenv('CORDA_ARTIFACTORY_PASSWORD') ?: System.getProperty('corda.artifactory.password')
