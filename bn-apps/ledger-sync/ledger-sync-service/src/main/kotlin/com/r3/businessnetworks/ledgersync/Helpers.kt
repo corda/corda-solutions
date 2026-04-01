@@ -1,5 +1,6 @@
 package com.r3.businessnetworks.ledgersync
 
+import com.r3.vaultrecycler.schemas.DBService
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigException
 import com.typesafe.config.ConfigFactory
@@ -21,6 +22,7 @@ import net.corda.core.utilities.loggerFor
 import sun.security.util.ByteArrayLexOrder
 import java.io.File
 import java.nio.file.Paths
+import kotlin.jvm.java
 
 /**
  * Provides a list of transaction hashes referring to transactions in which all of the given parties are participating.
@@ -126,7 +128,10 @@ fun ServiceHub.getRecycledTx(): List<SecureHash> {
 }
 
 fun ServiceHub.vrExist(): Boolean {
-    return this.withEntityManager {
-        this.metamodel.entities.any { it.name == "RecyclableTransaction" }
+    return try {
+        val dbService = try { cordaService(DBService::class.java) } catch (_: Exception) { null }
+        dbService != null
+    } catch (_: Exception) {
+        false
     }
 }

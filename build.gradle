@@ -1,26 +1,25 @@
 buildscript {
-    ext {
-        corda_release_group = 'net.corda'
-        corda_release_version = '4.0'
-        corda_gradle_plugins_version = '4.0.38'
-        aetherVersion = '1.0.0.v20140518'
-        mavenVersion = '3.1.0'
-        maven_resolver_version = "1.1.1"
-        kotlin_version = '1.2.71'
-        junit_version = '4.12'
-        dokka_version = '0.9.17'
-    }
-
     repositories {
-        jcenter()
+        mavenLocal()
         mavenCentral()
-        maven { url "https://software.r3.com/artifactory/corda-releases" }
-        maven { url "https://software.r3.com/artifactory/corda-solutions-private-dev/"
+        maven { url 'https://download.corda.net/maven/corda-releases' }
+        maven {
+            url "$artifactoryContextUrl/corda-remotes"
             credentials {
                 username = System.getenv('CORDA_ARTIFACTORY_USERNAME') ?: System.getProperty('corda.artifactory.username')
                 password = System.getenv('CORDA_ARTIFACTORY_PASSWORD') ?: System.getProperty('corda.artifactory.password')
             }
         }
+        maven {
+            url "https://software.r3.com/artifactory/corda-solutions-private-dev/"
+            credentials {
+                username = System.getenv('CORDA_ARTIFACTORY_USERNAME') ?: System.getProperty('corda.artifactory.username')
+                password = System.getenv('CORDA_ARTIFACTORY_PASSWORD') ?: System.getProperty('corda.artifactory.password')
+            }
+        }
+        maven { url 'https://jitpack.io' }
+        maven { url 'https://download.corda.net/maven/corda-dependencies' }
+        maven { url 'https://repo.gradle.org/gradle/libs-releases' }
     }
 
     dependencies {
@@ -33,12 +32,20 @@ buildscript {
 }
 
 plugins {
-    id "com.jfrog.artifactory" version "4.7.5"
+    id "com.jfrog.artifactory" version "4.18.3"
 }
 
 allprojects {
     version "3.0-SNAPSHOT"
     group "com.r3.businessnetworks"
+
+    repositories {
+        mavenLocal()
+
+        mavenCentral()
+        maven { url 'https://download.corda.net/maven/corda-dependencies' }
+        maven { url 'https://jitpack.io' }
+    }
 
     configurations.all {
         resolutionStrategy {
@@ -67,6 +74,7 @@ subprojects {
         maven { url 'https://jitpack.io' }
         maven { url "https://software.r3.com/artifactory/corda-dev" }
         maven { url "https://software.r3.com/artifactory/corda-releases" }
+        maven { url 'https://repo.gradle.org/gradle/libs-releases' }
         maven { url "https://software.r3.com/artifactory/corda-solutions-private-dev/"
             credentials {
                 username = System.getenv('CORDA_ARTIFACTORY_USERNAME') ?: System.getProperty('corda.artifactory.username')
@@ -141,6 +149,6 @@ artifactory {
 }
 
 wrapper {
-    gradleVersion = "4.10.2"
-    distributionType = Wrapper.DistributionType.ALL
+    gradleVersion = "5.6.4"
+    distributionType = Wrapper.DistributionType.BIN
 }

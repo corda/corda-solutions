@@ -49,7 +49,6 @@ class SampleContract : Contract {
                 verifyThatParticipantHasPaid(inputState.owner, tx)
                 verifyThatParticipantHasPaid(outputState.owner, tx)
             }
-            else -> throw IllegalArgumentException("Unsupported command ${sampleCommand.value}")
         }
     }
 

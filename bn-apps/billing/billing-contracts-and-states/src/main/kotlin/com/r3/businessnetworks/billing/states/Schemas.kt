@@ -21,8 +21,6 @@ object BillingStateSchemaV1 : MappedSchema(schemaFamily = BillingState::class.ja
             var status : BillingStateStatus,
             @Column(name = "externalId", nullable = true)
             var externalId : String?) : PersistentState()
-
-    override val migrationResource = "billing.changelog-master.xml"
 }
 
 @CordaSerializable
