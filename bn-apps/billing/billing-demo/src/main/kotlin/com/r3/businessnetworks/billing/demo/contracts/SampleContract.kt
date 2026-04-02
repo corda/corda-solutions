@@ -9,7 +9,6 @@ import net.corda.core.contracts.TypeOnlyCommandData
 import net.corda.core.contracts.requireThat
 import net.corda.core.identity.Party
 import net.corda.core.transactions.LedgerTransaction
-import java.lang.IllegalArgumentException
 
 class SampleContract : Contract {
     companion object {

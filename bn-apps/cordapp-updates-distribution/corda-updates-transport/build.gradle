@@ -59,6 +59,7 @@ dependencies {
     testImplementation "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
     testImplementation "junit:junit:$junit_version"
     testImplementation project(':bn-apps:cordapp-updates-distribution:corda-updates-core')
+    testImplementation "co.paralleluniverse:quasar-core:$quasar_version"
 }
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
@@ -72,4 +73,8 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
 
 tasks.jar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+test {
+    jvmArgs = rootProject.ext.testJvmArgs
 }

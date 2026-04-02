@@ -34,10 +34,14 @@ sourceSets {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    implementation "javax.persistence:javax.persistence-api:$persistence_version"
+    implementation "com.google.guava:guava:$guava_version"
+    implementation "org.apache.maven.resolver:maven-resolver-spi:$maven_resolver_version"
 
     // cordapps
     cordapp project(":bn-apps:cordapp-updates-distribution:corda-updates-core")
     cordapp project(":bn-apps:cordapp-updates-distribution:corda-updates-app-states")
+    cordapp project(':bn-apps:cordapp-updates-distribution:corda-updates-transport')
 
     // corda dependencies
     cordaProvided "$corda_release_group:corda-core:$corda_release_version"
@@ -48,7 +52,9 @@ dependencies {
     // test dependencies
     testImplementation "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
     testImplementation "junit:junit:$junit_version"
+    testImplementation "co.paralleluniverse:quasar-core:$quasar_version"
     testImplementation project(":bn-apps:cordapp-updates-distribution:corda-updates-test-utils")
+    testImplementation project(":bn-apps:businessnetworks-utilities")
 }
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
@@ -58,4 +64,8 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
         jvmTarget = JVM_17
         javaParameters = true   // Useful for reflection.
     }
+}
+
+test {
+    jvmArgs = rootProject.ext.testJvmArgs
 }

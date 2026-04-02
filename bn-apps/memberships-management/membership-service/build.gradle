@@ -35,8 +35,10 @@ sourceSets {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    testImplementation "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
-    testImplementation "junit:junit:$junit_version"
+    implementation "javax.persistence:javax.persistence-api:$persistence_version"
+    implementation "com.google.guava:guava:$guava_version"
+
+    cordapp project(":bn-apps:memberships-management:membership-service-contracts-and-states")
 
     // Corda integration dependencies
     cordaProvided "$corda_release_group:corda-core:$corda_release_version"
@@ -46,10 +48,8 @@ dependencies {
     implementation project(":bn-apps:businessnetworks-utilities")
     testImplementation "$corda_release_group:corda-node-driver:$corda_release_version"
     testImplementation project(":bn-apps:memberships-management:test-utils")
-
-
-    cordapp project(":bn-apps:memberships-management:membership-service-contracts-and-states")
-
+    testImplementation "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
+    testImplementation "junit:junit:$junit_version"
 }
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {

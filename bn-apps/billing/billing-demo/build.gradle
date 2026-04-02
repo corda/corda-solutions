@@ -48,6 +48,7 @@ dependencies {
     testImplementation project(":bn-apps:businessnetworks-test-utilities")
 
     cordapp project(":bn-apps:billing:billing-app")
+    cordapp project(":bn-apps:billing:billing-contracts-and-states")
 
 }
 
@@ -63,4 +64,8 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
 task testJar(type: Jar) {
     classifier = 'tests'
     from sourceSets.test.output
+}
+
+test {
+    jvmArgs = rootProject.ext.testJvmArgs
 }
