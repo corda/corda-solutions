@@ -61,7 +61,7 @@ object Utils {
         // file name is last part of the split
         val fileName = split.last()
         if (fileName.isEmpty()
-                || !(alphaNumericalCharacter + allowedSpecialCharacters).containsAll(fileName.toLowerCase().toSet())) {
+                || !(alphaNumericalCharacter + allowedSpecialCharacters).containsAll(fileName.lowercase().toSet())) {
             throw FlowException(exceptionMessage)
         }
 
@@ -77,7 +77,7 @@ object Utils {
         val artifactGroup = if (isMavenMetadataRequest) split.subList(0, split.size - 2) else split.subList(0, split.size - 3)
         // verify each part of the artifact group
         for (part in artifactGroup) {
-            if (part.isEmpty() || !alphaNumericalCharacter.containsAll(part.toLowerCase().toSet())) {
+            if (part.isEmpty() || !alphaNumericalCharacter.containsAll(part.lowercase().toSet())) {
                 throw FlowException(exceptionMessage)
             }
         }
@@ -85,7 +85,7 @@ object Utils {
         // verify artifact name
         val artifactName = if (isMavenMetadataRequest) split[split.size - 2] else split[split.size - 3]
         if (artifactName.isEmpty()
-                || !(alphaNumericalCharacter + '-').containsAll(artifactName.toLowerCase().toSet())) {
+                || !(alphaNumericalCharacter + '-').containsAll(artifactName.lowercase().toSet())) {
             throw FlowException(exceptionMessage)
         }
 
@@ -95,7 +95,7 @@ object Utils {
 
             // verify version
             if (artifactVersion.isEmpty()
-                    || !(alphaNumericalCharacter + allowedSpecialCharacters).containsAll(artifactVersion.toLowerCase().toSet())) {
+                    || !(alphaNumericalCharacter + allowedSpecialCharacters).containsAll(artifactVersion.lowercase().toSet())) {
                 throw FlowException(exceptionMessage)
             }
 

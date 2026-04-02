@@ -28,7 +28,7 @@ class RequestReturnOfBillingStateFlowResponder(private val session : FlowSession
             if (billingState.state.data.status != BillingStateStatus.ACTIVE)
                 throw FlowException("Only active states can be returned")
             billingState
-        }!!
+        }
         subFlow(AttachUnspentChipsAndReturnBillingStateFlow(billingState))
     }
 }

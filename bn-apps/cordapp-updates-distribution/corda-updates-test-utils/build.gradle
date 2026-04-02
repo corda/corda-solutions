@@ -1,3 +1,6 @@
+import static org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
+import static org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_1_9
+
 apply plugin: 'kotlin'
 
 sourceSets {
@@ -14,21 +17,16 @@ sourceSets {
 }
 
 dependencies {
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    compile "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
-    compile "junit:junit:$junit_version"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    implementation "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
+    implementation "junit:junit:$junit_version"
 }
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
-    kotlinOptions {
-        languageVersion = "1.2"
-        apiVersion = "1.2"
-        jvmTarget = "1.8"
+    compilerOptions {
+        languageVersion = KOTLIN_1_9
+        apiVersion = KOTLIN_1_9
+        jvmTarget = JVM_17
         javaParameters = true   // Useful for reflection.
-    }
-}
-compileKotlin {
-    kotlinOptions {
-        languageVersion = "1.2"
     }
 }

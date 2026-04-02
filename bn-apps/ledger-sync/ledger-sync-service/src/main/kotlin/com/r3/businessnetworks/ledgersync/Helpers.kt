@@ -19,7 +19,6 @@ import net.corda.core.node.services.vault.QueryCriteria
 import net.corda.core.node.services.vault.QueryCriteria.VaultQueryCriteria
 import net.corda.core.serialization.SingletonSerializeAsToken
 import net.corda.core.utilities.loggerFor
-import sun.security.util.ByteArrayLexOrder
 import java.io.File
 import java.nio.file.Paths
 import kotlin.jvm.java
@@ -57,11 +56,18 @@ fun ServiceHub.withParticipants(vararg parties: Party, pageSize: Int = this.cord
 /**
  * Calculates a compound hash of multiple hashes by hashing their concatenation in lexical order.
  */
-fun List<SecureHash>.hash(): SecureHash = map {
-    it.bytes
-}.sortedWith(ByteArrayLexOrder()).fold(ByteArray(0)) { acc, hash ->
-    acc + hash
-}.sha256()
+fun List<SecureHash>.hash(): SecureHash =
+    map { it.bytes }
+        .sortedWith { a, b ->
+            val min = minOf(a.size, b.size)
+            for (i in 0 until min) {
+                val diff = (a[i].toInt() and 0xFF) - (b[i].toInt() and 0xFF)
+                if (diff != 0) return@sortedWith diff
+            }
+            a.size - b.size
+        }
+        .fold(ByteArray(0)) { acc, hash -> acc + hash }
+        .sha256()
 
 /*
     read pageSize from ledgersync.conf. More config could be added if needed.

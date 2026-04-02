@@ -1,6 +1,5 @@
 package com.r3.businessnetworks.cordaupdates.transport
 
-import com.sun.xml.internal.messaging.saaj.util.ByteInputStream
 import com.r3.businessnetworks.cordaupdates.transport.flows.GetResourceFlow
 import com.r3.businessnetworks.cordaupdates.transport.flows.PeekResourceFlow
 import net.corda.core.flows.FlowException
@@ -16,6 +15,7 @@ import org.eclipse.aether.spi.connector.transport.PutTask
 import org.eclipse.aether.spi.connector.transport.Transporter
 import org.eclipse.aether.transfer.NoTransporterException
 import org.eclipse.aether.util.ConfigUtils
+import java.io.ByteArrayInputStream
 
 /**
  * This repository name will be used if one has not been explicitly specified in the URL
@@ -83,7 +83,7 @@ class FlowsTransporter(private val session : RepositorySystemSession,
 
     init {
         session.configProperties
-        if (repository.protocol.toLowerCase() !in setOf(CordaTransporterFactory.CORDA_FLOWS_TRANSPORT)) {
+        if (repository.protocol.lowercase() !in setOf(CordaTransporterFactory.CORDA_FLOWS_TRANSPORT)) {
             throw NoTransporterException(repository)
         }
     }
@@ -96,7 +96,7 @@ class FlowsTransporter(private val session : RepositorySystemSession,
     override fun implGet(task : GetTask) {
         val appServiceHub = ConfigUtils.getObject(session, null, APP_SERVICE_HUB) as AppServiceHub
         val bytes : ByteArray = appServiceHub.startFlow(GetResourceFlow(task.location.toString(), repoHosterName, repositoryName)).returnValue.getOrThrow()
-        utilGet(task, ByteInputStream(bytes, bytes.size), true, bytes.size.toLong(), false)
+        utilGet(task, ByteArrayInputStream(bytes), true, bytes.size.toLong(), false)
     }
 
     override fun implPut(task : PutTask) = throw Exception("Flows transport doesn't support PUT")

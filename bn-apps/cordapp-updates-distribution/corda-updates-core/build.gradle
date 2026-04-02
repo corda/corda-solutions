@@ -1,3 +1,6 @@
+import static org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
+import static org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_1_9
+
 apply plugin: 'kotlin'
 apply plugin: 'net.corda.plugins.cordapp'
 apply plugin: 'net.corda.plugins.quasar-utils'
@@ -31,34 +34,35 @@ sourceSets {
 }
 
 dependencies {
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     // maven resolver dependencies
-    compile "org.apache.maven.resolver:maven-resolver-api:$maven_resolver_version"
-    compile "org.apache.maven.resolver:maven-resolver-impl:$maven_resolver_version"
-    compile "org.apache.maven.resolver:maven-resolver-connector-basic:$maven_resolver_version"
-    compile "org.apache.maven.resolver:maven-resolver-transport-http:$maven_resolver_version"
-    compile "org.apache.maven.resolver:maven-resolver-transport-file:$maven_resolver_version"
-    compile "org.apache.maven.resolver:maven-resolver-util:$maven_resolver_version"
-    compile "org.apache.maven.resolver:maven-resolver-spi:$maven_resolver_version"
-    compile("org.apache.maven:maven-resolver-provider:3.5.4") {
+    implementation "org.apache.maven.resolver:maven-resolver-api:$maven_resolver_version"
+    implementation "org.apache.maven.resolver:maven-resolver-impl:$maven_resolver_version"
+    implementation "org.apache.maven.resolver:maven-resolver-connector-basic:$maven_resolver_version"
+    implementation "org.apache.maven.resolver:maven-resolver-transport-http:$maven_resolver_version"
+    implementation "org.apache.maven.resolver:maven-resolver-transport-file:$maven_resolver_version"
+    implementation "org.apache.maven.resolver:maven-resolver-util:$maven_resolver_version"
+    implementation "org.apache.maven.resolver:maven-resolver-spi:$maven_resolver_version"
+    implementation("org.apache.maven:maven-resolver-provider:3.5.4") {
         exclude group: "org.apache.maven.resolver", module: "*"
     }
+    implementation("com.typesafe:config:$typesafe_config_version")
 
     // transport over flows
     cordapp project(':bn-apps:cordapp-updates-distribution:corda-updates-transport')
 
-    cordaCompile "$corda_release_group:corda-core:$corda_release_version"
+    cordaProvided "$corda_release_group:corda-core:$corda_release_version"
 
-    testCompile "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
-    testCompile "junit:junit:$junit_version"
-    testCompile project(":bn-apps:cordapp-updates-distribution:corda-updates-test-utils")
+    testImplementation "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
+    testImplementation "junit:junit:$junit_version"
+    testImplementation project(":bn-apps:cordapp-updates-distribution:corda-updates-test-utils")
 }
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
-    kotlinOptions {
-        languageVersion = "1.2"
-        apiVersion = "1.2"
-        jvmTarget = "1.8"
+    compilerOptions {
+        languageVersion = KOTLIN_1_9
+        apiVersion = KOTLIN_1_9
+        jvmTarget = JVM_17
         javaParameters = true   // Useful for reflection.
     }
 }
