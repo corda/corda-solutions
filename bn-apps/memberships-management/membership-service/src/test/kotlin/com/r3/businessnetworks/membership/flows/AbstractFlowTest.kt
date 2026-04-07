@@ -72,6 +72,21 @@ abstract class AbstractFlowTest(private val numberOfBusinessNetworks: Int,
             )
         }
 
+        participantsNodes.forEach {
+            (it.services.attachments as NodeAttachmentService).privilegedImportAttachment(
+                SimpleMembershipMetadata::class.java.location.openStream(),
+                net.corda.core.internal.DEPLOYED_CORDAPP_UPLOADER,
+                null
+            )
+        }
+
+        val notaryNode = mockNetwork.notaryNodes.single()
+        (notaryNode.services.attachments as NodeAttachmentService).privilegedImportAttachment(
+            SimpleMembershipMetadata::class.java.location.openStream(),
+            net.corda.core.internal.DEPLOYED_CORDAPP_UPLOADER,
+            null
+        )
+
         mockNetwork.runNetwork()
     }
 

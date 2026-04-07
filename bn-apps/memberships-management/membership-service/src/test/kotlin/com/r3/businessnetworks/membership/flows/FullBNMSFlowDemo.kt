@@ -18,7 +18,8 @@ import kotlin.test.fail
  */
 class FullBNMSFlowDemo : AbstractFlowTest(
         numberOfBusinessNetworks = 1,
-        numberOfParticipants = 5) {
+        numberOfParticipants = 5,
+        participantRespondingFlows = listOf(MyInitiatedFlow::class.java)) {
     @Test
     fun demo() {
         val bnoNode = bnoNodes.first()
