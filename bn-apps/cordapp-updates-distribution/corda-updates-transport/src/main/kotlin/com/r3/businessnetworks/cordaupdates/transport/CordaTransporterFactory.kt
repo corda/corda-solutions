@@ -20,7 +20,7 @@ class CordaTransporterFactory : TransporterFactory {
     override fun getPriority() = 5.0f
 
     override fun newInstance(session : RepositorySystemSession, repository : RemoteRepository) : Transporter {
-        return when(repository.protocol.toLowerCase()) {
+        return when(repository.protocol.lowercase()) {
             CORDA_FLOWS_TRANSPORT -> FlowsTransporter(session, repository)
             else -> throw NoTransporterException(repository)
         }
